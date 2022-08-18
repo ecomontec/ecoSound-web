@@ -249,7 +249,7 @@
         }).setView([{{ leaflet.latitude_center }}, {{ leaflet.longitude_center }}], 5);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             minZoom: 2.75,
-            maxZoom: 18,
+            maxZoom: 10,
             attribution: '© OpenStreetMap',
         }).addTo(map);
         {% for a in leaflet.arr %}
