@@ -243,7 +243,10 @@
     <script>
         {% if leaflet.arr %}
         var markerArray = []
-        var map = L.map('map', {zoomSnap: 0.25,zoomDelta:0.25,}).setView([{{ leaflet.latitude_center }}, {{ leaflet.longitude_center }}], 5);
+        var map = L.map('map', {
+            zoomSnap: 0.25,
+            zoomDelta: 0.25
+        }).setView([{{ leaflet.latitude_center }}, {{ leaflet.longitude_center }}], 5);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             minZoom: 2.75,
             maxZoom: 18,
@@ -261,8 +264,8 @@
         SouthWestLat = group.getBounds().getSouthWest().lat
         SouthWestLng = group.getBounds().getSouthWest().lng
         map.setMaxBounds([
-            [NorthEastLat, NorthEastLng],
-            [SouthWestLat, SouthWestLng],
+            [NorthEastLat * 1.1 - {{ leaflet.latitude_center }} * 0.1, NorthEastLng * 1.1 - {{ leaflet.longitude_center }} * 0.1],
+            [SouthWestLat * 1.1 - {{ leaflet.latitude_center }} * 0.1, SouthWestLng * 1.1 - {{ leaflet.longitude_center }} * 0.1],
         ])
         map.on('popupopen', function (e) {
             site = e.popup._content.split('value="')[1].split('site_id">')[0]
