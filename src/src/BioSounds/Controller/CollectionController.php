@@ -235,6 +235,7 @@ class CollectionController extends BaseController
             $arr['latitude_center'] = (max($latitude) + min($latitude)) / 2;
             $arr['arr'] = $array;
             $arr['sites'] = $sites;
+            $arr['count'] = count($array);
         }
         return $arr;
     }

@@ -246,10 +246,10 @@
         var map = L.map('map', {
             zoomSnap: 0.25,
             zoomDelta: 0.25
-        }).setView([{{ leaflet.latitude_center }}, {{ leaflet.longitude_center }}], 5);
+        }).setView([{{ leaflet.latitude_center }}, {{ leaflet.longitude_center }}],  {{ leaflet.count==1?10:5 }});
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             minZoom: 2.75,
-            maxZoom: 10,
+            maxZoom: 18,
             attribution: '© OpenStreetMap',
         }).addTo(map);
         {% for a in leaflet.arr %}
@@ -259,10 +259,18 @@
         {% endfor %}
         var group = L.featureGroup(markerArray);
         map.fitBounds(group.getBounds());
+        {% if leaflet.count ==1 %}
+        NorthEastLat = {{ leaflet.latitude_center }}+1
+        NorthEastLng = {{ leaflet.longitude_center }}+1
+        SouthWestLat = {{ leaflet.latitude_center }}-1
+        SouthWestLng = {{ leaflet.longitude_center }}-1
+        map.setView([{{ leaflet.latitude_center }}, {{ leaflet.longitude_center }}], 10);
+        {% else %}
         NorthEastLat = group.getBounds().getNorthEast().lat
         NorthEastLng = group.getBounds().getNorthEast().lng
         SouthWestLat = group.getBounds().getSouthWest().lat
         SouthWestLng = group.getBounds().getSouthWest().lng
+        {% endif %}
         map.setMaxBounds([
             [NorthEastLat * 1.1 - {{ leaflet.latitude_center }} * 0.1, NorthEastLng * 1.1 - {{ leaflet.longitude_center }} * 0.1],
             [SouthWestLat * 1.1 - {{ leaflet.latitude_center }} * 0.1, SouthWestLng * 1.1 - {{ leaflet.longitude_center }} * 0.1],
