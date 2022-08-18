@@ -38,11 +38,11 @@ class CollectionController extends BaseController
     {
         $collProvider = new CollectionProvider();
 
-        $collNum = $collProvider->countCollectionsByPermission();
+        $collNum = $collProvider->countCollections();
         $pages = $collNum > 0 ? ceil($collNum / self::ITEMS_PAGE) : 1;
 
         return $this->twig->render('collection/collections.html.twig', [
-            'collections' => $collProvider->getCollectionPagesByPermission(
+            'collections' => $collProvider->getCollectionPages(
                 $this::ITEMS_PAGE,
                 $this::ITEMS_PAGE * ($page - 1)
             ),
@@ -58,7 +58,7 @@ class CollectionController extends BaseController
      * @return string
      * @throws \Exception
      */
-    public function show(int $id, int $page = 1, string $view = null, string $sites = null)
+    public function show(int $id, int $page = 1, string $view = null)
     {
         $this->colId = $id;
 
@@ -107,16 +107,15 @@ class CollectionController extends BaseController
             (Auth::getUserID() == null) ? 0 : Auth::getUserID(),
             self::ITEMS_PAGE,
             self::ITEMS_PAGE * ($this->page - 1),
-            $this->filter,
-            $sites
+            $this->filter
         );
         $allRecordings = (new RecordingService())->getAllListWithImages(
             $this->colId,
             (Auth::getUserID() == null) ? 0 : Auth::getUserID(),
-            $this->filter,
-            $sites
+            $this->filter
         );
         $this->leaflet = $this->getLeaflet($allRecordings);
+
         if (isset($_POST['site-name'])) {
             $this->filter['siteName'] = filter_var($_POST['site-name'], FILTER_SANITIZE_STRING);
         }
@@ -125,7 +124,7 @@ class CollectionController extends BaseController
             $this->filter['speciesName'] = filter_var($_POST['species-name'], FILTER_SANITIZE_STRING);
         }
 
-        if ($isAccessed || $this->collection->getPublic()) {
+        if ($isAccessed) {
             return $this->twig->render('collection/collection.html.twig', [
                 'collection' => $this->collection,
                 'pageNum' => $this->pageNum,
@@ -228,17 +227,12 @@ class CollectionController extends BaseController
             if ($j == 1) {
                 $arr['longitude_center'] = $arr['longitude_center'] + 180;
                 foreach ($array as $key => $value) {
-                    if (abs($value[2] - $arr['longitude_center']) > 180) {
-                        $array[$key][2] = $array[$key][2] + 360;
+                    if (abs($value[3] - $arr['longitude_center']) > 180) {
+                        $array[$key][3] = $array[$key][3] + 360;
                     }
                 }
             }
             $arr['latitude_center'] = (max($latitude) + min($latitude)) / 2;
-            if (max($latitude) - min($latitude) == 0) {
-                $arr['scale'] = 3;
-            } else {
-                $arr['scale'] = explode('.', (1620 / (360 - $minus) < 270 / (max($latitude) - min($latitude))) ? (1620 / (360 - $minus)) : (270 / (max($latitude) - min($latitude))))[0];
-            }
             $arr['arr'] = $array;
             $arr['sites'] = $sites;
         }
@@ -318,7 +312,7 @@ class CollectionController extends BaseController
             $this->filter['speciesName'] = filter_var($_POST['species-name'], FILTER_SANITIZE_STRING);
         }
 
-        if ($isAccessed|| $this->collection->getPublic()) {
+        if ($isAccessed) {
             return $this->twig->render('collection/collectionjs.html.twig', [
                 'collection' => $this->collection,
                 'pageNum' => $this->pageNum,
@@ -331,9 +325,7 @@ class CollectionController extends BaseController
                 'leaflet' => $this->leaflet
             ]);
         } else {
-            return '<input id="display_view" value="' . $display . '" type="hidden">
-                    <input id="sites" value="'.$this->leaflet['sites'] .'" type="hidden">
-                    <div>No results</div>';
+            return "No results";
         }
     }
 }

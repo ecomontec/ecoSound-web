@@ -242,23 +242,27 @@
             crossorigin=""></script>
     <script>
         {% if leaflet.arr %}
-        var map = L.map('map', {scrollWheelZoom: false,}).setView([{{ leaflet.latitude_center }}, {{ leaflet.longitude_center }}], {{ leaflet.scale }});
+        var markerArray = []
+        var map = L.map('map', {zoomSnap: 0.25,zoomDelta:0.25,}).setView([{{ leaflet.latitude_center }}, {{ leaflet.longitude_center }}], 5);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            minZoom: {{ leaflet.scale }},
+            minZoom: 2.75,
             maxZoom: 18,
             attribution: '© OpenStreetMap',
         }).addTo(map);
         {% for a in leaflet.arr %}
         var marker = L.marker([{{ a[2] }}, {{ a[3] }}], {id: '{{ a[0] }}'}).addTo(map);
+        markerArray.push(marker)
         marker.bindPopup('<input type="hidden" value="{{ a[0] }}site_id"><b>{{ a[1] }}</b><br>{{ a[4] }}'.replaceAll('!br!', '<br>'));
         {% endfor %}
-        NorthEastLat = map.getBounds().getNorthEast().lat
-        NorthEastLng = map.getBounds().getNorthEast().lng
-        SouthWestLat = map.getBounds().getSouthWest().lat
-        SouthWestLng = map.getBounds().getSouthWest().lng
+        var group = L.featureGroup(markerArray);
+        map.fitBounds(group.getBounds());
+        NorthEastLat = group.getBounds().getNorthEast().lat
+        NorthEastLng = group.getBounds().getNorthEast().lng
+        SouthWestLat = group.getBounds().getSouthWest().lat
+        SouthWestLng = group.getBounds().getSouthWest().lng
         map.setMaxBounds([
-            [NorthEastLat > 0 ? Math.ceil(NorthEastLat) : Math.floor(NorthEastLat), NorthEastLng > 0 ? Math.ceil(NorthEastLng) : Math.floor(NorthEastLng)],
-            [SouthWestLat > 0 ? Math.ceil(SouthWestLat) : Math.floor(SouthWestLat), SouthWestLng > 0 ? Math.ceil(SouthWestLng) : Math.floor(SouthWestLng)],
+            [NorthEastLat, NorthEastLng],
+            [SouthWestLat, SouthWestLng],
         ])
         map.on('popupopen', function (e) {
             site = e.popup._content.split('value="')[1].split('site_id">')[0]
@@ -283,7 +287,7 @@
                 }
             }
             {% endfor %}
-            if (site != $("#sites" )) {
+            if (site != $("#sites")) {
                 col_js({{ collection.id }}, 1, $("#display_view").val(), site)
             }
         })
@@ -308,7 +312,7 @@
         })
         {% endif %}
         function col_js(id, page, view, site) {
-            if(site!=''){
+            if (site != '') {
                 url = "{{ baseUrl }}/collection/showjs/" + id + '/' + page + '/' + view + '/' + site
                 $.ajax({
                     url: url,
