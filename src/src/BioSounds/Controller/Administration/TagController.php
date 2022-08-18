@@ -51,18 +51,23 @@ class TagController extends BaseController
         header('Content-Disposition: attachment; filename=' . $file_name);
 
         $tagList = (new TagProvider())->getListByTags();
-
+        $tagAls[] = array('#', 'Species', 'Recording', 'Creation User', 'Time Start', 'Time End', 'Min Frequency', 'Max Frequency', 'Uncertain', 'Call Distance', 'Distance Not Estimable', 'Number of Individuals', 'Type', 'Reference Call', 'Comments', 'Creation Date');
         foreach ($tagList as $tagItem) {
             $tagArray = array(
                 $tagItem->getId(),
                 $tagItem->getSpeciesName(),
                 $tagItem->getRecordingName(),
                 $tagItem->getUserName(),
-                $tagItem->getTime(),
-                $tagItem->getFrequency(),
+                $tagItem->getMinTime(),
+                $tagItem->getMaxTime(),
+                $tagItem->getMinFrequency(),
+                $tagItem->getMaxFrequency(),
+                $tagItem->isUncertain(),
                 $tagItem->getCallDistance(),
+                $tagItem->isDistanceNotEstimable(),
                 $tagItem->getNumberIndividuals(),
                 $tagItem->getType(),
+                $tagItem->isReferenceCall(),
                 $tagItem->getComments(),
                 $tagItem->getCreationDate(),
             );

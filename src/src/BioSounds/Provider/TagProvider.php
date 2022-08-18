@@ -21,16 +21,16 @@ class TagProvider extends BaseProvider
     public function get(int $tagId): Tag
     {
         $query = 'SELECT ' . Tag::ID . ', ' . Tag::RECORDING_ID . ', ' . User::FULL_NAME . ', ';
-        $query .= self::TABLE_NAME . '.' . Tag::USER_ID . ' as user_id, ' . Tag::MIN_TIME .  ', ' . Tag::MAX_TIME .  ', ';
-        $query .= Tag::MIN_FREQ .  ', ' . Tag::MAX_FREQ . ', ';
-        $query .= Tag::UNCERTAIN . ', ' . Tag:: REFERENCE_CALL . ', '. Tag::CALL_DISTANCE . ', ';
-        $query .= Tag::DISTANCE_NOT_ESTIMABLE . ', '. Tag:: NUMBER_INDIVIDUALS . ', ' . Tag::COMMENTS . ', ';
+        $query .= self::TABLE_NAME . '.' . Tag::USER_ID . ' as user_id, ' . Tag::MIN_TIME . ', ' . Tag::MAX_TIME . ', ';
+        $query .= Tag::MIN_FREQ . ', ' . Tag::MAX_FREQ . ', ';
+        $query .= Tag::UNCERTAIN . ', ' . Tag:: REFERENCE_CALL . ', ' . Tag::CALL_DISTANCE . ', ';
+        $query .= Tag::DISTANCE_NOT_ESTIMABLE . ', ' . Tag:: NUMBER_INDIVIDUALS . ', ' . Tag::COMMENTS . ', ';
         $query .= Tag::TYPE . ', ' . self::TABLE_NAME . '.' . Tag::SPECIES_ID . ', ' . Species::BINOMIAL . ' as species_name ';
         $query .= 'FROM ' . self::TABLE_NAME . ' ';
         $query .= 'LEFT JOIN ' . Species::TABLE_NAME . ' ON ';
-        $query .= self::TABLE_NAME . '.' . Tag::SPECIES_ID . ' = ' . Species::TABLE_NAME .'.'. Species::ID . ' ';
-        $query .= 'LEFT JOIN user ON '. self::TABLE_NAME . '.' . Tag::USER_ID. ' = ';
-        $query .= User::TABLE_NAME . '.' . User::ID. ' ';
+        $query .= self::TABLE_NAME . '.' . Tag::SPECIES_ID . ' = ' . Species::TABLE_NAME . '.' . Species::ID . ' ';
+        $query .= 'LEFT JOIN user ON ' . self::TABLE_NAME . '.' . Tag::USER_ID . ' = ';
+        $query .= User::TABLE_NAME . '.' . User::ID . ' ';
         $query .= 'WHERE ' . self::TABLE_NAME . '.' . Tag::ID . ' = :tagId';
 
         $this->database->prepareQuery($query);
@@ -67,7 +67,7 @@ class TagProvider extends BaseProvider
         $query .= ' ORDER BY time';
 
         $this->database->prepareQuery($query);
-        foreach($this->database->executeSelect($values) as $tag){
+        foreach ($this->database->executeSelect($values) as $tag) {
             $result[] = (new Tag())->createFromValues($tag);
         }
         return $result;
@@ -90,12 +90,11 @@ class TagProvider extends BaseProvider
         $valuesNames = '( ';
         $values = [];
         $i = 1;
-        foreach ($data as $key => $value)
-        {
+        foreach ($data as $key => $value) {
             $fields .= $key;
-            $valuesNames .= ':'.$key;
-            $values[':'.$key] = $value;
-            if($i < count($data)){
+            $valuesNames .= ':' . $key;
+            $values[':' . $key] = $value;
+            if ($i < count($data)) {
                 $fields .= ', ';
                 $valuesNames .= ', ';
             } else {
@@ -126,10 +125,9 @@ class TagProvider extends BaseProvider
         $values[':tagId'] = $data['tag_id'];
         unset($data['tag_id']);
 
-        foreach ($data as $key => $value)
-        {
-            $fields[] =  $key . '= :'.$key;
-            $values[':'.$key] = $value;
+        foreach ($data as $key => $value) {
+            $fields[] = $key . '= :' . $key;
+            $values[':' . $key] = $value;
         }
 
         $this->database->prepareQuery(sprintf($query, implode(', ', $fields)));
@@ -174,16 +172,22 @@ class TagProvider extends BaseProvider
                 ->setSpeciesName($item['speciesName'])
                 ->setRecordingName($item['recordingName'])
                 ->setUserName($item['userName'])
-                ->setTime($item['min_time'].' - '.$item['max_time'].' sec')
-                ->setFrequency($item['min_freq'].' - '.$item['max_freq'].' Hz')
+                ->setMinTime($item['min_time'])
+                ->setMaxTime($item['max_time'])
+                ->setMinFrequency($item['min_freq'])
+                ->setMaxFrequency($item['max_freq'])
+                ->setUncertain($item['uncertain'])
                 ->setCallDistance($item['call_distance_m'])
+                ->setDistanceNotEstimable(isset($item['distance_not_estimable']) ? $item['distance_not_estimable'] : 0)
                 ->setNumberIndividuals($item['number_of_individuals'])
                 ->setType($item['typeName'])
+                ->setReferenceCall($item['reference_call'])
                 ->setComments($item['comments'])
                 ->setCreationDate($item['creation_date']);
         }
         return $data;
     }
+
     /**
      * @return Tag[]
      * @throws \Exception
@@ -201,7 +205,7 @@ class TagProvider extends BaseProvider
             WHERE t.user_id = :user_id1 OR c.user_id = :user_id2
             ORDER BY t.tag_id"
         );
-        $result = $this->database->executeSelect([":user_id1" => Auth::getUserLoggedID(),":user_id2" => Auth::getUserLoggedID()]);
+        $result = $this->database->executeSelect([":user_id1" => Auth::getUserLoggedID(), ":user_id2" => Auth::getUserLoggedID()]);
 
         foreach ($result as $item) {
             $data[] = (new Tag())
@@ -209,17 +213,23 @@ class TagProvider extends BaseProvider
                 ->setSpeciesName($item['speciesName'])
                 ->setRecordingName($item['recordingName'])
                 ->setUserName($item['userName'])
-                ->setTime($item['min_time'].' - '.$item['max_time'].' sec')
-                ->setFrequency($item['min_freq'].' - '.$item['max_freq'].' Hz')
+                ->setMinTime($item['min_time'])
+                ->setMaxTime($item['max_time'])
+                ->setMinFrequency($item['min_freq'])
+                ->setMaxFrequency($item['max_freq'])
+                ->setUncertain($item['uncertain'])
                 ->setCallDistance($item['call_distance_m'])
+                ->setDistanceNotEstimable(isset($item['distance_not_estimable']) ? $item['distance_not_estimable'] : 0)
                 ->setNumberIndividuals($item['number_of_individuals'])
                 ->setType($item['typeName'])
+                ->setReferenceCall($item['reference_call'])
                 ->setComments($item['comments'])
                 ->setCreationDate($item['creation_date']);
         }
 
         return $data;
     }
+
     public function countTags(): int
     {
         $this->database->prepareQuery(
@@ -229,7 +239,7 @@ class TagProvider extends BaseProvider
             WHERE t.user_id = :user_id1 OR c.user_id = :user_id2"
         );
 
-        if (empty($result = $this->database->executeSelect([":user_id1" => Auth::getUserLoggedID(),":user_id2" => Auth::getUserLoggedID()]))) {
+        if (empty($result = $this->database->executeSelect([":user_id1" => Auth::getUserLoggedID(), ":user_id2" => Auth::getUserLoggedID()]))) {
             return 0;
         }
         return $result[0]['num'];

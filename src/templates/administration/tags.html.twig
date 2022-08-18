@@ -11,11 +11,16 @@
                     <th scope="col">Species</th>
                     <th scope="col">Recording</th>
                     <th scope="col">Creation User</th>
-                    <th scope="col">Time</th>
-                    <th scope="col">Frequency</th>
+                    <th scope="col">Time Start</th>
+                    <th scope="col">Time End</th>
+                    <th scope="col">Min Frequency</th>
+                    <th scope="col">Max Frequency</th>
+                    <th scope="col">Uncertain</th>
                     <th scope="col">Call Distance</th>
-                    <th scope="col">Number of individuals</th>
+                    <th scope="col">Distance Not Estimable</th>
+                    <th scope="col">Number of Individuals</th>
                     <th scope="col">Type</th>
+                    <th scope="col">Reference Call</th>
                     <th scope="col">Comments</th>
                     <th scope="col">Creation Date</th>
                 </tr>
@@ -27,11 +32,22 @@
                         <td>{{ tag.speciesName }}</td>
                         <td>{{ tag.recordingName }}</td>
                         <td>{{ tag.userName }}</td>
-                        <td>{{ tag.time }}</td>
-                        <td>{{ tag.frequency }}</td>
+                        <td>{{ tag.minTime }}</td>
+                        <td>{{ tag.maxTime }}</td>
+                        <td>{{ tag.minFrequency }}</td>
+                        <td>{{ tag.maxFrequency }}</td>
+                        <td class="text-center">
+                            <input name="uncertain" type="checkbox" {{ tag.uncertain ? 'checked' }} disabled>
+                        </td>
                         <td>{{ tag.callDistance }}</td>
+                        <td class="text-center">
+                            <input name="distanceNotEstimable" type="checkbox" {{ tag.distanceNotEstimable ? 'checked' }} disabled>
+                        </td>
                         <td>{{ tag.numberIndividuals }}</td>
                         <td>{{ tag.type }}</td>
+                        <td class="text-center">
+                            <input name="referenceCall" type="checkbox" {{ tag.referenceCall ? 'checked' }} disabled>
+                        </td>
                         <td>{{ tag.comments }}</td>
                         <td>{{ tag.creationDate }}</td>
                     </tr>

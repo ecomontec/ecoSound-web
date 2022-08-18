@@ -30,7 +30,6 @@ class RecordingController extends BaseController
 
     private $recordingId;
     private $fftSize;
-    private $isOpen = false;
     private $collectionPage;
     private $recordingService;
 
@@ -72,12 +71,7 @@ class RecordingController extends BaseController
 
         $collectionId = $recordingData[Recording::COL_ID];
 
-        //TODO: Take the hardcoded open collections out. Implement open collections management
-        if ($collectionId == 1 || $collectionId == 3 || $collectionId == 18 || $collectionId == 31) {
-            $this->isOpen = true;
-        }
-
-        if (!Auth::isUserLogged() && !$this->isOpen) {
+        if (!Auth::isUserLogged()) {
             throw new NotAuthenticatedException();
         }
 
