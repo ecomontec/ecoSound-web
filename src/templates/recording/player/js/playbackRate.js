@@ -72,7 +72,7 @@ $("#stop").click(function() {
 
 playbackControl.oninput = function() {
     if (source !== null) {
-        elapsedRateTime = currentTime - ((context.currentTime - startTime) * this.value);
+        elapsedRateTime = 0;
         source.playbackRate.value = this.value;
         seek = 0;
     }
@@ -88,6 +88,7 @@ $('#playerCursor').draggable({
         currentTime = seek;
 
         $("#time_sec_div").html(Math.round(minTime + seek));
+        console.log($("#time_sec_div").text()+'a')
         pauseTime = 0;
         elapsedRateTime = 0;
     }
@@ -115,6 +116,7 @@ function stop()
         currentTime = 0;
         resetCursor();
         $("#time_sec_div").html(Math.round(minTime));
+        console.log($("#time_sec_div").text()+'b')
     }
 
     playButton.html('<i class="fas fa-play"></i>');
@@ -150,9 +152,10 @@ function getCurrentTime()
     if (source) {
         currentTime = (context.currentTime - startTime) * source.playbackRate.value + elapsedRateTime + seek;
         currentTime += elapsedRateTime === 0 ? pauseTime : 0;
-
+        console.log(context.currentTime,startTime,source.playbackRate.value,elapsedRateTime,seek,elapsedRateTime,pauseTime)
         moveCursor(currentTime);
         $("#time_sec_div").html(Math.round(minTime + currentTime)); //Add minTime to offset when zooming
+        console.log($("#time_sec_div").text(),currentTime)
     }
 }
 
