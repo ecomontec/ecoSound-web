@@ -75,7 +75,7 @@ ALTER TABLE `index_type`
 -- Dumping data for table `index_type`
 --
 INSERT INTO `index_type` (`index_id`, `name`, `param`, `description`, `URL`)
-VALUES ('1', 'acoustic_complexity_index', , 'Not filled',
+VALUES ('1', 'acoustic_complexity_index', '', 'Not filled',
         'https://scikit-maad.github.io/generated/maad.features.acoustic_complexity_index.html'),
        ('2', 'soundscape_index', 'flim_bioPh!flim_antroPh!R_compatible', 'Not filled',
         'https://scikit-maad.github.io/generated/maad.features.soundscape_index.html');
