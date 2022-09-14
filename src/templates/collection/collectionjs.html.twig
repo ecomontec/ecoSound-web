@@ -1,19 +1,15 @@
 <div class="row">
     <div class="col-md-7">
         <h2>{{ collection.name }}
-            <small>{{ recordingNum }}
-                sounds</small>
+            <small>{{ list|length }} sounds</small>
         </h2>
     </div>
     <div class="col-md-5 text-right">
-        <a onclick="col_js({{ collection.id }},{{ currentPage }},'gallery','{{ leaflet.sites }}')" type="button"
-           class="btn btn-outline-primary btn-sm view {{ display == 'gallery' ? 'active' }}"
-           aria-pressed="true">
+        <a onclick="col_js({{ collection.id }},'gallery','{{ leaflet.sites }}')" type="button" class="btn btn-outline-primary btn-sm view {{ display == 'gallery' ? 'active' }}" aria-pressed="true">
             <i class="fas fa-th" aria-hidden="true"></i>
             Gallery View
         </a>
-        <a onclick="col_js({{ collection.id }},{{ currentPage }},'list','{{ leaflet.sites }}')" type="button"
-           class="btn btn-outline-primary btn-sm view {{ display == 'list' ? 'active' }}" aria-pressed="true">
+        <a onclick="col_js({{ collection.id }},'list','{{ leaflet.sites }}')" type="button" class="btn btn-outline-primary btn-sm view {{ display == 'list' ? 'active' }}" aria-pressed="true">
             <i class="fas fa-th-list" aria-hidden="true"></i>
             List View
         </a>
@@ -26,178 +22,14 @@
     <div class="col-auto mr-auto">
         {% if collection.note is not empty %}
             <p>
-                <strong>Description:
-                </strong>
-                {{ collection.note }}</p>
+                <strong>Description:</strong>
+                {{ collection.note }}
+            </p>
         {% endif %}
     </div>
-    {% if display == 'list' %}
-        <div class="col-auto">
-            <form id="search-form" class="form-inline text-right"
-                  action="{{ baseUrl }}/collection/show/{{ collection.id }}/{{ currentPage }}/{{ display }}"
-                  method="post">
-                <div class="form-group mr-3">
-                    <label class="col-form-label-sm" for="doi">DOI</label>
-                    <input type="text" class="form-control form-control-sm filter ml-2" id="doi" name="doi"
-                           placeholder="DOI" value="" data-type="search">
-                </div>
-                <div class="form-group mr-3">
-                    <label class="col-form-label-sm" for="siteName">Site</label>
-                    <input type="hidden" class="filter js-site-id" name="site" value="{{ filter.site_id }}"
-                           data-type="search">
-                    <input type="text" class="form-control form-control-sm filter ml-2 js-site-autocomplete"
-                           id="siteName" name="site-name" placeholder="Site" value="{{ filter.siteName }}"
-                           data-type="search">
-                </div>
-                <div class="form-group mr-3">
-                    <label class="col-form-label-sm" for="speciesName">Species</label>
-                    <input type="hidden" class="filter js-species-id" name="species"
-                           value="{{ filter.species_id }}" data-type="search">
-                    <input type="text" class="form-control form-control-sm filter ml-2 js-species-autocomplete"
-                           id="speciesName" name="species-name" placeholder="Species"
-                           value="{{ filter.speciesName }}" data-type="search">
-                </div>
-                <div class="form-group mr-3">
-                    <label class="col-form-label-sm" for="rating">Rating</label>
-                    <input type="text" class="form-control form-control-sm filter ml-2" id="rating"
-                           name="rating" placeholder="A-E" pattern="[A-E]{1}" style="width:60px;"
-                           value="{{ filter.rating }}">
-                </div>
-                <button type="submit" class="btn btn-outline-primary btn-sm mr-2">
-                    <i class="fas fa-search" aria-hidden="true"></i>
-                    Search
-                </button>
-                <button id="clear-filter" type="submit" class="btn btn-outline-secondary btn-sm mr-2">
-                    <i class="fas fa-eraser" aria-hidden="true"></i>
-                    Clear
-                </button>
-            </form>
-        </div>
-    {% endif %}
 </div>
+{% if list is empty %}
+    <h5>No Result</h5>
+{% endif %}
 
 {% include display == 'list' ? 'collection/views/list.html.twig' : 'collection/views/gallery.html.twig' %}
-
-<nav aria-label="pagination">
-    {% if pageNum > 0 %}
-        <ul class="pagination justify-content-center">
-            {% if pageNum > 10 %}
-                <li class="page-item">
-                    <a onclick="col_js({{ collection.id }},{{ currentPage == 1 ? 1 : currentPage - 1 }},'{{ display }}','{{ leaflet.sites }}')">
-                        <i class="fa fa-angle-left" style="font-size:36px; position:relative; top:4px;"></i>
-                    </a>
-                    &nbsp;&nbsp;
-                </li>
-                <li class="page-item {{ currentPage == 1 ? 'active' }}">
-                    <a class="page-link"
-                       onclick="col_js({{ collection.id }},'1','{{ display }}','{{ leaflet.sites }}')">1</a>
-                </li>
-                {% if currentPage <= 3 %}
-                    <li class="page-item  {{ currentPage == 2 ? 'active' }}">
-                        <a class="page-link"
-                           onclick="col_js({{ collection.id }},'2','{{ display }}','{{ leaflet.sites }}')">2</a>
-                    </li>
-                    <li class="page-item {{ currentPage == 3 ? 'active' }}">
-                        <a class="page-link"
-                           onclick="col_js({{ collection.id }},'3','{{ display }}','{{ leaflet.sites }}')">3</a>
-                    </li>
-                    <li class="disabled">
-                        <span style="font-size:28px;position:relative;">&nbsp;.</span>
-                        <span style="font-size:28px;position:relative;">.</span>
-                        <span style="font-size:28px;position:relative;">.&nbsp;</span>
-                    </li>
-                {% endif %}
-
-                {% if currentPage >= 4 and currentPage <= (pageNum - 3) %}
-                    <li class="disabled">
-                        <span style="font-size:28px;position:relative;">&nbsp;.</span>
-                        <span style="font-size:28px;position:relative;">.</span>
-                        <span style="font-size:28px;position:relative;">.&nbsp;</span>
-                    </li>
-                    {% if currentPage == 4 %}
-                        <li class="page-item  active">
-                            <a class="page-link"
-                               onclick="col_js({{ collection.id }},'4','{{ display }}','{{ leaflet.sites }}')">4</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link"
-                               onclick="col_js({{ collection.id }},{{ currentPage + 1 }},'{{ display }}','{{ leaflet.sites }}')">{{ currentPage + 1 }}</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link"
-                               onclick="col_js({{ collection.id }},{{ currentPage + 2 }},'{{ display }}','{{ leaflet.sites }}')">{{ currentPage + 2 }}</a>
-                        </li>
-                    {% elseif currentPage == pageNum - 3 %}
-                        <li class="page-item">
-                            <a class="page-link"
-                               onclick="col_js({{ collection.id }},{{ currentPage -2 }},'{{ display }}','{{ leaflet.sites }}')">{{ currentPage - 2 }}</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link"
-                               onclick="col_js({{ collection.id }},{{ currentPage - 1 }},'{{ display }}','{{ leaflet.sites }}')">{{ currentPage - 1 }}</a>
-                        </li>
-                        <li class="page-item active">
-                            <a class="page-link"
-                               onclick="col_js({{ collection.id }},{{ currentPage }},'{{ display }}','{{ leaflet.sites }}')">{{ currentPage }}</a>
-                        </li>
-                    {% else %}
-                        <li class="page-item">
-                            <a class="page-link"
-                               onclick="col_js({{ collection.id }},{{ currentPage - 1 }},'{{ display }}','{{ leaflet.sites }}')">{{ currentPage - 1 }}</a>
-                        </li>
-                        <li class="page-item active">
-                            <a class="page-link"
-                               onclick="col_js({{ collection.id }},{{ currentPage }},'{{ display }}','{{ leaflet.sites }}')">{{ currentPage }}</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link"
-                               onclick="col_js({{ collection.id }},{{ currentPage + 1 }},'{{ display }}','{{ leaflet.sites }}')">{{ currentPage + 1 }}</a>
-                        </li>
-                    {% endif %}
-                    <li class="disabled">
-                        <span style="font-size:28px;position:relative;">&nbsp;.</span>
-                        <span style="font-size:28px;position:relative;">.</span>
-                        <span style="font-size:28px;position:relative;">.&nbsp;</span>
-                    </li>
-                {% endif %}
-
-                {% if currentPage >= pageNum - 2 %}
-                    <li class="disabled">
-                        <span style="font-size:28px;position:relative;">&nbsp;.</span>
-                        <span style="font-size:28px;position:relative;">.</span>
-                        <span style="font-size:28px;position:relative;">.&nbsp;</span>
-                    </li>
-                    <li class="page-item {{ currentPage == pageNum - 2 ? 'active' }}">
-                        <a class="page-link"
-                           onclick="col_js({{ collection.id }},{{ pageNum - 2 }},'{{ display }}','{{ leaflet.sites }}')">{{ pageNum - 2 }}</a>
-                    </li>
-                    <li class="page-item {{ currentPage == pageNum - 1 ? 'active' }}">
-                        <a class="page-link"
-                           onclick="col_js({{ collection.id }},{{ pageNum - 1 }},'{{ display }}','{{ leaflet.sites }}')">{{ pageNum -1 }}</a>
-                    </li>
-                {% endif %}
-                <li class="page-item {{ currentPage == pageNum ? 'active' }}">
-                    <a class="page-link"
-                       onclick="col_js({{ collection.id }},{{ pageNum }},'{{ display }}','{{ leaflet.sites }}')">{{ pageNum }}</a>
-                </li>
-                <li class="page-item">&nbsp;&nbsp;
-                    <a onclick="col_js({{ collection.id }},{{ currentPage == pageNum ? pageNum : currentPage + 1 }},'{{ display }}','{{ leaflet.sites }}')">
-                        <i class="fa fa-angle-right" style="font-size:36px; position:relative; top:4px;"></i>
-                    </a>
-                </li>
-            {% else %}
-                {% for page in 1..pageNum %}
-                    <li class="page-item {{ page == currentPage ? 'active' }}">
-                        <a class="page-link {{ display == 'list' ? 'page-selector' }}"
-                           onclick="col_js({{ collection.id }},{{ page }},'{{ display }}','{{ leaflet.sites }}')">
-                            {{ page }}
-                        </a>
-                    </li>
-                {% endfor %}
-            {% endif %}
-        </ul>
-    {% else %}
-        <h4>No results</h4>
-    {% endif %}
-</nav>
-</div>

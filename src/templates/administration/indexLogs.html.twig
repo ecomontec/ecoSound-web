@@ -2,164 +2,61 @@
 
 {% block admin_content %}
     <div class="card mb-3" id="indexLogsList">
-        <div class="card-body scrollable">
-            <table id="indexLogsTable" class="table table-sm table-hover">
-                <thead class="table-borderless">
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Recording</th>
-                    <th scope="col">Creation User</th>
-                    <th scope="col">Index</th>
-                    <th scope="col">Coordinates</th>
-                    <th scope="col">Parameter</th>
-                    <th scope="col">Result</th>
-                    <th scope="col">Creation Date (UTC)</th>
-                </tr>
-                </thead>
-                <tbody class="form-control-sm js-user-list">
-                {% for indexLog in indexLogs %}
-                    <tr>
-                        <td scope='row'>{{ indexLog.logId }}</td>
-                        <td>{{ indexLog.recordingName }}</td>
-                        <td>{{ indexLog.userName }}</td>
-                        <td>{{ indexLog.indexName }}</td>
-                        <td>{{ indexLog.coordinates }}</td>
-                        <td>{{ indexLog.param|replace({'?':': ','@':'; '}) }}</td>
-                        <td>{% for v in indexLog.value|split('!') %}{{ v|split('?')[0] }}: {{ v|split('?')[1]|number_format(2,'.',',') }}; {% endfor %}</td>
-                        <td>{{ indexLog.date }}</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <nav aria-label="pagination">
-                    <ul class="pagination justify-content-center mt-3">
-                        {% if pages > 10 %}
-                            <li class="page-item">
-                                <a href="{{ baseUrl }}/admin/indexLogs/{{ currentPage == 1 ? 1 : currentPage - 1 }}">
-                                    <i class="fa fa-angle-left" style="font-size:36px; position:relative; top:4px;"></i>
-                                </a>&nbsp;&nbsp;
-                            </li>
-                            <li class="page-item {{ currentPage == 1 ? 'active' }}">
-                                <a class="page-link" href="{{ baseUrl }}/admin/indexLogs/1">1</a>
-                            </li>
-                            {% if currentPage <= 3 %}
-                                <li class="page-item  {{ currentPage == 2 ? 'active' }}">
-                                    <a class="page-link" href="{{ baseUrl }}/admin/indexLogs/2">2</a>
-                                </li>
-                                <li class="page-item {{ currentPage == 3 ? 'active' }}">
-                                    <a class="page-link" href="{{ baseUrl }}/admin/indexLogs/3">3</a>
-                                </li>
-                                <li class="disabled">
-                                    <span style="font-size:28px;position:relative;">&nbsp;.</span>
-                                    <span style="font-size:28px;position:relative;">.</span>
-                                    <span style="font-size:28px;position:relative;">.&nbsp;</span>
-                                </li>
-                            {% endif %}
-
-                            {% if currentPage >= 4 and currentPage <= (pages - 3) %}
-                                <li class="disabled">
-                                    <span style="font-size:28px;position:relative;">&nbsp;.</span>
-                                    <span style="font-size:28px;position:relative;">.</span>
-                                    <span style="font-size:28px;position:relative;">.&nbsp;</span>
-                                </li>
-                                {% if currentPage == 4 %}
-                                    <li class="page-item  active">
-                                        <a class="page-link" href="{{ baseUrl }}/admin/indexLogs/4">4</a>
-                                    </li>
-                                    <li class="page-item">
-                                        <a class="page-link"
-                                           href="{{ baseUrl }}/admin/indexLogs/{{ currentPage + 1 }}">{{ currentPage + 1 }}</a>
-                                    </li>
-                                    <li class="page-item">
-                                        <a class="page-link"
-                                           href="{{ baseUrl }}/admin/indexLogs/{{ currentPage + 2 }}">{{ currentPage + 2 }}</a>
-                                    </li>
-                                {% elseif currentPage == pages - 3 %}
-                                    <li class="page-item">
-                                        <a class="page-link"
-                                           href="{{ baseUrl }}/admin/indexLogs/{{ currentPage - 2 }}">{{ currentPage - 2 }}</a>
-                                    </li>
-                                    <li class="page-item">
-                                        <a class="page-link"
-                                           href="{{ baseUrl }}/admin/indexLogs/{{ currentPage - 1 }}">{{ currentPage - 1 }}</a>
-                                    </li>
-                                    <li class="page-item active">
-                                        <a class="page-link"
-                                           href="{{ baseUrl }}/admin/indexLogs/{{ currentPage }}">{{ currentPage }}</a>
-                                    </li>
-                                {% else %}
-                                    <li class="page-item">
-                                        <a class="page-link"
-                                           href="{{ baseUrl }}/admin/indexLogs/{{ currentPage -1 }}">{{ currentPage - 1 }}</a>
-                                    </li>
-                                    <li class="page-item active">
-                                        <a class="page-link"
-                                           href="{{ baseUrl }}/admin/indexLogs/{{ currentPage }}">{{ currentPage }}</a>
-                                    </li>
-                                    <li class="page-item">
-                                        <a class="page-link"
-                                           href="{{ baseUrl }}/admin/indexLogs/{{ currentPage + 1 }}">{{ currentPage + 1 }}</a>
-                                    </li>
-                                {% endif %}
-                                <li class="disabled">
-                                    <span style="font-size:28px;position:relative;">&nbsp;.</span>
-                                    <span style="font-size:28px;position:relative;">.</span>
-                                    <span style="font-size:28px;position:relative;">.&nbsp;</span>
-                                </li>
-                            {% endif %}
-
-                            {% if currentPage >= pages - 2 %}
-                                <li class="disabled">
-                                    <span style="font-size:28px;position:relative;">&nbsp;.</span>
-                                    <span style="font-size:28px;position:relative;">.</span>
-                                    <span style="font-size:28px;position:relative;">.&nbsp;</span>
-                                </li>
-                                <li class="page-item  {{ currentPage == pages - 2 ? 'active' }}">
-                                    <a class="page-link"
-                                       href="{{ baseUrl }}/admin/indexLogs/{{ pages - 2 }}">{{ pages - 2 }}</a>
-                                </li>
-                                <li class="page-item {{ currentPage == pages - 1 ? 'active' }}">
-                                    <a class="page-link"
-                                       href="{{ baseUrl }}/admin/indexLogs/{{ pages - 1 }}">{{ pages -1 }}</a>
-                                </li>
-                            {% endif %}
-                            <li class="page-item {{ currentPage == pages ? 'active' }}">
-                                <a class="page-link" href="{{ baseUrl }}/admin/indexLogs/{{ pages }}">{{ pages }}</a>
-                            </li>
-                            <li class="page-item">&nbsp;&nbsp;
-                                <a href="{{ baseUrl }}/admin/indexLogs/{{ currentPage == pages ? pages : currentPage + 1 }}">
-                                    <i class="fa fa-angle-right"
-                                       style="font-size:36px; position:relative; top:4px;"></i>
-                                </a>
-                            </li>
-                        {% else %}
-                            {% for page in range(1, pages) %}
-                                <li class="page-item {{ currentPage == page ? 'active' }}">
-                                    <a class="page-link" href="{{ baseUrl }}/admin/indexLogs/{{ page }}">
-                                        {{ page }}
-                                    </a>
-                                </li>
-                            {% endfor %}
-                        {% endif %}
-                    </ul>
-                </nav>
-            </div>
-        </div>
-        <div class="text-right">
-            <button id="indexLogsExport" class="btn btn-outline-primary btn-sm mt-2" type="button"
-                    data-target="#indexLogsExport" aria-expanded="false" aria-controls="indexLogsExport">
-                <i class="fas"></i>
+        <div class="card-header border-light bg-white text-right">
+            <button id="indexLogsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#indexLogsExport" aria-expanded="false" aria-controls="indexLogsExport">
+                <i class="fa fa-download"></i>
                 Index Log Export
             </button>
         </div>
+        <table id="indexLogsTable" style="display:none">
+            <thead class="form-control-sm table-borderless">
+            <tr>
+                <th>#</th>
+                <th>Recording</th>
+                <th>User</th>
+                <th>Index</th>
+                <th>Time Start</th>
+                <th>Time End</th>
+                <th>Min Freq</th>
+                <th>Max Freq</th>
+                <th>Parameter</th>
+                <th>Result</th>
+                <th>Creation Date (UTC)</th>
+            </tr>
+            </thead>
+            <tbody class="form-control-sm js-index-log-list">
+            {% for indexLog in indexLogs %}
+                <tr>
+                    <td>{{ indexLog.logId }}</td>
+                    <td>{{ indexLog.recordingName }}</td>
+                    <td>{{ indexLog.userName }}</td>
+                    <td>{{ indexLog.indexName|replace({'_':' '}) }}</td>
+                    <td>{{ indexLog.minTime }}</td>
+                    <td>{{ indexLog.maxTime }}</td>
+                    <td>{{ indexLog.minFrequency }}</td>
+                    <td>{{ indexLog.maxFrequency }}</td>
+                    <td>{{ indexLog.param|replace({'?':': ','@':' '}) }}</td>
+                    <td>{% for v in indexLog.value|split('!') %}{{ v|split('?')[0] }}: {{ v|split('?')[1]|number_format(2,'.',',') }} {% endfor %}</td>
+                    <td>{{ indexLog.date }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
     </div>
 {% endblock %}
 {% block header %}
     {{ parent() }}
     <script>
+        $(document).ready(function () {
+            $('#indexLogsTable').DataTable({
+                "pageLength": 8,
+                "lengthChange": false,
+                "stateSave": true,
+                "StateDuration": -1,
+                "order": [[0, 'asc']],
+            });
+            $('#indexLogsTable').show()
+        });
         $(function () {
             'use strict';
             $(document).on('click', '#indexLogsExport', function () {

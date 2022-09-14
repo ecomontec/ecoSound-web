@@ -91,7 +91,6 @@ class RecordingController extends BaseController
             $this->recordingPresenter->setEstimateDistID(filter_var($_POST['estimateDistID'], FILTER_VALIDATE_INT));
         }
         $this->setCanvas($recordingData);
-
         return $this->twig->render('recording/recording.html.twig', [
             'player' => $this->recordingPresenter,
             'sound' => $this->recordingPresenter->getRecording(),
@@ -179,10 +178,10 @@ class RecordingController extends BaseController
 
         /* Get the spectrogram selection values to generate zoom and filter */
         if (isset($_POST['t_min']) && isset($_POST['t_max']) && isset($_POST['f_min']) && isset($_POST['f_max'])) {
-            $minTime = filter_var($_POST['t_min'], FILTER_SANITIZE_STRING);
-            $maxTime = filter_var($_POST['t_max'], FILTER_SANITIZE_STRING);
-            $minFrequency = filter_var($_POST['f_min'], FILTER_SANITIZE_STRING);
-            $maxFrequency = filter_var($_POST['f_max'], FILTER_SANITIZE_STRING);
+            $minTime = $_POST['t_min'];
+            $maxTime = $_POST['t_max'];
+            $minFrequency = $_POST['f_min'];
+            $maxFrequency = $_POST['f_max'];
             if (isset($_POST['filter'])) {
                 $filter = filter_var($_POST['filter'], FILTER_VALIDATE_BOOLEAN);
             }
@@ -457,7 +456,7 @@ class RecordingController extends BaseController
 
         $data = [];
         foreach ($_POST as $key => $value) {
-            $data[$key] = filter_var($value, FILTER_SANITIZE_STRING);
+            $data[$key] = $value;
         }
 
         if ((new LabelAssociationProvider())->setEntry($data) > 0) {
@@ -493,20 +492,16 @@ class RecordingController extends BaseController
             $data[$key] = $value;
         }
         $str = 'python3 ' . ABSOLUTE_DIR . 'bin/getMaad.py' .
-            ' -p ' . ABSOLUTE_DIR . 'sounds/sounds/' . $_POST['collection_id'] . '/' . $_POST['recording_directory'] . '/' .
-            ' -f ' . explode('.', $_POST['recording_name'])[0] .
-            ' --ff ' . explode('.', $_POST['recording_name'])[1] .
-            ' --it ' . $_POST['index'] .
-            ' -ch ' . ($_POST['channel'] == 2 ? 'right' : 'left') .
-            ' --mint ' . $_POST['minTime'] .
-            ' --maxt ' . $_POST['maxTime'] .
-            ' --minf ' . $_POST['minFrequency'] .
-            ' --maxf ' . $_POST['maxFrequency'];
+            ' -p ' . ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . '/' . $data['recording_directory'] . '/' .
+            ' -f ' . explode('.', $data['recording_name'])[0] .
+            ' --it ' . $data['index'] .
+            ' --ch ' . ($data['channel'] == 2 ? 'right' : 'left') .
+            ' --mint ' . $data['minTime'] .
+            ' --maxt ' . $data['maxTime'] .
+            ' --minf ' . $data['minFrequency'] .
+            ' --maxf ' . $data['maxFrequency'];
         if ($data['param'] != '') {
-            $str = $str . ' --pa ' . substr($_POST['param'], 0, -1);
-        }
-        if (substr($data['recording_name'], -3) != 'wav') {
-            $str = $str . " -c " . $data['channel_num'];
+            $str = $str . ' --pa ' . substr($data['param'], 0, -1);
         }
         exec($str . " 2>&1", $out, $status);
         if ($status == 0) {
@@ -527,8 +522,11 @@ class RecordingController extends BaseController
                     'result' => $result,
                     'recording_id' => $data['recording_id'],
                     'index_id' => $data['index_id'],
-                    'coordinates' => $data['minTime'] . ',' . $data['maxTime'] . ',' . $data['minFrequency'] . ',' . $data['maxFrequency'],
-                    'param' => substr('channel?' . $channel . '@' . $_POST['param'], 0, -1),
+                    'minTime'=>$data['minTime'],
+                    'maxTime'=>$data['maxTime'],
+                    'minFrequency'=>$data['minFrequency'],
+                    'maxFrequency'=>$data['maxFrequency'],
+                    'param' => substr('Channel?' . $channel . '@' . $data['param'], 0, -1),
                 ])
             ]);
         } else {
@@ -550,7 +548,7 @@ class RecordingController extends BaseController
 
         $data = [];
         foreach ($_POST as $key => $value) {
-            $data[$key] = filter_var($value, FILTER_SANITIZE_STRING);
+            $data[$key] = $value;
         }
 
         $lblName = $data["cust_label"];

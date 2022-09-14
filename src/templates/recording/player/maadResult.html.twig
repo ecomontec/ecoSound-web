@@ -2,7 +2,14 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">{{ title }}</h5>
+                <h5 class="modal-title">{{ title }}&nbsp;</h5>
+                {% if result=='' %}
+                    <div class="form-inline">
+                    <div class="col-form-label-sm">
+                        <label>( {{ param|split('@')[0]|split('?')[1] }} {{ minTime }}-{{ maxTime }}s {{ minFrequency }}-{{ maxFrequency }}Hz )</label>
+                    </div>
+                    </div>
+                {% endif %}
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -10,15 +17,19 @@
             {% if result!='' %}
                 <div class="modal-body ml-3">
                     <form id="maadResultForm">
-                        {% for r in result|split('!') %}
-                            <div class="form-group" id="cust_label_group">
-                                <label for="cust_label">{{ r|split('?')[0] }}
-                                    : {{ r|split('?')[1]|number_format(2,'.',',') }}</label>
-                            </div>
-                        {% endfor %}
+                        <div>
+                            {% for r in result|split('!') %}
+                                <div class="form-group">
+                                    <label>{{ r|split('?')[0] }}: {{ r|split('?')[1]|number_format(2,'.',',') }}</label>
+                                </div>
+                            {% endfor %}
+                        </div>
                         <input type="hidden" name="recording_id" value="{{ recording_id }}">
                         <input type="hidden" name="index_id" value="{{ index_id }}">
-                        <input type="hidden" name="coordinates" value="{{ coordinates }}">
+                        <input type="hidden" name="minTime" value="{{ minTime }}">
+                        <input type="hidden" name="maxTime" value="{{ maxTime }}">
+                        <input type="hidden" name="minFrequency" value="{{ minFrequency }}">
+                        <input type="hidden" name="maxFrequency" value="{{ maxFrequency }}">
                         <input type="hidden" name="value" value="{{ result }}">
                         <input type="hidden" name="param" value="{{ param }}">
                     </form>

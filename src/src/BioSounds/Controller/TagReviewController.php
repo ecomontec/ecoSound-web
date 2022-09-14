@@ -60,7 +60,7 @@ class TagReviewController extends BaseController
         $data[TagReview::USER] = Auth::getUserLoggedID();
 
         foreach ($_POST as $key => $value) {
-            $data[$key] = htmlentities(strip_tags(filter_var($value, FILTER_SANITIZE_STRING)), ENT_QUOTES);
+            $data[$key] = htmlentities(strip_tags($value), ENT_QUOTES);
         }
 
         if (empty($data[TagReview::SPECIES])) {

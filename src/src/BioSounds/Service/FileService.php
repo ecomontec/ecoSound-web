@@ -68,30 +68,30 @@ class FileService
     {
         $message = $this::SUCCESS_MESSAGE;
 
-        $colID = filter_var($request['colId'], FILTER_SANITIZE_NUMBER_INT);
-        $site = isset($request['site']) ? filter_var($request['site'], FILTER_SANITIZE_NUMBER_INT) : null;
+        $colID = $request['colId'];
+        $site = isset($request['site']) ? $request['site'] : null;
 
-        $sensor = filter_var($request['sensor'], FILTER_SANITIZE_NUMBER_INT);
+        $sensor = $request['sensor'];
         $dateFromFile = isset($request['dateFromFile'])
-            ? filter_var($request['dateFromFile'], FILTER_VALIDATE_BOOLEAN) : false;
-        $time = isset($request['time']) ? filter_var($request['time']) : null;
+            ? $request['dateFromFile'] : false;
+        $time = isset($request['time']) ? $request['time'] : null;
         $date = isset($request['date'])
-            ? filter_var($request['date'], FILTER_SANITIZE_NUMBER_INT) : null;
+            ? $request['date'] : null;
         $doi = isset($request['doi']) && !empty($request['doi'])
-            ? filter_var($request['doi'], FILTER_SANITIZE_STRING) : null;
+            ? $request['doi'] : null;
         $license = isset($request['license'])
-            ? filter_var($request['license'], FILTER_SANITIZE_STRING) : null;
+            ? $request['license'] : null;
 
         $reference = isset($request['reference'])
-            ? filter_var($request['reference'], FILTER_VALIDATE_BOOLEAN) : false;
+            ? $request['reference'] : false;
         $species = isset($request['species'])
-            ? filter_var($request['species'], FILTER_SANITIZE_NUMBER_INT) : null;
+            ? $request['species'] : null;
         $soundType = isset($request['sound-type'])
-            ? filter_var($request['sound-type'], FILTER_SANITIZE_NUMBER_INT) : null;
+            ? $request['sound-type'] : null;
         $soundSubtype = isset($request['subtype']) && !empty($request['subtype'])
-            ? filter_var($request['subtype'], FILTER_SANITIZE_STRING) : null;
+            ? $request['subtype'] : null;
         $rating = isset($request['rating']) && !empty($request['rating'])
-            ? filter_var($request['rating'], FILTER_SANITIZE_STRING) : null;
+            ? $request['rating'] : null;
 
 
         if (!is_dir($uploadPath) || !$handle = opendir($uploadPath)) {
@@ -204,7 +204,7 @@ class FileService
                 Recording::SITE_ID => $file->getSite(),
                 Recording::SENSOR_ID => $file->getSensor(),
                 Recording::FILENAME => $file->getName(),
-                Recording::CHANNEL_NUM =>  Utils::getFileChannels($wavFilePath),
+                Recording::CHANNEL_NUM => Utils::getFileChannels($wavFilePath),
                 Recording::FILE_SIZE => filesize($wavFilePath),
                 Recording::SAMPLING_RATE => Utils::getFileSamplingRate($wavFilePath),
                 Recording::BITRATE => Utils::getFileBitRate($wavFilePath),
@@ -291,8 +291,9 @@ class FileService
         int $status,
         int $recordingId = null,
         string $errorMessage = null
-    ) {
-        $file->setError(empty($errorMessage) ? '' : filter_var($errorMessage, FILTER_SANITIZE_STRING));
+    )
+    {
+        $file->setError(empty($errorMessage) ? '' : $errorMessage);
         $file->setRecording($recordingId);
         $file->setStatus($status);
         $this->fileProvider->update($file);

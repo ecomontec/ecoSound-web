@@ -15,21 +15,14 @@ class IndexLogController extends BaseController
      * @return string
      * @throws \Exception
      */
-    public function show(int $page = 1)
+    public function show()
     {
         if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
         }
         $indexLogProvider = new IndexLogProvider();
-        $indexLogNum = $indexLogProvider->countIndexLogs();
-        $pages = $indexLogNum > 0 ? ceil($indexLogNum / self::ITEMS_PAGE) : 1;
         return $this->twig->render('administration/indexLogs.html.twig', [
-            'indexLogs' => $indexLogProvider->getIndexLogPages(
-                $this::ITEMS_PAGE,
-                $this::ITEMS_PAGE * ($page - 1)
-            ),
-            'currentPage' => ($page > $pages) ?: $page,
-            'pages' => $pages
+            'indexLogs' => $indexLogProvider->getList(),
         ]);
     }
 
@@ -49,20 +42,23 @@ class IndexLogController extends BaseController
         header('Content-Disposition: attachment; filename=' . $file_name);
 
         $indexLogList = (new IndexLogProvider())->getList();
-        $indexLogAls[] = array('#', 'Recording', 'Creation User', 'Index', 'Coordinates', 'Parameter', 'Result', 'Creation Date (UTC)');
+        $indexLogAls[] = array('#', 'Recording', 'User', 'Index', 'Time Start', 'Time End', 'Min Frequency', 'Max Frequency', 'Parameter', 'Result', 'Creation Date (UTC)');
 
         foreach ($indexLogList as $indexLogItem) {
             $value = '';
             foreach (explode('!', $indexLogItem->getValue()) as $v) {
-                $value = $value . explode('?', $v)[0] . ': ' . number_format(explode('?', $v)[1], 2, '.', ',') . '; ';
+                $value = $value . explode('?', $v)[0] . ': ' . number_format(explode('?', $v)[1], 2, '.', ',') . ' ';
             }
             $indexLogArray = array(
                 $indexLogItem->getLogId(),
                 $indexLogItem->getRecordingName(),
                 $indexLogItem->getUserName(),
                 $indexLogItem->getIndexName(),
-                $indexLogItem->getCoordinates(),
-                str_replace('@', '; ', str_replace('?', ': ', $indexLogItem->getParam())),
+                $indexLogItem->getMinTime(),
+                $indexLogItem->getMaxTime(),
+                $indexLogItem->getMinFrequency(),
+                $indexLogItem->getMaxFrequency(),
+                str_replace('@', ' ', str_replace('?', ': ', $indexLogItem->getParam())),
                 $value,
                 $indexLogItem->getDate(),
             );

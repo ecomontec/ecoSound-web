@@ -231,13 +231,66 @@ class Site extends AbstractProvider
     /**
      * @return int
      */
-    public function getRealm(): ?int
+    public function getRealmId(): ?int
+    {
+        return $this->realm_id;
+    }
+
+    /**
+     * @param int $realm_id
+     * @return site
+     */
+    public function setRealmId($realm_id = NULL): Site
+    {
+        $this->realm_id = $realm_id;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getBiomeId(): ?int
+    {
+        return $this->biome_id;
+    }
+
+    /**
+     * @param int $biome_id
+     * @return site
+     */
+    public function setBiomeId($biome_id = NULL): Site
+    {
+        $this->biome_id = $biome_id;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getFunctionalGroupId(): ?int
+    {
+        return $this->functional_group_id;
+    }
+
+    /**
+     * @param int $functional_group_id
+     * @return site
+     */
+    public function setFunctionalGroupId($functional_group_id = NULL): Site
+    {
+        $this->functional_group_id = $functional_group_id;
+        return $this;
+    }
+    /**
+     * @return string
+     */
+    public function getRealm(): ?string
     {
         return $this->realm;
     }
 
     /**
-     * @param int $realm
+     * @param string $realm
      * @return site
      */
     public function setRealm($realm = NULL): Site
@@ -247,15 +300,15 @@ class Site extends AbstractProvider
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getBiome(): ?int
+    public function getBiome(): ?string
     {
         return $this->biome;
     }
 
     /**
-     * @param int $biome
+     * @param string $biome
      * @return site
      */
     public function setBiome($biome = NULL): Site
@@ -265,20 +318,20 @@ class Site extends AbstractProvider
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getFunctionalGroup(): ?int
+    public function getFunctionalGroup(): ?string
     {
-        return $this->functionalGroup;
+        return $this->functional_group;
     }
 
     /**
-     * @param int $functionalGroup
+     * @param string $functional_group
      * @return site
      */
-    public function setFunctionalGroup($functionalGroup = NULL): Site
+    public function setFunctionalGroup($functional_group = NULL): Site
     {
-        $this->functionalGroup = $functionalGroup;
+        $this->functional_group = $functional_group;
         return $this;
     }
     /**

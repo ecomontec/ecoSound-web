@@ -104,12 +104,12 @@ class Explore extends AbstractProvider
 
     public function getExplores(int $pid = 0):array
     {
-        $this->database->prepareQuery("SELECT * FROM explore WHERE pid = $pid ORDER BY explore_id");
+        $this->database->prepareQuery("SELECT * FROM explore WHERE pid = $pid ORDER BY `name`");
         return $this->database->executeSelect();
     }
     public function getAllExplores():array
     {
-        $this->database->prepareQuery("SELECT * FROM explore ORDER BY explore_id");
+        $this->database->prepareQuery("SELECT * FROM explore ORDER BY `name`");
         return $this->database->executeSelect();
     }
 }

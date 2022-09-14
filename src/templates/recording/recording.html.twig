@@ -10,7 +10,7 @@
                             <a href="{{ baseUrl }}/collection/index">Collections</a>
                         </li>
                         <li class="breadcrumb-item" aria-current="page">
-                            <a href="{{ baseUrl }}/collection/show/{{ player.recording.col_id }}/{{ collection_page }}/gallery">
+                            <a href="{{ baseUrl }}/collection/show/{{ player.recording.col_id }}/gallery">
                                 {{ player.recording.collection.name }}
                             </a>
                         </li>
@@ -43,7 +43,7 @@
         <hr>
 
         <div class="row mb-5">
-            <div class="col-auto ml-auto mr-5 text-center recording-navigation">
+            <div class="col-2 ml-auto mr-5 text-center recording-navigation">
                 <ul class="nav flex-column nav-pills nav-fill">
                     {% if isUserLogged %}
                         <li class="nav-item">
@@ -52,8 +52,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link js-toggle-tags" href="#" title="Toggle tags"
-                               data-show={{ player.isShowTags }}>
+                            <a class="nav-link js-toggle-tags" href="#" title="Toggle tags" data-show={{ player.isShowTags }}>
                                 {% if player.isShowTags %}
                                     <i class='fas fa-eye-slash'></i>
                                 {% else %}
@@ -104,7 +103,7 @@
                 <label for="playback-rate">Speed:
                     <span class="playback-rate-value">1.0</span>x</label>
             </div>
-            <div class="col-12-auto mr-auto">
+            <div class="col-9 mr-auto">
                 {% include 'recording/player/player.html.twig' %}
             </div>
         </div>

@@ -1,81 +1,78 @@
 {% extends 'administration/admin.html.twig' %}
 
 {% block admin_content %}
-    {% include 'administration/upload.html.twig' with {'sensor': sensor, 'site': site, 'colId': colId} %}
 
-    <div class="row mb-2">
-        <div class="col-auto mr-auto mb-3">
-            <form id="collectionForm" class="form-inline" action="{{ baseUrl }}/admin/recordings" method="POST">
-                <table>
-                    <tr>
-                        <td>
-                            <label for="colId">Collection</label>
-                        </td>
-                        <td>
-                            <select id="colId" name="colId" class="form-control form-control-sm ml-3">
-                                {% for collection in collections %}
-                                    <option value="{{ collection.id }}" {{ collection.id == colId ? 'selected' }}>
-                                        {{ collection.name }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </td>
-                    </tr>
-                </table>
-            </form>
+    {% include 'administration/upload.html.twig' with {'sensor': sensor, 'site': site, 'colId': colId} %}
+    <div class="card mb-3" id="recordingsList">
+        <div class="card-header border-light bg-white text-right">
+            <div class="row">
+                <div class="col-auto mr-auto mt-2">
+                    <form id="collectionForm" class="form-inline" action="{{ baseUrl }}/admin/recordings" method="POST">
+                        <table>
+                            <tr>
+                                <td>
+                                    <label for="colId">Collection</label>
+                                </td>
+                                <td>
+                                    <select id="colId" name="colId" class="form-control form-control-sm ml-3">
+                                        {% for collection in collections %}
+                                            <option value="{{ collection.id }}" {{ collection.id == colId ? 'selected' }}>
+                                                {{ collection.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+                <div class="col-auto ml-auto">
+                    <button type="button" id="uploadButton" data-toggle="collapse" data-target="#uploadForm" class="btn btn-outline-primary btn-sm mt-2">
+                        <span class="fas fa-upload"></span>
+                        Upload Files
+                    </button>
+                </div>
+            </div>
         </div>
-        <div class="col-auto ml-auto">
-            <button type="button" id="uploadButton" data-toggle="collapse" data-target="#uploadForm"
-                    class="btn btn-outline-primary btn-sm">
-                <span class="fas fa-upload"></span>
-                Upload Files
-            </button>
-        </div>
-    </div>
-    <div class="card-body ">
-        <table id="recTable" class="table table-sm save-recording">
-            <thead class="table-borderless">
+        <table id="recTable" style="display:none">
+            <thead class="form-control-sm table-borderless">
             <tr>
-                <th scope="col">#</th>
-                <th scope="col">Original Filename</th>
-                <th scope="col">Name</th>
-                <th scope="col">Site</th>
-                <th scope="col">Date</th>
-                <th scope="col">Time</th>
-                <th scope="col"></th>
+                <th>#</th>
+                <th>Original Filename</th>
+                <th>Name</th>
+                <th>Site</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th></th>
             </tr>
             </thead>
             <tbody class="form-control-sm">
             {% for recording in recordings %}
                 <tr>
-                    <td scope='row'>
+                    <td>
                         {{ recording.id }}
                         <input type="hidden" name="itemID" value="{{ recording.id }}"/>
                         <input type="hidden" name="user_id" value="{{ user_id }}"/>
                     </td>
                     <td>{{ recording.filename }}</td>
-                    <td><input type='text' title="Name" name="name" value="{{ recording.name }}"></td>
-                    {% if sites is empty %}
-                        <td>{{ recording.siteName }}</td>
-                    {% else %}
-                        <td>
-                            <select name="site_id" class="form-control-sm">
-                                {% if siteFieldFlags[recording.id] == 0 %}
-                                    <option value="{{ recording.site }}" selected>
-                                        {{ recording.siteName }}
-                                    </option>
-                                {% endif %}
-                                {% for st in sites %}
-                                    <option value="{{ st.id }}" {{ st.id == recording.site ? 'selected' }}>
-                                        {{ st.name }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </td>
-                    {% endif %}
-                    <td><input type='date' title="Date" name="file_date" value="{{ recording.fileDate }}"></td>
-                    <td><input type='time' title="Time" name="file_time" min="00:00:00" max="23:59:59" step="1"
-                               value="{{ recording.fileTime }}"></td>
+                    <td data-search="{{ recording.name }}" data-order="{{ recording.name }}">
+                        <input type='text' title="Name" name="name" value="{{ recording.name }}">
+                    </td>
+                    <td data-search="{{ recording.siteName }}" data-order="{{ recording.siteName }}">
+                        <select name="site_id" class="form-control form-control-sm">
+                            {% for st in sites %}
+                                <option value="{{ st.id }}" {{ st.id == recording.site ? 'selected' }}>
+                                    {{ st.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td data-search="{{ recording.fileDate }}" data-order="{{ recording.fileDate }}">
+                        <input type='date' title="Date" name="file_date" value="{{ recording.fileDate }}">
+                    </td>
+                    <td data-search="{{ recording.fileTime }}" data-order="{{ recording.fileTime }}">
+                        <input type='time' title="Time" name="file_time" min="00:00:00" max="23:59:59" step="1" value="{{ recording.fileTime }}">
+                    </td>
                     <td>
                         <a class="js-delete-button" href="#" data-id="{{ recording.id }}" title="Delete recording">
                             <span class="fas fa-trash"></span>
@@ -85,123 +82,6 @@
             {% endfor %}
             </tbody>
         </table>
-    </div>
-    <div class="row">
-        <div class="col-md-12">
-            <nav aria-label="pagination">
-                <ul class="pagination justify-content-center mt-3">
-                    {% if pages > 10 %}
-                        <li class="page-item">
-                            <a href="{{ baseUrl }}/admin/recordings/{{ colId }}/{{ currentPage == 1 ? 1 : currentPage - 1 }}">
-                                <i class="fa fa-angle-left" style="font-size:36px; position:relative; top:4px;"></i>
-                            </a>
-                            &nbsp;&nbsp;
-                        </li>
-                        <li class="page-item {{ currentPage == 1 ? 'active' }}">
-                            <a class="page-link" href="{{ baseUrl }}/admin/recordings/{{ colId }}/1">1</a>
-                        </li>
-                        {% if currentPage <= 3 %}
-                            <li class="page-item  {{ currentPage == 2 ? 'active' }}">
-                                <a class="page-link" href="{{ baseUrl }}/admin/recordings/{{ colId }}/2">2</a>
-                            </li>
-                            <li class="page-item {{ currentPage == 3 ? 'active' }}">
-                                <a class="page-link" href="{{ baseUrl }}/admin/recordings/{{ colId }}/3">3</a>
-                            </li>
-                            <li class="disabled">
-                                <span style="font-size:28px;position:relative;">&nbsp;.</span>
-                                <span style="font-size:28px;position:relative;">.</span>
-                                <span style="font-size:28px;position:relative;">.&nbsp;</span>
-                            </li>
-                        {% endif %}
-
-                        {% if currentPage >= 4 and currentPage <= (pages - 3) %}
-                            <li class="disabled">
-                                <span style="font-size:28px;position:relative;">&nbsp;.</span>
-                                <span style="font-size:28px;position:relative;">.</span>
-                                <span style="font-size:28px;position:relative;">.&nbsp;</span>
-                            </li>
-                            {% if currentPage == 4 %}
-                                <li class="page-item  active">
-                                    <a class="page-link" href="{{ baseUrl }}/admin/recordings/{{ colId }}/4">4</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link"
-                                       href="{{ baseUrl }}/admin/recordings/{{ colId }}/{{ currentPage + 1 }}">{{ currentPage + 1 }}</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link"
-                                       href="{{ baseUrl }}/admin/recordings/{{ colId }}/{{ currentPage + 2 }}">{{ currentPage + 2 }}</a>
-                                </li>
-                            {% elseif currentPage == pages - 3 %}
-                                <li class="page-item">
-                                    <a class="page-link"
-                                       href="{{ baseUrl }}/admin/recordings/{{ colId }}/{{ currentPage - 2 }}">{{ currentPage - 2 }}</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link"
-                                       href="{{ baseUrl }}/admin/recordings/{{ colId }}/{{ currentPage - 1 }}">{{ currentPage - 1 }}</a>
-                                </li>
-                                <li class="page-item active">
-                                    <a class="page-link"
-                                       href="{{ baseUrl }}/admin/recordings/{{ colId }}/{{ currentPage }}">{{ currentPage }}</a>
-                                </li>
-                            {% else %}
-                                <li class="page-item">
-                                    <a class="page-link"
-                                       href="{{ baseUrl }}/admin/recordings/{{ colId }}/{{ currentPage -1 }}">{{ currentPage - 1 }}</a>
-                                </li>
-                                <li class="page-item active">
-                                    <a class="page-link"
-                                       href="{{ baseUrl }}/admin/recordings/{{ colId }}/{{ currentPage }}">{{ currentPage }}</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link"
-                                       href="{{ baseUrl }}/admin/recordings/{{ colId }}/{{ currentPage + 1 }}">{{ currentPage + 1 }}</a>
-                                </li>
-                            {% endif %}
-                            <li class="disabled">
-                                <span style="font-size:28px;position:relative;">&nbsp;.</span>
-                                <span style="font-size:28px;position:relative;">.</span>
-                                <span style="font-size:28px;position:relative;">.&nbsp;</span>
-                            </li>
-                        {% endif %}
-
-                        {% if currentPage >= pages - 2 %}
-                            <li class="disabled">
-                                <span style="font-size:28px;position:relative;">&nbsp;.</span>
-                                <span style="font-size:28px;position:relative;">.</span>
-                                <span style="font-size:28px;position:relative;">.&nbsp;</span>
-                            </li>
-                            <li class="page-item  {{ currentPage == pages - 2 ? 'active' }}">
-                                <a class="page-link"
-                                   href="{{ baseUrl }}/admin/recordings/{{ colId }}/{{ pages - 2 }}">{{ pages - 2 }}</a>
-                            </li>
-                            <li class="page-item {{ currentPage == pages - 1 ? 'active' }}">
-                                <a class="page-link"
-                                   href="{{ baseUrl }}/admin/recordings/{{ colId }}/{{ pages - 1 }}">{{ pages -1 }}</a>
-                            </li>
-                        {% endif %}
-                        <li class="page-item {{ currentPage == pages ? 'active' }}">
-                            <a class="page-link"
-                               href="{{ baseUrl }}/admin/recordings/{{ colId }}/{{ pages }}">{{ pages }}</a>
-                        </li>
-                        <li class="page-item">&nbsp;&nbsp;
-                            <a href="{{ baseUrl }}/admin/recordings/{{ colId }}/{{ currentPage == pages ? pages : currentPage + 1 }}">
-                                <i class="fa fa-angle-right" style="font-size:36px; position:relative; top:4px;"></i>
-                            </a>
-                        </li>
-                    {% else %}
-                        {% for page in range(1, pages) %}
-                            <li class="page-item {{ currentPage == page ? 'active' }}">
-                                <a class="page-link" href="{{ baseUrl }}/admin/recordings/{{ colId }}/{{ page }}">
-                                    {{ page }}
-                                </a>
-                            </li>
-                        {% endfor %}
-                    {% endif %}
-                </ul>
-            </nav>
-        </div>
     </div>
 {% endblock %}
 
@@ -219,6 +99,25 @@
     {{ parent() }}
 
     <script>
+        $(document).ready(function () {
+            $('#recTable').DataTable({
+                "pageLength": 8,
+                "lengthChange": false,
+                "stateSave": true,
+                "StateDuration": -1,
+                "order": [[0, 'asc']],
+                "columns": [
+                    {},
+                    {},
+                    {},
+                    {},
+                    {},
+                    {},
+                    {orderable: false},
+                ],
+            });
+            $('#recTable').show()
+        });
         document.addEventListener("DOMContentLoaded", function (event) {
 
             $("#uploadButton").click(function (e) {
@@ -243,7 +142,9 @@
             /* Save recordings list */
             $(".save-recording").on('change', 'input, select, textarea', function () {
                 saveFormList($(this), 'api/admin/recordingManager/save');
-                //location.reload();
+                var table = $('#recTable').DataTable()
+                var tr = $(this).closest("tr")
+                table.rows(tr).invalidate()
             });
         });
     </script>

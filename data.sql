@@ -16,8 +16,8 @@
 -- Dumping data for table `index_type`
 --
 INSERT INTO `index_type` (`index_id`, `name`, `param`, `description`, `URL`)
-VALUES ('1', 'acoustic_complexity_index', '', 'Not filled', 'https://scikit-maad.github.io/generated/maad.features.acoustic_complexity_index.html'),
-       ('2', 'soundscape_index', 'flim_bioPh!flim_antroPh!R_compatible', 'Not filled', 'https://scikit-maad.github.io/generated/maad.features.soundscape_index.html');
+VALUES ('1', 'acoustic_complexity_index', '', 'Compute the Acoustic Complexity Index (ACI) from a spectrogram.', 'https://scikit-maad.github.io/generated/maad.features.acoustic_complexity_index.html'),
+       ('2', 'soundscape_index', 'flim_bioPh|default: 1000,10000!flim_antroPh|default: 0,1000!R_compatible|default: soundecology', 'Compute the Normalized Difference Soundscape Index from a power spectrogram.', 'https://scikit-maad.github.io/generated/maad.features.soundscape_index.html');
 
 --
 -- Dumping data for table `collection`

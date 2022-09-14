@@ -60,10 +60,8 @@
                 <div class="form-group">
                     <select id="realm" name="realm_id_text" style="width:33%" class="form-control-sm">
                         <option></option>
-                        {% for explore in explores %}
-                            {% if explore.level==1 %}
-                                <option value="{{ explore.explore_id }}">{{ explore.name }}</option>
-                            {% endif %}
+                        {% for realm in realms %}
+                            <option value="{{ realm.explore_id }}">{{ realm.name }}</option>
                         {% endfor %}
                     </select>
                     <select id="biome" name="biome_id_text" style="width:33%" class="form-control-sm">

@@ -3,12 +3,8 @@ import maad
 from maad import sound, rois
 from pydub import AudioSegment
 
-
-def getMaad(path, filename, file_format, index_type, convert, param, channel, minTime, maxTime, minFrequency, maxFrequency):
+def getMaad(path, filename, index_type, param, channel, minTime, maxTime, minFrequency, maxFrequency):
     parameter = {}
-    if convert is None:
-        audio = AudioSegment.form_file(path + filename + '.' + file_format, format=file_format)
-        audio.export(path + filename + '.wav')
     s, fs = maad.sound.load(path + filename + '.wav', channel=channel)
     if index_type == "acoustic_complexity_index":
         Sxx, tn, fn, ext = maad.sound.spectrogram(s, fs, mode='amplitude')
@@ -38,17 +34,14 @@ if __name__ == '__main__':
     parser = optparse.OptionParser()
     parser.add_option('-p', '--path', type="string", dest='path')
     parser.add_option('-f', '--filename', type="string", dest='filename')
-    parser.add_option('--ff', type="string", dest='file_format')
     parser.add_option('--it', type="string", dest='index_type')
-    parser.add_option('-c', '--convert', type="string", dest='convert')
     parser.add_option('--pa', type="string", dest='param')
     parser.add_option('--ch', type="string", dest='channel')
     parser.add_option('--mint', type="string", dest='minTime')
     parser.add_option('--maxt', type="string", dest='maxTime')
     parser.add_option('--minf', type="string", dest='minFrequency')
     parser.add_option('--maxf', type="string", dest='maxFrequency')
-    parser.set_defaults(path=None, filename=None, file_format=None, index_type=None, convert=None, param=None, channel="1", minTime=None, maxTime=None, minFrequency=None, maxFrequency=None)
+    parser.set_defaults(path=None, filename=None, index_type=None, param=None, channel="1", minTime=None, maxTime=None, minFrequency=None, maxFrequency=None)
 
     (options, args) = parser.parse_args()
-    getMaad(options.path, options.filename, options.file_format, options.index_type, options.convert, options.param, options.channel, options.minTime, options.maxTime, options.minFrequency, options.maxFrequency)
-
+    getMaad(options.path, options.filename, options.index_type, options.param, options.channel, options.minTime, options.maxTime, options.minFrequency, options.maxFrequency)

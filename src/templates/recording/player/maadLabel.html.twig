@@ -1,14 +1,18 @@
+<a class="col-form-label" href="{{ indexs[0].URL }}" target="_blank" title="Documentation"> <i class="fa fa-book"></i></a>
 <div>
-    <label class="col-form-label form-inline">
-        <div>Description:</div>
-        <a class="maad-laber" href="{{ index.URL }}">{{ index.description }}</a>
+    <label class="col-form-label">
+        <strong>Description:</strong>
+        <div class="col-form-label-sm">{{ index.description }}</div>
     </label>
 </div>
 {% if index.param is not null and index.param != '' %}
     {% for p in index.param|split('!') %}
+        <div class="form-inline">
+            <label class="ml-1 col-form-label-sm" for="{{ p|split('|')[0] }}">{{ p|split('|')[0] }}</label>
+        </div>
         <div class="form-group form-inline">
-            <input id="{{ p }}" name="{{ p }}" class="form-control form-control-sm" size="4" type="text">
-            <label class="ml-2 col-form-label-sm" for="{{ p }}">{{ p }}</label>
+            <input id="{{ p|split('|')[0] }}" name="{{ p|split('|')[0] }}" class="form-control form-control-sm" size="4" type="text">
+            <label class="ml-2 col-form-label-sm">default: {{ p|split('|')[1] }}</label>
         </div>
     {% endfor %}
 {% endif %}
@@ -19,8 +23,8 @@
         let param = ''
         {% if index.param is not null and index.param != '' %}
         {% for p in index.param|split('!') %}
-        if ($('#{{ p }}').val() != '') {
-            param = param + '{{ p }}' + '?' + $('#{{ p }}').val() + '@'
+        if ($('#{{ p|split('|')[0] }}').val() != '') {
+            param = param + '{{ p|split('|')[0] }}' + '?' + $('#{{ p|split('|')[0] }}').val() + '@'
         }
         {% endfor %}
         {% endif %}
