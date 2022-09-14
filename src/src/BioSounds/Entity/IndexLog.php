@@ -32,7 +32,22 @@ class IndexLog extends BaseProvider
     /**
      * @var string
      */
-    private $coordinates;
+    private $minTime;
+
+    /**
+     * @var string
+     */
+    private $maxTime;
+
+    /**
+     * @var string
+     */
+    private $minFrequency;
+
+    /**
+     * @var string
+     */
+    private $maxFrequency;
 
     /**
      * @var string
@@ -124,18 +139,72 @@ class IndexLog extends BaseProvider
     /**
      * @return string
      */
-    public function getCoordinates(): string
+    public function getMinTime(): string
     {
-        return $this->coordinates;
+        return $this->minTime;
     }
 
     /**
-     * @param string $coordinates
+     * @param string $minTime
      * @return IndexLog
      */
-    public function setCoordinates(string $coordinates): IndexLog
+    public function setMinTime(string $minTime): IndexLog
     {
-        $this->coordinates = $coordinates;
+        $this->minTime = $minTime;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getMaxTime(): string
+    {
+        return $this->maxTime;
+    }
+
+    /**
+     * @param string $maxTime
+     * @return IndexLog
+     */
+    public function setMaxTime(string $maxTime): IndexLog
+    {
+        $this->maxTime = $maxTime;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getMinFrequency(): string
+    {
+        return $this->minFrequency;
+    }
+
+    /**
+     * @param string $minFrequency
+     * @return IndexLog
+     */
+    public function setMinFrequency(string $minFrequency): IndexLog
+    {
+        $this->minFrequency = $minFrequency;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getMaxFrequency(): string
+    {
+        return $this->maxFrequency;
+    }
+
+    /**
+     * @param string $maxFrequency
+     * @return IndexLog
+     */
+    public function setMaxFrequency(string $maxFrequency): IndexLog
+    {
+        $this->maxFrequency = $maxFrequency;
         return $this;
     }
 

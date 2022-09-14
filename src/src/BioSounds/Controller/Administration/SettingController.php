@@ -49,7 +49,7 @@ class SettingController extends BaseController
         }
         $setting = new Setting();
         foreach ($_POST as $key => $value) {
-            $value = filter_var($value, FILTER_SANITIZE_STRING);
+            $value = $value;
             $setting->update($key, $value);
         }
 

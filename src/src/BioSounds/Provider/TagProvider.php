@@ -145,7 +145,7 @@ class TagProvider extends BaseProvider
         return $this->database->executeDelete([':tagId' => $tagId]);
     }
 
-    public function getTagPages(int $limit, int $offSet): array
+    public function getTagPages(): array
     {
         $this->database->prepareQuery(
             "SELECT t.*,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName FROM tag t 
@@ -155,12 +155,10 @@ class TagProvider extends BaseProvider
             LEFT JOIN user u ON u.user_id = t.user_id
             LEFT JOIN sound_type st ON st.sound_type_id = t.type
             WHERE t.user_id = :user_id1 OR c.user_id = :user_id2
-            ORDER BY t.tag_id LIMIT :limit OFFSET :offset"
+            ORDER BY t.tag_id "
         );
 
         $result = $this->database->executeSelect([
-            ':limit' => $limit,
-            ':offset' => $offSet,
             ":user_id1" => Auth::getUserLoggedID(),
             ":user_id2" => Auth::getUserLoggedID()
         ]);
@@ -228,20 +226,5 @@ class TagProvider extends BaseProvider
         }
 
         return $data;
-    }
-
-    public function countTags(): int
-    {
-        $this->database->prepareQuery(
-            "SELECT COUNT(*) AS num FROM tag t 
-            INNER JOIN recording r ON t.recording_id = r.recording_id
-            LEFT JOIN collection c ON c.collection_id = r.col_id
-            WHERE t.user_id = :user_id1 OR c.user_id = :user_id2"
-        );
-
-        if (empty($result = $this->database->executeSelect([":user_id1" => Auth::getUserLoggedID(), ":user_id2" => Auth::getUserLoggedID()]))) {
-            return 0;
-        }
-        return $result[0]['num'];
     }
 }

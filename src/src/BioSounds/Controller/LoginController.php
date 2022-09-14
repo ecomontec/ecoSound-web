@@ -13,13 +13,13 @@ class LoginController extends BaseController
      */
     public function login(): bool
     {
-        $userName = strtolower(filter_var($_POST["username"], FILTER_SANITIZE_STRING));
-        $password = filter_var($_POST["password"], FILTER_SANITIZE_STRING);
+        $userName = strtolower($_POST["username"]);
+        $password = $_POST["password"];
         if (Auth::login($userName, $password)) {
             if ($_SERVER['HTTP_REFERER']) {
                 header('Location: ' . $_SERVER['HTTP_REFERER']);
             } else {
-                header('Location: ') . APP_URL;
+                header('Location: ' . APP_URL);
             }
             return true;
         }

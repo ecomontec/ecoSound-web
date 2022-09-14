@@ -10,8 +10,8 @@
         {% include 'scripts.html.twig' %}
     {% endblock %}
 </head>
-{{ _SESSION['regenerate_timeout'] }}
 <body class="d-flex flex-column">
+{% include 'loading.html.twig' %}
 {% block navbar %}{% include 'navigationBar.html.twig' %}{% endblock %}
 
 {% block body %}{% endblock %}
@@ -19,29 +19,45 @@
 <div id="modalWindows"></div>
 
 {% block footer %}{% include 'footer.html.twig' %}{% endblock %}
-<div class="modal fade" id="modal-time" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">No activity in the past 30 minutes, refresh.</h5>
-            </div>
-        </div>
-    </div>
-</div>
 {% block scripts %}
     <script>
         const baseUrl = '{{ baseUrl }}';
         const error = '{{ error }}';
         const regenerate_timeout = '{{ regenerate_timeout }}';
+        {% if isUserLogged %}
+        html = '<ul class="navbar-nav ml-auto">' +
+            '<li class="navbar-item">' +
+            '<a class="nav-link" href="#" data-target="#loginForm" data-toggle="collapse"><i class="fas fa-sign-in-alt"></i>Login</a>' +
+            '</li>' +
+            '<div class="card text-center position-absolute" id="loginForm">' +
+            '<div class="card-body">' +
+            '<form action="{{ baseUrl }}/login/login" method="post">' +
+            '<label class="col-form-label-sm">No activity in the past 30 minutes, logged out.</label>' +
+            '<div class="form-group">' +
+            '<label for="username" class="sr-only">Username</label>' +
+            '<input type="text" id="username" name="username" class="form-control form-control-sm" placeholder="Username" required autofocus>' +
+            '</div>' +
+            '<div class="form-group">' +
+            '<label for="password" class="sr-only">Password</label>' +
+            '<input type="password" id="password" name="password" class="form-control form-control-sm" placeholder="Password" required>' +
+            '</div>' +
+            '<button class="btn btn-sm btn-outline-primary" type="submit">Log In</button>' +
+            '</form>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '</ul>'
         var t = window.setInterval(function () {
-            if (Date.parse(new Date()) / 1000 > parseInt(regenerate_timeout) + 1790) {
-                $("#modal-time").modal({backdrop: 'static', keyboard: false}, 'show');
+            if (Date.parse(new Date()) / 1000 > parseInt(regenerate_timeout) + 1800) {
                 window.clearInterval(t)
+                $('#navbarCollapse').empty()
+                $('#navbarCollapse').append(html)
             }
-        }, 2000)
+        }, 1000)
+        {% endif %}
     </script>
 {% endblock %}
 
-{% include 'loading.html.twig' %}
+
 </body>
 </html>

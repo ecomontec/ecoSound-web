@@ -33,7 +33,10 @@ CREATE TABLE `index_log`
     `recording_id`  int(11) NOT NULL,
     `user_id`       int(11) NOT NULL,
     `index_id`      int(11) NOT NULL,
-    `coordinates`   varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `minTime`       varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `maxTime`       varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `minFrequency`  varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `maxFrequency`  varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
     `value`         varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
     `param`         varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
     `creation_date` timestamp NOT NULL                   DEFAULT current_timestamp()

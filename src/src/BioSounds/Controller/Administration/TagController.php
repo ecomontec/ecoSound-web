@@ -15,25 +15,15 @@ class TagController extends BaseController
      * @return string
      * @throws \Exception
      */
-    public function show(int $page = 1)
+    public function show()
     {
         if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
         }
-
         $tagProvider = new TagProvider();
-
-        $tagNum = $tagProvider->countTags();
-        $pages = $tagNum > 0 ? ceil($tagNum / self::ITEMS_PAGE) : 1;
-
         return $this->twig->render('administration/tags.html.twig', [
-            'tags' => $tagProvider->getTagPages(
-                $this::ITEMS_PAGE,
-                $this::ITEMS_PAGE * ($page - 1)
-            ),
-            'currentPage' => ($page > $pages) ?: $page,
-            'pages' => $pages
-        ]);
+            'tags' => $tagProvider->getTagPages(),
+            ]);
     }
 
     /**
@@ -52,7 +42,7 @@ class TagController extends BaseController
         header('Content-Disposition: attachment; filename=' . $file_name);
 
         $tagList = (new TagProvider())->getListByTags();
-        $tagAls[] = array('#', 'Species', 'Recording', 'Creation User', 'Time Start', 'Time End', 'Min Frequency', 'Max Frequency', 'Uncertain', 'Call Distance', 'Distance Not Estimable', 'Number of Individuals', 'Type', 'Reference Call', 'Comments', 'Creation Date(UTC)');
+        $tagAls[] = array('#', 'Species', 'Recording', 'User', 'Time Start', 'Time End', 'Min Frequency', 'Max Frequency', 'Uncertain', 'Call Distance', 'Distance Not Estimable', 'Number of Individuals', 'Type', 'Reference Call', 'Comments', 'Creation Date(UTC)');
         foreach ($tagList as $tagItem) {
             $tagArray = array(
                 $tagItem->getId(),

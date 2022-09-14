@@ -2,6 +2,7 @@
 
 namespace BioSounds\Provider;
 
+use BioSounds\Entity\Explore;
 use BioSounds\Entity\Site;
 use BioSounds\Exception\Database\NotFoundException;
 
@@ -27,7 +28,11 @@ class SiteProvider extends BaseProvider
     {
         $data = [];
         $this->database->prepareQuery(
-            "SELECT * FROM site where user_id = $userId ORDER BY $order"
+            "SELECT s.*,e1.`name` AS realm,e2.`name` AS biome,e3.`name` AS functional_group FROM site s 
+                    LEFT JOIN explore e1 ON e1.explore_id = s.realm_id 
+                    LEFT JOIN explore e2 ON e2.explore_id = s.biome_id 
+                    LEFT JOIN explore e3 ON e3.explore_id = s.functional_group_id 
+                    where user_id = $userId ORDER BY $order"
         );
 
         $result = $this->database->executeSelect();
@@ -43,86 +48,16 @@ class SiteProvider extends BaseProvider
                 ->setGadm1($item['gadm1'])
                 ->setGadm2($item['gadm2'])
                 ->setGadm3($item['gadm3'])
+                ->setRealmId($item['realm_id'])
+                ->setBiomeId($item['biome_id'])
+                ->setFunctionalGroupId($item['functional_group_id'])
+                ->setRealm($item['realm'])
+                ->setBiome($item['biome'])
+                ->setFunctionalGroup($item['functional_group'])
                 ->setCentroId($item['centroid']);
         }
 
         return $data;
-    }
-    /**
-     * @return Site[]
-     * @throws \Exception
-     */
-    public function getExplore(): array
-    {
-        $data = [];
-        $this->database->prepareQuery(
-            "SELECT * FROM explore ORDER BY explore_id"
-        );
-
-        $result = $this->database->executeSelect();
-
-        foreach ($result as $item) {
-            $data[] = (new Explore())
-                ->setId($item['site_id'])
-                ->setName($item['name'])
-                ->setUserId($item['user_id'])
-                ->setCreationDateTime($item['creation_date_time'])
-                ->setLongitude($item['longitude_WGS84_dd_dddd'])
-                ->setLatitude($item['latitude_WGS84_dd_dddd'])
-                ->setGadm1($item['gadm1'])
-                ->setGadm2($item['gadm2'])
-                ->setGadm3($item['gadm3'])
-                ->setCentroId($item['centroid']);
-        }
-
-        return $data;
-    }
-    public function getSitePages(int $limit, int $offSet): array
-    {
-        $data = [];
-        $this->database->prepareQuery(
-            "SELECT * FROM site where user_id = :userId ORDER BY site_id LIMIT :limit OFFSET :offset"
-        );
-
-        $result = $this->database->executeSelect([
-            ':userId' => Auth::getUserID(),
-            ':limit' => $limit,
-            ':offset' => $offSet,
-        ]);
-
-        foreach ($result as $item) {
-            $data[] = (new Site())
-                ->setId($item['site_id'])
-                ->setName($item['name'])
-                ->setUserId($item['user_id'])
-                ->setCreationDateTime($item['creation_date_time'])
-                ->setLongitude($item['longitude_WGS84_dd_dddd'])
-                ->setLatitude($item['latitude_WGS84_dd_dddd'])
-                ->setGadm1($item['gadm1'])
-                ->setGadm2($item['gadm2'])
-                ->setGadm3($item['gadm3'])
-                ->setRealm($item['realm_id'])
-                ->setBiome($item['biome_id'])
-                ->setFunctionalGroup($item['functional_group_id'])
-                ->setCentroId($item['centroid']);
-        }
-
-        return $data;
-    }
-
-    public function countSites(): int
-    {
-        $this->database->prepareQuery(
-            "SELECT count(site_id) AS num FROM site where user_id = :userId"
-        );
-
-        $result = $this->database->executeSelect([':userId' => Auth::getUserID()]);
-
-        if (empty($result)) {
-            return 0;
-        }
-
-        return $result[0]['num'];
     }
 
     /**
@@ -150,6 +85,9 @@ class SiteProvider extends BaseProvider
             ->setGadm1($result['gadm1'])
             ->setGadm2($result['gadm2'])
             ->setGadm3($result['gadm3'])
+            ->setRealm($result['realm_id'])
+            ->setBiome($result['biome_id'])
+            ->setFunctionalGroup($result['functional_group_id'])
             ->setCentroId($result['centroid']);
     }
 

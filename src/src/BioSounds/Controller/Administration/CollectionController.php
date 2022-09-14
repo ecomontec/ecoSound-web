@@ -16,25 +16,15 @@ class CollectionController extends BaseController
      * @return string
      * @throws \Exception
      */
-    public function show(int $page = 1)
+    public function show()
     {
         if (!Auth::isUserAdmin()) {
             throw new ForbiddenException();
         }
-
         $collProvider = new CollectionProvider();
 
-        $collNum = $collProvider->countCollections();
-        $pages = $collNum > 0 ? ceil($collNum / self::ITEMS_PAGE) : 1;
-
         return $this->twig->render('administration/collections.html.twig', [
-            'collections' => $collProvider->getCollectionPages(
-                $this::ITEMS_PAGE,
-                $this::ITEMS_PAGE * ($page - 1)
-            ),
-            // 'collections' => (new (CollectionProvider))->getList("name"),
-            'currentPage' => ($page > $pages) ?: $page,
-            'pages' => $pages
+            'collections' => $collProvider->getList(),
         ]);
     }
 
@@ -58,7 +48,7 @@ class CollectionController extends BaseController
                 $type = substr($key, strrpos($key, '_') + 1, strlen($key));
                 $key = substr($key, 0, strrpos($key, '_'));
             }
-            $data[$key] = filter_var($value, FILTER_SANITIZE_STRING);
+            $data[$key] = $value;
         }
         $data['user_id']=$_SESSION['user_id'];
         if (isset($data['collId'])) {

@@ -31,7 +31,7 @@ class Session
         // Sets the session name to the one set above.
         session_name($session_name);
         session_start();
-        $_SESSION['regenerate_timeout'] = time();
+
         if (!isset($_SESSION['regenerate_timeout'])) {
             session_regenerate_id(true);
             $_SESSION['regenerate_timeout'] = time();

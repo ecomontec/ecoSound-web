@@ -18,27 +18,16 @@ class UserController extends BaseController
      * @return false|string
      * @throws \Exception
      */
-    public function show(int $page = 1)
+    public function show()
     {
         if (!Auth::isUserAdmin()) {
             throw new ForbiddenException();
         }
-        // $this->getUsersList();
-
         $userProducer = new User();
-
-        $userNum = $userProducer->countUsers();
-        $pages = $userNum > 0 ? ceil($userNum / self::ITEMS_PAGE) : 1;
-
         return $this->twig->render('administration/users.html.twig', [
             'roles' => (new Role())->getRoles(),
-            'users' => $userProducer->getUserPages(
-                $this::ITEMS_PAGE,
-                $this::ITEMS_PAGE * ($page - 1)
-            ),
+            'users' => $userProducer->getList(),
             'default_color' => self::DEFAULT_TAG_COLOR,
-            'currentPage' => ($page > $pages) ?: $page,
-            'pages' => $pages
         ]);
     }
 
@@ -55,7 +44,7 @@ class UserController extends BaseController
         }
 
         if (isset($_POST['admin_pwd'])) {
-            $adminPwd = filter_var($_POST['admin_pwd'], FILTER_SANITIZE_STRING);
+            $adminPwd = $_POST['admin_pwd'];
             $bdAdminPwd = $userProvider->getPasswordByUserId(Auth::getUserLoggedID());
             if (!Utils::checkPasswords($adminPwd, $bdAdminPwd)) {
                 throw new \Exception('The administrator password is not correct.', 1);
@@ -81,15 +70,15 @@ class UserController extends BaseController
                         $data[$key] =  filter_var($value, FILTER_SANITIZE_NUMBER_INT);
                         break;
                     case 'password':
-                        $password = filter_var($value, FILTER_SANITIZE_STRING);
+                        $password = $value;
                         $data[$key] = Utils::encodePasswordHash($password);
                         break;
                     default:
-                        $data[$key] = filter_var($value, FILTER_SANITIZE_STRING);
+                        $data[$key] = $value;
                         break;
                 }
             } else {
-                $data[$key] =  filter_var($value, FILTER_SANITIZE_STRING);
+                $data[$key] =  $value;
             }
         }
 
@@ -117,7 +106,7 @@ class UserController extends BaseController
         $userProvider = new User();
 
         if (isset($_POST['my_pwd'])) {
-            $myPwd = filter_var($_POST['my_pwd'], FILTER_SANITIZE_STRING);
+            $myPwd = $_POST['my_pwd'];
             $bdMyPwd = $userProvider->getPasswordByUserId(Auth::getUserLoggedID());
             if (!Utils::checkPasswords($myPwd, $bdMyPwd)) {
                 throw new \Exception('The old password is not correct.', 1);
@@ -134,15 +123,15 @@ class UserController extends BaseController
 
                 switch ($type) {
                     case 'password':
-                        $password = filter_var($value, FILTER_SANITIZE_STRING);
+                        $password = $value;
                         $data[$key] = Utils::encodePasswordHash($password);
                         break;
                     default:
-                        $data[$key] = filter_var($value, FILTER_SANITIZE_STRING);
+                        $data[$key] = $value;
                         break;
                 }
             } else {
-                $data[$key] =  filter_var($value, FILTER_SANITIZE_STRING);
+                $data[$key] =  $value;
             }
         }
 

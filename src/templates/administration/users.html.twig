@@ -3,7 +3,6 @@
 {% block admin_content %}
 
     {% include 'administration/userForm.html.twig' %}
-
     <div class="card mb-3" id="usersList">
         <div class="card-header border-light bg-white text-right">
             <button id="userFormButton" class="btn btn-outline-primary btn-sm mt-2" type="button" data-toggle="collapse" data-target="#userFormSection" aria-expanded="false" aria-controls="userFormSection">
@@ -11,183 +10,97 @@
                 Add User
             </button>
         </div>
-        <div class="card-body scrollable">
-            <table id="userTable" class="table table-sm table-hover">
-                <thead class="table-borderless">
-                    <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Username</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Role</th>
-                        <th scope="col">Active</th>
-                        <th scope="col"></th>
-                        <th scope="col"></th>
-                        <th scope="col"></th>
-                    </tr>
-                </thead>
-                <tbody class="form-control-sm js-user-list">
-                    {% for user in users %}
-                        <tr>
-                            <td scope='row'>
-                                {{ user.user_id }}
-                                <input type="hidden" name="itemID" value="{{ user.user_id }}">
-                            </td>
-                            <td>
-                                <input type="text" name="username" value="{{ user.name }}">
-                            </td>
-                            <td>{{ user.username }}</td>
-                            <td>
-                                <input type="email" name="email" value="{{ user.email }}">
-                            </td>
-                            <td>
-                                <select name="role_id" class="form-control form-control-sm">
-                                    {% for role in roles %}
-                                        <option value="{{ role.role_id }}" {{ role.role_id == user.role_id ? "selected" }}>{{ role.name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </td>
-                            <td class="text-center">
-                                <input name="active" type="checkbox" {{ user.active ? 'checked' }}>
-                            </td>
-                            <td>
-                                <a href="{{ baseUrl }}/admin/userMgr/editPassword" class="js-open-modal" data-id="{{ user.user_id }}" title="Edit Password">
-                                    <i class='fas fa-edit'></i>
-                                </a>
-                            </td>
-
-                            <td>
-                                <a href="{{ baseUrl }}/UserPermission/show/{{ user.user_id }}" class="js-open-modal" title="Collection Privileges" $privhidden>
-                                    <i class='fas fa-tasks'></i>
-                                </a>
-                            </td>
-
-                            <td>
-                                <input type="color" name="color" alt="Tag color" value="{{ user.color is empty ? default_color : user.color }}">
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <nav aria-label="pagination">
-                    <ul class="pagination justify-content-center mt-3">
-                        {% if pages > 10  %}
-                            <li class="page-item">
-                                <a href="{{ baseUrl }}/admin/users/{{ currentPage == 1 ? 1 : currentPage - 1 }}">
-                                    <i class="fa fa-angle-left" style="font-size:36px; position:relative; top:4px;"></i>
-                                </a>&nbsp;&nbsp;
-                            </li>
-                            <li class="page-item {{ currentPage == 1 ? 'active' }}">
-                                <a class="page-link" href="{{ baseUrl }}/admin/users/1">1</a>
-                            </li>
-                            {% if currentPage <= 3 %}
-                                <li class="page-item  {{ currentPage == 2 ? 'active' }}">
-                                    <a class="page-link" href="{{ baseUrl }}/admin/users/2">2</a>
-                                </li>
-                                <li class="page-item {{ currentPage == 3 ? 'active' }}">
-                                    <a class="page-link" href="{{ baseUrl }}/admin/users/3">3</a>
-                                </li>
-                                <li class="disabled">
-                                    <span style="font-size:28px;position:relative;">&nbsp;.</span>
-                                    <span style="font-size:28px;position:relative;">.</span>
-                                    <span style="font-size:28px;position:relative;">.&nbsp;</span>
-                                </li>
-                            {% endif %}
-
-                            {% if currentPage >= 4 and currentPage <= (pages - 3) %}
-                                <li class="disabled">
-                                    <span style="font-size:28px;position:relative;">&nbsp;.</span>
-                                    <span style="font-size:28px;position:relative;">.</span>
-                                    <span style="font-size:28px;position:relative;">.&nbsp;</span>
-                                </li>
-                                {% if currentPage == 4 %}
-                                    <li class="page-item  active">
-                                        <a class="page-link" href="{{ baseUrl }}/admin/users/4">4</a>
-                                    </li>
-                                    <li class="page-item">
-                                        <a class="page-link" href="{{ baseUrl }}/admin/users/{{ currentPage + 1 }}">{{ currentPage + 1}}</a>
-                                    </li>
-                                    <li class="page-item">
-                                        <a class="page-link" href="{{ baseUrl }}/admin/users/{{ currentPage + 2 }}">{{ currentPage + 2}}</a>
-                                    </li>
-                                {% elseif currentPage == pages - 3 %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="{{ baseUrl }}/admin/users/{{ currentPage - 2}}">{{ currentPage - 2 }}</a>
-                                    </li>
-                                    <li class="page-item">
-                                        <a class="page-link" href="{{ baseUrl }}/admin/users/{{ currentPage - 1 }}">{{ currentPage - 1 }}</a>
-                                    </li>
-                                    <li class="page-item active">
-                                        <a class="page-link" href="{{ baseUrl }}/admin/users/{{ currentPage}}">{{ currentPage }}</a>
-                                    </li>
-                                {% else %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="{{ baseUrl }}/admin/users/{{ currentPage -1 }}">{{ currentPage - 1 }}</a>
-                                    </li>
-                                    <li class="page-item active">
-                                        <a class="page-link" href="{{ baseUrl }}/admin/users/{{ currentPage }}">{{ currentPage }}</a>
-                                    </li>
-                                    <li class="page-item">
-                                        <a class="page-link" href="{{ baseUrl }}/admin/users/{{ currentPage + 1 }}">{{ currentPage + 1 }}</a>
-                                    </li>
-                                {% endif %}
-                                <li class="disabled">
-                                    <span style="font-size:28px;position:relative;">&nbsp;.</span>
-                                    <span style="font-size:28px;position:relative;">.</span>
-                                    <span style="font-size:28px;position:relative;">.&nbsp;</span>
-                                </li>
-                            {% endif %}
-
-                            {% if currentPage >= pages - 2 %}
-                                <li class="disabled">
-                                    <span style="font-size:28px;position:relative;">&nbsp;.</span>
-                                    <span style="font-size:28px;position:relative;">.</span>
-                                    <span style="font-size:28px;position:relative;">.&nbsp;</span>
-                                </li>
-                                <li class="page-item  {{ currentPage == pages - 2 ? 'active' }}">
-                                    <a class="page-link" href="{{ baseUrl }}/admin/users/{{ pages - 2}}">{{ pages - 2 }}</a>
-                                </li>
-                                <li class="page-item {{ currentPage == pages - 1 ? 'active' }}">
-                                    <a class="page-link" href="{{ baseUrl }}/admin/users/{{ pages - 1 }}">{{ pages -1 }}</a>
-                                </li>
-                            {% endif %}
-                            <li class="page-item {{ currentPage == pages ? 'active' }}">
-                                <a class="page-link" href="{{ baseUrl }}/admin/users/{{ pages }}">{{ pages }}</a>
-                            </li>
-                            <li class="page-item">&nbsp;&nbsp;
-                                <a href="{{ baseUrl }}/admin/users/{{ currentPage == pages ? pages : currentPage + 1 }}">
-                                    <i class="fa fa-angle-right" style="font-size:36px; position:relative; top:4px;"></i>
-                                </a>
-                            </li>
-                        {% else %}
-                            {% for page in range(1, pages) %}
-                                <li class="page-item {{ currentPage == page ? 'active' }}">
-                                    <a class="page-link" href="{{ baseUrl }}/admin/users/{{ page }}">
-                                        {{ page }}
-                                    </a>
-                                </li>
+        <table id="userTable" style="display:none">
+            <thead class="form-control-sm table-borderless">
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Active</th>
+                <th></th>
+                <th></th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody class="form-control-sm js-user-list">
+            {% for user in users %}
+                <tr>
+                    <td>
+                        {{ user.user_id }}
+                        <input type="hidden" class="form-control form-control-sm" name="itemID" value="{{ user.user_id }}">
+                    </td>
+                    <td data-search="{{ user.name }}" data-order="{{ user.name }}">
+                        <input type="text" class="form-control form-control-sm" name="name" value="{{ user.name }}">
+                    </td>
+                    <td>{{ user.username }}</td>
+                    <td data-search="{{ user.email }}" data-order="{{ user.email }}">
+                        <input type="email" class="form-control form-control-sm" name="email" value="{{ user.email }}">
+                    </td>
+                    <td {% for role in roles %}{% if role.role_id == user.role_id %}data-search="{{ role.name }}" data-order="{{ role.name }}"{% endif %}{% endfor %}>
+                        <select name="role_id" class="form-control form-control-sm">
+                            {% for role in roles %}
+                                <option value="{{ role.role_id }}" {{ role.role_id == user.role_id ? "selected" }}>{{ role.name }}</option>
                             {% endfor %}
-                        {% endif %}
-                    </ul>
-                </nav>
-            </div>
-        </div>
+                        </select>
+                    </td>
+                    <td class="text-center" data-search="{{ user.active }}" data-order="{{ user.active }}">
+                        <input name="active" type="checkbox" {{ user.active ? 'checked' }}>
+                    </td>
+                    <td>
+                        <a href="{{ baseUrl }}/admin/userMgr/editPassword" class="js-open-modal" data-id="{{ user.user_id }}" title="Edit Password">
+                            <i class='fas fa-edit'></i>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="{{ baseUrl }}/UserPermission/show/{{ user.user_id }}" class="js-open-modal" title="Collection Privileges" $privhidden>
+                            <i class='fas fa-tasks'></i>
+                        </a>
+                    </td>
+                    <td>
+                        <input type="color" name="color" alt="Tag color" value="{{ user.color is empty ? default_color : user.color }}">
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
     </div>
 {% endblock %}
 
 {% block scripts %}
     {{ parent() }}
-
     <script>
+        $(document).ready(function () {
+            $('#userTable').DataTable({
+                "pageLength": 8,
+                "lengthChange": false,
+                "stateSave": true,
+                "StateDuration": -1,
+                "order": [[0, 'asc']],
+                "columns": [
+                    {},
+                    {},
+                    {},
+                    {},
+                    {},
+                    {},
+                    {orderable: false},
+                    {orderable: false},
+                    {orderable: false},
+                ],
+            });
+            $('#userTable').show()
+        });
         $(function () {
             'use strict';
 
             /* Save users list */
             $('.js-user-list').on('change', 'input, select, textarea', function () {
                 saveFormList($(this), 'api/admin/userMgr/save');
+                var table = $('#userTable').DataTable()
+                var tr = $(this).closest("tr")
+                table.rows(tr).invalidate()
             });
 
             $("#userFormSection").on('shown.bs.collapse', function () {
