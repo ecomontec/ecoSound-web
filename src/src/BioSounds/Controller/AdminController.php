@@ -54,7 +54,7 @@ class AdminController extends BaseController
      */
     public function collections(int $page = 1)
     {
-        return (new CollectionController($this->twig))->show($page);
+        return (new CollectionController($this->twig))->show();
     }
 
     /**
@@ -72,7 +72,7 @@ class AdminController extends BaseController
      */
     public function users(int $pageId = 1)
     {
-        return (new UserController($this->twig))->show($pageId);
+        return (new UserController($this->twig))->show();
     }
 
     /**
@@ -92,10 +92,7 @@ class AdminController extends BaseController
      */
     public function recordings(...$args)
     {
-        return (new RecordingController($this->twig))->show(
-            empty($args[0]) ? null : $args[0],
-            empty($args[1]) ? 1 : $args[1]
-        );
+        return (new RecordingController($this->twig))->show(empty($args[0]) ? null : $args[0]);
     }
 
     /**
@@ -113,9 +110,9 @@ class AdminController extends BaseController
      * @return false|string
      * @throws \Exception
      */
-    public function sites(int $pageId = 1)
+    public function sites()
     {
-        return (new SiteController($this->twig))->show($pageId);
+        return (new SiteController($this->twig))->show();
     }
 
     /**
@@ -142,9 +139,9 @@ class AdminController extends BaseController
      * @return false|string
      * @throws \Exception
      */
-    public function tags(int $pageId = 1)
+    public function tags()
     {
-        return (new TagController($this->twig))->show($pageId);
+        return (new TagController($this->twig))->show();
     }
 
     /**
@@ -162,9 +159,9 @@ class AdminController extends BaseController
      * @return false|string
      * @throws \Exception
      */
-    public function indexLogs(int $pageId = 1)
+    public function indexLogs()
     {
-        return (new IndexLogController($this->twig))->show($pageId);
+        return (new IndexLogController($this->twig))->show();
     }
 
     /**

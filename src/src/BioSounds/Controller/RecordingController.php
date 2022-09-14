@@ -32,7 +32,6 @@ class RecordingController extends BaseController
 
     private $recordingId;
     private $fftSize;
-    private $collectionPage;
     private $recordingService;
 
     /**
@@ -60,14 +59,13 @@ class RecordingController extends BaseController
      * @return string
      * @throws \Exception
      */
-    public function show(int $id, int $collectionPage = 1)
+    public function show(int $id)
     {
         if (empty($id)) {
             throw new \Exception(ERROR_EMPTY_ID);
         }
 
         $this->recordingId = $id;
-        $this->collectionPage = $collectionPage;
 
         $recordingData = (new RecordingProvider())->get($this->recordingId);
 
@@ -95,7 +93,6 @@ class RecordingController extends BaseController
             'player' => $this->recordingPresenter,
             'sound' => $this->recordingPresenter->getRecording(),
             'frequency_data' => $this->recordingPresenter->getFrequencyScaleData(),
-            'collection_page' => $this->collectionPage,
             'title' => sprintf(self::PAGE_TITLE, $recordingData[Recording::NAME]),
             'labels' => Auth::isUserLogged() ? (new LabelProvider())->getBasicList(Auth::getUserLoggedID()) : '',
             'myLabel' => Auth::isUserLogged() ? (new LabelAssociationProvider())->getUserLabel($id, Auth::getUserLoggedID()) : '',
@@ -185,6 +182,12 @@ class RecordingController extends BaseController
             if (isset($_POST['filter'])) {
                 $filter = filter_var($_POST['filter'], FILTER_VALIDATE_BOOLEAN);
             }
+        }
+        if (isset($_GET['t_min']) && isset($_GET['t_max']) && isset($_GET['f_min']) && isset($_GET['f_max'])) {
+            $minTime = $_GET['t_min'];
+            $maxTime = $_GET['t_max'];
+            $minFrequency = $_GET['f_min'];
+            $maxFrequency = $_GET['f_max'];
         }
 
         // Spectrogram Image Width

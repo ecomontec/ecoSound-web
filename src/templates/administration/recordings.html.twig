@@ -46,7 +46,7 @@
                 <th></th>
             </tr>
             </thead>
-            <tbody class="form-control-sm">
+            <tbody class="form-control-sm js-recording-list">
             {% for recording in recordings %}
                 <tr>
                     <td>
@@ -140,7 +140,7 @@
             });
 
             /* Save recordings list */
-            $(".save-recording").on('change', 'input, select, textarea', function () {
+            $(".js-recording-list").on('change', 'input, select, textarea', function () {
                 saveFormList($(this), 'api/admin/recordingManager/save');
                 var table = $('#recTable').DataTable()
                 var tr = $(this).closest("tr")
