@@ -3,7 +3,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">{{ title }}&nbsp;</h5>
-                {% if result=='' %}
+                {% if result!='' %}
                     <div class="form-inline">
                     <div class="col-form-label-sm">
                         <label>( {{ param|split('@')[0]|split('?')[1] }} {{ minTime }}-{{ maxTime }}s {{ minFrequency }}-{{ maxFrequency }}Hz )</label>

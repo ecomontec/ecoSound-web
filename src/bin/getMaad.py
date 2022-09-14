@@ -1,7 +1,6 @@
 import optparse
 import maad
 from maad import sound, rois
-from pydub import AudioSegment
 
 def getMaad(path, filename, index_type, param, channel, minTime, maxTime, minFrequency, maxFrequency):
     parameter = {}
