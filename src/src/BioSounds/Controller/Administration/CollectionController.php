@@ -35,12 +35,10 @@ class CollectionController extends BaseController
      */
     public function save()
     {
-        $collProvider = new Collection();
-
         if (!Auth::isUserAdmin()) {
             throw new ForbiddenException();
         }
-
+        $collProvider = new Collection();
         $data = [];
 
         foreach ($_POST as $key => $value) {

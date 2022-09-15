@@ -33,6 +33,7 @@
                     <input type="hidden" name="collection_id" value="{{ player.recording.col_id }}">
                     <input type="hidden" name="recording_id" value="{{ player.recording.recording_id }}">
                     <input type="hidden" name="recording_name" value="{{ player.recording.name }}">
+                    <input type="hidden" name="filename" value="{{ player.recording.filename }}">
                     <input type="hidden" name="recording_directory" value="{{ player.recording.directory }}">
                     <input type="hidden" name="specWidth" value="{{ player.spectrogramWidth }}">
                     <input type="hidden" name="specHeight" value="{{ player.spectrogramHeight }}">
@@ -80,7 +81,7 @@
             <div>
                 <form id="reclabelform" novalidate>
                     <input type="hidden" name="recording_id" value="{{ player.recording.recording_id }}"/>
-                    <input type="hidden" name="user_id" value="{{ user_id }}"/>
+                    <input type="hidden" name="user_id" value="{{ user_id }}"/>continuous_play
                     <select id="reclabel" name="label_id" required>
                         {% for lbl in labels %}
                             <option value="{{ lbl.id }}" {{ lbl.id == myLabel.id ? 'selected' }}>{{ lbl.name }}</option>
@@ -137,7 +138,7 @@
                             'maxFrequency': $('input[name=maxFreqView]').val(),
                             'collection_id': $('input[name=collection_id]').val(),
                             'recording_id': $('input[name=recording_id]').val(),
-                            'recording_name': $('input[name=recording_name]').val(),
+                            'filename': $('input[name=filename]').val(),
                             'recording_directory': $('input[name=recording_directory]').val(),
                             'index_id': $('#maad').val(),
                             'index': $('#maad').find("option:selected").text(),

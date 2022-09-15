@@ -35,28 +35,28 @@
                         <input type="hidden" name="steId" value="{{ site.id }}">
                     </td>
                     <td data-search="{{ site.name }}" data-order="{{ site.name }}">
-                        <input type="text" style="width:100px;" name="name" value="{{ site.name }}">
+                        <input type="text" class="form-control form-control-sm" style="width:100px;" name="name" value="{{ site.name }}">
                     </td>
                     <td data-search="{{ site.longitude }}" data-order="{{ site.longitude }}">
-                        <input type="number" style="width:80px;" name="longitude" min="-180" max="180" step="0.0000000000001" pattern="##.##############" value="{{ site.longitude }}">
+                        <input type="number" class="form-control form-control-sm" style="width:80px;" name="longitude" min="-180" max="180" step="0.0000000000001" pattern="##.##############" value="{{ site.longitude }}">
                         <div class="invalid-feedback">
                             Please provide a longitude value, from -180 to 180.
                         </div>
                     </td>
                     <td data-search="{{ site.latitude }}" data-order="{{ site.latitude }}">
-                        <input type="number" style="width:80px;" name="latitude" min="-90" max="90" step="0.0000000000001" pattern="##.##############" value="{{ site.latitude }}">
+                        <input type="number" class="form-control form-control-sm" style="width:80px;" name="latitude" min="-90" max="90" step="0.0000000000001" pattern="##.##############" value="{{ site.latitude }}">
                         <div class="invalid-feedback">
                             Please provide a latitude value, from -90 to 90.
                         </div>
                     </td>
                     <td data-search="{{ site.gadm1 }}" data-order="{{ site.gadm1 }}">
-                        <input type="text" style="width:120px;" name="gadm1" value="{{ site.gadm1 }}">
+                        <input type="text" class="form-control form-control-sm" style="width:120px;" name="gadm1" value="{{ site.gadm1 }}">
                     </td>
                     <td data-search="{{ site.gadm2 }}" data-order="{{ site.gadm2 }}">
-                        <input type="text" style="width:120px;" name="gadm2" value="{{ site.gadm2 }}">
+                        <input type="text" class="form-control form-control-sm" style="width:120px;" name="gadm2" value="{{ site.gadm2 }}">
                     </td>
                     <td data-search="{{ site.gadm3 }}" data-order="{{ site.gadm3 }}">
-                        <input type="text" style="width:120px;" name="gadm3" value="{{ site.gadm3 }}">
+                        <input type="text" class="form-control form-control-sm" style="width:120px;" name="gadm3" value="{{ site.gadm3 }}">
                     </td>
                     <td data-search="{{ site.realm }}" data-order="{{ site.realm }}">
                         <select id="realm_{{ site.id }}" name="realm_id" style="width:120px;" class="form-control form-control-sm">
@@ -67,12 +67,12 @@
                         </select>
                     </td>
                     <td data-search="{{ site.biome }}" data-order="{{ site.biome }}">
-                        <select id="biome_{{ site.id }}" name="biome_id" style="width:120px;" class="form-control form-control-sm">
+                        <select id="biome_{{ site.id }}" name="biome_id" class="form-control form-control-sm" style="width:120px;">
                             <option value="{{ site.biomeId }}" selected>{{ site.biome }}</option>
                         </select>
                     </td>
                     <td data-search="{{ site.functionalGroup }}" data-order="{{ site.functionalGroup }}">
-                        <select id="functionalGroup_{{ site.id }}" name="functional_group_id" style="width:120px;" class="form-control form-control-sm">
+                        <select id="functionalGroup_{{ site.id }}" name="functional_group_id" class="form-control form-control-sm" style="width:120px;">
                             <option value="{{ site.functionalGroupId }}" selected>{{ site.functionalGroup }}</option>
                         </select>
                     </td>
@@ -107,20 +107,10 @@
                     "stateSave": true,
                     "StateDuration": -1,
                     "order": [[0, 'asc']],
-                    "columns": [
-                        {},
-                        {},
-                        {},
-                        {},
-                        {},
-                        {},
-                        {},
-                        {},
-                        {},
-                        {},
-                        {},
-                        {orderable: false},
-                    ],
+                    "columnDefs":[{
+                        "orderable":false,
+                        "targets":[11]
+                    }]
                 });
                 $('#siteTable').show()
             });

@@ -8,6 +8,7 @@ use BioSounds\Entity\Recording;
 use BioSounds\Entity\Sensor;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\CollectionProvider;
+use BioSounds\Provider\IndexLogProvider;
 use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\SpectrogramProvider;
 use BioSounds\Provider\SiteProvider;
@@ -125,6 +126,7 @@ class RecordingController extends BaseController
         }
 
         $recordingProvider = new RecordingProvider();
+        $indexLogProvider = new indexLogProvider();
         $recording = $recordingProvider->get($id);
 
         $fileName = $recording[Recording::FILENAME];
@@ -148,6 +150,7 @@ class RecordingController extends BaseController
         }
 
         $recordingProvider->delete($id);
+        $indexLogProvider->deleteByRecording($id);
 
         if (!empty($recording[Recording::SOUND_ID])) {
             (new SoundProvider())->delete($recording[Recording::SOUND_ID]);

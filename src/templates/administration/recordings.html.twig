@@ -56,7 +56,7 @@
                     </td>
                     <td>{{ recording.filename }}</td>
                     <td data-search="{{ recording.name }}" data-order="{{ recording.name }}">
-                        <input type='text' title="Name" name="name" value="{{ recording.name }}">
+                        <input type='text' class="form-control form-control-sm" title="Name" name="name" value="{{ recording.name }}">
                     </td>
                     <td data-search="{{ recording.siteName }}" data-order="{{ recording.siteName }}">
                         <select name="site_id" class="form-control form-control-sm">
@@ -68,10 +68,10 @@
                         </select>
                     </td>
                     <td data-search="{{ recording.fileDate }}" data-order="{{ recording.fileDate }}">
-                        <input type='date' title="Date" name="file_date" value="{{ recording.fileDate }}">
+                        <input type='date' class="form-control form-control-sm" title="Date" name="file_date" value="{{ recording.fileDate }}">
                     </td>
                     <td data-search="{{ recording.fileTime }}" data-order="{{ recording.fileTime }}">
-                        <input type='time' title="Time" name="file_time" min="00:00:00" max="23:59:59" step="1" value="{{ recording.fileTime }}">
+                        <input type='time' class="form-control form-control-sm" title="Time" name="file_time" min="00:00:00" max="23:59:59" step="1" value="{{ recording.fileTime }}">
                     </td>
                     <td>
                         <a class="js-delete-button" href="#" data-id="{{ recording.id }}" title="Delete recording">
@@ -106,15 +106,10 @@
                 "stateSave": true,
                 "StateDuration": -1,
                 "order": [[0, 'asc']],
-                "columns": [
-                    {},
-                    {},
-                    {},
-                    {},
-                    {},
-                    {},
-                    {orderable: false},
-                ],
+                "columnDefs":[{
+                    "orderable":false,
+                    "targets":[6]
+                }]
             });
             $('#recTable').show()
         });

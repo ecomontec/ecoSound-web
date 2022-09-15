@@ -496,7 +496,7 @@ class RecordingController extends BaseController
         }
         $str = 'python3 ' . ABSOLUTE_DIR . 'bin/getMaad.py' .
             ' -p ' . ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . '/' . $data['recording_directory'] . '/' .
-            ' -f ' . explode('.', $data['recording_name'])[0] .
+            ' -f ' . explode('.', $data['filename'])[0] .
             ' --it ' . $data['index'] .
             ' --ch ' . ($data['channel'] == 2 ? 'right' : 'left') .
             ' --mint ' . $data['minTime'] .

@@ -45,4 +45,14 @@ class IndexLogProvider extends BaseProvider
         }
         return $list;
     }
+    /**
+     * @param int $tagId
+     * @return array|int
+     * @throws \Exception
+     */
+    public function deleteByRecording(int $recording_id)
+    {
+        $this->database->prepareQuery('DELETE FROM index_log WHERE recording_id = :recording_id');
+        return $this->database->executeDelete([':recording_id' => $recording_id]);
+    }
 }
