@@ -81,7 +81,7 @@
             <div>
                 <form id="reclabelform" novalidate>
                     <input type="hidden" name="recording_id" value="{{ player.recording.recording_id }}"/>
-                    <input type="hidden" name="user_id" value="{{ user_id }}"/>continuous_play
+                    <input type="hidden" name="user_id" value="{{ user_id }}"/>
                     <select id="reclabel" name="label_id" required>
                         {% for lbl in labels %}
                             <option value="{{ lbl.id }}" {{ lbl.id == myLabel.id ? 'selected' }}>{{ lbl.name }}</option>

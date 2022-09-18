@@ -3,10 +3,34 @@
 {% block admin_content %}
     <div class="card mb-3" id="tagsList">
         <div class="card-header border-light bg-white text-right">
-            <button id="tagsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#tagsExport" aria-expanded="false" aria-controls="tagsExport">
-                <i class="fa fa-download"></i>
-                Tag Export
-            </button>
+            <div class="row">
+                <div class="col-auto mr-auto mt-2">
+                    <form id="collectionForm" class="form-inline" action="{{ baseUrl }}/admin/tags" method="POST">
+                        <table>
+                            <tr>
+                                <td>
+                                    <label for="colId">Collection</label>
+                                </td>
+                                <td>
+                                    <select id="colId" name="colId" class="form-control form-control-sm ml-3">
+                                        {% for collection in collections %}
+                                            <option value="{{ collection.id }}" {{ collection.id == colId ? 'selected' }}>
+                                                {{ collection.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+                <div class="col-auto ml-auto">
+                    <button id="tagsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#tagsExport" aria-expanded="false" aria-controls="tagsExport">
+                        <i class="fa fa-download"></i>
+                        Tag Export
+                    </button>
+                </div>
+            </div>
         </div>
         <table id="tagsTable" style="display:none">
             <thead class="form-control-sm table-borderless">
@@ -73,10 +97,13 @@
             });
             $('#tagsTable').show()
         });
-        $(function () {
-            'use strict';
+
+        document.addEventListener("DOMContentLoaded", function (event) {
             $(document).on('click', '#tagsExport', function () {
                 window.location.href = '{{ baseUrl }}/api/admin/tagMgr/export';
+            });
+            $('#colId').change(function () {
+                $("#collectionForm").submit();
             });
         });
     </script>

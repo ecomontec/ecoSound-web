@@ -19,13 +19,9 @@ class CollectionController extends BaseController
     const ITEMS_PAGE = 9;
     const SECTION_TITLE = 'Collections';
 
-    private $page;
     private $colId;
-    private $recordingNum;
-    private $pageNum;
     private $collection;
     private $recordings = [];
-    private $filter = [];
 
     protected $view;
 

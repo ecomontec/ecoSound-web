@@ -51,7 +51,6 @@ class RecordingProvider extends BaseProvider
     /**
      * @param int $colId
      * @param int $steId
-     * @param array|null $filter
      * @return Recording[]
      * @throws \Exception
      */
@@ -86,11 +85,8 @@ class RecordingProvider extends BaseProvider
                    LEFT JOIN explore e2 ON site.biome_id = e2.explore_id
                    LEFT JOIN explore e3 ON site.functional_group_id = e3.explore_id ';
 
-        if (!empty($filter)) {
-            $query .= 'LEFT JOIN sound ON recording.sound_id = sound.sound_id ';
-        }
+        $query .= " WHERE col_id = :colId AND recording.site_id IS NOT NULL AND site.longitude_WGS84_dd_dddd IS NOT NULL AND site.latitude_WGS84_dd_dddd IS NOT NULL ";
 
-        $query .= 'WHERE col_id = :colId ';
         if ($sites) {
             $query .= " AND site.site_id in ($sites) ";
         }

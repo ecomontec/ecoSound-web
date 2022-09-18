@@ -4,6 +4,7 @@ namespace BioSounds\Controller\Administration;
 
 use BioSounds\Controller\BaseController;
 use BioSounds\Exception\ForbiddenException;
+use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\TagProvider;
 use BioSounds\Utils\Auth;
 
@@ -15,15 +16,26 @@ class TagController extends BaseController
      * @return string
      * @throws \Exception
      */
-    public function show()
+    public function show(int $cId = null)
     {
         if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
         }
+        if (isset($_POST['colId'])) {
+            $colId = $_POST['colId'];
+        }
+        if (!empty($cId)) {
+            $colId = $cId;
+        }
+        $collections = (new CollectionProvider())->getList();
+        if (empty($colId)) {
+            $colId = $collections[0]->getId();
+        }
         $tagProvider = new TagProvider();
         return $this->twig->render('administration/tags.html.twig', [
-            'tags' => $tagProvider->getTagPages(),
-            ]);
+            'colId' => $colId,
+            'tags' => $tagProvider->getTagPagesByCollection($colId),
+        ]);
     }
 
     /**
