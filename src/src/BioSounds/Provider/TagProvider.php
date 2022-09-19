@@ -20,12 +20,8 @@ class TagProvider extends BaseProvider
      */
     public function get(int $tagId): Tag
     {
-        $query = 'SELECT ' . Tag::ID . ', ' . Tag::RECORDING_ID . ', ' . User::FULL_NAME . ', ';
-        $query .= self::TABLE_NAME . '.' . Tag::USER_ID . ' as user_id, ' . Tag::MIN_TIME . ', ' . Tag::MAX_TIME . ', ';
-        $query .= Tag::MIN_FREQ . ', ' . Tag::MAX_FREQ . ', ';
-        $query .= Tag::UNCERTAIN . ', ' . Tag:: REFERENCE_CALL . ', ' . Tag::CALL_DISTANCE . ', ';
-        $query .= Tag::DISTANCE_NOT_ESTIMABLE . ', ' . Tag:: NUMBER_INDIVIDUALS . ', ' . Tag::COMMENTS . ', ';
-        $query .= Tag::TYPE . ', ' . self::TABLE_NAME . '.' . Tag::SPECIES_ID . ', ' . Species::BINOMIAL . ' as species_name ';
+        $query = 'SELECT tag.*, species.taxon_order, species.class, ' . User::FULL_NAME;
+        $query .= ', ' . Species::BINOMIAL . ' as species_name ';
         $query .= 'FROM ' . self::TABLE_NAME . ' ';
         $query .= 'LEFT JOIN ' . Species::TABLE_NAME . ' ON ';
         $query .= self::TABLE_NAME . '.' . Tag::SPECIES_ID . ' = ' . Species::TABLE_NAME . '.' . Species::ID . ' ';
@@ -129,7 +125,6 @@ class TagProvider extends BaseProvider
             $fields[] = $key . '= :' . $key;
             $values[':' . $key] = $value;
         }
-
         $this->database->prepareQuery(sprintf($query, implode(', ', $fields)));
         return $this->database->executeUpdate($values);
     }
@@ -148,7 +143,7 @@ class TagProvider extends BaseProvider
     public function getTagPagesByCollection(int $colId): array
     {
         $this->database->prepareQuery(
-            "SELECT t.*,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName FROM tag t 
+            "SELECT t.*,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass FROM tag t 
             INNER JOIN recording r ON r.recording_id = t.recording_id
             LEFT JOIN species s ON s.species_id = t.species_id
             LEFT JOIN collection c ON c.collection_id = r.col_id
@@ -168,7 +163,9 @@ class TagProvider extends BaseProvider
         foreach ($result as $item) {
             $data[] = (new Tag())
                 ->setId($item['tag_id'])
+                ->setSpeciesId($item['species_id'])
                 ->setSpeciesName($item['speciesName'])
+                ->setRecording($item['recording_id'])
                 ->setRecordingName($item['recordingName'])
                 ->setUserName($item['userName'])
                 ->setMinTime($item['min_time'])
@@ -179,10 +176,13 @@ class TagProvider extends BaseProvider
                 ->setCallDistance($item['call_distance_m'])
                 ->setDistanceNotEstimable(isset($item['distance_not_estimable']) ? $item['distance_not_estimable'] : 0)
                 ->setNumberIndividuals($item['number_of_individuals'])
+                ->setTypeId($item['type'])
                 ->setType($item['typeName'])
                 ->setReferenceCall($item['reference_call'])
                 ->setComments($item['comments'])
-                ->setCreationDate($item['creation_date']);
+                ->setCreationDate($item['creation_date'])
+                ->setTaxonOrder($item['TaxonOrder'])
+                ->setTaxonClass($item['TaxonClass']);
         }
         return $data;
     }
@@ -210,6 +210,7 @@ class TagProvider extends BaseProvider
             $data[] = (new Tag())
                 ->setId($item['tag_id'])
                 ->setSpeciesName($item['speciesName'])
+                ->setRecording($item['recording_id'])
                 ->setRecordingName($item['recordingName'])
                 ->setUserName($item['userName'])
                 ->setMinTime($item['min_time'])

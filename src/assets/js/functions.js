@@ -49,6 +49,10 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     $(document).on('keydown.autocomplete', '.js-species-autocomplete', function () {
+        var id = '';
+        if (typeof ($(this).attr('id').split('_')[1]) != 'undefined') {
+            id = $(this).attr('id').split('_')[1]
+        }
         $(this).autocomplete({
             source: function (request, response) {
                 $.post(baseUrl + '/species/getList', {term: request.term})
@@ -65,53 +69,36 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (!ui.item) {
                     $(this).val('');
                     let type = $(this).data('type');
-                    $('.js-species-id[data-type=' + type + ']').val('');
+                    if (id != '') {
+                        $('.js-species-id' + id + '[data-type=' + type + ']').val($("#old_id" + id).val());
+                        $(this).val($("#old_name" + id).val());
+                    } else {
+                        $('.js-species-id' + id + '[data-type=' + type + ']').val('');
+                        $("#type").empty()
+                    }
                     //$('#reviewSpeciesId').val('');
                 }
             },
             select: function (e, ui) {
                 $(this).val(ui.item.label.split('(')[0]);
                 let type = $(this).data('type');
-                $('.js-species-id[data-type=' + type + ']').val(ui.item.value);
-                // $('#reviewSpeciesId').val(ui.item.value);
-                e.preventDefault();
-            }
-        });
-    });
-
-
-    $(document).on('keydown.autocomplete', '.js-site-autocomplete', function () {
-        $(this).autocomplete({
-            source: function (request, response) {
-                $.post(baseUrl + '/site/getList', {term: request.term})
+                $('.js-species-id' + id + '[data-type=' + type + ']').val(ui.item.value);
+                $.post(baseUrl + '/species/getSoundType', {taxon_class: ui.item.class, taxon_order: ui.item.taxon_order})
                     .done(function (data) {
-                        response(JSON.parse(data));
+                        var json = JSON.parse(data)
+                        $("#type" + id).empty()
+                        $("#type" + id).append('<option value="0"></option>');
+                        for (var key in json) {
+                            $("#type" + id).append("<option value=" + json[key]['sound_type_id'] + ">" + json[key]['name'] + "</option>");
+                        }
                     })
-                    .fail(function (response) {
-                        showAlert(JSON.parse(response.responseText).message);
-                        response(null);
+                    .fail(function () {
+                        showAlert("Type loading failure.");
                     });
-            },
-            minLength: 2,
-            change: function (event, ui) {
-                if (!ui.item) {
-                    $(this).val('');
-                    let type = $(this).data('type');
-                    $('.js-site-id[data-type=' + type + ']').val('');
-                    //$('#reviewSpeciesId').val('');
-                }
-            },
-            select: function (e, ui) {
-                $(this).val(ui.item.label.split('(')[0]);
-                let type = $(this).data('type');
-                $('.js-site-id[data-type=' + type + ']').val(ui.item.value);
-                // $('#reviewSpeciesId').val(ui.item.value);
                 e.preventDefault();
             }
         });
     });
-
-
 });
 
 function showAlert(message) {
@@ -228,7 +215,7 @@ function getCookie(cname) {
  */
 function saveFormList(element, url) {
     let row = element.closest("tr");
-    let columns = row.find("input, select");
+    let columns = row.find("input, select, textarea");
     let values = {};
     let value = '';
     columns.each(function (i, item) {

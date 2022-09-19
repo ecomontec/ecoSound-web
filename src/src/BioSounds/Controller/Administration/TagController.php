@@ -3,8 +3,12 @@
 namespace BioSounds\Controller\Administration;
 
 use BioSounds\Controller\BaseController;
+use BioSounds\Entity\Explore;
+use BioSounds\Entity\SoundType;
+use BioSounds\Entity\Tag;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\CollectionProvider;
+use BioSounds\Provider\SoundTypeProvider;
 use BioSounds\Provider\TagProvider;
 use BioSounds\Utils\Auth;
 
@@ -31,10 +35,16 @@ class TagController extends BaseController
         if (empty($colId)) {
             $colId = $collections[0]->getId();
         }
-        $tagProvider = new TagProvider();
+        $arr = [];
+        $sound_types = (new SoundTypeProvider())->getAllList();
+        foreach ($sound_types as $sound_type) {
+            $arr[$sound_type->getTaxonClass() . $sound_type->getTaxonOrder()][$sound_type->getSoundTypeId()] = [$sound_type->getSoundTypeId(), $sound_type->getName()];
+        }
+
         return $this->twig->render('administration/tags.html.twig', [
             'colId' => $colId,
-            'tags' => $tagProvider->getTagPagesByCollection($colId),
+            'tags' => (new TagProvider())->getTagPagesByCollection($colId),
+            'sound_types' => $arr,
         ]);
     }
 
@@ -82,5 +92,37 @@ class TagController extends BaseController
         }
         fclose($fp);
         exit();
+    }
+
+    /**
+     * @return false|string
+     * @throws \Exception
+     */
+    public function save()
+    {
+        if (!Auth::isUserAdmin()) {
+            throw new ForbiddenException();
+        }
+        $tagProvider = new TagProvider();
+        $data = [];
+
+        foreach ($_POST as $key => $value) {
+            if ($key != "_text" && $key != "_hidden") {
+                if (strrpos($key, '_')) {
+                    $key = substr($key, 0, strrpos($key, '_'));
+                }
+                $data[$key] = $value;
+                if ($key === Tag::CALL_DISTANCE && empty($value)) {
+                    $data[$key] = null;
+                }
+            }
+        }
+
+        $tagProvider->update($data);
+        return json_encode([
+            'errorCode' => 0,
+            'message' => 'Tag updated successfully.'
+        ]);
+
     }
 }

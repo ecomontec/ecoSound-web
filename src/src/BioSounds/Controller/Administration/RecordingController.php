@@ -59,7 +59,6 @@ class RecordingController extends BaseController
             'recordings' => $recordings,
             'sites' => $userSites,
             'sensors' => (new Sensor())->getBasicList(),
-            'soundTypes' => (new SoundTypeProvider())->getList(),
             'license' => (new License())->getBasicList(),
         ]);
     }

@@ -44,7 +44,7 @@ class CollectionController extends BaseController
      * @return string
      * @throws \Exception
      */
-    public function show(int $id,string $view = null)
+    public function show(int $id, string $view = null)
     {
         $this->colId = $id;
 
@@ -120,23 +120,25 @@ class CollectionController extends BaseController
         $j = 0;
         foreach ($allRecordings as $recording) {
             $r = $recording->getRecording();
-            $site = $r->getSite();
-            $siteName = $r->getSiteName();
-            $longitude[] = $r->getLongitude();
-            $latitude[] = $r->getLatitude();
-            if (in_array([$r->getLatitude(), $r->getLongitude()], $location)) {
-                $k = array_search([$r->getLatitude(), $r->getLongitude()], $location);
-                $array[$k][4] = $array[$k][4] . '!br!' . $r->getName();
-            } else {
-                $location[] = [$r->getLatitude(), $r->getLongitude()];
-                $array[$i] = [$site, $siteName, $r->getLatitude(), $r->getLongitude()];
-                $array[$i][4] = $r->getName();
-                if ($sites != '') {
-                    $sites = $sites . ',' . $site;
+            if ($r->getLongitude() != null && $r->getLatitude() != null) {
+                $site = $r->getSite();
+                $siteName = $r->getSiteName();
+                $longitude[] = $r->getLongitude();
+                $latitude[] = $r->getLatitude();
+                if (in_array([$r->getLatitude(), $r->getLongitude()], $location)) {
+                    $k = array_search([$r->getLatitude(), $r->getLongitude()], $location);
+                    $array[$k][4] = $array[$k][4] . '!br!' . $r->getName();
                 } else {
-                    $sites = $site;
+                    $location[] = [$r->getLatitude(), $r->getLongitude()];
+                    $array[$i] = [$site, $siteName, $r->getLatitude(), $r->getLongitude()];
+                    $array[$i][4] = $r->getName();
+                    if ($sites != '') {
+                        $sites = $sites . ',' . $site;
+                    } else {
+                        $sites = $site;
+                    }
+                    $i = $i + 1;
                 }
-                $i = $i + 1;
             }
         }
         $max = 0;
@@ -183,7 +185,7 @@ class CollectionController extends BaseController
      * @return string
      * @throws \Exception
      */
-    public function showjs(int $id,  string $view = null, string $sites = null)
+    public function showjs(int $id, string $view = null, string $sites = null)
     {
         $this->colId = $id;
 

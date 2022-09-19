@@ -1,8 +1,8 @@
-$(function() {
+$(function () {
 
     let shiftRate = 0.95;
 
-    $("#shift-left").click(function(e) {
+    $("#shift-left").click(function (e) {
         let shiftLeftMin = Math.round(minTime - (selectionDuration * shiftRate));
 
         if (shiftLeftMin < 0) {
@@ -16,7 +16,7 @@ $(function() {
         e.preventDefault();
     });
 
-    $("#shift-right").click(function(e) {
+    $("#shift-right").click(function (e) {
         let shiftRightMax = Math.round(maxTime + (selectionDuration * shiftRate));
 
         if (shiftRightMax > fileDuration) {
@@ -30,7 +30,7 @@ $(function() {
         e.preventDefault();
     });
 
-    $(".viewport").click(function(e) {
+    $(".viewport").click(function (e) {
         $("#x").val(0);
         $("#w").val(fileDuration);
         $("#y").val(1);
@@ -42,12 +42,12 @@ $(function() {
         e.preventDefault();
     });
 
-    $("#zoom-submit").click(function(e) {
+    $("#zoom-submit").click(function (e) {
         $(this).prop("disabled", true);
         $("#recordingForm").submit();
     });
 
-    $(".readingMode").click(function(e) {
+    $(".readingMode").click(function (e) {
         $("#x").val(currentTime + minTime);
         $("#w").val(currentTime + minTime + 60);
         $("#y").val(1);
@@ -58,19 +58,19 @@ $(function() {
         e.preventDefault();
     });
 
-    $(".channel-left").click(function(e){
+    $(".channel-left").click(function (e) {
         $("input[name=channel]").val(1);
         $("#recordingForm").submit();
         e.preventDefault();
     });
 
-    $(".channel-right").click(function(e) {
+    $(".channel-right").click(function (e) {
         $("input[name=channel]").val(2);
         $("#recordingForm").submit();
         e.preventDefault();
     });
 
-    $('.js-toggle-tags').click(function(e) {
+    $('.js-toggle-tags').click(function (e) {
         let show = this.dataset.show;
         this.dataset.show = show ? '' : 1;
         document.getElementsByName('showTags')[0].value = !show;
@@ -85,7 +85,7 @@ $(function() {
         e.preventDefault();
     });
 
-    $('.js-new-tag').click(function(e) {
+    $('.js-new-tag').click(function (e) {
         e.preventDefault();
 
         if ($('#zoom-submit').is(':disabled')) {
@@ -95,7 +95,7 @@ $(function() {
         requestModal(this.href, $('#recordingForm').serialize(), false);
     });
 
-     $('#recordingForm').on('submit', function(){
-         toggleLoading();
-     });
- });
+    $('#recordingForm').on('submit', function () {
+        toggleLoading();
+    });
+});

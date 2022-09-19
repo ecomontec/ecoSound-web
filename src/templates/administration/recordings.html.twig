@@ -8,22 +8,14 @@
             <div class="row">
                 <div class="col-auto mr-auto mt-2">
                     <form id="collectionForm" class="form-inline" action="{{ baseUrl }}/admin/recordings" method="POST">
-                        <table>
-                            <tr>
-                                <td>
-                                    <label for="colId">Collection</label>
-                                </td>
-                                <td>
-                                    <select id="colId" name="colId" class="form-control form-control-sm ml-3">
-                                        {% for collection in collections %}
-                                            <option value="{{ collection.id }}" {{ collection.id == colId ? 'selected' }}>
-                                                {{ collection.name }}
-                                            </option>
-                                        {% endfor %}
-                                    </select>
-                                </td>
-                            </tr>
-                        </table>
+                        <label for="colId">Collection</label>
+                        <select id="colId" name="colId" class="form-control form-control-sm ml-3">
+                            {% for collection in collections %}
+                                <option value="{{ collection.id }}" {{ collection.id == colId ? 'selected' }}>
+                                    {{ collection.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
                     </form>
                 </div>
                 <div class="col-auto ml-auto">
@@ -60,6 +52,7 @@
                     </td>
                     <td data-search="{{ recording.siteName }}" data-order="{{ recording.siteName }}">
                         <select name="site_id" class="form-control form-control-sm">
+                            <option value="0"></option>
                             {% for st in sites %}
                                 <option value="{{ st.id }}" {{ st.id == recording.site ? 'selected' }}>
                                     {{ st.name }}
@@ -106,9 +99,9 @@
                 "stateSave": true,
                 "StateDuration": -1,
                 "order": [[0, 'asc']],
-                "columnDefs":[{
-                    "orderable":false,
-                    "targets":[6]
+                "columnDefs": [{
+                    "orderable": false,
+                    "targets": [6]
                 }]
             });
             $('#recTable').show()

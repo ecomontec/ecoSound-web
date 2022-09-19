@@ -6,22 +6,14 @@
             <div class="row">
                 <div class="col-auto mr-auto mt-2">
                     <form id="collectionForm" class="form-inline" action="{{ baseUrl }}/admin/tags" method="POST">
-                        <table>
-                            <tr>
-                                <td>
-                                    <label for="colId">Collection</label>
-                                </td>
-                                <td>
-                                    <select id="colId" name="colId" class="form-control form-control-sm ml-3">
-                                        {% for collection in collections %}
-                                            <option value="{{ collection.id }}" {{ collection.id == colId ? 'selected' }}>
-                                                {{ collection.name }}
-                                            </option>
-                                        {% endfor %}
-                                    </select>
-                                </td>
-                            </tr>
-                        </table>
+                        <label for="colId">Collection</label>
+                        <select id="colId" name="colId" class="form-control form-control-sm ml-3">
+                            {% for collection in collections %}
+                                <option value="{{ collection.id }}" {{ collection.id == colId ? 'selected' }}>
+                                    {{ collection.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
                     </form>
                 </div>
                 <div class="col-auto ml-auto">
@@ -32,9 +24,10 @@
                 </div>
             </div>
         </div>
-        <table id="tagsTable" style="display:none">
-            <thead class="form-control-sm table-borderless">
-            <tr>
+        <table id="tagsTable" style="display:none;">
+            <thead class="table-borderless">
+            <tr style="font-size: .875rem;">
+                <th></th>
                 <th>#</th>
                 <th>Species</th>
                 <th>Recording</th>
@@ -50,34 +43,75 @@
                 <th>Type</th>
                 <th>Reference Call</th>
                 <th>Comments</th>
-                <th>Creation Date (UTC)</th>
+                <th style="width: 120px">Creation Date (UTC)</th>
+                <th></th>
             </tr>
             </thead>
             <tbody class="form-control-sm js-tag-list">
             {% for tag in tags %}
                 <tr>
-                    <td>{{ tag.Id }}</td>
-                    <td>{{ tag.speciesName }}</td>
+                    <td>
+                        <a href="{{ baseUrl }}/recording/show/{{ tag.recording }}?t_min={{ tag.minTime }}&t_max={{ tag.maxTime }}&f_min={{ tag.minFrequency }}&f_max={{ tag.maxFrequency }}" target="_blank"><i class="fa fa-eye"></i></a>
+                        <input class='js-species-id{{ tag.Id }}' data-type="edit" name='species_id' type='hidden' value="{{ tag.speciesId }}">
+                        <input id="old_id{{ tag.Id }}" type="hidden" value="{{ tag.speciesId }}">
+                        <input id="old_name{{ tag.Id }}" type="hidden" value="{{ tag.speciesName }}">
+                        <input id="taxon_order{{ tag.Id }}" type="hidden" value="{{ tag.taxonOrder }}">
+                        <input id="taxon_class{{ tag.Id }}" type="hidden" value="{{ tag.taxonClass }}">
+                    </td>
+                    <td>
+                        {{ tag.Id }}
+                        <input type="hidden" name="tag_id" value="{{ tag.Id }}"/>
+                    </td>
+                    <td data-search="{{ tag.speciesName }}" data-order="{{ tag.speciesName }}">
+                        <input id="speciesName_{{ tag.Id }}" style="width:150px;" data-type="edit" class="form-control form-control-sm js-species-autocomplete" type="text" size="30" value="{{ tag.speciesName }}" required>
+                        <div class="invalid-feedback">
+                            Please select a species from the list.
+                        </div>
+                    </td>
                     <td>{{ tag.recordingName }}</td>
                     <td>{{ tag.userName }}</td>
-                    <td>{{ tag.minTime }}</td>
-                    <td>{{ tag.maxTime }}</td>
-                    <td>{{ tag.minFrequency }}</td>
-                    <td>{{ tag.maxFrequency }}</td>
+                    <td data-search="{{ tag.minTime }}" data-order="{{ tag.minTime }}">
+                        <input type="number" class="form-control form-control-sm" style="width:60px;" name="min_time" maxlength="100" value="{{ tag.minTime }}">
+                    </td>
+                    <td data-search="{{ tag.maxTime }}" data-order="{{ tag.maxTime }}">
+                        <input type="number" class="form-control form-control-sm" style="width:60px;" name="max_time" maxlength="100" value="{{ tag.maxTime }}">
+                    </td>
+                    <td data-search="{{ tag.minFrequency }}" data-order="{{ tag.minFrequency }}">
+                        <input type="number" class="form-control form-control-sm" style="width:75px;" name="min_freq" maxlength="100" value="{{ tag.minFrequency }}">
+                    </td>
+                    <td data-search="{{ tag.maxFrequency }}" data-order="{{ tag.maxFrequency }}">
+                        <input type="number" class="form-control form-control-sm" style="width:75px;" name="max_freq" maxlength="100" value="{{ tag.maxFrequency }}">
+                    </td>
                     <td class="text-center" data-search="{{ tag.uncertain }}" data-order="{{ tag.uncertain }}">
-                        <input name="uncertain" type="checkbox" {{ tag.uncertain ? 'checked' }} disabled>
+                        <input name="uncertain" type="checkbox" {{ tag.uncertain ? 'checked' }}>
                     </td>
-                    <td>{{ tag.callDistance }}</td>
+                    <td data-search="{{ tag.callDistance }}" data-order="{{ tag.callDistance }}">
+                        <input id="call_distance_m{{ tag.Id }}" type="number" class="form-control form-control-sm" style="width:75px;" name="call_distance_m" maxlength="100"
+                               value="{{ tag.callDistance }}" {{ tag.distanceNotEstimable ? 'readonly' }}>
+                    </td>
                     <td class="text-center" data-search="{{ tag.distanceNotEstimable }}" data-order="{{ tag.distanceNotEstimable }}">
-                        <input name="distanceNotEstimable" type="checkbox" {{ tag.distanceNotEstimable ? 'checked' }} disabled>
+                        <input id="distance_not_estimable_{{ tag.Id }}" name="distance_not_estimable" type="checkbox" {{ tag.distanceNotEstimable ? 'checked' }}>
                     </td>
-                    <td>{{ tag.numberIndividuals }}</td>
-                    <td>{{ tag.type }}</td>
+                    <td data-search="{{ tag.numberIndividuals }}" data-order="{{ tag.numberIndividuals }}">
+                        <input type="number" class="form-control form-control-sm" name="number_of_individuals" min="0" max="1000" value="{{ tag.numberIndividuals }}" required>
+                    </td>
+                    <td data-search="{{ tag.type }}" data-order="{{ tag.type }}">
+                        <select id="type{{ tag.Id }}" name="type" class="form-control form-control-sm" style="width:100px;">
+                            <option value="{{ tag.typeId }}" selected>{{ tag.type }}</option>
+                        </select>
+                    </td>
                     <td class="text-center" data-search="{{ tag.referenceCall }}" data-order="{{ tag.referenceCall }}">
-                        <input name="referenceCall" type="checkbox" {{ tag.referenceCall ? 'checked' }} disabled>
+                        <input name="reference_call" type="checkbox" {{ tag.referenceCall ? 'checked' }}>
                     </td>
-                    <td>{{ tag.comments }}</td>
+                    <td data-search="{{ tag.comments }}" data-order="{{ tag.comments }}">
+                        <textarea name="comments" class="form-control form-control-sm" maxlength="200" rows="1" style="resize:none;width:180px;">{{ tag.comments }}</textarea>
+                    </td>
                     <td>{{ tag.creationDate }}</td>
+                    <td>
+                        <a class="js-delete-button" href="#" data-id="{{ tag.Id }}" title="Delete tag">
+                            <span class="fas fa-trash"></span>
+                        </a>
+                    </td>
                 </tr>
             {% endfor %}
             </tbody>
@@ -88,22 +122,68 @@
     {{ parent() }}
     <script>
         $(document).ready(function () {
+            $('#tagsTable').show()
             $('#tagsTable').DataTable({
                 "pageLength": 8,
                 "lengthChange": false,
                 "stateSave": true,
                 "StateDuration": -1,
-                "order": [[0, 'asc']],
+                "order": [[1, 'asc']],
+                "columnDefs": [{
+                    "orderable": false,
+                    "targets": [0, 17]
+                }],
+                "scrollX": true,
             });
-            $('#tagsTable').show()
         });
 
-        document.addEventListener("DOMContentLoaded", function (event) {
+        document.addEventListener("DOMContentLoaded", function () {
+            var arr ={{ sound_types|json_encode|raw }};
+            'use strict';
             $(document).on('click', '#tagsExport', function () {
                 window.location.href = '{{ baseUrl }}/api/admin/tagMgr/export';
             });
+
+            $('.js-delete-button').click(function (e) {
+                if (!confirm('Are you sure you want to delete this tag?')) {
+                    return false;
+                }
+                let row = $(this).parents("tr");
+                deleteRequest('{{ baseUrl }}/api/tag/delete/' + $(this).data('id'), [], false, false, row.remove());
+            });
+            $(".js-tag-list").on('change', 'input, select, textarea', function () {
+                saveFormList($(this), 'api/admin/tagMgr/save');
+                var table = $('#tagsTable').DataTable()
+                var tr = $(this).closest("tr")
+                table.rows(tr).invalidate()
+            });
             $('#colId').change(function () {
                 $("#collectionForm").submit();
+            });
+            $('input[name=distance_not_estimable]').click(function () {
+                var id = $(this).attr('id').split('_')[3]
+                let callDistance = $('#call_distance_m' + id);
+                if ($(this).is(':checked')) {
+                    callDistance.val(null);
+                    callDistance.prop('readonly', true);
+                    return;
+                }
+                callDistance.prop('readonly', false);
+            });
+            $("select[name='type']").on('mouseenter ', function () {
+                if ($(this)[0].options.length < 2) {
+                    var id = $(this).attr('id').split('e')[1]
+                    if ($(this).val() > 0) {
+                        $("#type" + id).prepend("<option value='0'></option>")
+                    }
+                    console.log($("#taxon_class" + id).val() + $("#taxon_order" + id).val())
+                    var data = arr[$("#taxon_class" + id).val() + $("#taxon_order" + id).val()]
+                    for (var key in data) {
+                        if ($(this).val() != data[key][0]) {
+                            $("#type" + id).append("<option value=" + data[key][0] + ">" + data[key][1] + "</option>");
+                        }
+                    }
+                }
             });
         });
     </script>

@@ -23,19 +23,19 @@ class TagController extends BaseController
             throw new NotAuthenticatedException();
         }
 
-	    return json_encode([
-	        'errorCode' => 0,
+        return json_encode([
+            'errorCode' => 0,
             'data' => $this->twig->render('tag/callEstimation.html.twig', [
                 'tagId' => $tagId,
             ]),
         ]);
-	}
+    }
 
     /**
      * @return false|string
      * @throws \Exception
      */
-	public function create()
+    public function create()
     {
         if (!Auth::isUserLogged()) {
             throw new NotAuthenticatedException();
@@ -55,24 +55,22 @@ class TagController extends BaseController
             ->setUser(Auth::getUserLoggedID());
 
 
-
         return json_encode([
             'errorCode' => 0,
             'data' => $this->twig->render('tag/tag.html.twig', [
                 'tag' => $tag,
                 'displayDeleteButton' => 'hidden',
                 'recordingName' => isset($_POST['recording_name']) ? $_POST['recording_name'] : null,
-                'soundTypes' => (new SoundTypeProvider())->getList(),
             ]),
         ]);
-	}
+    }
 
     /**
      * @param int $tagId
      * @return false|string
      * @throws \Exception
      */
-	public function edit(int $tagId)
+    public function edit(int $tagId)
     {
         if (!Auth::isUserLogged()) {
             throw new NotAuthenticatedException();
@@ -85,7 +83,7 @@ class TagController extends BaseController
         if (!Auth::isUserAdmin()
             && (!isset($_SESSION["user_col_permission"])
                 || empty($_SESSION["user_col_permission"]))
-        ){
+        ) {
             throw new ForbiddenException();
         }
 
@@ -107,10 +105,8 @@ class TagController extends BaseController
             }
 
             $displaySaveButton = $isReviewGranted ? '' : 'hidden';
-         }
-
+        }
         /**********************/
-
         return json_encode([
             'errorCode' => 0,
             'data' => $this->twig->render('tag/tag.html.twig', [
@@ -120,7 +116,7 @@ class TagController extends BaseController
                 'displaySaveButton' => $displaySaveButton,
                 'disableTagForm' => !Auth::isUserAdmin() && !$isUserTagOwner,
                 'reviewPanel' => $isReviewGranted ? (new TagReviewController($this->twig))->show($tagId) : '',
-                'soundTypes' => (new SoundTypeProvider())->getList(),
+                'soundTypes' => (new SoundTypeProvider())->getList($tag->getTaxonClass(), $tag->getTaxonOrder()),
             ]),
         ]);
     }
@@ -129,7 +125,7 @@ class TagController extends BaseController
      * @return false|string
      * @throws \Exception
      */
-	public function save()
+    public function save()
     {
         if (!Auth::isUserLogged()) {
             throw new NotAuthenticatedException();
@@ -139,7 +135,7 @@ class TagController extends BaseController
         $data[Tag::REFERENCE_CALL] = 0;
         $data[Tag::DISTANCE_NOT_ESTIMABLE] = 0;
 
-        foreach($_POST as $key => $value) {
+        foreach ($_POST as $key => $value) {
             $data[$key] = htmlentities(strip_tags($value), ENT_QUOTES);
 
             if ($key === Tag::CALL_DISTANCE && empty($value)) {
@@ -167,14 +163,14 @@ class TagController extends BaseController
             'message' => 'Tag created successfully.',
             'tagId' => (new TagProvider())->insert($data),
         ]);
-	}
+    }
 
     /**
      * @param int $tagId
      * @return array|int
      * @throws \Exception
      */
-	public function delete(int $tagId)
+    public function delete(int $tagId)
     {
         if (!Auth::isUserAdmin() && (new TagProvider())->get($tagId)->getUser() != Auth::getUserLoggedID()) {
             throw new \Exception('The user doesn\'t have permissions to delete this tag.');
@@ -186,5 +182,5 @@ class TagController extends BaseController
             'errorCode' => 0,
             'message' => 'Tag deleted successfully.',
         ]);
-	}
+    }
 }

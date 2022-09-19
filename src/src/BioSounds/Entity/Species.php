@@ -24,7 +24,7 @@ class Species extends BaseProvider
      */
     public function getList(array $names)
     {
-		$query = 'SELECT ' . self::ID . ', ' . self::BINOMIAL. ', ' . self::NAME . ' FROM ' . self::TABLE_NAME;
+		$query = 'SELECT * FROM ' . self::TABLE_NAME;
 
 		$fields = [];
 		if (isset($names)) {

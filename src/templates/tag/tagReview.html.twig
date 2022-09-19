@@ -5,10 +5,11 @@
 			<div class="form-group form-inline float-right">
 				<button type="button" class="btn btn-outline-primary btn-sm mr-2" id="review-accept-btn">Accept</button>
 				<button type="button" class="btn btn-outline-warning btn-sm mr-2" id="review-correct-btn">Revise</button>
-				<button type="button" class="btn btn-outline-danger btn-sm" id="review-delete-btn">Delete</button>
-			</div>	
+				<button type="button" class="btn btn-outline-danger btn-sm mr-2" id="review-delete-btn">Delete</button>
+				<button type="button" class="btn btn-outline-secondary btn-sm" id="review-uncertain-btn">Uncertain</button>
+			</div>
 		</div>
-	</div>		
+	</div>
 	<input class="js-species-id" data-type="review" name="species_id" type="hidden">
 	<input name="tag_id" type="hidden" value="{{ tagId }}">
 	<input id="review_status" name="tag_review_status_id" type="hidden" value="">
@@ -19,7 +20,7 @@
 		<div class="invalid-feedback">
 			Please select a species from the list.
 		</div>
-	</div> 
+	</div>
 	<div class="form-group">
 		<label for="comments" class="sr-only">Comments</label>
 		<textarea id="comments" name="note" class="form-control form-control-sm" placeholder="Insert your comments" maxlength="200" rows="2"></textarea>
@@ -27,22 +28,22 @@
 	<div class="review-table">
 		<table class="table table-sm">
 			<thead>
-                <tr>
-                    <th scope="col" class="col-form-label-sm">Reviewer</th>
-                    <th scope="col" class="col-form-label-sm">Status</th>
-                    <th scope="col" class="col-form-label-sm">Species</th>
-                    <th scope="col" class="col-form-label-sm">Date</th>
-                </tr>
-            </thead>
+			<tr>
+				<th scope="col" class="col-form-label-sm">Reviewer</th>
+				<th scope="col" class="col-form-label-sm">Status</th>
+				<th scope="col" class="col-form-label-sm">Species</th>
+				<th scope="col" class="col-form-label-sm">Date</th>
+			</tr>
+			</thead>
 			<tbody>
-				{% for review in reviews %}
-					<tr>
-						<td class="form-control-sm">{{ review.reviewer }}</td>
-						<td class="form-control-sm">{{ review.status }}</td>
-						<td class="form-control-sm">{{ review.binomial }}</td>
-						<td class="form-control-sm">{{ review.creation_date|date("d/m/Y") }}</td>
-					</tr>
-				{% endfor %}
+			{% for review in reviews %}
+				<tr>
+					<td class="form-control-sm">{{ review.reviewer }}</td>
+					<td class="form-control-sm">{{ review.status }}</td>
+					<td class="form-control-sm">{{ review.binomial }}</td>
+					<td class="form-control-sm">{{ review.creation_date|date("d/m/Y") }}</td>
+				</tr>
+			{% endfor %}
 			</tbody>
 		</table>
 	</div>

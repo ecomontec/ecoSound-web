@@ -59,7 +59,7 @@ class AppController extends BaseClass
             return (new ApiController())->route($this->twig, array_slice($slugs, 1 + $subdirOffset));
         }
 
-        $controllerName =  __NAMESPACE__ . '\\' . ucfirst($className) . 'Controller';
+        $controllerName = __NAMESPACE__ . '\\' . ucfirst($className) . 'Controller';
         $controller = new $controllerName($this->twig);
 
 
@@ -77,7 +77,7 @@ class AppController extends BaseClass
     private function initApp()
     {
         (new Session())->startSecureSession();
-
+        session_regenerate_id();
         Utils::deleteOldTmpFiles();
     }
 }
