@@ -30,10 +30,10 @@ class RecordingService
      * @return RecordingListPresenter[]
      * @throws \Exception
      */
-    public function getListWithImages(int $colId, int $userId, int $limit, int $offSet, array $filter, string $sites = null): array
+    public function getListWithImages(int $colId, int $userId,  string $sites = null): array
     {
         $result = [];
-        $list = (new RecordingProvider())->getListByCollection($colId, $userId, $limit, $offSet, $filter, $sites);
+        $list = (new RecordingProvider())->getListByCollection($colId, $userId, $sites);
 
         $spectrogramService = new SpectrogramService();
 

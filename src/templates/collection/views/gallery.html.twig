@@ -1,17 +1,40 @@
 {% block body %}
-    <hr>
-    <div class='row'>
+    <table id="recordingTable" style="display:none;">
+        <thead class="table-borderless" style="display:none">
+        <tr>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody class="js-recording-list">
         {% for item in list %}
-            <div class="col-lg-4 sound-list-item">
-                <a href="{{ baseUrl }}/recording/show/{{ item.recording.id }}/{{ pageNum }}" title="BioSounds player">
-                    <img src="{{ baseUrl }}/{{ item.smallImage }}">
-                </a>
-                <span>
-                    <span style="display:inline;">{{ item.recording.name }}</span>
-                    <span style="display:inline; color: dodgerBlue;">&nbsp;&nbsp;{{ item.recording.labelName }}</span>
-                </span>
-                <span>{{ item.recording.file_date }}</span>
-            </div>
+            <tr class="sound-list-item" style="display:inline-block;width: 33.3%;text-align: center;">
+                <td style="width: 30%"></td>
+                <td>
+                    <a href="{{ baseUrl }}/recording/show/{{ item.recording.id }}" title="BioSounds player">
+                        <img src="{{ baseUrl }}/{{ item.smallImage }}">
+                    </a>
+                    <span>{{ item.recording.name }}</span>
+                    <span style="color: dodgerBlue;">{{ item.recording.labelName }}</span>
+                    <span>{{ item.recording.fileDate }}</span>
+                </td>
+                <td style="width: 30%"></td>
+            </tr>
         {% endfor %}
-    </div>
+        </tbody>
+    </table>
+    <script>
+        $(document).ready(function () {
+            var table = $('#recordingTable').DataTable({
+                "pageLength": 9,
+                "lengthChange": false,
+                "stateSave": true,
+                "StateDuration": -1,
+                "order": [[0, 'asc']],
+                "destroy": true,
+            });
+            $('#recordingTable').show()
+        });
+    </script>
 {% endblock %}

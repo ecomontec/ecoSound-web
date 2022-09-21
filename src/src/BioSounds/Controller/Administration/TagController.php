@@ -3,6 +3,12 @@
 namespace BioSounds\Controller\Administration;
 
 use BioSounds\Controller\BaseController;
+use BioSounds\Entity\Explore;
+use BioSounds\Entity\SoundType;
+use BioSounds\Entity\Tag;
+use BioSounds\Exception\ForbiddenException;
+use BioSounds\Provider\CollectionProvider;
+use BioSounds\Provider\SoundTypeProvider;
 use BioSounds\Provider\TagProvider;
 use BioSounds\Utils\Auth;
 
@@ -14,24 +20,31 @@ class TagController extends BaseController
      * @return string
      * @throws \Exception
      */
-    public function show(int $page = 1)
+    public function show(int $cId = null)
     {
         if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
         }
-
-        $tagProvider = new TagProvider();
-
-        $tagNum = $tagProvider->countTags();
-        $pages = $tagNum > 0 ? ceil($tagNum / self::ITEMS_PAGE) : 1;
+        if (isset($_POST['colId'])) {
+            $colId = $_POST['colId'];
+        }
+        if (!empty($cId)) {
+            $colId = $cId;
+        }
+        $collections = (new CollectionProvider())->getList();
+        if (empty($colId)) {
+            $colId = $collections[0]->getId();
+        }
+        $arr = [];
+        $sound_types = (new SoundTypeProvider())->getAllList();
+        foreach ($sound_types as $sound_type) {
+            $arr[$sound_type->getTaxonClass() . $sound_type->getTaxonOrder()][$sound_type->getSoundTypeId()] = [$sound_type->getSoundTypeId(), $sound_type->getName()];
+        }
 
         return $this->twig->render('administration/tags.html.twig', [
-            'tags' => $tagProvider->getTagPages(
-                $this::ITEMS_PAGE,
-                $this::ITEMS_PAGE * ($page - 1)
-            ),
-            'currentPage' => ($page > $pages) ?: $page,
-            'pages' => $pages
+            'colId' => $colId,
+            'tags' => (new TagProvider())->getTagPagesByCollection($colId),
+            'sound_types' => $arr,
         ]);
     }
 
@@ -51,7 +64,7 @@ class TagController extends BaseController
         header('Content-Disposition: attachment; filename=' . $file_name);
 
         $tagList = (new TagProvider())->getListByTags();
-        $tagAls[] = array('#', 'Species', 'Recording', 'Creation User', 'Time Start', 'Time End', 'Min Frequency', 'Max Frequency', 'Uncertain', 'Call Distance', 'Distance Not Estimable', 'Number of Individuals', 'Type', 'Reference Call', 'Comments', 'Creation Date(UTC)');
+        $tagAls[] = array('#', 'Species', 'Recording', 'User', 'Time Start', 'Time End', 'Min Frequency', 'Max Frequency', 'Uncertain', 'Call Distance', 'Distance Not Estimable', 'Number of Individuals', 'Type', 'Reference Call', 'Comments', 'Creation Date(UTC)');
         foreach ($tagList as $tagItem) {
             $tagArray = array(
                 $tagItem->getId(),
@@ -79,5 +92,37 @@ class TagController extends BaseController
         }
         fclose($fp);
         exit();
+    }
+
+    /**
+     * @return false|string
+     * @throws \Exception
+     */
+    public function save()
+    {
+        if (!Auth::isUserAdmin()) {
+            throw new ForbiddenException();
+        }
+        $tagProvider = new TagProvider();
+        $data = [];
+
+        foreach ($_POST as $key => $value) {
+            if ($key != "_text" && $key != "_hidden") {
+                if (strrpos($key, '_')) {
+                    $key = substr($key, 0, strrpos($key, '_'));
+                }
+                $data[$key] = $value;
+                if ($key === Tag::CALL_DISTANCE && empty($value)) {
+                    $data[$key] = null;
+                }
+            }
+        }
+
+        $tagProvider->update($data);
+        return json_encode([
+            'errorCode' => 0,
+            'message' => 'Tag updated successfully.'
+        ]);
+
     }
 }

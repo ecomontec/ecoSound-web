@@ -2,17 +2,18 @@
 
 namespace BioSounds\Controller;
 
-use BioSounds\Entity\LabelAssociation;
+use BioSounds\Entity\IndexLog;
 use BioSounds\Entity\Recording;
 use BioSounds\Entity\UserPermission;
 use BioSounds\Entity\Permission;
 use BioSounds\Entity\User;
-use BioSounds\Exception\ForbiddenException;
+use BioSounds\Exception\InvalidParameterException;
 use BioSounds\Exception\NotAuthenticatedException;
 use BioSounds\Presenter\FrequencyScalePresenter;
 use BioSounds\Presenter\RecordingPresenter;
 use BioSounds\Presenter\TagPresenter;
 use BioSounds\Provider\CollectionProvider;
+use BioSounds\Provider\IndexTypeProvider;
 use BioSounds\Provider\LabelAssociationProvider;
 use BioSounds\Provider\LabelProvider;
 use BioSounds\Provider\RecordingProvider;
@@ -21,6 +22,7 @@ use BioSounds\Service\RecordingService;
 use BioSounds\Utils\Auth;
 use BioSounds\Utils\Utils;
 use Twig\Environment;
+use Symfony\Component\Process\Process;
 
 class RecordingController extends BaseController
 {
@@ -30,7 +32,6 @@ class RecordingController extends BaseController
 
     private $recordingId;
     private $fftSize;
-    private $collectionPage;
     private $recordingService;
 
     /**
@@ -58,14 +59,13 @@ class RecordingController extends BaseController
      * @return string
      * @throws \Exception
      */
-    public function show(int $id, int $collectionPage = 1)
+    public function show(int $id)
     {
         if (empty($id)) {
             throw new \Exception(ERROR_EMPTY_ID);
         }
 
         $this->recordingId = $id;
-        $this->collectionPage = $collectionPage;
 
         $recordingData = (new RecordingProvider())->get($this->recordingId);
 
@@ -89,15 +89,14 @@ class RecordingController extends BaseController
             $this->recordingPresenter->setEstimateDistID(filter_var($_POST['estimateDistID'], FILTER_VALIDATE_INT));
         }
         $this->setCanvas($recordingData);
-
         return $this->twig->render('recording/recording.html.twig', [
             'player' => $this->recordingPresenter,
             'sound' => $this->recordingPresenter->getRecording(),
             'frequency_data' => $this->recordingPresenter->getFrequencyScaleData(),
-            'collection_page' => $this->collectionPage,
             'title' => sprintf(self::PAGE_TITLE, $recordingData[Recording::NAME]),
             'labels' => Auth::isUserLogged() ? (new LabelProvider())->getBasicList(Auth::getUserLoggedID()) : '',
             'myLabel' => Auth::isUserLogged() ? (new LabelAssociationProvider())->getUserLabel($id, Auth::getUserLoggedID()) : '',
+            'indexs' => Auth::isUserLogged() ? (new IndexTypeProvider())->getList() : '',
         ]);
     }
 
@@ -176,13 +175,19 @@ class RecordingController extends BaseController
 
         /* Get the spectrogram selection values to generate zoom and filter */
         if (isset($_POST['t_min']) && isset($_POST['t_max']) && isset($_POST['f_min']) && isset($_POST['f_max'])) {
-            $minTime = filter_var($_POST['t_min'], FILTER_SANITIZE_STRING);
-            $maxTime = filter_var($_POST['t_max'], FILTER_SANITIZE_STRING);
-            $minFrequency = filter_var($_POST['f_min'], FILTER_SANITIZE_STRING);
-            $maxFrequency = filter_var($_POST['f_max'], FILTER_SANITIZE_STRING);
+            $minTime = $_POST['t_min'];
+            $maxTime = $_POST['t_max'];
+            $minFrequency = $_POST['f_min'];
+            $maxFrequency = $_POST['f_max'];
             if (isset($_POST['filter'])) {
                 $filter = filter_var($_POST['filter'], FILTER_VALIDATE_BOOLEAN);
             }
+        }
+        if (isset($_GET['t_min']) && isset($_GET['t_max']) && isset($_GET['f_min']) && isset($_GET['f_max'])) {
+            $minTime = $_GET['t_min'];
+            $maxTime = $_GET['t_max'];
+            $minFrequency = $_GET['f_min'];
+            $maxFrequency = $_GET['f_max'];
         }
 
         // Spectrogram Image Width
@@ -454,7 +459,7 @@ class RecordingController extends BaseController
 
         $data = [];
         foreach ($_POST as $key => $value) {
-            $data[$key] = filter_var($value, FILTER_SANITIZE_STRING);
+            $data[$key] = $value;
         }
 
         if ((new LabelAssociationProvider())->setEntry($data) > 0) {
@@ -470,8 +475,70 @@ class RecordingController extends BaseController
     {
         return json_encode([
             'errorCode' => 0,
-            'data' => $this->twig->render('recording/player/newLabel.html.twig'),
+            'data' => $this->twig->render('recording/player/newLabel.html.twig')
         ]);
+    }
+
+    public function getMaadlabel(int $id)
+    {
+        return $this->twig->render('recording/player/maadLabel.html.twig', [
+            'index' => (new IndexTypeProvider())->get($id),
+        ]);
+    }
+
+    public function maad()
+    {
+        if (!Auth::isUserLogged()) {
+            throw new NotAuthenticatedException();
+        }
+        foreach ($_POST as $key => $value) {
+            $data[$key] = $value;
+        }
+        $str = 'python3 ' . ABSOLUTE_DIR . 'bin/getMaad.py' .
+            ' -p ' . ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . '/' . $data['recording_directory'] . '/' .
+            ' -f ' . explode('.', $data['filename'])[0] .
+            ' --it ' . $data['index'] .
+            ' --ch ' . ($data['channel'] == 2 ? 'right' : 'left') .
+            ' --mint ' . $data['minTime'] .
+            ' --maxt ' . $data['maxTime'] .
+            ' --minf ' . $data['minFrequency'] .
+            ' --maxf ' . $data['maxFrequency'];
+        if ($data['param'] != '') {
+            $str = $str . ' --pa ' . substr($data['param'], 0, -1);
+        }
+        exec($str . " 2>&1", $out, $status);
+        if ($status == 0 && $out[count($out) - 1] != "0") {
+            $result = $out[count($out) - 1];
+            if ($data['channel_num'] == 1) {
+                $channel = 'Mono';
+            } elseif ($data['channel'] == 2) {
+                $channel = 'Right';
+            } else {
+                $channel = 'Left';
+            }
+            return json_encode([
+                'errorCode' => 0,
+                'data' => $this->twig->render('recording/player/maadResult.html.twig', [
+                    'title' => $data['index'],
+                    'result' => $result,
+                    'recording_id' => $data['recording_id'],
+                    'index_id' => $data['index_id'],
+                    'minTime' => $data['minTime'],
+                    'maxTime' => $data['maxTime'],
+                    'minFrequency' => $data['minFrequency'],
+                    'maxFrequency' => $data['maxFrequency'],
+                    'param' => substr('Channel?' . $channel . '@' . $data['param'], 0, -1),
+                ])
+            ]);
+        } else {
+            return json_encode([
+                'errorCode' => 0,
+                'data' => $this->twig->render('recording/player/maadResult.html.twig', [
+                    'title' => 'Invalid Parameter',
+                    'result' => '',
+                ])
+            ]);
+        }
     }
 
     public function saveLabel()
@@ -482,7 +549,7 @@ class RecordingController extends BaseController
 
         $data = [];
         foreach ($_POST as $key => $value) {
-            $data[$key] = filter_var($value, FILTER_SANITIZE_STRING);
+            $data[$key] = $value;
         }
 
         $lblName = $data["cust_label"];
@@ -496,6 +563,25 @@ class RecordingController extends BaseController
         return json_encode([
             'errorCode' => 0,
             'message' => 'Recording Label created successfully.'
+        ]);
+    }
+
+    public function saveMaadResult()
+    {
+        if (!Auth::isUserLogged()) {
+            throw new NotAuthenticatedException();
+        }
+
+        $data = [];
+        $data['user_id'] = Auth::getUserLoggedID();
+
+        foreach ($_POST as $key => $value) {
+            $data[$key] = $value;
+        }
+        (new IndexLog())->insert($data);
+        return json_encode([
+            'errorCode' => 0,
+            'message' => 'Index saved successfully.'
         ]);
     }
 }

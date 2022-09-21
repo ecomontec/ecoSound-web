@@ -7,12 +7,10 @@
             <div id="playerCursor" class="player-line"></div>
             <img src="{{ player.imageFilePath }}" id="cropbox"/>
         </div>
-
         <div class="row no-gutters mt-1">
             <div class="col-auto mr-auto">
                 <div>
-                    <button id="play" class="btn btn-link" data-playing="false" role="switch" aria-checked="false"
-                            disabled>
+                    <button id="play" class="btn btn-link" data-playing="false" role="switch" aria-checked="false" disabled>
                         <i class="fas fa-play"></i>
                     </button>
                     <button id="stop" class="btn btn-link">
@@ -27,13 +25,16 @@
                 </div>
             </div>
             <div class="col-auto">
-                <form class="form-inline" id="recordingForm"
-                      action="{{ baseUrl }}/recording/show/{{ player.recording.recording_id }}" method="post">
+                <form class="form-inline" id="recordingForm" action="{{ baseUrl }}/recording/show/{{ player.recording.recording_id }}" method="post">
                     <input type="hidden" name="channel" value="{{ player.channel }}">
+                    <input type="hidden" name="channel_num" value="{{ player.recording.channel_num }}">
                     <input type='hidden' name='showTags' value="{{ player.showTags }}">
                     <input type='hidden' name='estimateDistID' value="{{ player.estimateDistID }}">
+                    <input type="hidden" name="collection_id" value="{{ player.recording.col_id }}">
                     <input type="hidden" name="recording_id" value="{{ player.recording.recording_id }}">
                     <input type="hidden" name="recording_name" value="{{ player.recording.name }}">
+                    <input type="hidden" name="filename" value="{{ player.recording.filename }}">
+                    <input type="hidden" name="recording_directory" value="{{ player.recording.directory }}">
                     <input type="hidden" name="specWidth" value="{{ player.spectrogramWidth }}">
                     <input type="hidden" name="specHeight" value="{{ player.spectrogramHeight }}">
                     <input type="hidden" name="minTimeView" value="{{ player.minTime }}">
@@ -57,10 +58,8 @@
                         </button>
                     </div>
                     <div class="btn-group btn-group-toggle dark-buttons" data-toggle="buttons">
-                        <label for="continuous-play" class="btn btn-link {{ player.isContinuousPlay ? 'active':'' }}"
-                               title="Continuous playback">
-                            <input type="checkbox" id="continuous-play" name="continuous_play"
-                                   autocomplete="off" {{ player.isContinuousPlay ? 'checked':'' }}>
+                        <label for="continuous-play" class="btn btn-link {{ player.isContinuousPlay ? 'active':'' }}" title="Continuous playback">
+                            <input type="checkbox" id="continuous-play" name="continuous_play" autocomplete="off" {{ player.isContinuousPlay ? 'checked':'' }}>
                             <i class="fas fa-redo-alt"></i>
                         </label>
                         <label for="filter" class="btn btn-link" title="Filter">
@@ -73,8 +72,8 @@
         </div>
     </div>
     {% if isUserLogged %}
-        <div>
-            <div class="col-auto ">
+        <div class="col-3">
+            <div>
                 <label class="col-form-label">
                     <strong>My Label:</strong>
                 </label>
@@ -83,7 +82,7 @@
                 <form id="reclabelform" novalidate>
                     <input type="hidden" name="recording_id" value="{{ player.recording.recording_id }}"/>
                     <input type="hidden" name="user_id" value="{{ user_id }}"/>
-                    &nbsp;&nbsp;&nbsp;<select id="reclabel" name="label_id" required>
+                    <select id="reclabel" name="label_id" required>
                         {% for lbl in labels %}
                             <option value="{{ lbl.id }}" {{ lbl.id == myLabel.id ? 'selected' }}>{{ lbl.name }}</option>
                         {% endfor %}
@@ -93,7 +92,85 @@
                     </a>
                 </form>
             </div>
+            <div>
+                <label class="col-form-label">
+                    <strong>Acoustic Index Analysis:</strong>
+                </label>
+            </div>
+            <div>
+                <select id="maad" name="maad_id" autocomplete="off" required>
+                    {% for index in indexs %}
+                        <option value="{{ index.indexId }}">{{ index.name }}</option>
+                    {% endfor %}
+                </select>
+                <a class="col-form-label" href="{{ indexs[0].URL }}" target="_blank" title="Documentation"> <i class="fa fa-book"></i></a>
+                <div class="col-form-label">
+                    <strong>Description:</strong>
+                    <div class="col-form-label-sm">{{ indexs[0].description }}</div>
+                </div>
+                {% if indexs[0].param is not null and indexs[0].param != '' %}
+                    {% for p in indexs[0].param|split('!') %}
+                        <div class="form-inline">
+                            <label class="ml-1 col-form-label-sm" for="{{ p|split('|')[0] }}">{{ p|split('|')[0] }}</label>
+                        </div>
+                        <div class="form-group form-inline">
+                            <input id="{{ p|split('|')[0] }}" name="{{ p|split('|')[0] }}" class="form-control form-control-sm" size="4" type="text">
+                            <label class="ml-2 col-form-label-sm">default: {{ p|split('|')[1] }}</label>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                <a href="{{ baseUrl }}/recording/maad" class="js-maad-modal btn btn-outline-primary">Submit</a>
+                <script>
+                    $(".js-maad-modal").click(function (e) {
+                        let data = []
+                        let param = ''
+                        {% if indexs[0].param is not null and indexs[0].param != '' %}
+                        {% for p in indexs[0].param|split('!') %}
+                        if ($('#{{ p|split('|')[0] }}').val() != '') {
+                            param = param + '{{ p|split('|')[0] }}' + '?' + $('#{{ p|split('|')[0] }}').val() + '@'
+                        }
+                        {% endfor %}
+                        {% endif %}
+                        data = {
+                            'minTime': $('input[name=minTimeView]').val(),
+                            'maxTime': $('input[name=maxTimeView]').val(),
+                            'minFrequency': $('input[name=minFreqView]').val(),
+                            'maxFrequency': $('input[name=maxFreqView]').val(),
+                            'collection_id': $('input[name=collection_id]').val(),
+                            'recording_id': $('input[name=recording_id]').val(),
+                            'filename': $('input[name=filename]').val(),
+                            'recording_directory': $('input[name=recording_directory]').val(),
+                            'index_id': $('#maad').val(),
+                            'index': $('#maad').find("option:selected").text(),
+                            'channel_num': $('input[name=channel_num]').val(),
+                            'channel': $('input[name=channel]').val(),
+                            'param': param,
+                        };
+                        requestModal(this.href, data, true);
+                        e.preventDefault();
+                    });
+                </script>
+            </div>
         </div>
+        <script>
+            $("#maad").change(function () {
+                {% for index in indexs %}
+                if ($("#maad").val() =={{ index.indexId }}) {
+                    $(".maad-laber").attr('href', "{{ index.URL }}")
+                    $(".maad-laber").text("{{ index.description }}")
+                    $.ajax({
+                        url: "{{ baseUrl }}/recording/getMaadlabel/" + {{ index.indexId }},
+                        success: function (data) {
+                            $("#maad").nextAll().remove()
+                            if (data) {
+                                $("#maad").after(data)
+                            }
+                        },
+                    })
+                }
+                {% endfor %}
+            })
+        </script>
     {% endif %}
-    {#    {% include 'recording/player/frequencyScale.html.twig' %} #}
+    {# {% include 'recording/player/frequencyScale.html.twig' %} #}
 </div>

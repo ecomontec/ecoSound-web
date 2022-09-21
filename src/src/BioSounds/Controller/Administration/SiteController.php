@@ -19,25 +19,21 @@ class SiteController extends BaseController
      * @return false|string
      * @throws \Exception
      */
-    public function show(int $page = 1)
+    public function show()
     {
         if (!Auth::isUserAdmin()) {
             throw new ForbiddenException();
         }
-        // echo Utils::getSetting('license');
-
+        $arr = [];
         $siteProvider = new SiteProvider();
-
-        $siteNum = $siteProvider->countSites();
-        $pages = $siteNum > 0 ? ceil($siteNum / self::ITEMS_PAGE) : 1;
+        $explores = (new Explore())->getAllExplores();
+        foreach ($explores as $explore) {
+            $arr['pid' . $explore['pid']]['id' . $explore['explore_id']] = [$explore['explore_id'], $explore['name']];
+        }
         return $this->twig->render('administration/sites.html.twig', [
-            'explores' => (new Explore())->getAllExplores(),
-            'siteList' => $siteProvider->getSitePages(
-                $this::ITEMS_PAGE,
-                $this::ITEMS_PAGE * ($page - 1)
-            ),
-            'currentPage' => ($page > $pages) ?: $page,
-            'pages' => $pages
+            'explores' => $arr,
+            'realms' => (new Explore())->getExplores(),
+            'siteList' => $siteProvider->getList(Auth::getUserID()),
         ]);
     }
 
@@ -76,13 +72,13 @@ class SiteController extends BaseController
                     $data['functional_group_id'] = $sitePdoValue == '' ? 0 : $sitePdoValue;
                     break;
                 case 'longitude':
-                    $data['longitude_WGS84_dd_dddd'] = filter_var($sitePdoValue, FILTER_SANITIZE_STRING);
+                    $data['longitude_WGS84_dd_dddd'] = $sitePdoValue;
                     break;
                 case 'latitude':
-                    $data['latitude_WGS84_dd_dddd'] = filter_var($sitePdoValue, FILTER_SANITIZE_STRING);
+                    $data['latitude_WGS84_dd_dddd'] = $sitePdoValue;
                     break;
                 default:
-                    $data[$key] = filter_var($sitePdoValue, FILTER_SANITIZE_STRING);
+                    $data[$key] = $sitePdoValue;
             }
         }
 
@@ -94,7 +90,7 @@ class SiteController extends BaseController
             ]);
         } else {
             $data['creation_date_time'] = date('Y-m-d H:i:s', time());
-            $data['user_id'] = $_SESSION['user_id'];
+            $data['user_id'] = Auth::getUserID();
 
             if ($siteEnt->insert($data) > 0) {
                 return json_encode([

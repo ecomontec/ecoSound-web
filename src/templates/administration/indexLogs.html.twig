@@ -1,0 +1,67 @@
+{% extends 'administration/admin.html.twig' %}
+
+{% block admin_content %}
+    <div class="card mb-3" id="indexLogsList">
+        <div class="card-header border-light bg-white text-right">
+            <button id="indexLogsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#indexLogsExport" aria-expanded="false" aria-controls="indexLogsExport">
+                <i class="fa fa-download"></i>
+                Index Log Export
+            </button>
+        </div>
+        <table id="indexLogsTable" style="display:none">
+            <thead class="form-control-sm table-borderless">
+            <tr>
+                <th>#</th>
+                <th>Recording</th>
+                <th>User</th>
+                <th>Index</th>
+                <th>Time Start</th>
+                <th>Time End</th>
+                <th>Min Freq</th>
+                <th>Max Freq</th>
+                <th>Parameter</th>
+                <th>Result</th>
+                <th>Creation Date (UTC)</th>
+            </tr>
+            </thead>
+            <tbody class="form-control-sm js-index-log-list">
+            {% for indexLog in indexLogs %}
+                <tr>
+                    <td>{{ indexLog.logId }}</td>
+                    <td>{{ indexLog.recordingName }}</td>
+                    <td>{{ indexLog.userName }}</td>
+                    <td>{{ indexLog.indexName|replace({'_':' '}) }}</td>
+                    <td>{{ indexLog.minTime }}</td>
+                    <td>{{ indexLog.maxTime }}</td>
+                    <td>{{ indexLog.minFrequency }}</td>
+                    <td>{{ indexLog.maxFrequency }}</td>
+                    <td>{{ indexLog.param|replace({'?':': ','@':' '}) }}</td>
+                    <td>{% for v in indexLog.value|split('!') %}{{ v|split('?')[0] }}: {{ v|split('?')[1]|number_format(2,'.',',') }} {% endfor %}</td>
+                    <td>{{ indexLog.date }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+{% block header %}
+    {{ parent() }}
+    <script>
+        $(document).ready(function () {
+            $('#indexLogsTable').DataTable({
+                "pageLength": 8,
+                "lengthChange": false,
+                "stateSave": true,
+                "StateDuration": -1,
+                "order": [[0, 'asc']],
+            });
+            $('#indexLogsTable').show()
+        });
+        $(function () {
+            'use strict';
+            $(document).on('click', '#indexLogsExport', function () {
+                window.location.href = '{{ baseUrl }}/api/admin/indexLogMgr/export';
+            });
+        });
+    </script>
+{% endblock %}

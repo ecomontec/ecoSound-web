@@ -2,6 +2,7 @@
 
 namespace BioSounds\Controller;
 
+use BioSounds\Controller\Administration\IndexLogController;
 use BioSounds\Controller\Administration\UserController;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Utils\Auth;
@@ -53,7 +54,7 @@ class AdminController extends BaseController
      */
     public function collections(int $page = 1)
     {
-        return (new CollectionController($this->twig))->show($page);
+        return (new CollectionController($this->twig))->show();
     }
 
     /**
@@ -71,7 +72,7 @@ class AdminController extends BaseController
      */
     public function users(int $pageId = 1)
     {
-        return (new UserController($this->twig))->show($pageId);
+        return (new UserController($this->twig))->show();
     }
 
     /**
@@ -91,10 +92,7 @@ class AdminController extends BaseController
      */
     public function recordings(...$args)
     {
-        return (new RecordingController($this->twig))->show(
-            empty($args[0]) ? null : $args[0],
-            empty($args[1]) ? 1 : $args[1]
-        );
+        return (new RecordingController($this->twig))->show(empty($args[0]) ? null : $args[0]);
     }
 
     /**
@@ -112,9 +110,9 @@ class AdminController extends BaseController
      * @return false|string
      * @throws \Exception
      */
-    public function sites(int $pageId = 1)
+    public function sites()
     {
-        return (new SiteController($this->twig))->show($pageId);
+        return (new SiteController($this->twig))->show();
     }
 
     /**
@@ -141,7 +139,7 @@ class AdminController extends BaseController
      * @return false|string
      * @throws \Exception
      */
-    public function tags(int $pageId = 1)
+    public function tags()
     {
         return (new TagController($this->twig))->show();
     }
@@ -151,17 +149,28 @@ class AdminController extends BaseController
      * @param int|null $id
      * @return mixed
      */
-    public function siteTag(string $action, int $id = null)
+    public function tagMgr(string $action, int $id = null)
     {
         return (new TagController($this->twig))->$action($id);
     }
+
+    /**
+     * @param string|null $action
+     * @return false|string
+     * @throws \Exception
+     */
+    public function indexLogs()
+    {
+        return (new IndexLogController($this->twig))->show();
+    }
+
     /**
      * @param string $action
      * @param int|null $id
      * @return mixed
      */
-    public function tagMgr(string $action, int $id = null)
+    public function indexLogMgr(string $action, int $id = null)
     {
-        return (new TagController($this->twig))->$action($id);
+        return (new IndexLogController($this->twig))->$action($id);
     }
 }

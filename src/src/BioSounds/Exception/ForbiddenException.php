@@ -4,6 +4,8 @@
 namespace BioSounds\Exception;
 
 
+use Exception;
+
 /**
  * Class ForbiddenException
  * @package BioSounds\Exception

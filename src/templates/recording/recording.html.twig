@@ -10,7 +10,7 @@
                             <a href="{{ baseUrl }}/collection/index">Collections</a>
                         </li>
                         <li class="breadcrumb-item" aria-current="page">
-                            <a href="{{ baseUrl }}/collection/show/{{ player.recording.col_id }}/{{ collection_page }}/gallery">
+                            <a href="{{ baseUrl }}/collection/show/{{ player.recording.col_id }}/gallery">
                                 {{ player.recording.collection.name }}
                             </a>
                         </li>
@@ -20,7 +20,8 @@
             </div>
             <div class="col-2 mt-1 text-right">
                 <div class="dropdown">
-                    <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-cog"></i>
                         Utilities
                     </button>
@@ -31,7 +32,8 @@
                         <a class="dropdown-item" href="{{ player.imageFilePath }}" download>
                             <i class='fas fa-file-image mr-1'></i>
                             Download Spectrogram</a>
-                        <a class="dropdown-item js-open-modal" href="{{ baseUrl }}/recording/details/{{ player.recording.recording_id }}">
+                        <a class="dropdown-item js-open-modal"
+                           href="{{ baseUrl }}/recording/details/{{ player.recording.recording_id }}">
                             <i class='fas fa-info-circle mr-1'></i>
                             File Info</a>
                     </div>
@@ -41,26 +43,27 @@
         <hr>
 
         <div class="row mb-5">
-            <div class="col-auto ml-auto mr-5 text-center recording-navigation">
+            <div class="col-2 ml-auto mr-5 text-center recording-navigation">
                 <ul class="nav flex-column nav-pills nav-fill">
                     {% if isUserLogged %}
-                    <li class="nav-item">
-                        <a class="nav-link js-new-tag" href="{{ baseUrl }}/api/tag/create" title="New tag">
-                            <i class="fas fa-tag"></i>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link js-toggle-tags" href="#" title="Toggle tags" data-show={{ player.isShowTags }}>
-                            {% if player.isShowTags %}
-                                <i class='fas fa-eye-slash'></i>
-                            {% else %}
-                                <i class="fas fa-eye"></i>
-                            {% endif %}
-                        </a>
-                    </li>
+                        <li class="nav-item">
+                            <a class="nav-link js-new-tag" href="{{ baseUrl }}/api/tag/create" title="New tag">
+                                <i class="fas fa-tag"></i>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link js-toggle-tags" href="#" title="Toggle tags" data-show={{ player.isShowTags }}>
+                                {% if player.isShowTags %}
+                                    <i class='fas fa-eye-slash'></i>
+                                {% else %}
+                                    <i class="fas fa-eye"></i>
+                                {% endif %}
+                            </a>
+                        </li>
                     {% endif %}
                     <li class="nav-item">
-                        <a class="nav-link readingMode" href="{{ baseUrl }}/recording/show/{{ player.recording.recording_id }}" title="Reading mode">
+                        <a class="nav-link readingMode"
+                           href="{{ baseUrl }}/recording/show/{{ player.recording.recording_id }}" title="Reading mode">
                             <i class="fas fa-compact-disc"></i>
                         </a>
                     </li>
@@ -92,13 +95,15 @@
                     <label>Mono File</label>
                 {% endif %}
                 <hr>
-                <a href="#" class="viewport" title="Overall view"><img src="{{ baseUrl }}/{{ player.viewPortFilePath }}"></a>
+                <a href="#" class="viewport" title="Overall view"><img
+                            src="{{ baseUrl }}/{{ player.viewPortFilePath }}"></a>
                 <hr>
-                <input id="playback-rate" class="custom-range js-playback-rate-control" type="range" min="0.05" max="1" step="0.01" value="1">
+                <input id="playback-rate" class="custom-range js-playback-rate-control" type="range" min="0.05" max="1"
+                       step="0.01" value="1">
                 <label for="playback-rate">Speed:
                     <span class="playback-rate-value">1.0</span>x</label>
             </div>
-            <div class="col-12-auto mr-auto">
+            <div class="col-9 mr-auto">
                 {% include 'recording/player/player.html.twig' %}
             </div>
         </div>
@@ -107,7 +112,6 @@
 
 {% block header %}
     {{ parent() }}
-
     <script src="{{ baseUrl }}/templates/recording/js/recording.js" defer></script>
 
     <script src="{{ baseUrl }}/assets/js/jquery.Jcrop.min.js" defer></script>
@@ -167,19 +171,30 @@
 
             $('#reclabelform').submit(function (e) {
                 e.preventDefault();
-
-                postRequest('{{ baseUrl }}/recording/update', $(this).serialize(), false, false, function () {});
+                postRequest('{{ baseUrl }}/recording/update', $(this).serialize(), false, false, function () {
+                });
             });
-
 
             $(document).on('click', '#newLabelButton', function () {
                 $('#newLabelForm').submit();
             });
 
-
             $(document).on('submit', '#newLabelForm', function (e) {
+                e.preventDefault();
                 postRequest('{{ baseUrl }}/recording/saveLabel', $(this).serialize(), false, false, function () {
                     location.reload();
+                });
+            });
+
+            $(document).on('click', '#maadResultButton', function () {
+                $('#maadResultForm').submit();
+            });
+
+
+            $(document).on('submit', '#maadResultForm', function (e) {
+                e.preventDefault();
+                postRequest('{{ baseUrl }}/recording/saveMaadResult', $(this).serialize(), false, false, function () {
+                    $('#modal-div').modal('hide');
                 });
             });
         });

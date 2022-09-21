@@ -1,122 +1,137 @@
-<ul class="list-group list-group-flush my-4">
-
+<table id="recordingTable" style="display:none;">
+    <thead class="table-borderless" style="display:none">
+    <tr>
+        <th></th>
+        <th></th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody class="js-recording-list">
     {% for item in list %}
-
-        <li class="list-group-item">
-            <div class="row">
-                <div class="col-auto mr-auto">
-
-                    {% if item.recording.soundData is not empty %}
-                        <h5>
-                            <strong>{{ item.recording.soundData.speciesName }}</strong>
-                        </h5>
-                        <h6>Type:
-                            <small>{{ item.recording.soundData.typeName }}</small>
-                        </h6>
-                        <h6>Subtype:
-                            <small>{{ item.recording.soundData.subtype }}</small>
-                        </h6>
-                        <h6>Rating:
-                            <small>{{ item.recording.soundData.rating }}</small>
-                        </h6>
-                        <h6>Filename:
-                            <small>{{ item.recording.name }}</small>
-                        </h6>
-                    {% else %}
-                        <h5>
-                            <strong>{{ item.recording.name }}</strong>
-                        </h5>
-                    {% endif %}
-                    <h6>Date:
-                        <small>{{ item.recording.fileDate|date("d/m/Y") }}</small>
-                    </h6>
-                    <h6>Time:
-                        <small>{{ item.recording.fileTime }}</small>
-                    </h6>
-                    <h6>User:
-                        <small>{{ item.recording.getUserFullName }}
-                        </small>
-                    </h6>
-                    <h6>DOI:
-                        <small>{{ item.recording.Doi }}
-                        </small>
-                    </h6>
-                    <h6>Site:
-                        <small>{{ item.recording.siteName }}
-                        </small>
-                    </h6>
-                    <h6>License:
-                        <small>{{ item.recording.licenseName }}</small>
-                        {% if item.recording.licenseName == 'CC-BY' %}
-                            <a href="https://creativecommons.org/licenses/by/4.0"><img
-                                        src="{{ licenseImagesUrl }}/ccby.png" alt="cc by"/></a>
-                        {% elseif item.recording.licenseName == 'CC-BY-SA' %}
-                            <a href="https://creativecommons.org/licenses/by-sa/4.0"><img
-                                        src="{{ licenseImagesUrl }}/ccby-sa.png" alt="cc by-sa"/></a>
-                        {% elseif item.recording.licenseName == 'CC-BY-NC' %}
-                            <a href="https://creativecommons.org/licenses/by-nc/4.0"><img
-                                        src="{{ licenseImagesUrl }}/ccby-nc.png" alt="cc by-nc"/></a>
-                        {% elseif item.recording.licenseName == 'CC-BY-NC-SA' %}
-                            <a href="https://creativecommons.org/licenses/by-nc-sa/4.0"><img
-                                        src="{{ licenseImagesUrl }}/ccby-nc-sa.png" alt="cc by-nc-sa"/></a>
-                        {% elseif item.recording.licenseName == 'CC-BY-ND' %}
-                            <a href="https://creativecommons.org/licenses/by-nd/4.0"><img
-                                        src="{{ licenseImagesUrl }}/ccby-nd.png" alt="cc by-nd"/></a>
-                        {% elseif item.recording.licenseName == 'CC-BY-NC-ND' %}
-                            <a href="https://creativecommons.org/licenses/by-nc-nd/4.0"><img
-                                        src="{{ licenseImagesUrl }}/ccby-nc-nd.png" alt="cc by-nc-nd"/></a>
-                        {% endif %}
-                    </h6>
-                    {% if item.recording.siteData is not empty %}
-                        <h6>Site:
-                            <small>{{ item.recording.siteData.name }}</small>
-                        </h6>
-                    {% endif %}
-                    {% if item.recording.note is not empty %}
-                        <h6>Notes:
-                            <small>{{ item.recording.note }}</small>
-                        </h6>
-                    {% endif %}
-                </div>
-                <div class="col-3">
-                    <h6>&nbsp;</h6>
+        <tr style="vertical-align:top;">
+            <td style="width: 25%;">
+                {% if item.recording.soundData is not empty %}
+                    <h5>
+                        <strong>{{ item.recording.soundData.speciesName }}</strong>
+                    </h5>
                     <h6>
-                        My Label:<small>
-                            {{ item.recording.labelName }}
-                        </small>
+                        Type:
+                        <small>{{ item.recording.soundData.typeName }}</small>
                     </h6>
-                    {% if item.recording.realmName is not empty %}
-                        <h6>
-                            Realm:<small>
-                                {{ item.recording.realmName }}
-                            </small>
-                        </h6>
+                    <h6>
+                        Subtype:
+                        <small>{{ item.recording.soundData.subtype }}</small>
+                    </h6>
+                    <h6>
+                        Rating:
+                        <small>{{ item.recording.soundData.rating }}</small>
+                    </h6>
+                    <h6>
+                        Filename:
+                        <small>{{ item.recording.name }}</small>
+                    </h6>
+                {% else %}
+                    <h5>
+                        <strong>{{ item.recording.name }}</strong>
+                    </h5>
+                {% endif %}
+                <h6>
+                    Date:
+                    <small>{{ item.recording.fileDate|date("d/m/Y") }}</small>
+                </h6>
+                <h6>
+                    Time:
+                    <small>{{ item.recording.fileTime }}</small>
+                </h6>
+                <h6>
+                    User:
+                    <small>{{ item.recording.getUserFullName }}</small>
+                </h6>
+                <h6>
+                    DOI:
+                    <small>{{ item.recording.Doi }}</small>
+                </h6>
+                <h6>
+                    Site:
+                    <small>{{ item.recording.siteName }}</small>
+                </h6>
+                <h6>
+                    License:
+                    <small>{{ item.recording.licenseName }}</small>
+                    {% if item.recording.licenseName == 'CC-BY' %}
+                        <a href="https://creativecommons.org/licenses/by/4.0"><img src="{{ licenseImagesUrl }}/ccby.png" alt="cc by"/></a>
+                    {% elseif item.recording.licenseName == 'CC-BY-SA' %}
+                        <a href="https://creativecommons.org/licenses/by-sa/4.0"><img src="{{ licenseImagesUrl }}/ccby-sa.png" alt="cc by-sa"/></a>
+                    {% elseif item.recording.licenseName == 'CC-BY-NC' %}
+                        <a href="https://creativecommons.org/licenses/by-nc/4.0"><img src="{{ licenseImagesUrl }}/ccby-nc.png" alt="cc by-nc"/></a>
+                    {% elseif item.recording.licenseName == 'CC-BY-NC-SA' %}
+                        <a href="https://creativecommons.org/licenses/by-nc-sa/4.0"><img src="{{ licenseImagesUrl }}/ccby-nc-sa.png" alt="cc by-nc-sa"/></a>
+                    {% elseif item.recording.licenseName == 'CC-BY-ND' %}
+                        <a href="https://creativecommons.org/licenses/by-nd/4.0"><img src="{{ licenseImagesUrl }}/ccby-nd.png" alt="cc by-nd"/></a>
+                    {% elseif item.recording.licenseName == 'CC-BY-NC-ND' %}
+                        <a href="https://creativecommons.org/licenses/by-nc-nd/4.0"><img src="{{ licenseImagesUrl }}/ccby-nc-nd.png" alt="cc by-nc-nd"/></a>
                     {% endif %}
-                    {% if item.recording.biomeName is not empty %}
-                        <h6>
-                            Biome:<small>
-                                {{ item.recording.biomeName }}
-                            </small>
-                        </h6>
-                    {% endif %}
-                    {% if item.recording.FunctionalGroupName is not empty %}
-                        <h6>
-                            Functional Group:<small>
-                                {{ item.recording.FunctionalGroupName }}
-                            </small>
-                        </h6>
-                    {% endif %}
-                </div>
-                <div class="col-6">
-                    <div id="player-cursor" class="small-player-cursor" data-cursor-id="{{ item.recording.id }}"></div>
-                    <a href="{{ baseUrl }}/recording/show/{{ item.recording.id }}/{{ pageNum }}" title="BioSounds player">
-                        <img class="small-player-image" src="{{ baseUrl }}/{{ item.playerImage }}">
-                    </a>
-                    <audio id="player" data-id="{{ item.recording.id }}" controls>
-                        <source src="{{ baseUrl }}/{{ item.playerRecording }}"/>
-                    </audio>
-                </div>
-            </div>
-        </li>
+                </h6>
+                {% if item.recording.siteData is not empty %}
+                    <h6>
+                        Site:
+                        <small>{{ item.recording.siteData.name }}</small>
+                    </h6>
+                {% endif %}
+                {% if item.recording.note is not empty %}
+                    <h6>
+                        Notes:
+                        <small>{{ item.recording.note }}</small>
+                    </h6>
+                {% endif %}
+            </td>
+            <td style="width: 25%;">
+                <h6>
+                    My Label:
+                    <small>{{ item.recording.labelName }}</small>
+                </h6>
+                {% if item.recording.realmName is not empty %}
+                    <h6>
+                        Realm:
+                        <small>{{ item.recording.realmName }}</small>
+                    </h6>
+                {% endif %}
+                {% if item.recording.biomeName is not empty %}
+                    <h6>
+                        Biome:
+                        <small>{{ item.recording.biomeName }}</small>
+                    </h6>
+                {% endif %}
+                {% if item.recording.FunctionalGroupName is not empty %}
+                    <h6>
+                        Functional Group:
+                        <small>{{ item.recording.FunctionalGroupName }}</small>
+                    </h6>
+                {% endif %}
+            </td>
+            <td style="width: 60%;">
+                <div id="player-cursor" class="small-player-cursor" data-cursor-id="{{ item.recording.id }}"></div>
+                <a href="{{ baseUrl }}/recording/show/{{ item.recording.id }}" title="BioSounds player">
+                    <img class="small-player-image" src="{{ baseUrl }}/{{ item.playerImage }}">
+                </a>
+                <audio id="player" data-id="{{ item.recording.id }}" controls>
+                    <source src="{{ baseUrl }}/{{ item.playerRecording }}"/>
+                </audio>
+            </td>
+        </tr>
     {% endfor %}
-</ul>
+    </tbody>
+</table>
+<script>
+    $(document).ready(function () {
+        var table = $('#recordingTable').DataTable({
+            "pageLength": 9,
+            "lengthChange": false,
+            "stateSave": true,
+            "StateDuration": -1,
+            "order": [[0, 'asc']],
+            "destroy": true,
+        });
+        $('#recordingTable').show()
+    });
+</script>

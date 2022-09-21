@@ -105,5 +105,6 @@ class BaseClass
         $this->twig->addGlobal('username', Auth::getUserName());
         $this->twig->addGlobal('is_admin', Auth::isUserAdmin());
         $this->twig->addGlobal('user_id', Auth::getUserID());
+        $this->twig->addGlobal('regenerate_timeout', $_SESSION['regenerate_timeout']);
     }
 }

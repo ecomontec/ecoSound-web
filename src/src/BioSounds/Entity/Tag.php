@@ -365,7 +365,23 @@ class Tag extends BaseProvider
         $this->comments = $comments;
         return $this;
     }
+    /**
+     * @return int|null
+     */
+    public function getTypeId(): ?int
+    {
+        return $this->type_id;
+    }
 
+    /**
+     * @param int|null $type_id
+     * @return Tag
+     */
+    public function setTypeId(?int $type_id): Tag
+    {
+        $this->type_id = $type_id;
+        return $this;
+    }
     /**
      * @return string|null
      */
@@ -401,7 +417,23 @@ class Tag extends BaseProvider
         $this->reviewNumber = $reviewNumber;
         return $this;
     }
+    /**
+     * @return int|null
+     */
+    public function getSpeciesId(): ?int
+    {
+        return $this->species_id;
+    }
 
+    /**
+     * @param int|null $species_id
+     * @return Tag
+     */
+    public function setSpeciesId(?int $species_id): Tag
+    {
+        $this->species_id = $species_id;
+        return $this;
+    }
     /**
      * @return string|null
      */
@@ -505,6 +537,40 @@ class Tag extends BaseProvider
         return $this;
     }
     /**
+     * @return string|null
+     */
+    public function getTaxonOrder(): ?string
+    {
+        return $this->taxon_order;
+    }
+
+    /**
+     * @param string|null $taxon_order
+     * @return Tag
+     */
+    public function setTaxonOrder(?string $taxon_order): Tag
+    {
+        $this->taxon_order = $taxon_order;
+        return $this;
+    }
+    /**
+     * @return string|null
+     */
+    public function getTaxonClass(): ?string
+    {
+        return $this->taxon_class;
+    }
+
+    /**
+     * @param string|null $taxon_class
+     * @return Tag
+     */
+    public function setTaxonClass(?string $taxon_class): Tag
+    {
+        $this->taxon_class = $taxon_class;
+        return $this;
+    }
+    /**
      * @param array $values
      * @return $this
      */
@@ -528,6 +594,9 @@ class Tag extends BaseProvider
         $this->setReviewNumber(isset($values['review_number']) ? $values['review_number'] : null);
         $this->setSpeciesName($values['species_name']);
         $this->setUserName(isset($values['name']) ? $values['name'] : null);
+        $this->setCreationDate($values['creation_date']);
+        $this->setTaxonOrder(isset($values['taxon_order']) ? $values['taxon_order'] : null);
+        $this->setTaxonClass(isset($values['class']) ? $values['class'] : null);
         return $this;
     }
 }

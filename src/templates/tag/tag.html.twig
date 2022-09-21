@@ -23,12 +23,11 @@
                                            size="30"
                                            value="{{ tag.speciesName }}"
                                            required
-                                           autofocus
                                     >
                                     <div class="invalid-feedback">
                                         Please select a species from the list.
                                     </div>
-                                    <a class="col-form-label-sm" href="#" target="_blank" id="googleImages"> Images</a> | <a class="col-form-label-sm" href="#" target="_blank" id="xenoImages">Xeno-canto </a>
+                                    <a class="col-form-label-sm" href="#" target="_blank" id="googleImages"> Images</a> | <a class="col-form-label-sm" href="#" target="_blank" id="xenoImages">Xeno-canto (for birds only)</a>
                                 </div>
                                 <div class="form-group col-auto">
                                     <div class="form-check form-control-sm pt-2" id="uncertain_check">
@@ -80,17 +79,11 @@
                                     </div>
                                 </div>
                                 <div class="form-group col-4">
-                                    <label class="col-form-label-sm" for="type">Type </label>
+                                    <label class="col-form-label-sm" for="type">Type</label>
                                     <select id="type" name="type" class="custom-select custom-select-sm">
-                                     {# <option value="call" {{ tag.type == "call" ? "selected" }}>Call</option>
-                                        <option value="song" {{ tag.type == "song" ? "selected" }}>Song</option>
-                                        <option value="non-vocal" {{ tag.type == "non-vocal" ? "selected" }}>Non-vocal</option>
-                                        <option value="searching (bat)" {{ tag.type == "searching (bat)" ? "selected" }}>Searching (bat)</option>
-                                        <option value="feeding (bat)" {{ tag.type == "feeding (bat)" ? "selected" }}>Feeding (bat)</option>
-                                        <option value="social (bat)" {{ tag.type == "social (bat)" ? "selected" }}>Social (bat)</option>
-                                     #}
+                                        <option value="0"></option>
                                         {% for soundType in soundTypes %}
-                                            <option value="{{ soundType.soundTypeId }}" {{ tag.type == soundType.soundTypeId ? "selected" }}">{{ soundType.name }}</option>
+                                            <option value="{{ soundType.soundTypeId }}" {{ tag.type == soundType.soundTypeId ? "selected" }}>{{ soundType.name }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -109,8 +102,16 @@
 
                             <div class="form-group">
                                 <label class="col-form-label-sm" for="user_full_name">Creation User: </label>
-                                <span id="user_full_name"><small>{{ tag.userName }}</small></span>
+                                <span id="user_full_name"><small>{{ tag.userName }} </small></span>
+                                {% if reviewPanel !='' %}
+                                    <label class="col-form-label-sm" for="creation_date"> Creation Date: </label>
+                                    <span id="creation_date"><small>{{ tag.creationDate }} </small></span>
+                                {% endif %}
+                                <a href="#" id="exportTagUrl" class="btn btn-link" title="Export url to clipboard">
+                                    <i class="fa fa-share-alt"></i>
+                                </a>
                             </div>
+
                         </form>
                     </div>
                     <div id="review-panel">
@@ -129,3 +130,12 @@
         </div>
     </div>
 </div>
+{% if reviewPanel == '' %}
+    <script>
+        $(document).ready(function () {
+            $("#modal-div").on('shown.bs.modal', function () {
+                $(this).find('#speciesName').focus();
+            });
+        });
+    </script>
+{% endif %}

@@ -50,4 +50,38 @@ class SoundType
         $this->name = $name;
         return $this;
     }
+    /**
+     * @return string
+     */
+    public function getTaxonOrder(): string
+    {
+        return $this->taxon_order;
+    }
+
+    /**
+     * @param string $taxon_order
+     * @return SoundType
+     */
+    public function setTaxonOrder(string $taxon_order): SoundType
+    {
+        $this->taxon_order = $taxon_order;
+        return $this;
+    }
+    /**
+     * @return string
+     */
+    public function getTaxonClass(): string
+    {
+        return $this->taxon_class;
+    }
+
+    /**
+     * @param string $taxon_class
+     * @return SoundType
+     */
+    public function setTaxonClass(string $taxon_class): SoundType
+    {
+        $this->taxon_class = $taxon_class;
+        return $this;
+    }
 }

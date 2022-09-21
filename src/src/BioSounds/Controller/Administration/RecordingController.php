@@ -8,6 +8,7 @@ use BioSounds\Entity\Recording;
 use BioSounds\Entity\Sensor;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\CollectionProvider;
+use BioSounds\Provider\IndexLogProvider;
 use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\SpectrogramProvider;
 use BioSounds\Provider\SiteProvider;
@@ -25,7 +26,7 @@ class RecordingController extends BaseController
      * @return mixed
      * @throws \Exception
      */
-    public function show(int $cId = null, int $page = 1)
+    public function show(int $cId = null)
     {
         if (!Auth::isUserAdmin()) {
             throw new ForbiddenException();
@@ -33,7 +34,7 @@ class RecordingController extends BaseController
 
         // colId proceesing
         if (isset($_POST['colId'])) {
-            $colId = filter_var($_POST['colId'], FILTER_SANITIZE_STRING);
+            $colId = $_POST['colId'];
         }
         if (!empty($cId)) {
             $colId = $cId;
@@ -48,36 +49,17 @@ class RecordingController extends BaseController
 
         $recordings = $recordingProvider->getListByCollection(
             $colId,
-            (Auth::getUserID() == null) ? 0 : Auth::getUserID(),
-            $this::ITEMS_PAGE,
-            $this::ITEMS_PAGE * ($page - 1)
+            (Auth::getUserID() == null) ? 0 : Auth::getUserID()
         );
 
         $userSites = (new SiteProvider())->getBasicList();
-
-        $siteFieldFlags = [];
-        foreach ($recordings as $rec) {
-            $siteFieldFlags[$rec->getId()] = 0;
-            foreach ($userSites as $st) {
-                if ($st->getId() == $rec->getSite()) {
-                    $siteFieldFlags[$rec->getId()] = 1;
-                }
-            }
-        }
-
-        $recordingNum = $recordingProvider->countAllByCollection($colId);
-        $pages = $recordingNum > 0 ? ceil($recordingNum / self::ITEMS_PAGE) : 1;
 
         return $this->twig->render('administration/recordings.html.twig', [
             'colId' => $colId,
             'recordings' => $recordings,
             'sites' => $userSites,
-            'siteFieldFlags' => $siteFieldFlags,
             'sensors' => (new Sensor())->getBasicList(),
-            'soundTypes' => (new SoundTypeProvider())->getList(),
             'license' => (new License())->getBasicList(),
-            'currentPage' => ($page > $pages) ?: $page,
-            'pages' => $pages
         ]);
     }
 
@@ -98,13 +80,13 @@ class RecordingController extends BaseController
                 $key = substr($key, 0, strripos($key, "_"));
                 switch ($type) {
                     case "date":
-                        $data[$key] =  filter_var($value, FILTER_SANITIZE_STRING);
+                        $data[$key] =  $value;
                         break;
                     case "time":
-                        $data[$key] =  filter_var($value, FILTER_SANITIZE_STRING);
+                        $data[$key] =  $value;
                         break;
                     case "text":
-                        $data[$key] =  filter_var($value, FILTER_SANITIZE_STRING);
+                        $data[$key] =  $value;
                         break;
                     case 'select-one':
                         $data[$key] =  filter_var($value, FILTER_SANITIZE_NUMBER_INT);
@@ -114,7 +96,7 @@ class RecordingController extends BaseController
                         break;
                 }
             } else
-                $data[$key] =  filter_var($value, FILTER_SANITIZE_STRING);
+                $data[$key] =  $value;
         }
 
         if (isset($data["itemID"])) {
@@ -143,6 +125,7 @@ class RecordingController extends BaseController
         }
 
         $recordingProvider = new RecordingProvider();
+        $indexLogProvider = new indexLogProvider();
         $recording = $recordingProvider->get($id);
 
         $fileName = $recording[Recording::FILENAME];
@@ -166,6 +149,7 @@ class RecordingController extends BaseController
         }
 
         $recordingProvider->delete($id);
+        $indexLogProvider->deleteByRecording($id);
 
         if (!empty($recording[Recording::SOUND_ID])) {
             (new SoundProvider())->delete($recording[Recording::SOUND_ID]);

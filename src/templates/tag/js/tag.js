@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         $('#xenoImages').click(function () {
-            $(this).attr('href', 'http://www.xeno-canto.org/browse.php?query=' + $('#speciesName[data-type=edit]').val());
+            $(this).attr('href', 'http://www.xeno-canto.org/explore?query=' + $('#speciesName[data-type=edit]').val());
         });
 
         tagForm.submit(function (e) {
@@ -127,6 +127,14 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
         });
 
+        $("#review-uncertain-btn").click(function (e) {
+            $('#reviewSpeciesName').prop('disabled', true);
+            $('.js-species-id[data-type=review]').val('');
+            $('#review_status').val(4);
+            $('#state').html('Uncertain');
+            e.preventDefault();
+        });
+
         reviewForm.submit(function (e) {
             let reviewStatus = $('#review_status');
 
@@ -202,5 +210,28 @@ document.addEventListener('DOMContentLoaded', function () {
             height = ((freq_max - freq_min) / viewFreqRange) * specHeight;
             width = ((time_max - time_min) / viewTotalTime) * specWidth;
         }
+        $('#exportTagUrl').click(function () {
+            let minTime = $('#min_time').val();
+            let maxTime = $('#max_time').val();
+            let minFrequency = $('#min_freq').val();
+            let maxFrequency = $('#max_freq').val();
+            let col_id = $("input[name='recording_id']").val();
+            let message = 'Url copied to clipboard successfully.'
+
+            const input = document.createElement('input');
+            document.body.appendChild(input);
+            input.value = baseUrl + "/recording/show/" + col_id + "?t_min=" + minTime + "&t_max=" + maxTime + "&f_min=" + minFrequency + "&f_max=" + maxFrequency;
+            input.focus();
+            input.select();
+
+            const isSuccessful = document.execCommand('copy');
+
+            if (!isSuccessful) {
+                message = 'Url copy to clipboard failed.';
+            }
+
+            input.remove();
+            showAlert(message);
+        });
     });
 });

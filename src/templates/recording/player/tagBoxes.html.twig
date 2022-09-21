@@ -1,5 +1,6 @@
 {% for tag in tags %}
-    <div class="tag-controls {{ tag.style }}" id="{{ tag.id }}" style="z-index: {{ tag.position }}; border-color: {{ tag.color }}; left: {{ tag.left }}px; top: {{ tag.top }}px; height: {{ tag.height }}px; width: {{ tag.width }}px; {{ show_tags ? '' : 'display:none;' }}"></div>
+    <div class="tag-controls {{ tag.style }}" id="{{ tag.id }}"
+         style="z-index: {{ tag.position }}; border-color: {{ tag.color }}; left: {{ tag.left }}px; top: {{ tag.top }}px; height: {{ tag.height }}px; width: {{ tag.width }}px; {{ show_tags ? '' : 'display:none;' }}"></div>
 
     <div class="card js-panel-tag" style="display:none;">
         <div class="card-header">
@@ -7,20 +8,16 @@
         </div>
         <div class="card-body mx-auto">
             <div class="btn-group" role="group">
-                <a href="{{ baseUrl }}/api/tag/edit/{{ tag.id }}" class='btn btn-outline-primary btn-sm js-tag' title='Edit tag'>
+                <a href="{{ baseUrl }}/api/tag/edit/{{ tag.id }}" class='btn btn-outline-primary btn-sm js-tag'
+                   title='Edit tag'>
                     <i class='fas fa-edit' aria-hidden='true'></i>
                 </a>
 
                 <a href='#' onclick='return false;' class='btn btn-outline-primary btn-sm zoom-tag' title='Zoom tag'>
                     <i class='fas fa-search' aria-hidden='true'></i>
                 </a>
-                <a href='#'
-                   onclick='return false;'
-                   id="est_{{ tag.id }}"
-                   type='button'
-                   class='btn btn-outline-primary btn-sm estimate-distance'
-                   title='Estimate call distance'
-                >
+                <a href='#' onclick='return false;' id="est_{{ tag.id }}" type='button'
+                   class='btn btn-outline-primary btn-sm estimate-distance' title='Estimate call distance'>
                     <i class='fas fa-bullhorn' aria-hidden='true'></i>
                 </a>
             </div>

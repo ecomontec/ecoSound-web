@@ -5,226 +5,92 @@
     {% include 'administration/siteCreate.html.twig' %}
     <div class="card mb-3" id="siteList">
         <div class="card-header border-light bg-white text-right">
-            <button id="siteFormButton" class="btn btn-outline-primary btn-sm mt-2" type="button" data-toggle="collapse"
-                    data-target="#siteFormSection" aria-expanded="false" aria-controls="siteFormSection">
+            <button id="siteFormButton" class="btn btn-outline-primary btn-sm mt-2" type="button" data-toggle="collapse" data-target="#siteFormSection" aria-expanded="false" aria-controls="siteFormSection">
                 <i class="fas fa-plus"></i>
                 Add Site
             </button>
         </div>
-
-        <div class="card-body scrollable">
-            <table id="siteTable" class="table table-sm table-hover">
-                <thead class="table-borderless">
+        <table id="siteTable" style="display:none">
+            <thead class="form-control-sm table-borderless">
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Longitude</th>
+                <th>Latitude</th>
+                <th>GADM 1</th>
+                <th>GADM 2</th>
+                <th>GADM 3</th>
+                <th>Realm</th>
+                <th>Biome</th>
+                <th>Functional Group</th>
+                <th>Centroid</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody class="form-control-sm js-site-list">
+            {% for site in siteList %}
                 <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Longitude</th>
-                    <th scope="col">Latitude</th>
-                    <th scope="col">GADM 1</th>
-                    <th scope="col">GADM 2</th>
-                    <th scope="col">GADM 3</th>
-                    <th scope="col">Realm</th>
-                    <th scope="col">Biome</th>
-                    <th scope="col">Functional Group</th>
-                    <th scope="col">Centroid</th>
-                </tr>
-                </thead>
-                <tbody class="form-control-sm js-site-list">
-                {% for site in siteList %}
-                    <tr style="width:100%;">
-                        <td scope='row'>{{ site.id }}
-                            <input type="hidden" name="steId" value="{{ site.id }}">
-                        </td>
-                        <td>
-                            <input type="text" style="width:100px;" name="name" value="{{ site.name }}">
-                        </td>
-                        <td>
-                            <input type="number" style="width:80px;" name="longitude" min="-180" max="180"
-                                   step="0.0000000000001" pattern="##.##############" value="{{ site.longitude }}">
-                            <div class="invalid-feedback">
-                                Please provide a longitude value, from -180 to 180.
-                            </div>
-                        </td>
-                        <td>
-                            <input type="number" style="width:80px;" name="latitude" min="-90" max="90"
-                                   step="0.0000000000001" pattern="##.##############" value="{{ site.latitude }}">
-                            <div class="invalid-feedback">
-                                Please provide a latitude value, from -90 to 90.
-                            </div>
-                        </td>
-                        <td>
-                            <input type="text" style="width:120px;" name="gadm1" value="{{ site.gadm1 }}">
-                        </td>
-                        <td>
-                            <input type="text" style="width:120px;" name="gadm2" value="{{ site.gadm2 }}">
-                        </td>
-                        <td>
-                            <input type="text" style="width:120px;" name="gadm3" value="{{ site.gadm3 }}">
-                        </td>
-                        <td>
-                            <select id="realm_{{ site.id }}" name="realm_id" style="width:120px;" class="form-control-sm">
-                                <option></option>
-                                {% for explore in explores %}
-                                    {% if explore.level==1 %}
-                                        <option value="{{ explore.explore_id }}" {{ explore.explore_id == site.realm ? "selected" }}>{{ explore.name }}</option>
-                                    {% endif %}
-                                {% endfor %}
-                            </select>
-                        </td>
-                        <td>
-                            <select id="biome_{{ site.id }}" name="biome_id" style="width:120px;" class="form-control-sm">
-                                <option></option>
-                                {% for explore in explores %}
-                                    {% if explore.pid==site.realm and explore.level==2 %}
-                                        <option value="{{ explore.explore_id }}" {{ explore.explore_id == site.biome ? "selected" }}>{{ explore.name }}</option>
-                                    {% endif %}
-                                {% endfor %}
-                            </select>
-                        </td>
-                        <td>
-                            <select id="functionalGroup_{{ site.id }}" name="functional_group_id" style="width:120px;"
-                                    class="form-control-sm">
-                                <option></option>
-                                {% for explore in explores %}
-                                    {% if explore.pid==site.biome and explore.level==3 %}
-                                        <option value="{{ explore.explore_id }}" {{ explore.explore_id == site.functionalGroup ? "selected" }}>{{ explore.name }}</option>
-                                    {% endif %}
-                                {% endfor %}
-                            </select>
-                        </td>
-                        <td>
-                            <select id="centro" name="centroid" class="form-control-sm" required>
-                                <option value="true" {{ site.centroId == "true" ? "selected" }}>true</option>
-                                <option value="false" {{ site.centroId == "false" ? "selected" }}>false</option>
-                            </select>
-                        </td>
-                        <td>
-                            <a class="js-site-delete" href="#" data-id="{{ site.id }}" title="Delete Site">
-                                <span class="fas fa-trash"></span>
-                            </a>
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <nav aria-label="pagination">
-                    <ul class="pagination justify-content-center mt-3">
-                        {% if pages > 10 %}
-                            <li class="page-item">
-                                <a href="{{ baseUrl }}/admin/sites/{{ currentPage == 1 ? 1 : currentPage - 1 }}">
-                                    <i class="fa fa-angle-left" style="font-size:36px; position:relative; top:4px;"></i>
-                                </a>
-                                &nbsp;&nbsp;
-                            </li>
-                            <li class="page-item {{ currentPage == 1 ? 'active' }}">
-                                <a class="page-link" href="{{ baseUrl }}/admin/sites/1">1</a>
-                            </li>
-                            {% if currentPage <= 3 %}
-                                <li class="page-item  {{ currentPage == 2 ? 'active' }}">
-                                    <a class="page-link" href="{{ baseUrl }}/admin/sites/2">2</a>
-                                </li>
-                                <li class="page-item {{ currentPage == 3 ? 'active' }}">
-                                    <a class="page-link" href="{{ baseUrl }}/admin/sites/3">3</a>
-                                </li>
-                                <li class="disabled">
-                                    <span style="font-size:28px;position:relative;">&nbsp;.</span>
-                                    <span style="font-size:28px;position:relative;">.</span>
-                                    <span style="font-size:28px;position:relative;">.&nbsp;</span>
-                                </li>
-                            {% endif %}
-
-                            {% if currentPage >= 4 and currentPage <= (pages - 3) %}
-                                <li class="disabled">
-                                    <span style="font-size:28px;position:relative;">&nbsp;.</span>
-                                    <span style="font-size:28px;position:relative;">.</span>
-                                    <span style="font-size:28px;position:relative;">.&nbsp;</span>
-                                </li>
-                                {% if currentPage == 4 %}
-                                    <li class="page-item  active">
-                                        <a class="page-link" href="{{ baseUrl }}/admin/sites/4">4</a>
-                                    </li>
-                                    <li class="page-item">
-                                        <a class="page-link"
-                                           href="{{ baseUrl }}/admin/sites/{{ currentPage + 1 }}">{{ currentPage + 1 }}</a>
-                                    </li>
-                                    <li class="page-item">
-                                        <a class="page-link"
-                                           href="{{ baseUrl }}/admin/sites/{{ currentPage + 2 }}">{{ currentPage + 2 }}</a>
-                                    </li>
-                                {% elseif currentPage == pages - 3 %}
-                                    <li class="page-item">
-                                        <a class="page-link"
-                                           href="{{ baseUrl }}/admin/sites/{{ currentPage - 2 }}">{{ currentPage - 2 }}</a>
-                                    </li>
-                                    <li class="page-item">
-                                        <a class="page-link"
-                                           href="{{ baseUrl }}/admin/sites/{{ currentPage - 1 }}">{{ currentPage - 1 }}</a>
-                                    </li>
-                                    <li class="page-item active">
-                                        <a class="page-link"
-                                           href="{{ baseUrl }}/admin/sites/{{ currentPage }}">{{ currentPage }}</a>
-                                    </li>
-                                {% else %}
-                                    <li class="page-item">
-                                        <a class="page-link"
-                                           href="{{ baseUrl }}/admin/sites/{{ currentPage -1 }}">{{ currentPage - 1 }}</a>
-                                    </li>
-                                    <li class="page-item active">
-                                        <a class="page-link"
-                                           href="{{ baseUrl }}/admin/sites/{{ currentPage }}">{{ currentPage }}</a>
-                                    </li>
-                                    <li class="page-item">
-                                        <a class="page-link"
-                                           href="{{ baseUrl }}/admin/sites/{{ currentPage + 1 }}">{{ currentPage + 1 }}</a>
-                                    </li>
-                                {% endif %}
-                                <li class="disabled">
-                                    <span style="font-size:28px;position:relative;">&nbsp;.</span>
-                                    <span style="font-size:28px;position:relative;">.</span>
-                                    <span style="font-size:28px;position:relative;">.&nbsp;</span>
-                                </li>
-                            {% endif %}
-
-                            {% if currentPage >= pages - 2 %}
-                                <li class="disabled">
-                                    <span style="font-size:28px;position:relative;">&nbsp;.</span>
-                                    <span style="font-size:28px;position:relative;">.</span>
-                                    <span style="font-size:28px;position:relative;">.&nbsp;</span>
-                                </li>
-                                <li class="page-item  {{ currentPage == pages - 2 ? 'active' }}">
-                                    <a class="page-link"
-                                       href="{{ baseUrl }}/admin/sites/{{ pages - 2 }}">{{ pages - 2 }}</a>
-                                </li>
-                                <li class="page-item {{ currentPage == pages - 1 ? 'active' }}">
-                                    <a class="page-link"
-                                       href="{{ baseUrl }}/admin/sites/{{ pages - 1 }}">{{ pages -1 }}</a>
-                                </li>
-                            {% endif %}
-                            <li class="page-item {{ currentPage == pages ? 'active' }}">
-                                <a class="page-link" href="{{ baseUrl }}/admin/sites/{{ pages }}">{{ pages }}</a>
-                            </li>
-                            <li class="page-item">&nbsp;&nbsp;
-                                <a href="{{ baseUrl }}/admin/sites/{{ currentPage == pages ? pages : currentPage + 1 }}">
-                                    <i class="fa fa-angle-right"
-                                       style="font-size:36px; position:relative; top:4px;"></i>
-                                </a>
-                            </li>
-                        {% else %}
-                            {% for page in range(1, pages) %}
-                                <li class="page-item {{ currentPage == page ? 'active' }}">
-                                    <a class="page-link" href="{{ baseUrl }}/admin/sites/{{ page }}">
-                                        {{ page }}
-                                    </a>
-                                </li>
+                    <td>
+                        {{ site.id }}
+                        <input type="hidden" name="steId" value="{{ site.id }}">
+                    </td>
+                    <td data-search="{{ site.name }}" data-order="{{ site.name }}">
+                        <input type="text" class="form-control form-control-sm" style="width:100px;" name="name" value="{{ site.name }}">
+                    </td>
+                    <td data-search="{{ site.longitude }}" data-order="{{ site.longitude }}">
+                        <input type="number" class="form-control form-control-sm" style="width:80px;" name="longitude" min="-180" max="180" step="0.0000000000001" pattern="##.##############" value="{{ site.longitude }}">
+                        <div class="invalid-feedback">
+                            Please provide a longitude value, from -180 to 180.
+                        </div>
+                    </td>
+                    <td data-search="{{ site.latitude }}" data-order="{{ site.latitude }}">
+                        <input type="number" class="form-control form-control-sm" style="width:80px;" name="latitude" min="-90" max="90" step="0.0000000000001" pattern="##.##############" value="{{ site.latitude }}">
+                        <div class="invalid-feedback">
+                            Please provide a latitude value, from -90 to 90.
+                        </div>
+                    </td>
+                    <td data-search="{{ site.gadm1 }}" data-order="{{ site.gadm1 }}">
+                        <input type="text" class="form-control form-control-sm" style="width:120px;" name="gadm1" value="{{ site.gadm1 }}">
+                    </td>
+                    <td data-search="{{ site.gadm2 }}" data-order="{{ site.gadm2 }}">
+                        <input type="text" class="form-control form-control-sm" style="width:120px;" name="gadm2" value="{{ site.gadm2 }}">
+                    </td>
+                    <td data-search="{{ site.gadm3 }}" data-order="{{ site.gadm3 }}">
+                        <input type="text" class="form-control form-control-sm" style="width:120px;" name="gadm3" value="{{ site.gadm3 }}">
+                    </td>
+                    <td data-search="{{ site.realm }}" data-order="{{ site.realm }}">
+                        <select id="realm_{{ site.id }}" name="realm_id" style="width:120px;" class="form-control form-control-sm">
+                            <option></option>
+                            {% for realm in realms %}
+                                <option value="{{ realm.explore_id }}" {{ realm.explore_id==site.realmId?"selected" }}>{{ realm.name }}</option>
                             {% endfor %}
-                        {% endif %}
-                    </ul>
-                </nav>
-            </div>
-        </div>
+                        </select>
+                    </td>
+                    <td data-search="{{ site.biome }}" data-order="{{ site.biome }}">
+                        <select id="biome_{{ site.id }}" name="biome_id" class="form-control form-control-sm" style="width:120px;">
+                            <option value="{{ site.biomeId }}" selected>{{ site.biome }}</option>
+                        </select>
+                    </td>
+                    <td data-search="{{ site.functionalGroup }}" data-order="{{ site.functionalGroup }}">
+                        <select id="functionalGroup_{{ site.id }}" name="functional_group_id" class="form-control form-control-sm" style="width:120px;">
+                            <option value="{{ site.functionalGroupId }}" selected>{{ site.functionalGroup }}</option>
+                        </select>
+                    </td>
+                    <td data-search="{{ site.centroId }}" data-order="{{ site.centroId }}">
+                        <select id="centro" name="centroid" class="form-control form-control-sm" required>
+                            <option value="true" {{ site.centroId == "true" ? "selected" }}>true</option>
+                            <option value="false" {{ site.centroId == "false" ? "selected" }}>false</option>
+                        </select>
+                    </td>
+                    <td>
+                        <a class="js-site-delete" href="#" data-id="{{ site.id }}" title="Delete Site">
+                            <span class="fas fa-trash"></span>
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
     </div>
 {% endblock %}
 
@@ -233,66 +99,91 @@
 
     <script>
         $(function () {
+            var arr ={{ explores|json_encode|raw }};
+            $(document).ready(function () {
+                $('#siteTable').DataTable({
+                    "pageLength": 8,
+                    "lengthChange": false,
+                    "stateSave": true,
+                    "StateDuration": -1,
+                    "order": [[0, 'asc']],
+                    "columnDefs":[{
+                        "orderable":false,
+                        "targets":[11]
+                    }]
+                });
+                $('#siteTable').show()
+            });
             'use strict';
             $("select[name='realm_id']").on('change', function () {
                 var id = $(this).attr('id').split('_')[1]
-                $.ajax({
-                    url: '{{ baseUrl }}/admin/getExplore/' + $(this).val(),
-                    success: function (data) {
-                        var json = JSON.parse(data)
-                        $("#biome_" + id).empty()
-                        $("#functionalGroup_" + id).empty()
-                        $("#biome_" + id).append("<option></option>");
-                        for (var key in json) {
-                            if (json[key]['level'] == 2) {
-                                $("#biome_" + id).append("<option value=" + json[key]['explore_id'] + ">" + json[key]['name'] + "</option>");
-                            }
-                        }
-                    },
-                })
+                $("#biome_" + id).empty()
+                $("#biome_" + id).append("<option></option>");
+                $("#functionalGroup_" + id).empty()
+                $("#functionalGroup_" + id).append("<option></option>");
+                var biomes = arr['pid' + $(this).val()]
+                for (var key in biomes) {
+                    $("#biome_" + id).append("<option value=" + biomes[key][0] + ">" + biomes[key][1] + "</option>");
+                }
             });
             $("select[name='biome_id']").on('change', function () {
                 var id = $(this).attr('id').split('_')[1]
-                $.ajax({
-                    url: '{{ baseUrl }}/admin/getExplore/' + $(this).val(),
-                    success: function (data) {
-                        var json = JSON.parse(data)
-                        $("#functionalGroup_" + id).empty()
-                        $("#functionalGroup_" + id).append("<option></option>");
-                        for (var key in json) {
-                            if (json[key]['level'] == 3) {
-                                $("#functionalGroup_" + id).append("<option value=" + json[key]['explore_id'] + ">" + json[key]['name'] + "</option>");
+                $("#functionalGroup_" + id).empty()
+                $("#functionalGroup_" + id).append("<option></option>");
+                var functionalGroups = arr['pid' + $(this).val()]
+                for (var key in functionalGroups) {
+                    $("#functionalGroup_" + id).append("<option value=" + functionalGroups[key][0] + ">" + functionalGroups[key][1] + "</option>");
+                }
+            });
+            $("select[name='biome_id']").on('mouseenter ', function () {
+                if ($(this)[0].options.length < 2) {
+                    var id = $(this).attr('id').split('_')[1]
+                    if ($('#realm_' + id).val() != 0) {
+                        if ($(this).val() > 0) {
+                            $("#biome_" + id).prepend("<option></option>")
+                        }
+                        var biomes = arr['pid' + $('#realm_' + id).val()]
+                        for (var key in biomes) {
+                            if ($(this).val() != biomes[key][0]) {
+                                $("#biome_" + id).append("<option value=" + biomes[key][0] + ">" + biomes[key][1] + "</option>");
                             }
                         }
-                    },
-                })
+                    }
+                }
+            });
+            $("select[name='functional_group_id']").on('mouseenter ', function () {
+                if ($(this)[0].options.length < 2) {
+                    var id = $(this).attr('id').split('_')[1]
+                    if ($('#biome_' + id).val() != 0) {
+                        if ($(this).val() > 0) {
+                            $("#functionalGroup_" + id).prepend("<option></option>")
+                        }
+                        var functionalGroups = arr['pid' + $('#biome_' + id).val()]
+                        for (var key in functionalGroups) {
+                            if ($(this).val() != functionalGroups[key][0]) {
+                                $("#functionalGroup_" + id).append("<option value=" + functionalGroups[key][0] + ">" + functionalGroups[key][1] + "</option>");
+                            }
+                        }
+                    }
+                }
             });
             $("#realm").on('change', function () {
-                $.ajax({
-                    url: '{{ baseUrl }}/admin/getExplore/' + $(this).val(),
-                    success: function (data) {
-                        var json = JSON.parse(data)
-                        $("#biome").empty()
-                        $("#functionalGroup").empty()
-                        $("#biome").append("<option></option>");
-                        for (var key in json) {
-                            $("#biome").append("<option value=" + json[key]['explore_id'] + ">" + json[key]['name'] + "</option>");
-                        }
-                    },
-                })
+                $("#biome").empty()
+                $("#biome").append("<option></option>");
+                $("#functionalGroup").empty()
+                $("#functionalGroup").empty()
+                var biomes = arr['pid' + $(this).val()]
+                for (var key in biomes) {
+                    $("#biome").append("<option value=" + biomes[key][0] + ">" + biomes[key][1] + "</option>");
+                }
             });
             $("#biome").on('change', function () {
-                $.ajax({
-                    url: '{{ baseUrl }}/admin/getExplore/' + $(this).val(),
-                    success: function (data) {
-                        var json = JSON.parse(data)
-                        $("#functionalGroup").empty()
-                        $("#functionalGroup").append("<option></option>");
-                        for (var key in json) {
-                            $("#functionalGroup").append("<option value=" + json[key]['explore_id'] + ">" + json[key]['name'] + "</option>");
-                        }
-                    },
-                })
+                $("#functionalGroup").empty()
+                $("#functionalGroup").append("<option></option>");
+                var functionalGroups = arr['pid' + $(this).val()]
+                for (var key in functionalGroups) {
+                    $("#functionalGroup").append("<option value=" + functionalGroups[key][0] + ">" + functionalGroups[key][1] + "</option>");
+                }
             });
             /* Save site list */
             $('.js-site-list').on('change', 'input, select, textarea', function () {
@@ -303,6 +194,9 @@
                     let tdLongDiv = $(this).parent().children("div");
                     tdLongDiv.removeClass("d-block");
                     saveFormList($(this), 'api/admin/siteManager/save');
+                    var table = $('#siteTable').DataTable()
+                    var tr = $(this).closest("tr")
+                    table.rows(tr).invalidate()
                 }
 
             });
