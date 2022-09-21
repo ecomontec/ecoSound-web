@@ -327,7 +327,7 @@ def getMaad(path, filename, index_type, param, channel, minTime, maxTime, minFre
         Ht_Havrda, Ht_Renyi, Ht_pairedShannon, Ht_gamma, Ht_GiniSimpson = maad.features.more_entropy(env ** 2, order=order, axis=axis)
         # print
         print("Ht_Havrda?" + str(Ht_Havrda) + "!Ht_Renyi?" + str(Ht_Renyi) + "!Ht_pairedShannon?" + str(Ht_pairedShannon) + "!Ht_gamma?" + str(Ht_gamma) + "!Ht_GiniSimpson?" + str(Ht_GiniSimpson))
-    elif index_type == "more_entropy_spectral ":
+    elif index_type == "more_entropy_spectral":
         # param
         parameter['order'] = "3"
         parameter['axis'] = "0"
