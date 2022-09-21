@@ -372,37 +372,6 @@ def getMaad(path, filename, index_type, param, channel, minTime, maxTime, minFre
         RAOQ = maad.features.frequency_raoq(S_power, fn_crop, bin_step=bin_step)
         # print
         print("RAOQ?" + str(RAOQ))
-    elif index_type == "region_of_interest_index":
-        # param
-        parameter['smooth_param1'] = "1"
-        parameter['mask_mode'] = "relative"
-        parameter['mask_param1'] = "6"
-        parameter['mask_param2'] = "0.5"
-        parameter['min_roi'] = None
-        parameter['max_roi'] = None
-        parameter['remove_rain'] = False
-        parameter['display'] = False
-        if param != '' and param is not None:
-            for p in param.split('@'):
-                parameter[p.split('?')[0]] = p.split('?')[1]
-        smooth_param1 = float(parameter['smooth_param1'])
-        mask_mode = parameter['mask_mode']
-        mask_param1 = float(parameter['mask_param1'])
-        mask_param2 = float(parameter['mask_param2'])
-        min_roi = parameter['min_roi'] if parameter['min_roi'] == None else float(parameter['min_roi'])
-        max_roi = parameter['max_roi'] if parameter['max_roi'] == None else float(parameter['max_roi'])
-        remove_rain = parameter['remove_rain']
-        display = parameter['display']
-        # zoom
-        Sxx_power, tn, fn, ext = maad.sound.spectrogram(s, fs)
-        Lxx_crop, tn_crop, fn_crop = maad.util.crop_image(Sxx_power, tn, fn, fcrop=(float(minFrequency), float(maxFrequency)), tcrop=(float(minTime), float(maxTime)))
-        # index
-        Sxx_noNoise = maad.sound.median_equalizer(Lxx_crop)
-        Sxx_dB_noNoise = maad.util.power2dB(Sxx_noNoise)
-        ROItotal, ROIcover = maad.features.region_of_interest_index(Sxx_dB_noNoise, tn_crop, fn_crop, smooth_param1=smooth_param1, mask_mode=mask_mode, mask_param1=mask_param1,
-                                                                    mask_param2=mask_param2, min_roi=min_roi, max_roi=max_roi, remove_rain=remove_rain, display=display)
-        # print
-        print("ROItotal?" + str(ROItotal) + "!ROIcover?" + str(ROIcover))
     else:
         print(0)
 
