@@ -297,7 +297,7 @@ class WaveformImage(object):
         # draw a zero "zero" line
         a = 25
         for x in range(self.image_width):
-            self.pix[x, self.image_height/2] = tuple(map(lambda p: p+a, self.pix[x, self.image_height/2]))
+            self.pix[x, self.image_height/2] = tuple([p+a for p in self.pix[x, self.image_height/2]])
  
         self.image.save(filename)
  
@@ -314,7 +314,7 @@ class SpectrogramImage(object):
         self.nyquist_freq = nyquist_freq
 
         if nyquist_freq<f_max:
-            print "\nWarning: The specified maximum frequency to draw (%d Hz) is higher that what the digital file allows, which is %d Hz. The image file will have blank areas on top that correspond to empty data.\n" % (f_max,nyquist_freq)
+            print("\nWarning: The specified maximum frequency to draw (%d Hz) is higher that what the digital file allows, which is %d Hz. The image file will have blank areas on top that correspond to empty data.\n" % (f_max,nyquist_freq))
 
         colors = [
                     (0, 0, 0),
@@ -364,7 +364,6 @@ class SpectrogramImage(object):
  
  
 def create_png(input_filename, output_filename_w, output_filename_s, image_width, image_height, fft_size, f_max, f_min, wavefile, channel, window):
-    print "Processing file %s:\n\t" % input_file,
  
     audio_file = audiolab.sndfile(input_filename, 'read')
  
@@ -399,7 +398,7 @@ def create_png(input_filename, output_filename_w, output_filename_s, image_width
         waveform.save(output_filename_w)
     spectrogram.save(output_filename_s)
  
-    print " done"
+    print(" done")
  
  
 if __name__ == '__main__':
@@ -439,8 +438,8 @@ if __name__ == '__main__':
  
 	        args = (input_file, output_file_w, output_file_s, options.image_width, options.image_height, options.fft_size, options.f_max, options.f_min, options.wavefile, options.channel, options.window)
  
-	    print "\nsvt version " + str(svt_version) + "\n"
+	    print("\nsvt version " + str(svt_version) + "\n")
 	    create_png(*args)
     else:
-        print "\nsvt version " + str(svt_version) + "\n"
+        print("\nsvt version " + str(svt_version) + "\n")
 

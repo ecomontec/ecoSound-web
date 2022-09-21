@@ -507,10 +507,8 @@ class RecordingController extends BaseController
             $str = $str . ' --pa ' . substr($data['param'], 0, -1);
         }
         exec($str . " 2>&1", $out, $status);
-        if ($status == 0) {
+        if ($status == 0 && $out[count($out) - 1] != "0") {
             $result = $out[count($out) - 1];
-        }
-        if (substr($result, 0, 3) == 'ACI' || substr($result, 0, 3) == 'NDS') {
             if ($data['channel_num'] == 1) {
                 $channel = 'Mono';
             } elseif ($data['channel'] == 2) {
@@ -525,10 +523,10 @@ class RecordingController extends BaseController
                     'result' => $result,
                     'recording_id' => $data['recording_id'],
                     'index_id' => $data['index_id'],
-                    'minTime'=>$data['minTime'],
-                    'maxTime'=>$data['maxTime'],
-                    'minFrequency'=>$data['minFrequency'],
-                    'maxFrequency'=>$data['maxFrequency'],
+                    'minTime' => $data['minTime'],
+                    'maxTime' => $data['maxTime'],
+                    'minFrequency' => $data['minFrequency'],
+                    'maxFrequency' => $data['maxFrequency'],
                     'param' => substr('Channel?' . $channel . '@' . $data['param'], 0, -1),
                 ])
             ]);

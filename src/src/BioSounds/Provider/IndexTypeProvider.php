@@ -25,7 +25,7 @@ class IndexTypeProvider extends BaseProvider
     {
         $list = [];
 
-        $this->database->prepareQuery('SELECT * FROM index_type ORDER BY index_id');
+        $this->database->prepareQuery('SELECT * FROM index_type ORDER BY name');
 
         if (!empty($result = $this->database->executeSelect())) {
             foreach ($result as $indexType) {

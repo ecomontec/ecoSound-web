@@ -343,7 +343,12 @@ class IndexLog extends BaseProvider
         }
         $fields .= " )";
         $valuesNames .= " )";
-        $this->database->prepareQuery("INSERT INTO index_log $fields VALUES $valuesNames");
-        return $this->database->executeInsert($values);
+        $this->database->prepareQuery("SELECT * FROM index_log WHERE $fields = $valuesNames");
+        $resule = $this->database->executeSelect($values);
+        if (count($resule) == 0) {
+            $this->database->prepareQuery("INSERT INTO index_log $fields VALUES $valuesNames");
+            return $this->database->executeInsert($values);
+        }
+        return true;
     }
 }

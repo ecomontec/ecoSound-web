@@ -194,7 +194,7 @@
             $(document).on('submit', '#maadResultForm', function (e) {
                 e.preventDefault();
                 postRequest('{{ baseUrl }}/recording/saveMaadResult', $(this).serialize(), false, false, function () {
-                    location.reload();
+                    $('#modal-div').modal('hide');
                 });
             });
         });

@@ -49,8 +49,8 @@ CREATE TABLE `index_type`
 (
     `index_id`    int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `name`        varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `param`       varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `description` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `param`       varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `description` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
     `URL`         varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
