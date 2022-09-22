@@ -52,7 +52,6 @@
                     </td>
                     <td data-search="{{ recording.siteName }}" data-order="{{ recording.siteName }}">
                         <select name="site_id" class="form-control form-control-sm">
-                            <option value="0"></option>
                             {% for st in sites %}
                                 <option value="{{ st.id }}" {{ st.id == recording.site ? 'selected' }}>
                                     {{ st.name }}

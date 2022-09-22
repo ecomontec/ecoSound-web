@@ -101,13 +101,15 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="col-form-label-sm" for="user_full_name">Creation User: </label>
-                                <span id="user_full_name"><small>{{ tag.userName }} </small></span>
+
                                 {% if reviewPanel !='' %}
-                                    <label class="col-form-label-sm" for="creation_date"> Creation Date: </label>
-                                    <span id="creation_date"><small>{{ tag.creationDate }} </small></span>
+                                    <label class="col-form-label-sm">Created by {{ tag.userName }} on {{ tag.creationDate }} (UTC)</label>
+                                {% else %}
+                                    <label class="col-form-label-sm" for="user_full_name">Creation User: </label>
+                                    <span id="user_full_name"><small>{{ tag.userName }} </small></span>
                                 {% endif %}
-                                <a href="#" id="exportTagUrl" class="btn btn-link" title="Export url to clipboard">
+
+                                <a href="#" id="exportTagUrl" class="btn btn-link" title="Export URL to clipboard">
                                     <i class="fa fa-share-alt"></i>
                                 </a>
                             </div>
