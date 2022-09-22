@@ -96,7 +96,7 @@
                         <input type="number" class="form-control form-control-sm" name="number_of_individuals" min="0" max="1000" value="{{ tag.numberIndividuals }}" required>
                     </td>
                     <td data-search="{{ tag.type }}" data-order="{{ tag.type }}">
-                        <select id="type{{ tag.Id }}" name="type" class="form-control form-control-sm" style="width:100px;">
+                        <select id="type{{ tag.Id }}" name="type" class="form-control form-control-sm" style="width:180px;">
                             <option value="{{ tag.typeId }}" selected>{{ tag.type }}</option>
                         </select>
                     </td>
@@ -176,7 +176,6 @@
                     if ($(this).val() > 0) {
                         $("#type" + id).prepend("<option value='0'></option>")
                     }
-                    console.log($("#taxon_class" + id).val() + $("#taxon_order" + id).val())
                     var data = arr[$("#taxon_class" + id).val() + $("#taxon_order" + id).val()]
                     for (var key in data) {
                         if ($(this).val() != data[key][0]) {

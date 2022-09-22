@@ -85,6 +85,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 $('.js-species-id' + id + '[data-type=' + type + ']').val(ui.item.value);
                 $.post(baseUrl + '/species/getSoundType', {taxon_class: ui.item.class, taxon_order: ui.item.taxon_order})
                     .done(function (data) {
+                        $("#taxon_class" + id).val(ui.item.class)
+                        $("#taxon_order" + id).val(ui.item.taxon_order)
                         var json = JSON.parse(data)
                         $("#type" + id).empty()
                         $("#type" + id).append('<option value="0"></option>');
