@@ -145,8 +145,9 @@ VALUES (1, '(Bird) Call - unspecific', 'AVES', ''),
 -- Dumping data for table `species`
 --
 INSERT INTO `species` (`species_id`, `binomial`, `genus`, `family`, `taxon_order`, `class`, `common_name`, `level`, `region`)
-VALUES (1, 'Test species', 'Test Genus', 'Test Family', 'Test Order', 'Test Class', 'Test common name', 1, 'Test region');
-
+VALUES (1, 'Test bird', 'Test Genus', 'Test Family', 'Test Order', 'AVES', 'common bird name', 1, 'Test region'),
+       (2, 'Test amphibian', 'Test Genus', 'Test Family', 'Test Order', 'AMPHIBIA', 'common amphibian name', 1, 'Test region'),
+       (3, 'Test primate', 'Test Genus', 'Test Family', 'PRIMATA', 'MAMMALIA', 'common primate name', 1, 'Test region');
 --
 -- Dumping data for table `tag_review_status`
 --
