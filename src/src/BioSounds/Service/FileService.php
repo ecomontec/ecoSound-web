@@ -92,6 +92,10 @@ class FileService
             ? $request['subtype'] : null;
         $rating = isset($request['rating']) && !empty($request['rating'])
             ? $request['rating'] : null;
+        $type = isset($request['type']) && !empty($request['type'])
+            ? $request['type'] : null;
+        $medium = isset($request['medium']) && !empty($request['medium'])
+            ? $request['medium'] : null;
 
 
         if (!is_dir($uploadPath) || !$handle = opendir($uploadPath)) {
@@ -137,7 +141,9 @@ class FileService
                     ->setName($fileName)
                     ->setDoi($doi)
                     ->setLicense($license)
-                    ->setUser(Auth::getUserID());
+                    ->setUser(Auth::getUserID())
+                    ->setType($type)
+                    ->setMedium($medium);
 
                 if ($reference) {
                     $file->setSpecies($species)
@@ -213,7 +219,9 @@ class FileService
                 Recording::MD5_HASH => $fileHash,
                 Recording::DOI => $file->getDoi(),
                 Recording::LICENSE_ID => $file->getLicense(),
-                Recording::USER_ID => $file->getUser()
+                Recording::USER_ID => $file->getUser(),
+                Recording::Type => $file->getType(),
+                Recording::Medium => $file->getMedium(),
             ];
 
             if (!empty($file->getSpecies())) {

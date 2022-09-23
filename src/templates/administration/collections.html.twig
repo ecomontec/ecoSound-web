@@ -17,6 +17,7 @@
         <table id="collTable" style="display:none">
             <thead class="form-control-sm table-borderless">
             <tr>
+                <th></th>
                 <th>#</th>
                 <th>Name</th>
                 <th>User ID</th>
@@ -30,6 +31,9 @@
             <tbody class="form-control-sm js-coll-list">
             {% for collection in collections %}
                 <tr>
+                    <td>
+                        <a href="{{ baseUrl }}/collection/show/{{ collection.id }}" target="_blank"><i class="fa fa-eye"></i></a>
+                    </td>
                     <td>
                         {{ collection.id }}
                         <input type="hidden" name="collId" value="{{ collection.id }}">
@@ -70,6 +74,10 @@
                 "stateSave": true,
                 "StateDuration": -1,
                 "order": [[0, 'asc']],
+                "columnDefs": [{
+                    "orderable": false,
+                    "targets": [0]
+                }],
             });
             $('#collTable').show()
         });

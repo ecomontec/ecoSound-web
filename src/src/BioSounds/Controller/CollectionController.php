@@ -120,7 +120,7 @@ class CollectionController extends BaseController
         $j = 0;
         foreach ($allRecordings as $recording) {
             $r = $recording->getRecording();
-            if ($r->getLongitude() != null && $r->getLatitude() != null) {
+            if (strlen($r->getLongitude()) > 0 && strlen($r->getLatitude()) > 0) {
                 $site = $r->getSite();
                 $siteName = $r->getSiteName();
                 $longitude[] = $r->getLongitude();

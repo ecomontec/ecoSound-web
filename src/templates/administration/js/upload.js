@@ -69,3 +69,12 @@ $("#from-file").change(function(e) {
     fileFields.prop('disabled', !fileFields.prop('disabled'));
     fileFields.prop('required', !fileFields.prop('required'));
 });
+$("#type").change(function (){
+    if($("#type").val()=="passive"){
+        $("#type_label").text("recording from automated sound recorder, no influence on animals, typically omnidirectional microphone")
+    }else if($("#type").val()=="focal"){
+        $("#type_label").text("recording from active search for animals, e.g. with directional microphone during point counts")
+    }else if($("#type").val()=="enclosure"){
+        $("#type_label").text("recording from captured animals, movement constrained")
+    }
+})

@@ -13,7 +13,7 @@ use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\SpectrogramProvider;
 use BioSounds\Provider\SiteProvider;
 use BioSounds\Provider\SoundProvider;
-use BioSounds\Provider\SoundTypeProvider;
+use BioSounds\Provider\TagProvider;
 use BioSounds\Utils\Auth;
 
 class RecordingController extends BaseController
@@ -74,31 +74,33 @@ class RecordingController extends BaseController
         }
 
         $data = [];
-        foreach ($_POST as $key => $value) {
-            if (strpos($key, "_")) {
-                $type = substr($key, strripos($key, "_") + 1, strlen($key));
-                $key = substr($key, 0, strripos($key, "_"));
-                switch ($type) {
-                    case "date":
-                        $data[$key] =  $value;
-                        break;
-                    case "time":
-                        $data[$key] =  $value;
-                        break;
-                    case "text":
-                        $data[$key] =  $value;
-                        break;
-                    case 'select-one':
-                        $data[$key] =  filter_var($value, FILTER_SANITIZE_NUMBER_INT);
-                        break;
-                    case "hidden":
-                        $data[$key] =  filter_var($value, FILTER_SANITIZE_NUMBER_INT);
-                        break;
-                }
-            } else
-                $data[$key] =  $value;
-        }
 
+        foreach ($_POST as $key => $value) {
+            if ($key != "_text" && $key != "_hidden") {
+                if (strpos($key, "_")) {
+                    $type = substr($key, strripos($key, "_") + 1, strlen($key));
+                    $key = substr($key, 0, strripos($key, "_"));
+                    switch ($type) {
+                        case "date":
+                            $data[$key] = $value;
+                            break;
+                        case "time":
+                            $data[$key] = $value;
+                            break;
+                        case "text":
+                            $data[$key] = $value;
+                            break;
+                        case 'select-one':
+                            $data[$key] = $value;
+                            break;
+                        case "hidden":
+                            $data[$key] = filter_var($value, FILTER_SANITIZE_NUMBER_INT);
+                            break;
+                    }
+                } else
+                    $data[$key] = $value;
+            }
+        }
         if (isset($data["itemID"])) {
             (new RecordingProvider())->update($data);
 
@@ -159,5 +161,11 @@ class RecordingController extends BaseController
             'errorCode' => 0,
             'message' => 'Recording deleted successfully.',
         ]);
+    }
+
+    public function count($id)
+    {
+        $count = count((new tagProvider())->getList($id));
+        return $count;
     }
 }

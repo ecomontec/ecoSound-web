@@ -90,6 +90,18 @@
                     My Label:
                     <small>{{ item.recording.labelName }}</small>
                 </h6>
+                {% if item.recording.type is not empty %}
+                    <h6>
+                        Recording Type:
+                        <small>{{ item.recording.type }}</small>
+                    </h6>
+                {% endif %}
+                {% if item.recording.medium is not empty %}
+                    <h6>
+                        Medium:
+                        <small>{{ item.recording.medium }}</small>
+                    </h6>
+                {% endif %}
                 {% if item.recording.realmName is not empty %}
                     <h6>
                         Realm:

@@ -61,12 +61,28 @@
                             </select>
                         </div>
                     </div>
-
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label for="type" class="col-form-label-sm">Recording Type</label>
+                            <select id="type" name="type" class="form-control form-control-sm">
+                                <option>passive</option>
+                                <option>focal</option>
+                                <option>enclosure</option>
+                            </select>
+                            </div>
+                        <div class="form-group col-md-6">
+                            <label for="medium" class="col-form-label-sm">Medium</label>
+                            <select id="medium" name="medium" class="form-control form-control-sm">
+                                <option>air</option>
+                                <option>water</option>
+                            </select>
+                        </div>
+                        <label id="type_label" class="col-form-label-sm ml-3">recording from automated sound recorder, no influence on animals, typically omnidirectional microphone</label>
+                    </div>
                     <div class="form-group">
                         <div class="form-control-sm">
                             <input id="reference" name="reference" type="checkbox">
-                            <label for="reference">
-                                Reference Sound</label>
+                            <label for="reference">Reference Sound</label>
                         </div>
                     </div>
                     <div class="form-group">
@@ -76,7 +92,7 @@
                     </div>
                     <div class="row">
                         <div class="form-group col-md-6">
-                            <label for="type" class="col-form-label-sm">Type
+                            <label for="type" class="col-form-label-sm">Sound Type
                             </label>
                             <select id="type" name="sound-type" class="form-control form-control-sm js-reference-field js-field-required" disabled>
                                 {% for soundType in soundTypes %}

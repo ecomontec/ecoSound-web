@@ -266,4 +266,35 @@ class User extends BaseProvider
         $this->database->prepareQuery("UPDATE user SET password = :nePasswd WHERE user_id = :userId");
         return $this->database->executeUpdate($values);
     }
+
+    /**
+     * @param array $names
+     * @return array|int
+     * @throws \Exception
+     */
+    public function getInputList(array $names)
+    {
+        $query = 'SELECT * FROM ' . self::TABLE_NAME;
+
+        $fields = [];
+        if (isset($names)) {
+            if (count($names) == 1) {
+                $query .= ' WHERE name LIKE :name ';
+                $fields = [':name' => "%$names[0]%"];
+            }
+            else{
+                $query.= 'WHERE (name LIKE :name1 AND name LIKE :name2) ';
+                $fields = [
+                    ':name1' => "%$names[0]%",
+                    ':name2' => "%$names[1]%"
+                ];
+            }
+        }
+        $query .= 'ORDER BY name ASC LIMIT 0,15';
+
+        $this->database->prepareQuery($query);
+        $result = $this->database->executeSelect($fields);
+
+        return $result;
+    }
 }

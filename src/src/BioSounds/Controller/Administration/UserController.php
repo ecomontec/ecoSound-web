@@ -61,13 +61,13 @@ class UserController extends BaseController
 
                 switch ($type) {
                     case 'email':
-                        $data[$key] =  filter_var($value, FILTER_SANITIZE_EMAIL);
+                        $data[$key] = filter_var($value, FILTER_SANITIZE_EMAIL);
                         break;
                     case 'checkbox':
-                        $data[$key] =  filter_var($value, FILTER_SANITIZE_NUMBER_INT);
+                        $data[$key] = filter_var($value, FILTER_SANITIZE_NUMBER_INT);
                         break;
                     case 'select-one':
-                        $data[$key] =  filter_var($value, FILTER_SANITIZE_NUMBER_INT);
+                        $data[$key] = filter_var($value, FILTER_SANITIZE_NUMBER_INT);
                         break;
                     case 'password':
                         $password = $value;
@@ -78,7 +78,7 @@ class UserController extends BaseController
                         break;
                 }
             } else {
-                $data[$key] =  $value;
+                $data[$key] = $value;
             }
         }
 
@@ -131,7 +131,7 @@ class UserController extends BaseController
                         break;
                 }
             } else {
-                $data[$key] =  $value;
+                $data[$key] = $value;
             }
         }
 

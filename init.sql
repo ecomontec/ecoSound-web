@@ -15,13 +15,14 @@ SET time_zone = "+00:00";
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
-
+DROP DATABASE `biosounds`;
 --
 -- Database: `biosounds`
 --
 CREATE DATABASE IF NOT EXISTS `biosounds` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 USE `biosounds`;
 
+SELECT concat('DROP TABLE IF EXISTS ', table_name, ';') FROM information_schema.tables WHERE table_schema = 'biosounds';
 -- --------------------------------------------------------
 
 --
@@ -92,6 +93,8 @@ CREATE TABLE `file_upload`
     `sound_type_id`  int(11) DEFAULT NULL,
     `subtype`        char(1) COLLATE utf8_unicode_ci               DEFAULT NULL,
     `rating`         enum('A','B','C','D','E') COLLATE utf8_unicode_ci DEFAULT NULL,
+    `type`           varchar(50) COLLATE utf8_unicode_ci           DEFAULT NULL,
+    `medium`         varchar(50) COLLATE utf8_unicode_ci           DEFAULT NULL,
     `user_id`        int(11) NOT NULL,
     `error`          text COLLATE utf8_unicode_ci                  DEFAULT NULL,
     `creation_date`  timestamp                            NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp ()
@@ -178,6 +181,8 @@ CREATE TABLE `recording`
     `channel_num`   int(1) NOT NULL DEFAULT 1,
     `duration`      float                                NOT NULL,
     `note`          varchar(250) COLLATE utf8_unicode_ci          DEFAULT NULL,
+    `type`          varchar(50) COLLATE utf8_unicode_ci           DEFAULT NULL,
+    `medium`        varchar(50) COLLATE utf8_unicode_ci           DEFAULT NULL,
     `creation_date` timestamp                            NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
