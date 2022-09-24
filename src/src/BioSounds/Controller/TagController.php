@@ -92,7 +92,7 @@ class TagController extends BaseController
         /* TAG USER CONTROL */
 
         $isUserTagOwner = $tag->getUser() == Auth::getUserLoggedID();
-        $isReviewGranted = Auth::isUserAdmin();
+        $isReviewGranted = Auth::isUserLogged();
         $displaySaveButton = Auth::isUserAdmin() || $isUserTagOwner ? '' : 'hidden';
 
         if (!Auth::isUserAdmin() && !$isUserTagOwner) {
