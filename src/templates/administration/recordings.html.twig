@@ -59,16 +59,16 @@
                     </td>
                     <td>{{ recording.filename }}</td>
                     <td data-search="{{ recording.name }}" data-order="{{ recording.name }}">
-                        <input type='text' class="form-control form-control-sm" title="Name" name="name" value="{{ recording.name }}">
+                        <input type='text' class="form-control form-control-sm" style="width:200px;" title="Name" name="name" value="{{ recording.name }}">
                     </td>
                     <td data-search="{{ recording.username }}" data-order="{{ recording.username }}">
-                        <input id="username_{{ recording.id }}" data-type="edit" class="form-control form-control-sm js-users-autocomplete" type="text" size="30" value="{{ recording.username }}" required>
+                        <input id="username_{{ recording.id }}" style="width:150px;" data-type="edit" class="form-control form-control-sm js-users-autocomplete" type="text" size="30" value="{{ recording.username }}" required>
                         <div class="invalid-feedback">
                             Please select a users from the list.
                         </div>
                     </td>
                     <td data-search="{{ recording.siteName }}" data-order="{{ recording.siteName }}">
-                        <select name="site_id" class="form-control form-control-sm">
+                        <select name="site_id" style="width:120px;" class="form-control form-control-sm">
                             {% for st in sites %}
                                 <option value="{{ st.id }}" {{ st.id == recording.site ? 'selected' }}>
                                     {{ st.name }}
@@ -77,27 +77,27 @@
                         </select>
                     </td>
                     <td data-search="{{ recording.licenseName }}" data-order="{{ recording.licenseName }}">
-                        <select name="license_id" class="form-control form-control-sm">
+                        <select name="license_id" style="width:140px;" class="form-control form-control-sm">
                             {% for licensed in license %}
                                 <option value="{{ licensed.license_id }}" {{ licensed.license_id == recording.license ? 'selected' }}>{{ licensed.name }}</option>
                             {% endfor %}
                         </select>
                     </td>
                     <td data-search="{{ recording.type }}" data-order="{{ recording.type }}">
-                        <select name="type" class="form-control form-control-sm">
+                        <select name="type" style="width:100px;"  class="form-control form-control-sm">
                             <option {{ recording.type == 'Passive' ? 'selected' }}>Passive</option>
                             <option {{ recording.type == 'Focal' ? 'selected' }}>Focal</option>
                             <option {{ recording.type == 'Enclosure' ? 'selected' }}>Enclosure</option>
                         </select>
                     </td>
                     <td data-search="{{ recording.medium }}" data-order="{{ recording.medium }}">
-                        <select name="medium" class="form-control form-control-sm">
+                        <select name="medium" style="width:80px;"  class="form-control form-control-sm">
                             <option {{ recording.medium == 'Air' ? 'selected' }}>Air</option>
                             <option {{ recording.medium == 'Water' ? 'selected' }}>Water</option>
                         </select>
                     </td>
                     <td data-search="{{ recording.note }}" data-order="{{ recording.note }}">
-                        <input type='text' class="form-control form-control-sm" title="Note" name="note" value="{{ recording.note }}">
+                        <input type='text' class="form-control form-control-sm" style="width:200px;" title="Note" name="note" value="{{ recording.note }}">
                     </td>
                     <td data-search="{{ recording.fileDate }}" data-order="{{ recording.fileDate }}">
                         <input type='date' class="form-control form-control-sm" title="Date" name="file_date" value="{{ recording.fileDate }}">
