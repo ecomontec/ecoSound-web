@@ -4,8 +4,13 @@ namespace BioSounds\Controller\Administration;
 
 use BioSounds\Controller\BaseController;
 use BioSounds\Entity\Collection;
+use BioSounds\Entity\Recording;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\CollectionProvider;
+use BioSounds\Provider\IndexLogProvider;
+use BioSounds\Provider\RecordingProvider;
+use BioSounds\Provider\SoundProvider;
+use BioSounds\Provider\SpectrogramProvider;
 use BioSounds\Utils\Auth;
 
 class CollectionController extends BaseController
@@ -48,7 +53,7 @@ class CollectionController extends BaseController
             }
             $data[$key] = $value;
         }
-        $data['user_id']=$_SESSION['user_id'];
+        $data['user_id'] = $_SESSION['user_id'];
         if (isset($data['collId'])) {
             $collProvider->updateColl($data);
             return json_encode([
@@ -98,9 +103,10 @@ class CollectionController extends BaseController
         header('Content-Disposition: attachment; filename=' . $file_name);
 
         $collList = (new CollectionProvider())->getList();
+        $colAls[] = array('#', 'Name', 'User', 'DOI', 'Description', 'Creation Date(UTC)', 'View', 'Public');
 
         foreach ($collList as $collItem) {
-            $colArray = array($collItem->getId(), $collItem->getName(), $collItem->getAuthor(), $collItem->getDoi(), $collItem->getNote(), $collItem->getProject());
+            $colArray = array($collItem->getId(), $collItem->getName(), $collItem->getAuthor(), $collItem->getDoi(), $collItem->getNote(), $collItem->getCreationDate(), $collItem->getView(), $collItem->getPublic());
             $colAls[] = $colArray;
         }
 
@@ -109,5 +115,63 @@ class CollectionController extends BaseController
         }
         fclose($fp);
         exit();
+    }
+
+    /**
+     * @param int $id
+     * @return false|string
+     * @throws \Exception
+     */
+    public function delete(int $id)
+    {
+        if (!Auth::isUserAdmin()) {
+            throw new ForbiddenException();
+        }
+
+        if (empty($id)) {
+            throw new \Exception(ERROR_EMPTY_ID);
+        }
+        $collectionProvider = new CollectionProvider();
+        $recordingProvider = new RecordingProvider();
+        $indexLogProvider = new indexLogProvider();
+
+        $recordings = $recordingProvider->getByCollection($id);
+
+        if(count($recordings)>0){
+            foreach ($recordings as $recording) {
+                $fileName = $recording[Recording::FILENAME];
+                $colId = $recording[Recording::COL_ID];
+                $dirID = $recording[Recording::DIRECTORY];
+
+                $soundsDir = "sounds/sounds/$colId/$dirID/";
+                $imagesDir = "sounds/images/$colId/$dirID/";
+
+                unlink($soundsDir . $fileName);
+                //Check if there are images
+                $images = (new SpectrogramProvider())->getListInRecording($recording[Recording::ID]);
+
+                foreach ($images as $image) {
+                    unlink($imagesDir . $image->getFilename());
+                }
+
+                $wavFileName = substr($fileName, 0, strrpos($fileName, '.')) . '.wav';
+                if (is_file($soundsDir . $wavFileName)) {
+                    unlink($soundsDir . $wavFileName);
+                }
+
+                $recordingProvider->delete($recording[Recording::ID]);
+                $indexLogProvider->deleteByRecording($recording[Recording::ID]);
+
+                if (!empty($recording[Recording::SOUND_ID])) {
+                    (new SoundProvider())->delete($recording[Recording::SOUND_ID]);
+                }
+            }
+        }
+        $collectionProvider->delete($id);
+
+        return json_encode([
+            'errorCode' => 0,
+            'message' => 'Collection deleted successfully.',
+        ]);
     }
 }

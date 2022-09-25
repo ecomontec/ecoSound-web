@@ -8,9 +8,9 @@
                 Index Log Export
             </button>
         </div>
-        <table id="indexLogsTable" style="display:none">
-            <thead class="form-control-sm table-borderless">
-            <tr>
+        <table id="indexLogsTable" style="display:none;white-space: nowrap;">
+            <thead class="table-borderless">
+            <tr style="font-size: .875rem;">
                 <th>#</th>
                 <th>Recording</th>
                 <th>User</th>
@@ -48,14 +48,16 @@
     {{ parent() }}
     <script>
         $(document).ready(function () {
+            $('#indexLogsTable').show()
             $('#indexLogsTable').DataTable({
                 "pageLength": 8,
                 "lengthChange": false,
                 "stateSave": true,
                 "StateDuration": -1,
                 "order": [[0, 'asc']],
+                "bAutoWidth": false,
+                "scrollX": true,
             });
-            $('#indexLogsTable').show()
         });
         $(function () {
             'use strict';

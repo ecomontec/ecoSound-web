@@ -10,9 +10,9 @@
                 Add User
             </button>
         </div>
-        <table id="userTable" style="display:none">
-            <thead class="form-control-sm table-borderless">
-            <tr>
+        <table id="userTable" style="display:none;white-space: nowrap;">
+            <thead class="table-borderless">
+            <tr style="font-size: .875rem;">
                 <th>#</th>
                 <th>Name</th>
                 <th>Username</th>
@@ -72,18 +72,20 @@
     {{ parent() }}
     <script>
         $(document).ready(function () {
+            $('#userTable').show()
             $('#userTable').DataTable({
                 "pageLength": 8,
                 "lengthChange": false,
                 "stateSave": true,
                 "StateDuration": -1,
                 "order": [[0, 'asc']],
-                "columnDefs":[{
-                    "orderable":false,
-                    "targets":[6,7,8]
-                }]
+                "columnDefs": [{
+                    "orderable": false,
+                    "targets": [6, 7, 8]
+                }],
+                "bAutoWidth": false,
+                "scrollX": true,
             });
-            $('#userTable').show()
         });
         $(function () {
             'use strict';

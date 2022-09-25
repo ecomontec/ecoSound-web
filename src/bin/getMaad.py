@@ -322,8 +322,8 @@ def getMaad(path, filename, index_type, param, channel, minTime, maxTime, minFre
         axis = int(parameter['axis'])
         # zoom
         s_slice = sound.trim(s, fs, min_t=float(minTime), max_t=float(maxTime))
-        env = maad.sound.envelope(s_slice)
         # index
+        env = maad.sound.envelope(s_slice)
         Ht_Havrda, Ht_Renyi, Ht_pairedShannon, Ht_gamma, Ht_GiniSimpson = maad.features.more_entropy(env ** 2, order=order, axis=axis)
         # print
         print("Ht_Havrda?" + str(Ht_Havrda) + "!Ht_Renyi?" + str(Ht_Renyi) + "!Ht_pairedShannon?" + str(Ht_pairedShannon) + "!Ht_gamma?" + str(Ht_gamma) + "!Ht_GiniSimpson?" + str(Ht_GiniSimpson))
@@ -340,7 +340,8 @@ def getMaad(path, filename, index_type, param, channel, minTime, maxTime, minFre
         Sxx_power, tn, fn, ext = maad.sound.spectrogram(s, fs)
         Lxx_crop, tn_crop, fn_crop = maad.util.crop_image(Sxx_power, tn, fn, fcrop=(float(minFrequency), float(maxFrequency)), tcrop=(float(minTime), float(maxTime)))
         # index
-        Hf_Havrda, Hf_Renyi, Hf_pairedShannon, Hf_gamma, Hf_GiniSimpson = maad.features.more_entropy(Lxx_crop, order=order, axis=axis)
+        S_power = maad.sound.avg_power_spectro(Lxx_crop)
+        Hf_Havrda, Hf_Renyi, Hf_pairedShannon, Hf_gamma, Hf_GiniSimpson = maad.features.more_entropy(S_power, order=order, axis=axis)
         # print
         print("Hf_Havrda?" + str(Hf_Havrda) + "!Hf_Renyi?" + str(Hf_Renyi) + "!Hf_pairedShannon?" + str(Hf_pairedShannon) + "!Hf_gamma?" + str(Hf_gamma) + "!Hf_GiniSimpson?" + str(Hf_GiniSimpson))
     elif index_type == "acoustic_gradient_index":

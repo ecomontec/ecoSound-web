@@ -119,4 +119,13 @@ class CollectionProvider extends BaseProvider
 
         return $data;
     }
+    /**
+     * @param int $id
+     * @throws \Exception
+     */
+    public function delete(int $id): void
+    {
+        $this->database->prepareQuery('DELETE FROM ' . Collection::TABLE_NAME . ' WHERE collection_id = :id');
+        $this->database->executeDelete([':id' => $id]);
+    }
 }

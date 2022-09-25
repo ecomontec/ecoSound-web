@@ -10,8 +10,8 @@
                 Add Site
             </button>
         </div>
-        <table id="siteTable" style="display:none">
-            <thead class="form-control-sm table-borderless">
+        <table id="siteTable" style="display:none;white-space: nowrap;">
+            <thead class="table-borderless">
             <tr>
                 <th>#</th>
                 <th>Name</th>
@@ -101,18 +101,21 @@
         $(function () {
             var arr ={{ explores|json_encode|raw }};
             $(document).ready(function () {
+                $('#siteTable').show()
                 $('#siteTable').DataTable({
                     "pageLength": 8,
                     "lengthChange": false,
                     "stateSave": true,
                     "StateDuration": -1,
                     "order": [[0, 'asc']],
-                    "columnDefs":[{
-                        "orderable":false,
-                        "targets":[11]
-                    }]
+                    "columnDefs": [{
+                        "orderable": false,
+                        "targets": [11]
+                    }],
+                    "bAutoWidth": false,
+                    "scrollX": true,
                 });
-                $('#siteTable').show()
+
             });
             'use strict';
             $("select[name='realm_id']").on('change', function () {

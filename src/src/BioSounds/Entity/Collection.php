@@ -93,7 +93,7 @@ class Collection extends BaseProvider
      */
     public function getAuthor(): string
     {
-        $author = (new User())->getUserName($this->user_id);
+        $author = (new User())->getFullName($this->user_id);
         return $author;
     }
 

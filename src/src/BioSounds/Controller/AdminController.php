@@ -52,7 +52,7 @@ class AdminController extends BaseController
     /**
      * @throws \Exception
      */
-    public function collections(int $page = 1)
+    public function collections()
     {
         return (new CollectionController($this->twig))->show();
     }
@@ -60,9 +60,9 @@ class AdminController extends BaseController
     /**
      * @throws \Exception
      */
-    public function collectionMgr(?string $action = null)
+    public function collectionMgr(?string $action = null, int $id = null)
     {
-        return (new CollectionController($this->twig))->$action();
+        return (new CollectionController($this->twig))->$action($id);
     }
 
     /**
@@ -70,7 +70,7 @@ class AdminController extends BaseController
      * @return false|string
      * @throws \Exception
      */
-    public function users(int $pageId = 1)
+    public function users()
     {
         return (new UserController($this->twig))->show();
     }

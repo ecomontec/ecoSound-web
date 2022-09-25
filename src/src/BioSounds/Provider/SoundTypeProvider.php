@@ -36,7 +36,7 @@ class SoundTypeProvider extends BaseProvider
     {
         $list = [];
 
-        $this->database->prepareQuery('SELECT sound_type_id, `name` FROM sound_type WHERE taxon_class = :taxon_class AND taxon_order = :taxon_order ORDER BY `name`');
+        $this->database->prepareQuery('SELECT sound_type_id, `name` FROM sound_type WHERE taxon_class = :taxon_class OR taxon_order = :taxon_order ORDER BY `name`');
 
         if (!empty($result = $this->database->executeSelect(
             [
