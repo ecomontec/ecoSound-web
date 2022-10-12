@@ -1,0 +1,134 @@
+{% extends 'administration/admin.html.twig' %}
+
+{% block admin_content %}
+    {% include 'administration/projectCreate.html.twig' %}
+    <div class="card mb-3" id="projectsList">
+        <div class="card-header border-light bg-white text-right">
+            <button id="projectFormButton" class="btn btn-outline-primary btn-sm mt-2" type="button" data-toggle="collapse" data-target="#projectFormSection" aria-expanded="false" aria-controls="projectFormSection">
+                <i class="fas fa-plus"></i>
+                Add Project
+            </button>
+        </div>
+        <table id="projectTable" style="display:none; white-space: nowrap;">
+            <thead class="table-borderless">
+            <tr style="font-size: .875rem;">
+                <th>#</th>
+                <th>Name</th>
+                <th>User</th>
+                <th>URL</th>
+                <th>Picture</th>
+                <th>Creation Date (UTC)</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody class="form-control-sm js-project-list">
+            {% for project in projects %}
+                <form enctype="multipart/form-data">
+                    <tr>
+                        <td>
+                            {{ project.id }}
+                            <input id="project{{ project.id }}" type="hidden" name="projectId" value="{{ project.id }}">
+                        </td>
+                        <td data-search="{{ project.name }}" data-order="{{ project.name }}">
+                            <input type="text" class="form-control form-control-sm" name="name" style="width:200px;" value="{{ project.name }}">
+                        </td>
+                        <td>{{ project.creator }}</td>
+                        <td data-search="{{ project.url }}" data-order="{{ project.url }}">
+                            <input type="text" class="form-control form-control-sm" name="url" style="width:400px;" value="{{ project.url }}">
+                        </td>
+                        <td>
+                            <input type="file" name="picture_id_file" id="picture_id_file{{ project.id }}" class="picture_id_file file_upload" accept="image/*" data-project-id="{{ project.id }}" hidden>
+                            <a href="#" class="project-picture" data-project-id="{{ project.id }}"><img id="pic{{ project.id }}" src="{{ projectImagesUrl }}/{{ project.pictureId }}" alt="..." style="height:50px;"></a>
+                        </td>
+                        <td>{{ project.creationDate }}</td>
+                        <td data-search="{{ project.description }}" data-order="{{ project.description }}">
+                            <a href="{{ baseUrl }}/admin/projectMgr/description/{{ project.id }}" class="js-open-modal" title="Edit description" $privhidden>
+                                <span class="fas fa-edit"></span>
+                            </a>
+                        </td>
+                    </tr>
+                </form>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+{% block header %}
+    {{ parent() }}
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#projectTable').show()
+            $('#projectTable').DataTable({
+                "pageLength": 8,
+                "lengthChange": false,
+                "stateSave": true,
+                "StateDuration": -1,
+                "order": [[1, 'asc']],
+                "columnDefs": [{
+                    "orderable": false,
+                    "targets": [0, 4, 6]
+                }],
+                "bAutoWidth": false,
+                "scrollX": true,
+            });
+        });
+
+        $(function () {
+            'use strict';
+
+            var quill = new Quill('.editor', {
+                modules: {
+                    'toolbar': [
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{'color': []}, {'background': []}],
+                        [{'script': 'super'}, {'script': 'sub'}],
+                        ['link', 'image', 'video'],
+                        ['clean']
+                    ],
+                },
+                theme: 'snow',
+            });
+
+            quill.on('text-change', function () {
+                $("#description").val($(".ql-editor")[0].innerHTML)
+            });
+
+            $('.js-project-list').on('change', 'input, select, textarea', function () {
+                saveFormList($(this), 'api/admin/projectMgr/save');
+                var table = $('#projectTable').DataTable()
+                var tr = $(this).closest("tr")
+                table.rows(tr).invalidate()
+            });
+
+            $('#projectForm').submit(function (e) {
+                e.preventDefault();
+
+                if (this.checkValidity() === false) {
+                    e.stopPropagation();
+                } else {
+                    var data = new FormData($("#projectForm")[0])
+                    postRequest('{{ baseUrl }}/api/admin/projectMgr/save', data, false, false, function () {
+                        location.reload();
+                    });
+                }
+                this.classList.add('was-validated');
+            });
+
+            $('.project-picture').click(function () {
+                var id = $(this).data('project-id')
+                $('#picture_id_file' + id).click();
+            });
+            $('.file_upload').change(function () {
+                var id = $(this).data('project-id')
+                var reads = new FileReader();
+                var f = $('#picture_id_file' + id)[0].files[0]
+                reads.readAsDataURL(f);
+                reads.onload = function (e) {
+                    document.getElementById('pic' + id).src = this.result;
+                };
+            })
+        });
+    </script>
+{% endblock %}

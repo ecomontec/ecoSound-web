@@ -89,7 +89,7 @@ class RecordingProvider extends BaseProvider
         $query .= " WHERE col_id = :colId ";
 
         if ($sites) {
-            $query .= " AND site.site_id in ($sites) ";
+            $query .= " AND (site.site_id in ($sites) OR site.site_id is null) ";
         }
 
         $query .= ' ORDER BY recording_id';
@@ -195,6 +195,17 @@ class RecordingProvider extends BaseProvider
             return null;
         }
         return $result[0];
+    }
+
+    public function getNullCount(int $id): int
+    {
+        $query = 'SELECT * FROM recording WHERE col_id = :id AND site_id IS NULL';
+
+
+        $this->database->prepareQuery($query);
+        $result = $this->database->executeSelect([':id' => $id]);
+
+        return count($result);
     }
 
     /**

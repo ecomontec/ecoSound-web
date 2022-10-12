@@ -7,6 +7,7 @@ use BioSounds\Entity\Explore;
 use BioSounds\Entity\Sensor;
 use BioSounds\Entity\Site;
 use BioSounds\Exception\ForbiddenException;
+use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\SiteProvider;
 use BioSounds\Utils\Auth;
 
@@ -19,10 +20,17 @@ class SiteController extends BaseController
      * @return false|string
      * @throws \Exception
      */
-    public function show()
+    public function show($projectId = null)
     {
-        if (!Auth::isUserAdmin()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
+        }
+        if (isset($_POST['projectId'])) {
+            $projectId = $_POST['projectId'];
+        }
+        $projects = (new ProjectProvider())->getWithPermission(Auth::getUserID());
+        if (empty($projectId)) {
+            $projectId = $projects[0]->getId();
         }
         $arr = [];
         $siteProvider = new SiteProvider();
@@ -31,9 +39,11 @@ class SiteController extends BaseController
             $arr['pid' . $explore['pid']]['id' . $explore['explore_id']] = [$explore['explore_id'], $explore['name']];
         }
         return $this->twig->render('administration/sites.html.twig', [
+            'projects' => $projects,
+            'projectId' => $projectId,
             'explores' => $arr,
             'realms' => (new Explore())->getExplores(),
-            'siteList' => $siteProvider->getList(Auth::getUserID()),
+            'siteList' => $siteProvider->getList($projectId),
         ]);
     }
 
@@ -45,7 +55,7 @@ class SiteController extends BaseController
     {
         $siteEnt = new Site();
 
-        if (!Auth::isUserAdmin()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
 
@@ -109,7 +119,7 @@ class SiteController extends BaseController
      */
     public function delete(int $id)
     {
-        if (!Auth::isUserAdmin()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
 

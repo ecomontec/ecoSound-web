@@ -142,7 +142,7 @@
             var arr ={{ sound_types|json_encode|raw }};
             'use strict';
             $(document).on('click', '#tagsExport', function () {
-                window.location.href = '{{ baseUrl }}/api/admin/tagMgr/export';
+                window.location.href = '{{ baseUrl }}/api/admin/tagMgr/export/{{ colId }}';
             });
 
             $('.js-delete-button').click(function (e) {

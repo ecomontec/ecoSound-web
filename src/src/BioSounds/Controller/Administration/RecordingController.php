@@ -28,7 +28,7 @@ class RecordingController extends BaseController
      */
     public function show(int $cId = null)
     {
-        if (!Auth::isUserAdmin()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
 
@@ -40,11 +40,12 @@ class RecordingController extends BaseController
             $colId = $cId;
         }
 
-        $collections = (new CollectionProvider())->getList();
+        $collections = Auth::isUserAdmin() ? (new CollectionProvider())->getList() : (new CollectionProvider())->getManageList(Auth::getUserID());
         if (empty($colId)) {
             $colId = $collections[0]->getId();
         }
 
+        $collection = (new CollectionProvider())->get($colId);
         $recordingProvider = new RecordingProvider();
 
         $recordings = $recordingProvider->getListByCollection(
@@ -52,7 +53,8 @@ class RecordingController extends BaseController
             (Auth::getUserID() == null) ? 0 : Auth::getUserID()
         );
 
-        $userSites = (new SiteProvider())->getBasicList();
+        $projectId = $collection->getProject();
+        $userSites = (new SiteProvider())->getBasicList($projectId);
 
         return $this->twig->render('administration/recordings.html.twig', [
             'colId' => $colId,
@@ -69,7 +71,7 @@ class RecordingController extends BaseController
      */
     public function save()
     {
-        if (!Auth::isUserAdmin()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
 
@@ -101,6 +103,7 @@ class RecordingController extends BaseController
                     $data[$key] = $value;
             }
         }
+        $data["site_id"] = $data["site_id"] == 0 ? null : $data["site_id"];
         if (isset($data["itemID"])) {
             (new RecordingProvider())->update($data);
 
@@ -118,7 +121,7 @@ class RecordingController extends BaseController
      */
     public function delete(int $id)
     {
-        if (!Auth::isUserAdmin()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
 

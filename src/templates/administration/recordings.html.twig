@@ -69,6 +69,7 @@
                     </td>
                     <td data-search="{{ recording.siteName }}" data-order="{{ recording.siteName }}">
                         <select name="site_id" style="width:120px;" class="form-control form-control-sm">
+                            <option value="0"></option>
                             {% for st in sites %}
                                 <option value="{{ st.id }}" {{ st.id == recording.site ? 'selected' }}>
                                     {{ st.name }}
@@ -169,7 +170,7 @@
                     "lengthChange": false,
                     "stateSave": true,
                     "StateDuration": -1,
-                    "order": [[0, 'asc']],
+                    "order": [[1, 'asc']],
                     "columnDefs": [{
                         "orderable": false,
                         "targets": [0, 12]

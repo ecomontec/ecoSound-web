@@ -33,6 +33,11 @@ class Site extends AbstractProvider
     private $userId;
 
     /**
+     * @var int
+     */
+    private $projectId;
+
+    /**
      * @var string
      */
     private $creationDateTime;
@@ -118,6 +123,24 @@ class Site extends AbstractProvider
     public function setUserId(int $userId): Site
     {
         $this->userId = $userId;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getProjectId(): int
+    {
+        return $this->projectId;
+    }
+
+    /**
+     * @param int $projectId
+     * @return site
+     */
+    public function setProjectId(int $projectId): Site
+    {
+        $this->projectId = $projectId;
         return $this;
     }
 
@@ -371,13 +394,11 @@ class Site extends AbstractProvider
             $fields .= $key;
             $valuesNames .= ":" . $key;
             $values[":" . $key] = $value;
-            if (end($siteData) !== $value) {
-                $fields .= ", ";
-                $valuesNames .= ", ";
-            }
+            $fields .= ",";
+            $valuesNames .= ",";
         }
-        $fields .= " )";
-        $valuesNames .= " )";
+        $fields = substr($fields, 0, strlen($fields) - 1).' )';
+        $valuesNames = substr($valuesNames, 0, strlen($valuesNames) - 1).' )';
 
         $this->database->prepareQuery("INSERT INTO site $fields VALUES $valuesNames");
         return $this->database->executeInsert($values);
@@ -403,10 +424,9 @@ class Site extends AbstractProvider
         foreach ($siteData as $key => $value) {
             $fields .= $key . ' = :' . $key;
             $values[':' . $key] = $value;
-            if (end($siteData) !== $value) {
-                $fields .= ', ';
-            }
+            $fields .= ",";
         }
+        $fields = substr($fields, 0, strlen($fields) - 1);
 
         $values[':siteId'] = $steId;
         $this->database->prepareQuery("UPDATE site SET $fields WHERE site_id = :siteId");

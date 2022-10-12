@@ -5,14 +5,28 @@
     {% include 'administration/collCreate.html.twig' %}
     <div class="card mb-3" id="collectionsList">
         <div class="card-header border-light bg-white text-right">
-            <button id="collectionsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#collectionsExport" aria-expanded="false" aria-controls="collectionsExport">
-                <i class="fa fa-download"></i>
-                Collection Export
-            </button>
-            <button id="collectionFormButton" class="btn btn-outline-primary btn-sm mt-2" type="button" data-toggle="collapse" data-target="#collectionFormSection" aria-expanded="false" aria-controls="collectionFormSection">
-                <i class="fas fa-plus"></i>
-                Add Collection
-            </button>
+            <div class="row">
+                <div class="col-auto mr-auto mt-2">
+                    <form id="projectForm" class="form-inline" action="{{ baseUrl }}/admin/collections" method="POST">
+                        <label for="projectId">Project</label>
+                        <select id="projectId" name="projectId" class="form-control form-control-sm ml-3">
+                            {% for project in projects %}
+                                <option value="{{ project.id }}" {{ project.id == projectId ? 'selected' }}>
+                                    {{ project.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
+                <button id="collectionsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#collectionsExport" aria-expanded="false" aria-controls="collectionsExport">
+                    <i class="fa fa-download"></i>
+                    Collection Export
+                </button>
+                <button id="collectionFormButton" class="btn btn-outline-primary btn-sm mt-2 ml-2" type="button" data-toggle="collapse" data-target="#collectionFormSection" aria-expanded="false" aria-controls="collectionFormSection">
+                    <i class="fas fa-plus"></i>
+                    Add Collection
+                </button>
+            </div>
         </div>
         <table id="collTable" style="display:none; white-space: nowrap;">
             <thead class="table-borderless">
@@ -112,7 +126,7 @@
                 "lengthChange": false,
                 "stateSave": true,
                 "StateDuration": -1,
-                "order": [[0, 'asc']],
+                "order": [[1, 'asc']],
                 "columnDefs": [{
                     "orderable": false,
                     "targets": [0, 9]
@@ -143,7 +157,7 @@
                 if (this.checkValidity() === false) {
                     e.stopPropagation();
                 } else {
-                    postRequest('{{ baseUrl }}/api/admin/collectionMgr/save', $(this).serialize(), false, false, function () {
+                    postRequest('{{ baseUrl }}/api/admin/collectionMgr/save', new FormData($(this)[0]), false, false, function () {
                         location.reload();
                     });
                 }
@@ -172,7 +186,7 @@
                 }
             });
             $(document).on('click', '#collectionsExport', function () {
-                window.location.href = '{{ baseUrl }}/api/admin/collectionMgr/export';
+                window.location.href = '{{ baseUrl }}/api/admin/collectionMgr/export/'+$('#projectId').val();
             });
 
             $("#modal-div").keydown(function (e) {
@@ -180,6 +194,10 @@
                     $("#modal-div").modal('hide');
                     event.preventDefault();
                 }
+            });
+
+            $('#projectId').change(function () {
+                $("#projectForm").submit();
             });
         });
     </script>

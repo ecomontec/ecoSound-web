@@ -11,36 +11,62 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <input id="user_id" type="hidden" value="{{ userId }}">
-                    <table id="user-perm" class="table table-sm table-hover">
+                    <table id="user-perm" class="table table-sm table-hover" style="white-space: nowrap;">
                         <thead class="table-borderless">
-                            <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">Collection</th>
-                                <th scope="col">Access</th>
-                                <th scope="col">View all tags</th>
-                                <th scope="col">Review all tags</th>
-                            </tr>
+                        <tr>
+                            <th></th>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Access</th>
+                            <th>Manage</th>
+                            <th>View tags</th>
+                            <th>Review tags</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            {% for collection in collections %}
-                                <tr>
-                                    <td scope="row">
-                                        {{ collection.collection_id }}
-                                        <input class="js-data-input" type='hidden' data-collection-id="{{ collection.collection_id }}" data-permission-id="{{ collection.permission_id }}">
+                        {% for project in projects %}
+                            <tr>
+                                <td><a href="#"><i class="fa fa-plus btn-fa" data-project="{{ project.id }}"></i></a></td>
+                                <td>{{ project.id }}</td>
+                                <td>{{ project.name }}</td>
+                                <td class="text-center">
+                                    <input class="js-access-checkbox" value="{{ accessId }}" type="checkbox" name="access"
+                                           data-project-id="{{ project.id }}" {{ project.permission == accessId ? "checked" }} {{ project.permission < accessId and project.permission > 0  ? "checked" }} {{ project.permission == manageId ? "checked" }} disabled>
+                                </td>
+                                <td class="text-center">
+                                    <input class="js-manage-checkbox" value="{{ manageId }}" type="checkbox" name="manage" data-project="{{ project.id }}" {{ project.permission == manageId ? "checked" }} disabled>
+                                </td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            {% for collection in project.collections %}
+                                <tr class="data_collection data{{ project.id }}" style="font-size: .875rem;background-color: #f1f1f1">
+                                    <td></td>
+                                    <td>
+                                        {{ collection.id }}
+                                        <input id="user_id" type="hidden" value="{{ userId }}">
+                                        <input class="js-data-input" type='hidden' data-collection-id="{{ collection.id }}" data-project-id="{{ project.id }}" data-permission-id="{{ collection.permission }}">
                                     </td>
                                     <td>{{ collection.name }}</td>
                                     <td class="text-center">
-                                        <input class="js-access-checkbox" value="{{ accessId }}" type="checkbox" disabled name="access" data-collection-id="{{ collection.collection_id }}" {{ collection.permission_id == accessId ? "checked"}} {{ collection.permission_id == viewId ? "checked"}} {{ collection.permission_id == reviewId ? "checked"}}>
+                                        <input class="js-access-checkbox" value="{{ accessId }}" type="checkbox" name="access" data-project-id="{{ project.id }}" hidden
+                                               data-collection-id="{{ collection.id }}" {{ collection.permission == manageId ? "checked" }} {{ collection.permission == reviewId ? "checked" }} {{ collection.permission == viewId ? "checked" }} {{ collection.permission == accessId ? "checked" }}>
                                     </td>
                                     <td class="text-center">
-                                        <input class="js-view-checkbox" value="{{ viewId }}" type="checkbox" disabled name="view" data-collection-id="{{ collection.collection_id }}" {{ collection.permission_id == viewId ? "checked"}} {{ collection.permission_id == reviewId ? "checked"}}>
+                                        <input class="js-manage-checkbox" value="{{ manageId }}" type="checkbox" name="manage" data-project-id="{{ project.id }}" hidden
+                                               data-collection-id="{{ collection.id }}" {{ collection.permission == manageId ? "checked" }}>
                                     </td>
                                     <td class="text-center">
-                                        <input class="js-review-checkbox" value="{{ reviewId }}" type="checkbox" disabled name="review" data-collection-id="{{ collection.collection_id }}" {{ collection.permission_id == reviewId ? "checked"}}>
+                                        <input class="js-view-checkbox" value="{{ viewId }}" type="checkbox" name="view" data-project-id="{{ project.id }}" disabled
+                                               data-collection-id="{{ collection.id }}" {{ collection.permission == manageId ? "checked" }} {{ collection.permission == reviewId ? "checked " }} {{ collection.permission == viewId ? "checked" }}>
+                                    </td>
+                                    <td class="text-center">
+                                        <input class="js-review-checkbox" value="{{ reviewId }}" type="checkbox" name="review" data-project-id="{{ project.id }}" disabled
+                                               data-collection-id="{{ collection.id }}" {{ collection.permission == manageId ? "checked" }} {{ collection.permission == reviewId ? "checked" }}>
                                     </td>
                                 </tr>
                             {% endfor %}
+                        {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -48,3 +74,19 @@
         </div>
     </div>
 </div>
+<script>
+    $(document).ready(function () {
+        $(".data_collection").hide()
+    });
+    $(".btn-fa").click(function (e) {
+        if ($(this).hasClass('fa-plus')) {
+            $(".data" + $(this).data('project')).show();
+            $(this).removeClass('fa-plus')
+            $(this).addClass('fa-minus')
+        } else {
+            $(".data" + $(this).data('project')).hide();
+            $(this).removeClass('fa-minus')
+            $(this).addClass('fa-plus')
+        }
+    })
+</script>

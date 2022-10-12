@@ -40,6 +40,7 @@
                             <label for="site" class="col-form-label-sm">Site
                             </label>
                             <select id="site" name="site" class="form-control form-control-sm">
+                                <option value='null'></option>
                                 {% for site in sites %}
                                     <option value="{{ site.id }}">{{ site.name }}</option>
                                 {% endfor %}

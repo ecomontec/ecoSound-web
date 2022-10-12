@@ -8,8 +8,8 @@
             <form id="siteForm" novalidate>
                 <div class="form-group">
                     <label for="name" class="col-form-label-sm">Name</label>
-                    <input id="name" type="text" name="name_text" class="form-control form-control-sm" maxlength="100"
-                           required>
+                    <input id="name" type="text" name="name_text" class="form-control form-control-sm" maxlength="100" required>
+                    <input id="project_id" type="hidden" name="project_id_text" value="{{ projectId }}">
                     <div class="invalid-feedback">
                         Please provide a site name.
                     </div>
@@ -20,14 +20,10 @@
                 </div>
                 <div>
                     <span>
-                        <input id="longitude" type="number" min="-180" max="180" step="0.0000000000001"
-                               pattern="##.##############" name="longitude_number" style="width:50%" maxlength="100"
-                               required>
+                        <input id="longitude" type="number" min="-180" max="180" step="0.0000000000001" pattern="##.##############" name="longitude_number" style="width:50%" maxlength="100" required>
                     </span>
                     <span>
-                        <input id="latitude" type="number" min="-90" max="90" step="0.0000000000001"
-                               pattern="##.##############" name="latitude_number" style="width:49.5%" maxlength="100"
-                               required>
+                        <input id="latitude" type="number" min="-90" max="90" step="0.0000000000001" pattern="##.##############" name="latitude_number" style="width:49.5%" maxlength="100" required>
                     </span>
                 </div>
                 <div>
@@ -40,12 +36,9 @@
                     </span>
                 </div>
                 <div>
-                    <label for="gadm1" class="col-form-label-sm" style="width:33%">Global Administrative Areas level
-                        1</label>
-                    <label for="gadm2" class="col-form-label-sm" style="width:33%">Global Administrative Areas level
-                        2</label>
-                    <label for="gadm3" class="col-form-label-sm" style="width:33%">Global Administrative Areas level
-                        3</label>
+                    <label for="gadm1" class="col-form-label-sm" style="width:33%">Global Administrative Areas level 1</label>
+                    <label for="gadm2" class="col-form-label-sm" style="width:33%">Global Administrative Areas level 2</label>
+                    <label for="gadm3" class="col-form-label-sm" style="width:33%">Global Administrative Areas level 3</label>
                 </div>
                 <div class="form-group">
                     <input id="gadm1" type="text" name="gadm1_text" style="width:33%" maxlength="100">

@@ -14,9 +14,9 @@ class SiteProvider extends BaseProvider
      * @return Site[]
      * @throws \Exception
      */
-    public function getBasicList(): array
+    public function getBasicList($project_id): array
     {
-        return $this->getList(Auth::getUserID(), 'site_id');
+        return $this->getList($project_id);
     }
 
     /**
@@ -24,7 +24,7 @@ class SiteProvider extends BaseProvider
      * @return Site[]
      * @throws \Exception
      */
-    public function getList(int $userId, string $order = 'name'): array
+    public function getList(int $projectId, string $order = 'name'): array
     {
         $data = [];
         $this->database->prepareQuery(
@@ -32,7 +32,7 @@ class SiteProvider extends BaseProvider
                     LEFT JOIN explore e1 ON e1.explore_id = s.realm_id 
                     LEFT JOIN explore e2 ON e2.explore_id = s.biome_id 
                     LEFT JOIN explore e3 ON e3.explore_id = s.functional_group_id 
-                    where user_id = $userId ORDER BY $order"
+                    where project_id = $projectId ORDER BY $order"
         );
 
         $result = $this->database->executeSelect();
@@ -42,6 +42,7 @@ class SiteProvider extends BaseProvider
                 ->setId($item['site_id'])
                 ->setName($item['name'])
                 ->setUserId($item['user_id'])
+                ->setProjectId($item['project_id'])
                 ->setCreationDateTime($item['creation_date_time'])
                 ->setLongitude($item['longitude_WGS84_dd_dddd'])
                 ->setLatitude($item['latitude_WGS84_dd_dddd'])
@@ -79,6 +80,7 @@ class SiteProvider extends BaseProvider
             ->setId($result['site_id'])
             ->setName($result['name'])
             ->setUserId($result['user_id'])
+            ->setProjectId($result['project_id'])
             ->setCreationDateTime($result['creation_date_time'])
             ->setLongitude($result['longitude_WGS84_dd_dddd'])
             ->setLatitude($result['latitude_WGS84_dd_dddd'])

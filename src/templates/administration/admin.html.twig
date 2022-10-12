@@ -14,21 +14,28 @@
         <div class="row">
             <div class="col-lg-2">
                 <ul class="nav flex-column nav-pills">
-                    {% if is_admin %}
+                    {% if isManage %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ baseUrl }}/admin/settings">
                                 <i class="fas fa-cog pr-1"></i>
                                 Settings</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ baseUrl }}/admin/collections">
-                                <i class="fas fa-music pr-1"></i>
-                                Collections</a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link" href="{{ baseUrl }}/admin/users">
                                 <i class="fas fa-user pr-1"></i>
                                 Users</a>
+                        </li>
+                        {% if is_admin %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ baseUrl }}/admin/projects">
+                                    <i class="fas fa-desktop pr-1"></i>
+                                    Projects</a>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ baseUrl }}/admin/collections">
+                                <i class="fas fa-music pr-1"></i>
+                                Collections</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ baseUrl }}/admin/recordings">

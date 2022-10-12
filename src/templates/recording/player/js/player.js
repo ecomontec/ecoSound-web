@@ -13,11 +13,11 @@ continuousPlaySelector.change(function () {
     isContinuous = this.checked;
 });
 
-$('#stop').click(function() {
+$('#stop').click(function () {
     setContinuousPlay(false);
 });
 
-continuousPlay = function() {
+continuousPlay = function () {
     if (fileDuration > maxTime) {
         $('#x').val(maxTime);
         $('#w').val(maxTime + selectionDuration);
@@ -25,7 +25,7 @@ continuousPlay = function() {
     }
 };
 
-let setContinuousPlay = function(value) {
+let setContinuousPlay = function (value) {
     isContinuous = value;
     continuousPlaySelector.prop('checked', value);
     if (value) {
@@ -35,11 +35,11 @@ let setContinuousPlay = function(value) {
     }
 };
 
-savePlayLog = function() {
+savePlayLog = function () {
     postRequest(
         baseUrl + '/api/PlayLog/save',
         {
-            recordingId:  recordingId,
+            recordingId: recordingId,
             userId: userId,
             startTime: getCookie('playStartTime'),
             stopTime: new Date().valueOf() / 1000,

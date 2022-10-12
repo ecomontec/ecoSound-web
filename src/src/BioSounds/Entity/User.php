@@ -10,9 +10,6 @@ class User extends BaseProvider
     const ID = "user_id";
     const NAME = "username";
     const FULL_NAME = "name";
-    const EMAIL = "email";
-    const ROLE = "role_id";
-    const ACTIVE = "active";
     const PASSWORD = "password";
     const TAG_COLOR = "color";
 
@@ -148,6 +145,40 @@ class User extends BaseProvider
     }
 
     /**
+     * @param int $userId
+     * @return bool
+     * @throws \Exception
+     */
+    public function isManage(int $userId): bool
+    {
+        $this->database->prepareQuery(
+            'SELECT count(*) AS result FROM user u LEFT JOIN user_permission p ON u.user_id = p.user_id WHERE p.user_id = :userId AND permission_id = 4'
+        );
+
+        if (empty($result = $this->database->executeSelect([":userId" => $userId]))) {
+            throw new \Exception("User $userId doesn't exist.");
+        }
+        return ($result[0]["result"] ? true : false);
+    }
+    /**
+     * @param int $userId
+     * @return int
+     * @throws \Exception
+     */
+    public function getPermission(int $userId): int
+    {
+        $this->database->prepareQuery(
+            'SELECT MAX(c.) AS result FROM user ' .
+            'LEFT JOIN role ON user.role_id = role.role_id WHERE user_id = :userId'
+        );
+
+        if (empty($result = $this->database->executeSelect([":userId" => $userId, ":roleName" => Role::ADMIN_ROLE]))) {
+            throw new \Exception("User $userId doesn't exist.");
+        }
+        return ($result[0]["result"] == 0 ? true : false);
+    }
+
+    /**
      * @return array
      * @throws \Exception
      */
@@ -164,6 +195,16 @@ class User extends BaseProvider
     public function getList(): array
     {
         $this->database->prepareQuery('SELECT * FROM user');
+        return $this->database->executeSelect();
+    }
+
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    public function getUser(): array
+    {
+        $this->database->prepareQuery('SELECT * FROM user WHERE role_id = 2');
         return $this->database->executeSelect();
     }
 
@@ -212,13 +253,11 @@ class User extends BaseProvider
             $fields .= $key;
             $valuesNames .= ":" . $key;
             $values[":" . $key] = $value;
-            if (end($userData) !== $value) {
-                $fields .= ", ";
-                $valuesNames .= ", ";
-            }
+            $fields .= ",";
+            $valuesNames .= ",";
         }
-        $fields .= " )";
-        $valuesNames .= " )";
+        $fields = substr($fields, 0, strlen($fields) - 1).' )';
+        $valuesNames = substr($valuesNames, 0, strlen($valuesNames) - 1).' )';
 
         $this->database->prepareQuery("INSERT INTO user $fields VALUES $valuesNames");
         return $this->database->executeInsert($values);
@@ -243,10 +282,9 @@ class User extends BaseProvider
         foreach ($userData as $key => $value) {
             $fields .= $key . ' = :' . $key;
             $values[':' . $key] = $value;
-            if (end($userData) !== $value) {
-                $fields .= ', ';
-            }
+            $fields .= ",";
         }
+        $fields = substr($fields, 0, strlen($fields) - 1);
         $values[':userId'] = $userId;
         $this->database->prepareQuery("UPDATE user SET $fields WHERE user_id = :userId");
         return $this->database->executeUpdate($values);

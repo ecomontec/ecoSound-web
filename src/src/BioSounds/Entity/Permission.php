@@ -9,6 +9,7 @@ class Permission extends BaseProvider
     const ACCESS = 'Access';
     const VIEW = 'View';
     const REVIEW = 'Review';
+    const MANAGE = 'Manage';
 
     /**
      * @param int $permissionId
@@ -77,6 +78,20 @@ class Permission extends BaseProvider
     {
         $this->database->prepareQuery('SELECT permission_id FROM permission WHERE name = :name');
         if (empty($result = $this->database->executeSelect([':name' => self::REVIEW]))) {
+            return null;
+        }
+
+        return $result[0]['permission_id'];
+    }
+
+    /**
+     * @return int|null
+     * @throws \Exception
+     */
+    public function getManageId(): ?int
+    {
+        $this->database->prepareQuery('SELECT permission_id FROM permission WHERE name = :name');
+        if (empty($result = $this->database->executeSelect([':name' => self::MANAGE]))) {
             return null;
         }
 

@@ -18,7 +18,7 @@ class SettingController extends BaseController
      */
     public function show()
     {
-		if (!Auth::isUserAdmin()){
+		if (!Auth::isManage()){
 			throw new ForbiddenException();
 		}
 		echo Utils::getSetting('license');
@@ -44,12 +44,11 @@ class SettingController extends BaseController
      */
 	public function save()
     {
-        if (!Auth::isUserAdmin()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
         $setting = new Setting();
         foreach ($_POST as $key => $value) {
-            $value = $value;
             $setting->update($key, $value);
         }
 

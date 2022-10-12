@@ -5,19 +5,24 @@
         <nav aria-label="breadcrumb">
             <ul class="breadcrumb bg-white mt-4">
                 <li class="breadcrumb-item" aria-current="page">
-                    <a href="{{ baseUrl }}/collection/index">Collections</a>
+                    <a href="{{ baseUrl }}/project/show">Projects</a>
+                </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <a href="{{ baseUrl }}/collection/index/{{ project.id }}">{{ project.name }}</a>
                 </li>
                 <li class="breadcrumb-item active" aria-current="page">{{ collection.name }}</li>
             </ul>
             {% if leaflet.arr %}
                 <button id="btn_map" class="btn btn-outline-primary btn-sm view mb-3">Hide Map</button>
+            {% else %}
+                <button class="btn btn-outline-secondary btn-sm view mb-3" disabled>No geo-referenced recordings</button>
             {% endif %}
         </nav>
         <div id="map" {% if leaflet.arr %} style="height: 750px;margin-bottom: 30px;" {% endif %}></div>
         <div class="row">
             <div class="col-md-7">
                 <h2>{{ collection.name }}
-                    <small>{{ list|length }} sounds</small>
+                    <small>showing {{ list|length }} ouf of {{ list|length }} recordings {% if none_count > 0 %}({{ none_count }} recordings not geo-referenced){% endif %}</small>
                 </h2>
             </div>
             <div class="col-md-5 text-right">
@@ -43,9 +48,6 @@
                 {% endif %}
             </div>
         </div>
-        {% if list is empty %}
-            <h5>No Result</h5>
-        {% endif %}
         {% include display == 'list' ? 'collection/views/list.html.twig' : 'collection/views/gallery.html.twig' %}
     </div>
 {% endblock %}
@@ -55,9 +57,8 @@
     {{ parent() }}
     <link rel="stylesheet" href="{{ baseUrl }}/templates/collection/css/smallPlayer.css"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ==" crossorigin=""/>
-{% endblock %}
-
-
+    <link rel="stylesheet" href="{{ baseUrl }}/assets/css/MarkerCluster.css">
+    <link rel="stylesheet" href="{{ baseUrl }}/assets/css/MarkerCluster.Default.css">{% endblock %}
 {% block scripts %}
     {{ parent() }}
     <script>
@@ -65,25 +66,28 @@
         {% include 'collection/js/smallPlayer.js' %}
     </script>
     <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js" integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ==" crossorigin=""></script>
+    <script src="{{ baseUrl }}/assets/js/leaflet.markercluster-src.js"></script>
     <script>
         {% if leaflet.arr %}
-        var markerArray = []
         var map = L.map('map').setView([{{ leaflet.latitude_center }}, {{ leaflet.longitude_center }}],  {{ leaflet.count==1?10:5 }});
+        var markers = L.markerClusterGroup();
+        var markerArray = []
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             minZoom: 1,
             maxZoom: 18,
         }).addTo(map);
         {% for a in leaflet.arr %}
-        var marker = L.marker([{{ a[2] }}, {{ a[3] }}], {id: '{{ a[0] }}'});
+        var marker = L.marker([{{ a[2] }}, {{ a[3] }}], {id: '{{ a[0] }}', alt: '{{ a[5] }}'});
         marker.bindPopup('<input type="hidden" value="{{ a[0] }}site_id"><b>{{ a[1] }}</b><br>{{ a[4] }}'.replaceAll('!br!', '<br>'), {
             closeOnClick: false,
             maxHeight: 140,
             maxWidth: 99999,
         });
+        markers.addLayer(marker)
         markerArray.push(marker)
         {% endfor %}
+        map.addLayer(markers);
         var group = L.featureGroup(markerArray);
-        group.addTo(map)
         map.fitBounds(group.getBounds());
         map.on('popupopen', function (e) {
             site = e.popup._content.split('value="')[1].split('site_id">')[0]

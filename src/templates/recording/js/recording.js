@@ -47,9 +47,20 @@ $(function () {
         $("#recordingForm").submit();
     });
 
+    $("#readingModeSelect").change(function (e) {
+        if ($("#readingModeSelect").val() == 'birds') {
+            $("#readingModeInput").val(60)
+        } else if ($("#readingModeSelect").val() == 'bats') {
+            $("#readingModeInput").val(10)
+        }
+    });
+    $("#readingModeInput").change(function (e) {
+        $("#readingModeSelect option[value='others']").attr("selected", true)
+    });
+
     $(".readingMode").click(function (e) {
         $("#x").val(currentTime + minTime);
-        $("#w").val(currentTime + minTime + 60);
+        $("#w").val(currentTime + minTime +  $("#readingModeInput").val());
         $("#y").val(1);
         $("#h").val(fileFreqMax);
         $("input[name=filter]").prop("checked", false);
@@ -92,7 +103,7 @@ $(function () {
             showAlert('Please, select an area of the spectrogram.');
             return;
         }
-        requestModal(this.href, $('#recordingForm').serialize(), false);
+        requestModal(this.href, new FormData($("#recordingForm")[0]), false);
     });
 
     $('#recordingForm').on('submit', function () {

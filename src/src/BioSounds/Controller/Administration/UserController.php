@@ -20,7 +20,7 @@ class UserController extends BaseController
      */
     public function show()
     {
-        if (!Auth::isUserAdmin()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
         $userProducer = new User();
@@ -39,7 +39,7 @@ class UserController extends BaseController
     {
         $userProvider = new User();
 
-        if (!Auth::isUserAdmin()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
 
@@ -156,7 +156,7 @@ class UserController extends BaseController
      */
     public function editPassword()
     {
-        if (!Auth::isUserAdmin()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
 

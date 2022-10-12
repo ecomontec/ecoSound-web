@@ -11,6 +11,7 @@ use BioSounds\Controller\Administration\SettingController as SettingController;
 use BioSounds\Controller\Administration\RecordingController as RecordingController;
 use BioSounds\Controller\Administration\SiteController as SiteController;
 use BioSounds\Controller\Administration\TagController as TagController;
+use BioSounds\Controller\Administration\ProjectController as ProjectController;
 
 class AdminController extends BaseController
 {
@@ -20,7 +21,7 @@ class AdminController extends BaseController
      */
     public function create()
     {
-        if (!Auth::isUserAdmin()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
 
@@ -63,6 +64,22 @@ class AdminController extends BaseController
     public function collectionMgr(?string $action = null, int $id = null)
     {
         return (new CollectionController($this->twig))->$action($id);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function projects()
+    {
+        return (new ProjectController($this->twig))->show();
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function projectMgr(?string $action = null, int $id = null)
+    {
+        return (new ProjectController($this->twig))->$action($id);
     }
 
     /**

@@ -1,11 +1,137 @@
 {% extends 'administration/admin.html.twig' %}
 {% block body %}
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-md-7">
-                <h2>Collections</h2>
-            </div>
-        </div>
-        {% include 'collection/collectionsList.html.twig'  %}
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ul class="breadcrumb bg-white mt-4">
+                <li class="breadcrumb-item" aria-current="page">
+                    <a href="{{ baseUrl }}/project/show">Projects</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">{{ project.name }}</li>
+            </ul>
+            {% if collections|length > 0 %}
+                {% if leaflet.arr %}
+                    <button id="btn_map" class="btn btn-outline-primary btn-sm view mb-3">Hide Map</button>
+                    <input id="sites" value="{{ leaflet.sites }}" type="hidden">
+                {% endif %}
+            {% endif %}
+        </nav>
+        {% if collections|length > 0 %}
+            <div id="map" {% if leaflet.arr %} style="height: 750px;margin-bottom: 30px;" {% endif %}></div>
+        {% endif %}
+        <table id="collectionTable" style="display:none">
+            <thead class="table-borderless" style="display:none">
+            <tr>
+                <th></th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody class="js-collection-list">
+            {% for collection in collections %}
+                {% if isUserLogged or collection.public %}
+                    <tr style="vertical-align:top;">
+                        <td style="width: 45%;border-top: 1px solid #dddddd;">
+                            <h4><a href="{{ baseUrl }}/collection/show/{{ collection.id }}">{{ collection.name }}</a></h4>
+                            <h6>Author: <small>{{ collection.author }}</small><br>DOI: <small>{{ collection.doi }}</small><br>Creation Date (UTC): <small>{{ collection.creationDate }}</small></h6>
+                        </td>
+                        <td style="width: 55%;border-top: 1px solid #dddddd;"><h6>Description: <small>{{ collection.note }}</small></h6></td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+            </tbody>
+        </table>
+        <script>
+            $(document).ready(function () {
+                $('#collectionTable').DataTable({
+                    "pageLength": 8,
+                    "lengthChange": false,
+                    "stateSave": true,
+                    "StateDuration": -1,
+                    "order": [[0, 'asc']],
+                    "info": false,
+                });
+                $('#collectionTable').show()
+            });
+        </script>
     </div>
+{% endblock %}
+
+{% block header %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ==" crossorigin=""/>
+    <link rel="stylesheet" href="{{ baseUrl }}/assets/css/MarkerCluster.css">
+    <link rel="stylesheet" href="{{ baseUrl }}/assets/css/MarkerCluster.Default.css">
+{% endblock %}
+
+{% block scripts %}
+    {{ parent() }}
+    <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js" integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ==" crossorigin=""></script>
+    <script src="{{ baseUrl }}/assets/js/leaflet.markercluster-src.js"></script>
+    <script>
+        {% if leaflet.arr %}
+        var map = L.map('map').setView([{{ leaflet.latitude_center }}, {{ leaflet.longitude_center }}],  {{ leaflet.count==1?10:5 }});
+        var markers = L.markerClusterGroup();
+        var markerArray = []
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            minZoom: 1,
+            maxZoom: 18,
+        }).addTo(map);
+        {% for a in leaflet.arr %}
+        var marker = L.marker([{{ a[2] }}, {{ a[3] }}], {id: '{{ a[0] }}', alt: "1"});
+        marker.bindPopup('<input type="hidden" value="{{ a[0] }}site_id"><b>{{ a[1] }}</b>'.replaceAll('!br!', '<br>'), {
+            closeOnClick: false,
+            maxHeight: 140,
+            maxWidth: 99999,
+        });
+        markers.addLayer(marker)
+        markerArray.push(marker)
+        {% endfor %}
+        map.addLayer(markers);
+        var group = L.featureGroup(markerArray);
+        map.fitBounds(group.getBounds());
+        map.on('moveend zoomend', function () {
+            if ($(".leaflet-popup-close-button").length > 0) {
+                $(".leaflet-popup-close-button")[0].click()
+            }
+            site = null
+            North = map.getBounds().getNorth()
+            South = map.getBounds().getSouth()
+            East = map.getBounds().getEast()
+            West = map.getBounds().getWest()
+            {% for a in leaflet.arr %}
+            if (North >={{ a[2] }} && South <= {{ a[2] }} && East >= {{ a[3] }} && West <= {{ a[3] }}) {
+                if (site) {
+                    site = site + ',' +{{ a[0] }}
+                } else {
+                    site ={{ a[0] }}
+                }
+            }
+            {% endfor %}
+        })
+        $(".leaflet-popup-close-button").click(function () {
+            site = null
+            North = map.getBounds().getNorth()
+            South = map.getBounds().getSouth()
+            East = map.getBounds().getEast()
+            West = map.getBounds().getWest()
+            {% for a in leaflet.arr %}
+            if (North >={{ a[2] }} && South <= {{ a[2] }} && East >= {{ a[3] }} && West <= {{ a[3] }}) {
+                if (site) {
+                    site = site + ',' +{{ a[0] }}
+                } else {
+                    site ={{ a[0] }}
+                }
+            }
+            {% endfor %}
+        })
+        {% endif %}
+
+        $("#btn_map").click(function () {
+            $("#map").toggle()
+            if ($("#btn_map").text() == 'Hide Map') {
+                $("#btn_map").text('Show Map')
+            } else {
+                $("#btn_map").text('Hide Map')
+            }
+        });
+    </script>
 {% endblock %}

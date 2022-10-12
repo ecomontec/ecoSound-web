@@ -16,27 +16,33 @@
 -- Dumping data for table `index_type`
 --
 INSERT INTO `index_type` (`index_id`, `name`, `param`, `description`, `URL`)
-VALUES ('1','acoustic_complexity_index','','Compute the Acoustic Complexity Index (ACI) from a spectrogram.','https://scikit-maad.github.io/generated/maad.features.acoustic_complexity_index.html'),
-       ('2','soundscape_index','flim_bioPh|1000,10000!flim_antroPh|0,1000!R_compatible|soundecology','Compute the Normalized Difference Soundscape Index from a power spectrogram.','https://scikit-maad.github.io/generated/maad.features.soundscape_index.html'),
-       ('3','temporal_median','mode|fast!Nt|512','Computes the median of the envelope of an audio signal.','https://scikit-maad.github.io/generated/maad.features.temporal_median.html'),
-       ('4','temporal_entropy','mode|fast!Nt|512','Computes the entropy of the envelope of an audio signal.','https://scikit-maad.github.io/generated/maad.features.temporal_entropy.html'),
-       ('5','temporal_activity','dB_threshold|3!mode|fast!Nt|512','Compute the acoustic activity index in temporal domain.','https://scikit-maad.github.io/generated/maad.features.temporal_activity.html'),
-       ('6','temporal_events','dB_threshold|3!rejectDuration|None!mode|fast!Nt|512!display|False','Compute the acoustic event index from an audio signal','https://scikit-maad.github.io/generated/maad.features.temporal_events.html'),
-       ('7','frequency_entropy','compatibility|QUT','Computes the spectral entropy of a power spectral density (1d) or power spectrogram density (2d).','https://scikit-maad.github.io/generated/maad.features.frequency_entropy.html'),
-       ('8','number_of_peaks','mode|dB!min_peak_val|None!min_freq_dist|200!slopes|1,1!prominence|None!display|False','Count the number of frequency peaks on a mean spectrum.','https://scikit-maad.github.io/generated/maad.features.number_of_peaks.html'),
-       ('9','spectral_entropy','flim|None!display|False','Compute different entropies based on the average spectrum, its variance, and its maxima','https://scikit-maad.github.io/generated/maad.features.spectral_entropy.html'),
-       ('10','spectral_activity','dB_threshold|6','Compute the acoustic activity on a spectrogram.','https://scikit-maad.github.io/generated/maad.features.spectral_activity.html'),
-       ('11','spectral_cover','flim_LF|0,1000!flim_MF|1000,10000!flim_HF|10000,20000','Compute the proportion (cover) of the spectrogram above a threshold for three bandwidths : low frequency band (LF), medium frequency band (MF) and high frequency band (HF)','https://scikit-maad.github.io/generated/maad.features.spectral_cover.html'),
-       ('12','bioacoustics_index','flim|2000,15000!R_compatible|soundecology','Compute the Bioacoustics Index from a spectrogram','https://scikit-maad.github.io/generated/maad.features.bioacoustics_index.html'),
-       ('13','acoustic_diversity_index','fmin|0!fmax|20000!bin_step|500!dB_threshold|-50!index|shannon','Compute the Acoustic Diversity Index (ADI) from a spectrogram','https://scikit-maad.github.io/generated/maad.features.acoustic_diversity_index.html'),
-       ('14','acoustic_eveness_index','fmin|0!fmax|20000!bin_step|500!dB_threshold|-50','Compute the Acoustic Eveness Index (AEI) from a spectrogram','https://scikit-maad.github.io/generated/maad.features.acoustic_eveness_index.html'),
-       ('15','temporal_leq','gain|42!Vadc|2!sensitivity|-35!dBref|94!dt|1','Computes the Equivalent Continuous Sound level (Leq) of an audio signal in the time domain.','https://scikit-maad.github.io/generated/maad.features.temporal_leq.html'),
-       ('16','spectral_leq','gain|42!Vadc|2!sensitivity|-35!dBref|94!pRef|20e-6','Computes the Equivalent Continuous Sound level (Leq) from a power spectrum (1d) or power spectrogram (2d).','https://scikit-maad.github.io/generated/maad.features.spectral_leq.html'),
-       ('17','tfsd','flim|2000,8000!mode|thirdOctave!display|False','Compute the Time frequency derivation index (tfsd) from a spectrogram.','https://scikit-maad.github.io/generated/maad.features.tfsd.html'),
-       ('18','more_entropy_time','order|3!axis|0','Compute the entropy of an audio signal using multiple methods.','https://scikit-maad.github.io/generated/maad.features.more_entropy.html'),
-       ('19','acoustic_gradient_index','norm|per_bin','Compute the Acoustic Gradient Index (AGI) from a raw spectrogram.','https://scikit-maad.github.io/generated/maad.features.acoustic_gradient_index.html'),
-       ('20','frequency_raoq','bin_step|1000','Compute Rao`s quadratic entropy on a power spectrum (1d).','https://scikit-maad.github.io/generated/maad.features.frequency_raoq.html'),
-       ('21','more_entropy_spectral','order|3!axis|0','Compute the entropy of an audio signal using multiple methods.','https://scikit-maad.github.io/generated/maad.features.more_entropy.html');
+VALUES ('1', 'acoustic_complexity_index', '', 'Compute the Acoustic Complexity Index (ACI) from a spectrogram.', 'https://scikit-maad.github.io/generated/maad.features.acoustic_complexity_index.html'),
+       ('2', 'soundscape_index', 'flim_bioPh|1000,10000!flim_antroPh|0,1000!R_compatible|soundecology', 'Compute the Normalized Difference Soundscape Index from a power spectrogram.',
+        'https://scikit-maad.github.io/generated/maad.features.soundscape_index.html'),
+       ('3', 'temporal_median', 'mode|fast!Nt|512', 'Computes the median of the envelope of an audio signal.', 'https://scikit-maad.github.io/generated/maad.features.temporal_median.html'),
+       ('4', 'temporal_entropy', 'mode|fast!Nt|512', 'Computes the entropy of the envelope of an audio signal.', 'https://scikit-maad.github.io/generated/maad.features.temporal_entropy.html'),
+       ('5', 'temporal_activity', 'dB_threshold|3!mode|fast!Nt|512', 'Compute the acoustic activity index in temporal domain.', 'https://scikit-maad.github.io/generated/maad.features.temporal_activity.html'),
+       ('6', 'temporal_events', 'dB_threshold|3!rejectDuration|None!mode|fast!Nt|512!display|False', 'Compute the acoustic event index from an audio signal', 'https://scikit-maad.github.io/generated/maad.features.temporal_events.html'),
+       ('7', 'frequency_entropy', 'compatibility|QUT', 'Computes the spectral entropy of a power spectral density (1d) or power spectrogram density (2d).', 'https://scikit-maad.github.io/generated/maad.features.frequency_entropy.html'),
+       ('8', 'number_of_peaks', 'mode|dB!min_peak_val|None!min_freq_dist|200!slopes|1,1!prominence|None!display|False', 'Count the number of frequency peaks on a mean spectrum.',
+        'https://scikit-maad.github.io/generated/maad.features.number_of_peaks.html'),
+       ('9', 'spectral_entropy', 'flim|None!display|False', 'Compute different entropies based on the average spectrum, its variance, and its maxima', 'https://scikit-maad.github.io/generated/maad.features.spectral_entropy.html'),
+       ('10', 'spectral_activity', 'dB_threshold|6', 'Compute the acoustic activity on a spectrogram.', 'https://scikit-maad.github.io/generated/maad.features.spectral_activity.html'),
+       ('11', 'spectral_cover', 'flim_LF|0,1000!flim_MF|1000,10000!flim_HF|10000,20000',
+        'Compute the proportion (cover) of the spectrogram above a threshold for three bandwidths : low frequency band (LF), medium frequency band (MF) and high frequency band (HF)',
+        'https://scikit-maad.github.io/generated/maad.features.spectral_cover.html'),
+       ('12', 'bioacoustics_index', 'flim|2000,15000!R_compatible|soundecology', 'Compute the Bioacoustics Index from a spectrogram', 'https://scikit-maad.github.io/generated/maad.features.bioacoustics_index.html'),
+       ('13', 'acoustic_diversity_index', 'fmin|0!fmax|20000!bin_step|500!dB_threshold|-50!index|shannon', 'Compute the Acoustic Diversity Index (ADI) from a spectrogram',
+        'https://scikit-maad.github.io/generated/maad.features.acoustic_diversity_index.html'),
+       ('14', 'acoustic_eveness_index', 'fmin|0!fmax|20000!bin_step|500!dB_threshold|-50', 'Compute the Acoustic Eveness Index (AEI) from a spectrogram', 'https://scikit-maad.github.io/generated/maad.features.acoustic_eveness_index.html'),
+       ('15', 'temporal_leq', 'gain|42!Vadc|2!sensitivity|-35!dBref|94!dt|1', 'Computes the Equivalent Continuous Sound level (Leq) of an audio signal in the time domain.', 'https://scikit-maad.github.io/generated/maad.features.temporal_leq.html'),
+       ('16', 'spectral_leq', 'gain|42!Vadc|2!sensitivity|-35!dBref|94!pRef|20e-6', 'Computes the Equivalent Continuous Sound level (Leq) from a power spectrum (1d) or power spectrogram (2d).',
+        'https://scikit-maad.github.io/generated/maad.features.spectral_leq.html'),
+       ('17', 'tfsd', 'flim|2000,8000!mode|thirdOctave!display|False', 'Compute the Time frequency derivation index (tfsd) from a spectrogram.', 'https://scikit-maad.github.io/generated/maad.features.tfsd.html'),
+       ('18', 'more_entropy_time', 'order|3!axis|0', 'Compute the entropy of an audio signal using multiple methods.', 'https://scikit-maad.github.io/generated/maad.features.more_entropy.html'),
+       ('19', 'acoustic_gradient_index', 'norm|per_bin', 'Compute the Acoustic Gradient Index (AGI) from a raw spectrogram.', 'https://scikit-maad.github.io/generated/maad.features.acoustic_gradient_index.html'),
+       ('20', 'frequency_raoq', 'bin_step|1000', 'Compute Rao`s quadratic entropy on a power spectrum (1d).', 'https://scikit-maad.github.io/generated/maad.features.frequency_raoq.html'),
+       ('21', 'more_entropy_spectral', 'order|3!axis|0', 'Compute the entropy of an audio signal using multiple methods.', 'https://scikit-maad.github.io/generated/maad.features.more_entropy.html');
 
 --
 -- Dumping data for table `collection`
@@ -156,7 +162,11 @@ VALUES (1, 'Accepted'),
        (2, 'Corrected'),
        (3, 'Deleted'),
        (4, 'Uncertain');
-
+--
+-- Dumping data for table `project`
+--
+INSERT INTO `project` (`project_id`, `name`, `description`, `creator_id`, `url`, `picture_id`)
+VALUES (101, 'Testing Project', 'This is a test project, You can set this up via the administration page.', '100', 'https://github.com/ecomontec/ecoSound-web', 'beo.jpg');
 --
 -- Dumping data for table `role`
 --
@@ -184,7 +194,8 @@ VALUES (1, 'not analysed', 'public', NOW()),
 INSERT INTO `permission` (`permission_id`, `name`)
 VALUES (1, 'View'),
        (2, 'Review'),
-       (3, 'Access');
+       (3, 'Access'),
+       (4, 'Manage');
 --
 -- Dumping data for table `explore`
 --
@@ -336,8 +347,8 @@ VALUES ('1', '0', 'Terrestrial', '1'),
 --
 -- Dumping data for table `site`
 --
-INSERT INTO `site` (`site_id`, `name`, `user_id`, `creation_date_time`, `longitude_WGS84_dd_dddd`, `latitude_WGS84_dd_dddd`, `GADM1`, `GADM2`, `GADM3`, `realm_id`, `biome_id`, `functional_group_id`, `centroid`)
-VALUES (1, 'Demo site', 100, now(), 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, 'false');
+INSERT INTO `site` (`site_id`, `name`, `user_id`, `project_id`, `creation_date_time`, `longitude_WGS84_dd_dddd`, `latitude_WGS84_dd_dddd`, `GADM1`, `GADM2`, `GADM3`, `realm_id`, `biome_id`, `functional_group_id`, `centroid`)
+VALUES (1, 'Demo site', 100, 101, now(), 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, 'false');
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

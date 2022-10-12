@@ -5,10 +5,24 @@
     {% include 'administration/siteCreate.html.twig' %}
     <div class="card mb-3" id="siteList">
         <div class="card-header border-light bg-white text-right">
-            <button id="siteFormButton" class="btn btn-outline-primary btn-sm mt-2" type="button" data-toggle="collapse" data-target="#siteFormSection" aria-expanded="false" aria-controls="siteFormSection">
-                <i class="fas fa-plus"></i>
-                Add Site
-            </button>
+            <div class="row">
+                <div class="col-auto mr-auto mt-2">
+                    <form id="projectForm" class="form-inline" action="{{ baseUrl }}/admin/sites" method="POST">
+                        <label for="projectId">Project</label>
+                        <select id="projectId" name="projectId" class="form-control form-control-sm ml-3">
+                            {% for project in projects %}
+                                <option value="{{ project.id }}" {{ project.id == projectId ? 'selected' }}>
+                                    {{ project.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
+                <button id="siteFormButton" class="btn btn-outline-primary btn-sm mt-2" type="button" data-toggle="collapse" data-target="#siteFormSection" aria-expanded="false" aria-controls="siteFormSection">
+                    <i class="fas fa-plus"></i>
+                    Add Site
+                </button>
+            </div>
         </div>
         <table id="siteTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
@@ -256,13 +270,15 @@
                 if (this.checkValidity() === false) {
                     e.stopPropagation();
                 } else {
-                    postRequest('{{ baseUrl }}/api/admin/siteManager/save', $(this).serialize(), false, false, function () {
+                    postRequest('{{ baseUrl }}/api/admin/siteManager/save', new FormData($(this)[0]), false, false, function () {
                         location.reload();
                     });
                 }
                 this.classList.add('was-validated');
             });
-
+            $('#projectId').change(function () {
+                $("#projectForm").submit();
+            });
         });
     </script>
 {% endblock %}

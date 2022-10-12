@@ -5,9 +5,11 @@ namespace BioSounds\Controller\Administration;
 use BioSounds\Controller\BaseController;
 use BioSounds\Entity\Collection;
 use BioSounds\Entity\Recording;
+use BioSounds\Entity\UserPermission;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\IndexLogProvider;
+use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\SoundProvider;
 use BioSounds\Provider\SpectrogramProvider;
@@ -21,15 +23,25 @@ class CollectionController extends BaseController
      * @return string
      * @throws \Exception
      */
-    public function show()
+    public function show($projectId = null)
     {
-        if (!Auth::isUserAdmin()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
+        }
+        if (isset($_POST['projectId'])) {
+            $projectId = $_POST['projectId'];
+        }
+
+        $projects = (new ProjectProvider())->getWithPermission(Auth::getUserID());
+        if (empty($projectId)) {
+            $projectId = $projects[0]->getId();
         }
         $collProvider = new CollectionProvider();
 
         return $this->twig->render('administration/collections.html.twig', [
-            'collections' => $collProvider->getList(),
+            'projects' => $projects,
+            'projectId' => $projectId,
+            'collections' => $collProvider->getByProject($projectId, Auth::getUserID()),
         ]);
     }
 
@@ -40,7 +52,7 @@ class CollectionController extends BaseController
      */
     public function save()
     {
-        if (!Auth::isUserAdmin()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
         $collProvider = new Collection();
@@ -48,7 +60,6 @@ class CollectionController extends BaseController
 
         foreach ($_POST as $key => $value) {
             if (strrpos($key, '_')) {
-                $type = substr($key, strrpos($key, '_') + 1, strlen($key));
                 $key = substr($key, 0, strrpos($key, '_'));
             }
             $data[$key] = $value;
@@ -69,30 +80,11 @@ class CollectionController extends BaseController
     }
 
     /**
-     * @return false|string
      * @throws \Exception
      */
-    public function editCollection()
+    public function export($project_id)
     {
-        if (!Auth::isUserAdmin()) {
-            throw new ForbiddenException();
-        }
-
-        $collId = filter_var($_POST['id'], FILTER_SANITIZE_NUMBER_INT);
-        return json_encode([
-            'errorCode' => 0,
-            'data' => $this->twig->render('administration/collEdit.html.twig', [
-                'collId' => $collId,
-            ]),
-        ]);
-    }
-
-    /**
-     * @throws \Exception
-     */
-    public function export()
-    {
-        if (!Auth::isUserAdmin()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
 
@@ -102,7 +94,7 @@ class CollectionController extends BaseController
         header('Accept-Ranges:bytes');
         header('Content-Disposition: attachment; filename=' . $file_name);
 
-        $collList = (new CollectionProvider())->getList();
+        $collList = (new CollectionProvider())->getByProject($project_id, Auth::getUserID());
         $colAls[] = array('#', 'Name', 'User', 'DOI', 'Description', 'Creation Date(UTC)', 'View', 'Public');
 
         foreach ($collList as $collItem) {
@@ -124,7 +116,7 @@ class CollectionController extends BaseController
      */
     public function delete(int $id)
     {
-        if (!Auth::isUserAdmin()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
 
@@ -134,10 +126,11 @@ class CollectionController extends BaseController
         $collectionProvider = new CollectionProvider();
         $recordingProvider = new RecordingProvider();
         $indexLogProvider = new indexLogProvider();
+        $userProvider = new UserPermission();
 
         $recordings = $recordingProvider->getByCollection($id);
-
-        if(count($recordings)>0){
+        $userProvider->deleteByCollection($id);
+        if (count($recordings) > 0) {
             foreach ($recordings as $recording) {
                 $fileName = $recording[Recording::FILENAME];
                 $colId = $recording[Recording::COL_ID];

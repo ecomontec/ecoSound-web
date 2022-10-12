@@ -116,6 +116,34 @@ class Collection extends BaseProvider
     }
 
     /**
+     * @param int $id
+     * @return Collection
+     */
+    public function setProject(int $id): Collection
+    {
+        $this->project = $id;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPermission(): int
+    {
+        return $this->permission;
+    }
+
+    /**
+     * @param int $permission
+     * @return Collection
+     */
+    public function setPermission(int $permission): Collection
+    {
+        $this->permission = $permission;
+        return $this;
+    }
+
+    /**
      * @return null|string
      */
     public function getDoi(): ?string
@@ -168,6 +196,7 @@ class Collection extends BaseProvider
         $this->view = $view;
         return $this;
     }
+
     /**
      * @return string
      */
@@ -185,6 +214,7 @@ class Collection extends BaseProvider
         $this->creationDate = $creationDate;
         return $this;
     }
+
     /**
      * @return bool
      */
@@ -200,15 +230,6 @@ class Collection extends BaseProvider
     public function setPublic(bool $public): Collection
     {
         $this->public = $public;
-        return $this;
-    }
-    /**
-     * @param int $id
-     * @return Collection
-     */
-    public function setProject(bool $id): Collection
-    {
-        $this->project = $id;
         return $this;
     }
 
@@ -232,7 +253,8 @@ class Collection extends BaseProvider
             $fields .= $key;
             $valuesNames .= ":" . $key;
             $values[":" . $key] = $value;
-            if (end($collData) !== $value) {
+
+            if ($key !== "user_id") {
                 $fields .= ", ";
                 $valuesNames .= ", ";
             }
@@ -264,10 +286,9 @@ class Collection extends BaseProvider
         foreach ($collData as $key => $value) {
             $fields .= $key . ' = :' . $key;
             $values[':' . $key] = $value;
-            if (end($collData) !== $value) {
-                $fields .= ', ';
-            }
+            $fields .= ",";
         }
+        $fields = substr($fields, 0, strlen($fields) - 1);
 
         $values[':collectionId'] = $collId;
         $this->database->prepareQuery("UPDATE collection SET $fields WHERE collection_id = :collectionId");

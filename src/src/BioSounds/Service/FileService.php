@@ -70,32 +70,20 @@ class FileService
 
         $colID = $request['colId'];
         $site = isset($request['site']) ? $request['site'] : null;
-
+        $site = $site == 0 ? null : $site;
         $sensor = $request['sensor'];
-        $dateFromFile = isset($request['dateFromFile'])
-            ? $request['dateFromFile'] : false;
+        $dateFromFile = isset($request['dateFromFile']) ? $request['dateFromFile'] : false;
         $time = isset($request['time']) ? $request['time'] : null;
-        $date = isset($request['date'])
-            ? $request['date'] : null;
-        $doi = isset($request['doi']) && !empty($request['doi'])
-            ? $request['doi'] : null;
-        $license = isset($request['license'])
-            ? $request['license'] : null;
-
-        $reference = isset($request['reference'])
-            ? $request['reference'] : false;
-        $species = isset($request['species'])
-            ? $request['species'] : null;
-        $soundType = isset($request['sound-type'])
-            ? $request['sound-type'] : null;
-        $soundSubtype = isset($request['subtype']) && !empty($request['subtype'])
-            ? $request['subtype'] : null;
-        $rating = isset($request['rating']) && !empty($request['rating'])
-            ? $request['rating'] : null;
-        $type = isset($request['type']) && !empty($request['type'])
-            ? $request['type'] : null;
-        $medium = isset($request['medium']) && !empty($request['medium'])
-            ? $request['medium'] : null;
+        $date = isset($request['date']) ? $request['date'] : null;
+        $doi = isset($request['doi']) && !empty($request['doi']) ? $request['doi'] : null;
+        $license = isset($request['license']) ? $request['license'] : null;
+        $reference = isset($request['reference']) ? $request['reference'] : false;
+        $species = isset($request['species']) ? $request['species'] : null;
+        $soundType = isset($request['sound-type']) ? $request['sound-type'] : null;
+        $soundSubtype = isset($request['subtype']) && !empty($request['subtype']) ? $request['subtype'] : null;
+        $rating = isset($request['rating']) && !empty($request['rating']) ? $request['rating'] : null;
+        $type = isset($request['type']) && !empty($request['type']) ? $request['type'] : null;
+        $medium = isset($request['medium']) && !empty($request['medium']) ? $request['medium'] : null;
 
 
         if (!is_dir($uploadPath) || !$handle = opendir($uploadPath)) {

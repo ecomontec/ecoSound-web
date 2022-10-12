@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded", function () {
             select: function (e, ui) {
                 $(this).val(ui.item.label);
                 let type = $(this).data('type');
-                $("#user_id"+id).val(ui.item.value)
+                $("#user_id" + id).val(ui.item.value)
                 $('.js-users-id' + id + '[data-type=' + type + ']').val(ui.item.value);
                 e.preventDefault();
             }
@@ -196,12 +196,14 @@ function asyncRequest(type, href, data = [], showMessage = false, showLoading = 
     if (showLoading) {
         toggleLoading();
     }
-
+    data = jsToFormData(data)
     $.ajax({
         type: type,
         url: href,
         data: data,
         dataType: 'json',
+        processData: false,
+        contentType: false,
     })
         .done(function (response) {
             if (showMessage) {
@@ -252,7 +254,7 @@ function getCookie(cname) {
 function saveFormList(element, url) {
     let row = element.closest("tr");
     let columns = row.find("input, select, textarea");
-    let values = {};
+    let formData = new FormData()
     let value = '';
     columns.each(function (i, item) {
         value = item.value;
@@ -274,8 +276,23 @@ function saveFormList(element, url) {
                 }
             }
         }
-        values[item.name + "_" + item.type] = value;
+        if (item.type == 'file') {
+            formData.append(item.name, $("#" + item.id)[0].files[0]);
+        } else {
+            formData.append(item.name + "_" + item.type, value);
+        }
     });
+    postRequest(baseUrl + '/' + url, formData, false);
+}
 
-    postRequest(baseUrl + '/' + url, values, false);
+function jsToFormData(config) {
+    if (config.constructor.name != "FormData") {
+        const formData = new FormData();
+        Object.keys(config).forEach((key) => {
+            formData.append(key, config[key]);
+        })
+        return formData;
+    } else {
+        return config;
+    }
 }

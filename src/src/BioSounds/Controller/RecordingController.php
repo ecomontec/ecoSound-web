@@ -16,6 +16,7 @@ use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\IndexTypeProvider;
 use BioSounds\Provider\LabelAssociationProvider;
 use BioSounds\Provider\LabelProvider;
+use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\TagProvider;
 use BioSounds\Service\RecordingService;
@@ -69,8 +70,6 @@ class RecordingController extends BaseController
 
         $recordingData = (new RecordingProvider())->get($this->recordingId);
 
-        $collectionId = $recordingData[Recording::COL_ID];
-
         //TODO: Remove when recording is an Entity. Add to it.
         $recordingData['collection'] = (new CollectionProvider())->get($recordingData[Recording::COL_ID]);
 
@@ -90,6 +89,7 @@ class RecordingController extends BaseController
         }
         $this->setCanvas($recordingData);
         return $this->twig->render('recording/recording.html.twig', [
+            'project' => (new ProjectProvider())->get($this->recordingPresenter->getRecording()['collection']->getProject()),
             'player' => $this->recordingPresenter,
             'sound' => $this->recordingPresenter->getRecording(),
             'frequency_data' => $this->recordingPresenter->getFrequencyScaleData(),

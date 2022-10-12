@@ -336,13 +336,11 @@ class IndexLog extends BaseProvider
             $fields .= $key;
             $valuesNames .= ":" . $key;
             $values[":" . $key] = $value;
-            if (end($indexDate) !== $value) {
-                $fields .= ", ";
-                $valuesNames .= ", ";
-            }
+            $fields .= ",";
+            $valuesNames .= ",";
         }
-        $fields .= " )";
-        $valuesNames .= " )";
+        $fields = substr($fields, 0, strlen($fields) - 1).' )';
+        $valuesNames = substr($valuesNames, 0, strlen($valuesNames) - 1).' )';
         $this->database->prepareQuery("SELECT * FROM index_log WHERE $fields = $valuesNames");
         $resule = $this->database->executeSelect($values);
         if (count($resule) == 0) {

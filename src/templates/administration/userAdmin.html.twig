@@ -120,7 +120,7 @@
                     $.ajax({
                         type: 'POST',
                         url: '{{ baseUrl }}/api/admin/userMgr/resetSave',
-                        data: $(this).serialize()
+                        data: new FormData($(this)[0])
                     }).done(function (response) {
                         showAlert(response.message);
                         $('#modal-div').modal('hide');

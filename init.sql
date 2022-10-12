@@ -147,13 +147,14 @@ CREATE TABLE `play_log`
 --
 CREATE TABLE `project`
 (
-    `project_id`  int(11) NOT NULL,
+    `project_id`  int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `name`        varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-    `author`      varchar(80) COLLATE utf8_unicode_ci  NOT NULL,
-    `open`        int(1) NOT NULL,
-    `description` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+    `description` blob,
+    `creator_id`  int(11) NOT NULL,
+    `creation_date` timestamp                          NOT NULL DEFAULT current_timestamp(),
     `url`         varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-    `picture_id`  int(11) DEFAULT NULL
+    `picture_id`  varchar(255) COLLATE utf8_unicode_ci,
+    `public`      tinyint(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
@@ -225,6 +226,7 @@ CREATE TABLE `site`
     `site_id`                 int(11) NOT NULL,
     `name`                    varchar(100) COLLATE utf8_unicode_ci NOT NULL,
     `user_id`                 int(11) NOT NULL,
+    `project_id`              int(11) NOT NULL,
     `creation_date_time`      datetime                             NOT NULL,
     `longitude_WGS84_dd_dddd` double     DEFAULT NULL,
     `latitude_WGS84_dd_dddd`  double     DEFAULT NULL,
@@ -440,12 +442,6 @@ ALTER TABLE `play_log`
     ADD PRIMARY KEY (`play_log_id`) USING BTREE,
   ADD KEY `recording_id` (`recording_id`),
   ADD KEY `user_id` (`user_id`);
-
---
--- Indexes for table `project`
---
-ALTER TABLE `project`
-    ADD PRIMARY KEY (`project_id`);
 
 --
 -- Indexes for table `recording`
