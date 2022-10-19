@@ -23,10 +23,9 @@
                     </ul>
                 </nav>
             </div>
-            <div class="col-2 mt-1 text-right">
+            <div class="col-2 text-right">
                 <div class="dropdown">
-                    <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
-                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-cog"></i>
                         Utilities
                     </button>
@@ -47,7 +46,7 @@
         </div>
         <hr>
         <div class="row mb-5">
-            <div class="col-2 ml-auto mr-5 text-center recording-navigation">
+            <div class="col-2 text-center recording-navigation">
                 <ul class="nav flex-column nav-pills nav-fill">
                     {% if isUserLogged %}
                         <li class="nav-item">
@@ -76,18 +75,20 @@
                         </a>
                     </li>
                 </ul>
-                <div>
-                    <a class="nav-link readingMode" href="{{ baseUrl }}/recording/show/{{ player.recording.recording_id }}" title="Reading mode">
+                <div class="dropdown">
+                    <a class="nav-link" href="#" title="Reading mode" data-toggle="dropdown">
                         <i class="fas fa-compact-disc"></i>
                     </a>
-                    <select id="readingModeSelect" class="form-control form-control-sm inline" style="width: 80px">
-                        <option value="birds">Birds</option>
-                        <option value="bats">Bats</option>
-                        <option value="others">Others</option>
-                    </select>
-                    <div class="form-inline inline">
-                        <input id="readingModeInput" type="text" class="form-control form-control-sm" value="60" style="width: 50px">
-                        <lable>s</lable>
+                    <div class="dropdown-menu">
+                        <small class="ml-2">Zoom into:</small>
+                        <a class="dropdown-item readingMode" href="{{ baseUrl }}/recording/show/{{ player.recording.recording_id }}">Birds<small>(60s)</small></a>
+                        <a class="dropdown-item readingMode" href="{{ baseUrl }}/recording/show/{{ player.recording.recording_id }}">Bats<small>(10s)</small></a>
+                        <div class="form-inline">
+                            <a class="dropdown-item readingMode" href="{{ baseUrl }}/recording/show/{{ player.recording.recording_id }}" style="width: 100px">Customs</a>
+                            <input class="form-control form-control-sm" id="reading_input" type="number" value="10" style="width: 50px;" required>
+                            <small class="ml-2 mr-2">s</small>
+                        </div>
+
                     </div>
                 </div>
                 <hr>
@@ -107,12 +108,12 @@
                     <label>Mono File</label>
                 {% endif %}
                 <hr>
-                <a href="#" class="viewport" title="Overall view"><img src="{{ baseUrl }}/{{ player.viewPortFilePath }}"></a>
+                <a href="#" class="viewport" title="Overall view"><img style="max-width: 150px" id="thumbnail" src="{{ baseUrl }}/{{ player.viewPortFilePath }}"></a>
                 <hr>
                 <input id="playback-rate" class="custom-range js-playback-rate-control" type="range" min="0.05" max="1" step="0.01" value="1">
                 <label for="playback-rate">Speed:<span class="playback-rate-value">1.0</span>x</label>
             </div>
-            <div class="col-9 mr-auto">
+            <div class="col-10">
                 {% include 'recording/player/player.html.twig' %}
             </div>
         </div>
@@ -154,7 +155,7 @@
         var frequency = {{ player.recording.sampling_rate }};
         var channelNum = {{ player.recording.channel_num }};
         var soundFilePath = '{{ player.filePath }}';
-
+console.log(soundFilePath)
         $(function () {
             document.addEventListener('submit', function (e) {
                 if (e.target && e.target.id === 'callDistanceForm') {

@@ -22,7 +22,7 @@
         <div class="row">
             <div class="col-md-7">
                 <h2>{{ collection.name }}
-                    <small>showing {{ list|length }} ouf of {{ list|length }} recordings {% if none_count > 0 %}({{ none_count }} recordings not geo-referenced){% endif %}</small>
+                    <small>showing {{ list|length }} ouf of {{ list|length }} recordings {% if none_count > 0 %}({{ none_count }} recording{{ none_count!=1?'s' }} not geo-referenced){% endif %}</small>
                 </h2>
             </div>
             <div class="col-md-5 text-right">

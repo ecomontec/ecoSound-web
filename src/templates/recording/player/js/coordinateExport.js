@@ -21,3 +21,23 @@ document.getElementById('exportCoordinates').addEventListener('click', function 
 
     showAlert(message);
 });
+
+$('#exportMaxF').on('click', function (e) {
+    var data = {
+        'minTime': $('input[name=minTimeView]').val(),
+        'maxTime': $('input[name=maxTimeView]').val(),
+        'minFrequency': $('input[name=minFreqView]').val(),
+        'maxFrequency': $('input[name=maxFreqView]').val(),
+        'collection_id': $('input[name=collection_id]').val(),
+        'recording_id': $('input[name=recording_id]').val(),
+        'filename': soundFilePath,
+        'recording_directory': $('input[name=recording_directory]').val(),
+        'index_id': $('#maad').val(),
+        'index': "max_frequency",
+        'channel_num': $('input[name=channel_num]').val(),
+        'channel': $('input[name=channel]').val(),
+        'param': '',
+    };
+    requestModal(this.href, data, true);
+    e.preventDefault();
+});

@@ -28,6 +28,7 @@ class UserController extends BaseController
             'roles' => (new Role())->getRoles(),
             'users' => $userProducer->getList(),
             'default_color' => self::DEFAULT_TAG_COLOR,
+            'ffts' => [4096, 2048, 1024, 512, 256, 128,],
         ]);
     }
 
@@ -38,10 +39,6 @@ class UserController extends BaseController
     public function save()
     {
         $userProvider = new User();
-
-        if (!Auth::isManage()) {
-            throw new ForbiddenException();
-        }
 
         if (isset($_POST['admin_pwd'])) {
             $adminPwd = $_POST['admin_pwd'];

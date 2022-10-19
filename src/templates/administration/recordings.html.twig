@@ -7,7 +7,7 @@
         <div class="card-header border-light bg-white text-right">
             <div class="row">
                 <div class="col-auto mr-auto mt-2">
-                    <form id="collectionForm" class="form-inline" action="{{ baseUrl }}/admin/recordings" method="POST">
+                    <form id="collectionForm" class="form-inline" action="{{ baseUrl }}/admin/recordings">
                         <label for="colId">Collection</label>
                         <select id="colId" name="colId" class="form-control form-control-sm ml-3">
                             {% for collection in collections %}

@@ -47,20 +47,21 @@ $(function () {
         $("#recordingForm").submit();
     });
 
-    $("#readingModeSelect").change(function (e) {
-        if ($("#readingModeSelect").val() == 'birds') {
-            $("#readingModeInput").val(60)
-        } else if ($("#readingModeSelect").val() == 'bats') {
-            $("#readingModeInput").val(10)
-        }
-    });
-    $("#readingModeInput").change(function (e) {
-        $("#readingModeSelect option[value='others']").attr("selected", true)
-    });
-
     $(".readingMode").click(function (e) {
+        var time
+        if ($(this).text() == 'Birds') {
+            time = 60;
+        } else if ($(this).text() == 'Bats') {
+            time = 10;
+        } else if ($("#reading_input").val() == '' || $("#reading_input").val() < 0) {
+            showAlert('Please enter a positive integer')
+            e.preventDefault();
+            return false;
+        } else {
+            time = $("#reading_input").val();
+        }
         $("#x").val(currentTime + minTime);
-        $("#w").val(currentTime + minTime +  $("#readingModeInput").val());
+        $("#w").val(currentTime + minTime + time);
         $("#y").val(1);
         $("#h").val(fileFreqMax);
         $("input[name=filter]").prop("checked", false);

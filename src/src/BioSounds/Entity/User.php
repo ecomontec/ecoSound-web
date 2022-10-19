@@ -14,6 +14,43 @@ class User extends BaseProvider
     const TAG_COLOR = "color";
 
     /**
+     * @return int
+     */
+    public function getFftsize(): int
+    {
+        return $this->fftsize;
+    }
+
+    /**
+     * @param int $fftsize
+     * @return User
+     */
+    public function setFftsize(int $fftsize): User
+    {
+        $this->fftsize = $fftsize;
+        return $this;
+    }
+
+    /**
+     * @param string $user_id
+     * @return string|null
+     * @throws \Exception
+     */
+    public function getFFT(string $user_id = null): ?string
+    {
+        if (empty($user_id)) {
+            return null;
+        }
+
+        $this->database->prepareQuery('SELECT fft FROM user WHERE user_id = :user_id');
+        if (empty($result = $this->database->executeSelect([":user_id" => $user_id]))) {
+            return null;
+        }
+
+        return $result[0]["fft"];
+    }
+
+    /**
      * @param string $username
      * @return string|null
      * @throws \Exception
@@ -160,6 +197,7 @@ class User extends BaseProvider
         }
         return ($result[0]["result"] ? true : false);
     }
+
     /**
      * @param int $userId
      * @return int
@@ -256,8 +294,8 @@ class User extends BaseProvider
             $fields .= ",";
             $valuesNames .= ",";
         }
-        $fields = substr($fields, 0, strlen($fields) - 1).' )';
-        $valuesNames = substr($valuesNames, 0, strlen($valuesNames) - 1).' )';
+        $fields = substr($fields, 0, strlen($fields) - 1) . ' )';
+        $valuesNames = substr($valuesNames, 0, strlen($valuesNames) - 1) . ' )';
 
         $this->database->prepareQuery("INSERT INTO user $fields VALUES $valuesNames");
         return $this->database->executeInsert($values);
@@ -319,9 +357,8 @@ class User extends BaseProvider
             if (count($names) == 1) {
                 $query .= ' WHERE name LIKE :name ';
                 $fields = [':name' => "%$names[0]%"];
-            }
-            else{
-                $query.= 'WHERE (name LIKE :name1 AND name LIKE :name2) ';
+            } else {
+                $query .= 'WHERE (name LIKE :name1 AND name LIKE :name2) ';
                 $fields = [
                     ':name1' => "%$names[0]%",
                     ':name2' => "%$names[1]%"

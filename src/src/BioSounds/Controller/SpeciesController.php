@@ -45,8 +45,8 @@ class SpeciesController
     public function getSoundType(): string
     {
         $data = [];
-        $taxon_class = $_POST['taxon_class']!='' ? $_POST['taxon_class'] : "!!";
-        $taxon_order = $_POST['taxon_order']!='' ? $_POST['taxon_order'] : "!!";
+        $taxon_class = $_POST['taxon_class'];
+        $taxon_order = $_POST['taxon_order'];
         $soundTypeProvider = new SoundTypeProvider;
         $result = $soundTypeProvider->getList($taxon_class, $taxon_order);
         if (!empty($result)) {

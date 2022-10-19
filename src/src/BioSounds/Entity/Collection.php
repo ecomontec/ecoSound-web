@@ -239,7 +239,7 @@ class Collection extends BaseProvider
      * @return bool
      * @throws \Exception
      */
-    public function insertColl(array $collData): bool
+    public function insertColl(array $collData): int
     {
         if (empty($collData)) {
             return false;

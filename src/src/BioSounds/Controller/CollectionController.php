@@ -13,6 +13,7 @@ use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\SiteProvider;
 use BioSounds\Service\RecordingService;
 use BioSounds\Utils\Auth;
+use Cassandra\Varint;
 
 class CollectionController extends BaseController
 {
@@ -70,7 +71,7 @@ class CollectionController extends BaseController
                 'template' => $display == Collection::LIST_VIEW ? self::LIST_TEMPLATE : self::GALLERY_TEMPLATE,
                 'display' => $display,
                 'leaflet' => $this->leaflet,
-                'none' => (new RecordingProvider())->getNullCount($id),
+                'none_count' => (new RecordingProvider())->getNullCount($id),
             ]);
         } else {
             return $this->twig->render('collection/noaccess.html.twig');
@@ -160,9 +161,9 @@ class CollectionController extends BaseController
 
         foreach ($allRecordings as $recording) {
             $r = $recording->getRecording();
+            $site = $r->getSite();
+            $siteName = $r->getSiteName();
             if (strlen($r->getLongitude()) > 0 && strlen($r->getLatitude()) > 0) {
-                $site = $r->getSite();
-                $siteName = $r->getSiteName();
                 $longitude[] = $r->getLongitude();
                 $latitude[] = $r->getLatitude();
                 if (in_array([$r->getLatitude(), $r->getLongitude(), $r->getSiteName()], $location)) {
@@ -180,6 +181,28 @@ class CollectionController extends BaseController
                     }
                     $array[$i][5] = 1;
                     $i = $i + 1;
+                }
+            } else if ($site != null) {
+                $s = (new SiteProvider())->get($site);
+                if ($result = $this->gadm($s)) {
+                    $latitude[] = $result[0];
+                    $longitude[] = $result[1];
+                    if (in_array([$result[0], $result[1], $r->getSiteName()], $location)) {
+                        $k = array_search([$result[0], $result[1], $r->getSiteName()], $location);
+                        $array[$k][4] = $array[$k][4] . '!br!' . $r->getName();
+                        $array[$k][5]++;
+                    } else {
+                        $location[] = [$result[0], $result[1], $r->getSiteName()];
+                        $array[$i] = [$site, $siteName, $result[0], $result[1]];
+                        $array[$i][4] = $r->getName();
+                        if ($sites != '') {
+                            $sites = $sites . ',' . $site;
+                        } else {
+                            $sites = $site;
+                        }
+                        $array[$i][5] = 1;
+                        $i = $i + 1;
+                    }
                 }
             }
         }
@@ -222,25 +245,19 @@ class CollectionController extends BaseController
 
     public function getProjectLeaflet(array $allSites): array
     {
-        $location = array();
         $array = array();
         $arr = array();
-        $sites = '';
-        $i = 0;
         $j = 0;
         foreach ($allSites as $site) {
             if (strlen($site->getLongitude()) > 0 && strlen($site->getLatitude()) > 0) {
-                $longitude[] = $site->getLongitude();
                 $latitude[] = $site->getLatitude();
-                if (!in_array([$site->getLatitude(), $site->getLongitude(), $site->getName()], $location)) {
-                    $location[] = [$site->getLatitude(), $site->getLongitude(), $site->getName()];
-                    $array[$i] = [$site->getId(), $site->getName(), $site->getLatitude(), $site->getLongitude()];
-                    if ($sites != '') {
-                        $sites = $sites . ',' . $site->getId();
-                    } else {
-                        $sites = $site->getId();
-                    }
-                    $i = $i + 1;
+                $longitude[] = $site->getLongitude();
+                $array[] = [$site->getId(), $site->getName(), $site->getLatitude(), $site->getLongitude()];
+            } else {
+                if ($result = $this->gadm($site)) {
+                    $latitude[] = $result[0];
+                    $longitude[] = $result[1];
+                    $array[] = [$site->getId(), $site->getName(), $result[0], $result[1]];
                 }
             }
         }
@@ -275,9 +292,36 @@ class CollectionController extends BaseController
             }
             $arr['latitude_center'] = (max($latitude) + min($latitude)) / 2;
             $arr['arr'] = $array;
-            $arr['sites'] = $sites;
             $arr['count'] = count($array);
         }
         return $arr;
+    }
+
+    public function gadm($site)
+    {
+        $maindir = ABSOLUTE_DIR . 'gadm_410-levels.gpkg';
+        $main = new \SQLite3($maindir);
+        $data = [];
+        if (!$main) {
+            echo 'code: ' . $main->lastErrorCode();
+            echo 'Error: ' . $main->lastErrorMsg();
+        }
+        if ($site->getGadm3() != null) {
+            $sql = 'SELECT fid FROM ADM_2 WHERE NAME_2 = "' . $site->getGadm3() . '"';
+            $level = '2';
+        } elseif ($site->getGadm2() != null) {
+            $sql = 'SELECT fid FROM ADM_1 WHERE NAME_1 = "' . $site->getGadm2() . '"';
+            $level = '1';
+        } elseif ($site->getGadm1() != null) {
+            $sql = 'SELECT fid FROM ADM_0 WHERE COUNTRY = "' . $site->getGadm1() . '"';
+            $level = '0';
+        } else {
+            return false;
+        }
+        $fid = $main->query($sql)->fetchArray(1)['fid'];
+        $sql = 'SELECT * FROM rtree_ADM_' . $level . '_geom WHERE id = "' . $fid . '"';
+        $result = $main->query($sql)->fetchArray(1);
+        $main->close();
+        return [($result['miny'] + $result['maxy']) / 2, ($result['minx'] + $result['maxx']) / 2];
     }
 }

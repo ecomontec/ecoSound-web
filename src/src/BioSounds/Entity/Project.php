@@ -52,6 +52,11 @@ class Project extends BaseProvider
     private $public;
 
     /**
+     * @var int
+     */
+    private $active;
+
+    /**
      * @var array
      */
     private $collections;
@@ -209,6 +214,24 @@ class Project extends BaseProvider
     public function setPublic(bool $public): Project
     {
         $this->public = $public;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getActive(): bool
+    {
+        return $this->active;
+    }
+
+    /**
+     * @param bool $active
+     * @return Project
+     */
+    public function setActive(bool $active): Project
+    {
+        $this->active = $active;
         return $this;
     }
 

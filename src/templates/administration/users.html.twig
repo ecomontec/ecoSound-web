@@ -58,9 +58,11 @@
                         </a>
                     </td>
                     <td>
-                        <a href="{{ baseUrl }}/UserPermission/{{ user.user_id == user_id and not is_admin?'view':'show' }}/{{ user.user_id }}" class="js-open-modal" title="Collection Privileges" $privhidden>
-                            <i class='fas fa-tasks'></i>
-                        </a>
+                        {% if user.role_id == 2 %}
+                            <a href="{{ baseUrl }}/UserPermission/{{ user.user_id == user_id and not is_admin?'view':'show' }}/{{ user.user_id }}" class="js-open-modal" title="Collection Privileges" $privhidden>
+                                <i class='fas fa-tasks'></i>
+                            </a>
+                        {% endif %}
                     </td>
                     <td>
                         <input type="color" name="color" alt="Tag color" value="{{ user.color is empty ? default_color : user.color }}">
@@ -85,7 +87,7 @@
                 "order": [[0, 'asc']],
                 "columnDefs": [{
                     "orderable": false,
-                    "targets": [6, 7, 8]
+                    "targets": [{% if is_admin %}6, 7, 8{% else %}4, 5, 6{% endif %}]
                 }],
                 "bAutoWidth": false,
                 "scrollX": true,

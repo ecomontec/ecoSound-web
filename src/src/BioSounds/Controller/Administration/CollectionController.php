@@ -3,6 +3,7 @@
 namespace BioSounds\Controller\Administration;
 
 use BioSounds\Controller\BaseController;
+use BioSounds\Controller\UserPermissionController;
 use BioSounds\Entity\Collection;
 use BioSounds\Entity\Recording;
 use BioSounds\Entity\UserPermission;
@@ -28,8 +29,8 @@ class CollectionController extends BaseController
         if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
-        if (isset($_POST['projectId'])) {
-            $projectId = $_POST['projectId'];
+        if (isset($_GET['projectId'])) {
+            $projectId = $_GET['projectId'];
         }
 
         $projects = (new ProjectProvider())->getWithPermission(Auth::getUserID());
@@ -71,7 +72,9 @@ class CollectionController extends BaseController
                 'errorCode' => 0,
                 'message' => 'Collection updated successfully.'
             ]);
-        } else if ($collProvider->insertColl($data) > 0) {
+        } else {
+            $id = $collProvider->insertColl($data);
+            (new UserPermission())->updataPermission($id);
             return json_encode([
                 'errorCode' => 0,
                 'message' => 'Collection created successfully.',
@@ -166,5 +169,11 @@ class CollectionController extends BaseController
             'errorCode' => 0,
             'message' => 'Collection deleted successfully.',
         ]);
+    }
+
+    public function count($id)
+    {
+        $count = count((new RecordingProvider())->getListByCollection($id, Auth::getUserID()));
+        return $count;
     }
 }

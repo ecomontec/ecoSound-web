@@ -41,9 +41,18 @@
                     <label for="gadm3" class="col-form-label-sm" style="width:33%">Global Administrative Areas level 3</label>
                 </div>
                 <div class="form-group">
-                    <input id="gadm1" type="text" name="gadm1_text" style="width:33%" maxlength="100">
-                    <input id="gadm2" type="text" name="gadm2_text" style="width:33%" maxlength="100">
-                    <input id="gadm3" type="text" name="gadm3_text" style="width:33%" maxlength="100">
+                    <select id="gadm1" name="gadm1_text" style="width:33%" class="form-control-sm">
+                        <option></option>
+                        {% for g in gadm1 %}
+                            <option value="{{ g.name }}">{{ g.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <select id="gadm2" name="gadm2_text" style="width:33%" class="form-control-sm">
+                        <option></option>
+                    </select>
+                    <select id="gadm3" name="gadm3_text" style="width:33%" class="form-control-sm">
+                        <option></option>
+                    </select>
                 </div>
                 <div>
                     <label for="realm" class="col-form-label-sm" style="width:33%">Realm</label>

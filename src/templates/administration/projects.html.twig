@@ -18,6 +18,7 @@
                 <th>URL</th>
                 <th>Picture</th>
                 <th>Creation Date (UTC)</th>
+                <th>Active</th>
                 <th>Description</th>
             </tr>
             </thead>
@@ -41,6 +42,9 @@
                             <a href="#" class="project-picture" data-project-id="{{ project.id }}"><img id="pic{{ project.id }}" src="{{ projectImagesUrl }}/{{ project.pictureId }}" alt="..." style="height:50px;"></a>
                         </td>
                         <td>{{ project.creationDate }}</td>
+                        <td class="text-center" data-search="{{ project.active }}" data-order="{{ project.active }}">
+                            <input name="active" type="checkbox" {{ project.active ? 'checked' }}>
+                        </td>
                         <td data-search="{{ project.description }}" data-order="{{ project.description }}">
                             <a href="{{ baseUrl }}/admin/projectMgr/description/{{ project.id }}" class="js-open-modal" title="Edit description" $privhidden>
                                 <span class="fas fa-edit"></span>

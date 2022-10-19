@@ -495,8 +495,7 @@ class RecordingController extends BaseController
             $data[$key] = $value;
         }
         $str = 'python3 ' . ABSOLUTE_DIR . 'bin/getMaad.py' .
-            ' -p ' . ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . '/' . $data['recording_directory'] . '/' .
-            ' -f ' . explode('.', $data['filename'])[0] .
+            ' -f ' . ABSOLUTE_DIR . 'tmp/' . implode('.', explode('.', explode('/tmp/', $data['filename'])[1], -1)) .
             ' --it ' . $data['index'] .
             ' --ch ' . ($data['channel'] == 2 ? 'right' : 'left') .
             ' --mint ' . $data['minTime'] .
@@ -516,20 +515,34 @@ class RecordingController extends BaseController
             } else {
                 $channel = 'Left';
             }
-            return json_encode([
-                'errorCode' => 0,
-                'data' => $this->twig->render('recording/player/maadResult.html.twig', [
-                    'title' => $data['index'],
-                    'result' => $result,
-                    'recording_id' => $data['recording_id'],
-                    'index_id' => $data['index_id'],
-                    'minTime' => $data['minTime'],
-                    'maxTime' => $data['maxTime'],
-                    'minFrequency' => $data['minFrequency'],
-                    'maxFrequency' => $data['maxFrequency'],
-                    'param' => substr('Channel?' . $channel . '@' . $data['param'], 0, -1),
-                ])
-            ]);
+            if ($data['index'] == 'max_frequency') {
+                return json_encode([
+                    'errorCode' => 0,
+                    'data' => $this->twig->render('recording/player/maadResult.html.twig', [
+                        'title' => $data['index'],
+                        'result' => "Frequency of maximum energy: " . (int)$result . " Hz(copied to clipboard)",
+                        'minTime' => $data['minTime'],
+                        'maxTime' => $data['maxTime'],
+                        'minFrequency' => $data['minFrequency'],
+                        'maxFrequency' => $data['maxFrequency'],
+                    ])
+                ]);
+            } else {
+                return json_encode([
+                    'errorCode' => 0,
+                    'data' => $this->twig->render('recording/player/maadResult.html.twig', [
+                        'title' => $data['index'],
+                        'result' => $result,
+                        'recording_id' => $data['recording_id'],
+                        'index_id' => $data['index_id'],
+                        'minTime' => $data['minTime'],
+                        'maxTime' => $data['maxTime'],
+                        'minFrequency' => $data['minFrequency'],
+                        'maxFrequency' => $data['maxFrequency'],
+                        'param' => substr('Channel?' . $channel . '@' . $data['param'], 0, -1),
+                    ])
+                ]);
+            }
         } else {
             return json_encode([
                 'errorCode' => 0,

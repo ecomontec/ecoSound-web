@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.addEventListener('submit', (event) => {
         if (event.target.matches('.js-async-form')) {
             event.preventDefault();
-            postRequest(event.target.action, $(event.target).serialize(), true);
+            postRequest(event.target.action, new FormData($("#settingForm")[0]), true);
         }
     });
 

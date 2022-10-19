@@ -3,6 +3,8 @@
 namespace BioSounds\Service;
 
 use BioSounds\Entity\Recording;
+use BioSounds\Entity\User;
+use BioSounds\Utils\Auth;
 use BioSounds\Utils\Utils;
 use Symfony\Component\Process\Process;
 
@@ -30,7 +32,10 @@ class ImageService
     public function __construct(int $fftSize = 1024)
     {
         $this->spectrogramService = new SpectrogramService();
-        if (Utils::getSetting('fft')) {
+        $user = new User();
+        if ($user->getFFT(Auth::getUserID())) {
+            $fftSize = $user->getFFT(Auth::getUserID());
+        } elseif (Utils::getSetting('fft')) {
             $fftSize = Utils::getSetting('fft');
         }
         $this->fftSize = $fftSize;
@@ -110,8 +115,8 @@ class ImageService
     public function generateThumbnailImage(
         string $destinationFilePath,
         string $originalWavFilePath,
-        int    $maxFrequency,
-        bool   $stereo
+        int $maxFrequency,
+        bool $stereo
     )
     {
         if ($stereo) {
@@ -154,9 +159,9 @@ class ImageService
     public function generatePlayerImage(
         string $destinationFilePath,
         string $wavFilePath,
-        int    $maxFrequency,
-        int    $channel = 0,
-        int    $minFrequency = 1
+        int $maxFrequency,
+        int $channel = 0,
+        int $minFrequency = 1
     )
     {
         $command = ABSOLUTE_DIR . 'bin/svt.py ';

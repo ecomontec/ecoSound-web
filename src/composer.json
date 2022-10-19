@@ -7,7 +7,8 @@
     "ext-json": "*",
     "symfony/process": "^4.3",
     "php-amqplib/php-amqplib": "^2.9",
-    "ext-pdo": "*"
+    "ext-pdo": "*",
+    "ext-sqlite3": "*"
   },
 
   "autoload": {

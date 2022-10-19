@@ -1,11 +1,11 @@
 <div class="row">
-    <div class="col-6-auto">
+    <div id="player_box" class="col-9">
         <div id="myCanvas" class="canvas">
             {% if isUserLogged %}
                 {% include 'recording/player/tagBoxes.html.twig' with {'tags': player.tags, 'show_tags': player.isShowTags} %}
             {% endif %}
             <div id="playerCursor" class="player-line"></div>
-            <img src="{{ player.imageFilePath }}" id="cropbox"/>
+            <img class="player_img" src="{{ player.imageFilePath }}" id="cropbox"/>
         </div>
         <div class="row no-gutters mt-1">
             <div class="col-auto mr-auto">
@@ -19,8 +19,7 @@
                     <h8>
                         <span id="time_sec_div">{{ player.minTime > 0 ? player.minTime|round: 0 }}</span>
                         /
-                        <span id="duration">{{ (player.maxTime - player.minTime|round) }}
-                            s</span>
+                        <span id="duration">{{ (player.maxTime - player.minTime|round) }}s</span>
                     </h8>
                 </div>
             </div>
@@ -53,6 +52,11 @@
                         <a href="#" id="exportCoordinates" class="btn btn-link" title="Export coordinates to clipboard">
                             <i class="fas fa-clipboard"></i>
                         </a>
+                        {% if isManage %}
+                        <a href="{{ baseUrl }}/recording/maad" id="exportMaxF" class="btn btn-link" title="Export frequency of maximum energy to clipboard">
+                            <i class="fas fa-wave-square"></i>
+                        </a>
+                        {% endif %}
                         <button id="zoom-submit" class="btn btn-link" type="button" title="Zoom" disabled>
                             <i class="fas fa-search-plus"></i>
                         </button>
@@ -138,7 +142,7 @@
                             'maxFrequency': $('input[name=maxFreqView]').val(),
                             'collection_id': $('input[name=collection_id]').val(),
                             'recording_id': $('input[name=recording_id]').val(),
-                            'filename': $('input[name=filename]').val(),
+                            'filename': soundFilePath,
                             'recording_directory': $('input[name=recording_directory]').val(),
                             'index_id': $('#maad').val(),
                             'index': $('#maad').find("option:selected").text(),

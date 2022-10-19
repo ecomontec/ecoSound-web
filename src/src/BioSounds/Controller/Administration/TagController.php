@@ -25,8 +25,8 @@ class TagController extends BaseController
         if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
         }
-        if (isset($_POST['colId'])) {
-            $colId = $_POST['colId'];
+        if (isset($_GET['colId'])) {
+            $colId = $_GET['colId'];
         }
         if (!empty($cId)) {
             $colId = $cId;

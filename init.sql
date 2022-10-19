@@ -149,12 +149,13 @@ CREATE TABLE `project`
 (
     `project_id`  int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `name`        varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-    `description` blob,
+    `description` longblob,
     `creator_id`  int(11) NOT NULL,
     `creation_date` timestamp                          NOT NULL DEFAULT current_timestamp(),
     `url`         varchar(255) COLLATE utf8_unicode_ci NOT NULL,
     `picture_id`  varchar(255) COLLATE utf8_unicode_ci,
-    `public`      tinyint(1) NOT NULL DEFAULT 1
+    `public`      tinyint(1) NOT NULL DEFAULT 1,
+    `active`     tinyint(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
@@ -354,7 +355,8 @@ CREATE TABLE `user`
     `name`       varchar(100) COLLATE utf8_unicode_ci NOT NULL,
     `email`      varchar(100) COLLATE utf8_unicode_ci NOT NULL,
     `color`      varchar(7) COLLATE utf8_unicode_ci   NOT NULL DEFAULT '#FFFFFF',
-    `active`     tinyint(1) NOT NULL DEFAULT 1
+    `active`     tinyint(1) NOT NULL DEFAULT 1,
+    `fft`    int(11) NOT NULL DEFAULT 512
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --

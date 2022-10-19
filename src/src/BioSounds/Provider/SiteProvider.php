@@ -62,20 +62,18 @@ class SiteProvider extends BaseProvider
     }
 
     /**
-     * @param int $siteId, $userId
+     * @param string $siteId
      * @return Site|null
      * @throws \Exception
      */
-    public function get(int $siteId, int $userId): ?Site
+    public function get(string $siteId): ?Site
     {
-        $this->database->prepareQuery('SELECT * FROM site WHERE site_id = :siteId and user_id = :userId');
+        $this->database->prepareQuery('SELECT * FROM site WHERE site_id = :siteId');
 
-        if (empty($result = $this->database->executeSelect([':siteId' => $siteId, ':userId' => $userId]))) {
-            throw new NotFoundException($siteId, $userId);
+        if (empty($result = $this->database->executeSelect([':siteId' => $siteId]))) {
+            throw new NotFoundException($siteId);
         }
-
         $result = $result[0];
-
         return (new Site())
             ->setId($result['site_id'])
             ->setName($result['name'])

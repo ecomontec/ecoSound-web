@@ -53,9 +53,9 @@ class AdminController extends BaseController
     /**
      * @throws \Exception
      */
-    public function collections()
+    public function collections(int $id = null)
     {
-        return (new CollectionController($this->twig))->show();
+        return (new CollectionController($this->twig))->show($id);
     }
 
     /**
@@ -137,9 +137,9 @@ class AdminController extends BaseController
      * @param int|null $id
      * @return mixed
      */
-    public function siteManager(string $action, int $id = null)
+    public function siteManager(string $action, int $id = null, string $str = null)
     {
-        return (new SiteController($this->twig))->$action($id);
+        return (new SiteController($this->twig))->$action($id, $str);
     }
 
     /**

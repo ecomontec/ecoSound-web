@@ -67,8 +67,8 @@ class UserPermission extends BaseProvider
             $fields .= ",";
             $valuesNames .= ",";
         }
-        $fields = substr($fields, 0, strlen($fields) - 1).' )';
-        $valuesNames = substr($valuesNames, 0, strlen($valuesNames) - 1).' )';
+        $fields = substr($fields, 0, strlen($fields) - 1) . ' )';
+        $valuesNames = substr($valuesNames, 0, strlen($valuesNames) - 1) . ' )';
         $this->database->prepareQuery("INSERT INTO user_permission $fields VALUES $valuesNames");
         return $this->database->executeInsert($values);
     }
@@ -96,4 +96,14 @@ class UserPermission extends BaseProvider
         return $this->database->executeDelete([':colId' => $colId]);
     }
 
+    public function updataPermission($collection_id)
+    {
+        $this->database->prepareQuery("SELECT user_id, MAX(permission_id) AS permission_id FROM user_permission WHERE collection_id IN (SELECT collection_id FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = $collection_id)) GROUP BY user_id");
+        $result = $this->database->executeSelect();
+        foreach ($result as $r) {
+            $r['permission_id'] = $r['permission_id'] == 4 ? 4 : 3;
+            $this->database->prepareQuery("INSERT INTO user_permission (user_id, collection_id, permission_id) VALUES (" . $r['user_id'] . "," . $collection_id . "," . $r['permission_id'] . ")");
+            return $this->database->executeInsert();
+        }
+    }
 }

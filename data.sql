@@ -165,8 +165,8 @@ VALUES (1, 'Accepted'),
 --
 -- Dumping data for table `project`
 --
-INSERT INTO `project` (`project_id`, `name`, `description`, `creator_id`, `url`, `picture_id`)
-VALUES (101, 'Testing Project', 'This is a test project, You can set this up via the administration page.', '100', 'https://github.com/ecomontec/ecoSound-web', 'beo.jpg');
+INSERT INTO `project` (`project_id`, `name`, `description`, `creator_id`, `url`, `picture_id`, `active`)
+VALUES (101, 'Testing Project', 'This is a test project, You can set this up via the administration page.', '100', 'https://github.com/ecomontec/ecoSound-web', 'beo.jpg', 1);
 --
 -- Dumping data for table `role`
 --
@@ -177,8 +177,8 @@ VALUES (1, 'Administrator'),
 --
 -- Dumping data for table `user`
 --
-INSERT INTO `user` (`user_id`, `role_id`, `project_id`, `username`, `password`, `name`, `email`, `color`, `active`)
-VALUES (100, 1, 101, 'admin', 'JDJ5JDEwJHguRG9TQmZ5dmtiRTRPUEkxRlRKR3VRMTFXUmVNZWVDZkRDcy5QTDRSdENiMWpMNVF6TlMu', 'Administrator', 'admin@biosounds.admin', '#bd2929', 1);
+INSERT INTO `user` (`user_id`, `role_id`, `project_id`, `username`, `password`, `name`, `email`, `color`, `active`, `fft`)
+VALUES (100, 1, 101, 'admin', 'JDJ5JDEwJHguRG9TQmZ5dmtiRTRPUEkxRlRKR3VRMTFXUmVNZWVDZkRDcy5QTDRSdENiMWpMNVF6TlMu', 'Administrator', 'admin@biosounds.admin', '#bd2929', 1, 512);
 
 --
 -- Dumping data for table `label`

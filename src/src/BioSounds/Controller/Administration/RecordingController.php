@@ -33,8 +33,8 @@ class RecordingController extends BaseController
         }
 
         // colId proceesing
-        if (isset($_POST['colId'])) {
-            $colId = $_POST['colId'];
+        if (isset($_GET['colId'])) {
+            $colId = $_GET['colId'];
         }
         if (!empty($cId)) {
             $colId = $cId;

@@ -28,8 +28,5 @@
         {% endif %}
     </div>
 </div>
-{% if list is empty %}
-    <h5>No Result</h5>
-{% endif %}
 
 {% include display == 'list' ? 'collection/views/list.html.twig' : 'collection/views/gallery.html.twig' %}

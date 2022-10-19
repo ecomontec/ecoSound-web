@@ -2,19 +2,25 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
+                {% if title=='max_frequency' %}
+                <div>{{ result }}&nbsp;</div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                {% else %}
                 <h5 class="modal-title">{{ title }}&nbsp;</h5>
-                {% if result!='' %}
+                {% if not result=='' %}
                     <div class="form-inline">
-                    <div class="col-form-label-sm">
-                        <label>( {{ param|split('@')[0]|split('?')[1] }} {{ minTime }}-{{ maxTime }}s {{ minFrequency }}-{{ maxFrequency }}Hz )</label>
-                    </div>
+                        <div class="col-form-label-sm">
+                            <label>( {{ param|split('@')[0]|split('?')[1] }} {{ minTime }}-{{ maxTime }}s {{ minFrequency }}-{{ maxFrequency }}Hz )</label>
+                        </div>
                     </div>
                 {% endif %}
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            {% if result!='' %}
+            {% if not result=='' %}
                 <div class="modal-body ml-3">
                     <form id="maadResultForm">
                         <div>
@@ -44,6 +50,7 @@
                         Save
                     </button>
                 </div>
+            {% endif %}
             {% endif %}
         </div>
     </div>

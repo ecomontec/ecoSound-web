@@ -126,7 +126,7 @@
                 <a href="{{ baseUrl }}/recording/show/{{ item.recording.id }}" title="BioSounds player">
                     <img class="small-player-image" src="{{ baseUrl }}/{{ item.playerImage }}">
                 </a>
-                <audio id="player" data-id="{{ item.recording.id }}" controls>
+                <audio id="player" data-id="{{ item.recording.id }}" controls preload="none">
                     <source src="{{ baseUrl }}/{{ item.playerRecording }}"/>
                 </audio>
             </td>

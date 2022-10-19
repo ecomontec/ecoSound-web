@@ -10,7 +10,7 @@ class ProjectProvider extends BaseProvider
 {
     public function getList(): array
     {
-        $sql = "SELECT * FROM project";
+        $sql = "SELECT * FROM project WHERE active = 1";
 
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
@@ -75,7 +75,8 @@ class ProjectProvider extends BaseProvider
                 ->setPictureId($item['picture_id'] == null ? "1.png" : $item['picture_id'])
                 ->setPublic($item['public'])
                 ->setCollections((new CollectionProvider())->getByProject($item['project_id'], $userId))
-                ->setPermission($item['permission_id'] == null ? 0 : $item['permission_id']);
+                ->setPermission($item['permission_id'] == null ? 0 : $item['permission_id'])
+                ->setActive($item['active']);
         }
 
         return $data;

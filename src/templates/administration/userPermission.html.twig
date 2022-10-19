@@ -1,5 +1,5 @@
 <div class="modal fade" id="modal-div" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog" role="document" style="max-width: 50% !important;">
         <div class="modal-content">
             <form id="userPermissionForm">
                 <div class="modal-header">
@@ -25,17 +25,17 @@
                         </thead>
                         <tbody>
                         {% for project in projects %}
-                        <tr>
-                            <td>{% if project.collections|length > 0 %}<a href="#"><i class="fa fa-plus btn-fa" data-project="{{ project.id }}"></i></a>{% endif %}</td>
-                            <td>{{ project.id }}</td>
-                            <td>{{ project.name }}</td>
-                            <td class="text-center">
-                                <input class="js-access-checkbox" value="{{ accessId }}" type="checkbox" name="access"
-                                       data-project-id="{{ project.id }}" {{ project.permission == accessId ? "checked" }} {{ project.permission < accessId and project.permission > 0 ? "checked disabled" }} {{ project.permission == manageId ? "checked disabled" }} {{ project.collections|length?'':'disabled' }}>
-                            </td>
-                            <td class="text-center">
-                                <input class="js-manage-checkbox" value="{{ manageId }}" type="checkbox" name="manage"
-                                       data-project="{{ project.id }}" {{ project.permission == manageId ? "checked" }} {{ not is_admin ? 'disabled' }} {{ project.collections|length?'':'disabled' }}>
+                            <tr>
+                                <td>{% if project.collections|length > 0 %}<a href="#"><i class="fa fa-plus btn-fa" data-project="{{ project.id }}"></i></a>{% endif %}</td>
+                                <td>{{ project.id }}</td>
+                                <td>{{ project.name }}</td>
+                                <td class="text-center">
+                                    <input class="js-access-checkbox" value="{{ accessId }}" type="checkbox" name="access"
+                                           data-project-id="{{ project.id }}" {{ project.permission == accessId ? "checked" }} {{ project.permission < accessId and project.permission > 0 ? "checked disabled" }} {{ project.permission == manageId ? "checked disabled" }} {{ project.collections|length?'':'disabled' }}>
+                                </td>
+                                <td class="text-center">
+                                    <input class="js-manage-checkbox" value="{{ manageId }}" type="checkbox" name="manage"
+                                           data-project="{{ project.id }}" {{ project.permission == manageId ? "checked" }} {{ not is_admin ? 'disabled' }} {{ project.collections|length?'':'disabled' }}>
                                 </td>
                                 <td></td>
                                 <td></td>
@@ -136,21 +136,21 @@
         })
 
         $('#userPermissionForm').submit(function (e) {
-                                var data = new FormData()
-                                $('table#user-perm tbody tr').each(function (i) {
-                                let dataInput = $(this).children('td').find(".js-data-input");
-                                if (dataInput.length > 0) {
-                                data.append('data[' + i + '][collection_id]', dataInput.data('collection-id'));
-                                data.append('data[' + i + '][permission_id]', dataInput.data('permission-id'));
-                                data.append('data[' + i + '][user_id]', $('#user_id').val());
-                                }
-                                });
+            var data = new FormData()
+            $('table#user-perm tbody tr').each(function (i) {
+                let dataInput = $(this).children('td').find(".js-data-input");
+                if (dataInput.length > 0) {
+                    data.append('data[' + i + '][collection_id]', dataInput.data('collection-id'));
+                    data.append('data[' + i + '][permission_id]', dataInput.data('permission-id'));
+                    data.append('data[' + i + '][user_id]', $('#user_id').val());
+                }
+            });
 
-                                postRequest('{{ baseUrl }}/api/UserPermission/save', data, true, false, function () {
-                                $('#modal-div').modal('hide');
-                                });
+            postRequest('{{ baseUrl }}/api/UserPermission/save', data, true, false, function () {
+                $('#modal-div').modal('hide');
+            });
 
-                                e.preventDefault();
-                                });
-                                });
-                                </script>
+            e.preventDefault();
+        });
+    });
+</script>

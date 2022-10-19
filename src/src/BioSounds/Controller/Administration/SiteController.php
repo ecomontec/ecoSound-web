@@ -25,8 +25,8 @@ class SiteController extends BaseController
         if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
-        if (isset($_POST['projectId'])) {
-            $projectId = $_POST['projectId'];
+        if (isset($_GET['projectId'])) {
+            $projectId = $_GET['projectId'];
         }
         $projects = (new ProjectProvider())->getWithPermission(Auth::getUserID());
         if (empty($projectId)) {
@@ -44,6 +44,7 @@ class SiteController extends BaseController
             'explores' => $arr,
             'realms' => (new Explore())->getExplores(),
             'siteList' => $siteProvider->getList($projectId),
+            'gadm1' => json_decode($this->gadm()),
         ]);
     }
 
@@ -140,5 +141,30 @@ class SiteController extends BaseController
     {
         $explores = (new Explore())->getExplores($pid);
         return json_encode($explores);
+    }
+
+    public function gadm(int $level = 1, string $pname = '')
+    {
+        $pname = str_replace('%20', ' ', $pname);
+        $maindir = ABSOLUTE_DIR . 'gadm_410-levels.gpkg';
+        $main = new \SQLite3($maindir);
+        $data = [];
+        if (!$main) {
+            echo 'code: ' . $main->lastErrorCode();
+            echo 'Error: ' . $main->lastErrorMsg();
+        }
+        if ($level == 1) {
+            $sql = 'SELECT COUNTRY AS name FROM ADM_0 GROUP BY COUNTRY';
+        } elseif ($level == 2) {
+            $sql = 'SELECT NAME_1 AS name FROM ADM_1 WHERE COUNTRY="' . $pname . '"';
+        } elseif ($level == 3) {
+            $sql = 'SELECT NAME_2 AS name FROM ADM_2 WHERE NAME_1="' . $pname . '"';
+        }
+        $result = $main->query($sql);
+        while ($row = $result->fetchArray(1)) {
+            $data[] = $row;
+        }
+        $main->close();
+        return json_encode($data);
     }
 }
