@@ -91,6 +91,18 @@ class SiteProvider extends BaseProvider
             ->setCentroId($result['centroid']);
     }
 
+    public function getGamds(int $level = 0, string $pid = '0')
+    {
+        $this->database->prepareQuery('SELECT `name` FROM adm_' . $level . ' WHERE pid = "' . $pid . '" GROUP BY `name` ORDER BY `name`');
+        return $this->database->executeSelect();
+    }
+
+    public function getGamd(int $level, string $name)
+    {
+        $this->database->prepareQuery('SELECT x,y FROM adm_' . $level . ' WHERE name = "' . $name . '"');
+        return $this->database->executeSelect()[0];
+    }
+
     /**
      * @param int $id
      * @throws \Exception

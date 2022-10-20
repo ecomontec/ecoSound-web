@@ -3,17 +3,13 @@
 namespace BioSounds\Controller;
 
 use BioSounds\Entity\Collection;
-use BioSounds\Entity\Recording;
-use BioSounds\Entity\Site;
-use BioSounds\Entity\Sound;
-use BioSounds\Exception\NotAuthenticatedException;
+
 use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\SiteProvider;
 use BioSounds\Service\RecordingService;
 use BioSounds\Utils\Auth;
-use Cassandra\Varint;
 
 class CollectionController extends BaseController
 {
@@ -185,15 +181,15 @@ class CollectionController extends BaseController
             } else if ($site != null) {
                 $s = (new SiteProvider())->get($site);
                 if ($result = $this->gadm($s)) {
-                    $latitude[] = $result[0];
-                    $longitude[] = $result[1];
+                    $latitude[] = $result[1];
+                    $longitude[] = $result[0];
                     if (in_array([$result[0], $result[1], $r->getSiteName()], $location)) {
                         $k = array_search([$result[0], $result[1], $r->getSiteName()], $location);
                         $array[$k][4] = $array[$k][4] . '!br!' . $r->getName();
                         $array[$k][5]++;
                     } else {
                         $location[] = [$result[0], $result[1], $r->getSiteName()];
-                        $array[$i] = [$site, $siteName, $result[0], $result[1]];
+                        $array[$i] = [$site, $siteName, $result[1], $result[0]];
                         $array[$i][4] = $r->getName();
                         if ($sites != '') {
                             $sites = $sites . ',' . $site;
@@ -255,9 +251,9 @@ class CollectionController extends BaseController
                 $array[] = [$site->getId(), $site->getName(), $site->getLatitude(), $site->getLongitude()];
             } else {
                 if ($result = $this->gadm($site)) {
-                    $latitude[] = $result[0];
-                    $longitude[] = $result[1];
-                    $array[] = [$site->getId(), $site->getName(), $result[0], $result[1]];
+                    $latitude[] = $result[1];
+                    $longitude[] = $result[0];
+                    $array[] = [$site->getId(), $site->getName(), $result[1], $result[0]];
                 }
             }
         }
@@ -299,29 +295,19 @@ class CollectionController extends BaseController
 
     public function gadm($site)
     {
-        $maindir = ABSOLUTE_DIR . 'gadm_410-levels.gpkg';
-        $main = new \SQLite3($maindir);
-        $data = [];
-        if (!$main) {
-            echo 'code: ' . $main->lastErrorCode();
-            echo 'Error: ' . $main->lastErrorMsg();
-        }
         if ($site->getGadm3() != null) {
-            $sql = 'SELECT fid FROM ADM_2 WHERE NAME_2 = "' . $site->getGadm3() . '"';
-            $level = '2';
+            $level = 2;
+            $name = $site->getGadm3();
         } elseif ($site->getGadm2() != null) {
-            $sql = 'SELECT fid FROM ADM_1 WHERE NAME_1 = "' . $site->getGadm2() . '"';
-            $level = '1';
+            $level = 1;
+            $name = $site->getGadm2();
         } elseif ($site->getGadm1() != null) {
-            $sql = 'SELECT fid FROM ADM_0 WHERE COUNTRY = "' . $site->getGadm1() . '"';
-            $level = '0';
+            $level = 0;
+            $name = $site->getGadm1();
         } else {
             return false;
         }
-        $fid = $main->query($sql)->fetchArray(1)['fid'];
-        $sql = 'SELECT * FROM rtree_ADM_' . $level . '_geom WHERE id = "' . $fid . '"';
-        $result = $main->query($sql)->fetchArray(1);
-        $main->close();
-        return [($result['miny'] + $result['maxy']) / 2, ($result['minx'] + $result['maxx']) / 2];
+        $result=(new SiteProvider())->getGamd($level, $name);
+        return [$result['x'],$result['y']];
     }
 }

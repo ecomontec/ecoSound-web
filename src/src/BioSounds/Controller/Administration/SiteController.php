@@ -71,7 +71,6 @@ class SiteController extends BaseController
             if ($sitePdoValue != '0' && empty($sitePdoValue)) {
                 $sitePdoValue = '';
             }
-
             switch ($key) {
                 case 'realm_id':
                     $data['realm_id'] = $sitePdoValue == '' ? 0 : $sitePdoValue;
@@ -83,10 +82,10 @@ class SiteController extends BaseController
                     $data['functional_group_id'] = $sitePdoValue == '' ? 0 : $sitePdoValue;
                     break;
                 case 'longitude':
-                    $data['longitude_WGS84_dd_dddd'] = $sitePdoValue;
+                    $data['longitude_WGS84_dd_dddd'] = $sitePdoValue == '' ? null : $sitePdoValue;
                     break;
                 case 'latitude':
-                    $data['latitude_WGS84_dd_dddd'] = $sitePdoValue;
+                    $data['latitude_WGS84_dd_dddd'] = $sitePdoValue == '' ? null : $sitePdoValue;
                     break;
                 default:
                     $data[$key] = $sitePdoValue;
@@ -143,28 +142,8 @@ class SiteController extends BaseController
         return json_encode($explores);
     }
 
-    public function gadm(int $level = 1, string $pname = '')
+    public function gadm(int $level = 0, string $pid = '0')
     {
-        $pname = str_replace('%20', ' ', $pname);
-        $maindir = ABSOLUTE_DIR . 'gadm_410-levels.gpkg';
-        $main = new \SQLite3($maindir);
-        $data = [];
-        if (!$main) {
-            echo 'code: ' . $main->lastErrorCode();
-            echo 'Error: ' . $main->lastErrorMsg();
-        }
-        if ($level == 1) {
-            $sql = 'SELECT COUNTRY AS name FROM ADM_0 GROUP BY COUNTRY';
-        } elseif ($level == 2) {
-            $sql = 'SELECT NAME_1 AS name FROM ADM_1 WHERE COUNTRY="' . $pname . '"';
-        } elseif ($level == 3) {
-            $sql = 'SELECT NAME_2 AS name FROM ADM_2 WHERE NAME_1="' . $pname . '"';
-        }
-        $result = $main->query($sql);
-        while ($row = $result->fetchArray(1)) {
-            $data[] = $row;
-        }
-        $main->close();
-        return json_encode($data);
+        return json_encode((new SiteProvider())->getGamds($level, $pid));
     }
 }
