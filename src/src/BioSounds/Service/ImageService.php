@@ -3,6 +3,7 @@
 namespace BioSounds\Service;
 
 use BioSounds\Entity\Recording;
+use BioSounds\Entity\RecordingFft;
 use BioSounds\Entity\User;
 use BioSounds\Utils\Auth;
 use BioSounds\Utils\Utils;
@@ -33,8 +34,8 @@ class ImageService
     {
         $this->spectrogramService = new SpectrogramService();
         $user = new User();
-        if ($user->getFFT(Auth::getUserID())) {
-            $fftSize = $user->getFFT(Auth::getUserID());
+        if ($user->getFftValue(Auth::getUserID())) {
+            $fftSize = $user->getFftValue(Auth::getUserID());
         } elseif (Utils::getSetting('fft')) {
             $fftSize = Utils::getSetting('fft');
         }
@@ -84,10 +85,12 @@ class ImageService
             $maxFrequency,
             $stereo
         );
+
         $this->generatePlayerImage(
             $imagesPath . '/' . $sound[Recording::ID] . '-player_s.png',
             $wavFilePath,
             $maxFrequency,
+            $sound[Recording::COL_ID],
             $stereo
         );
 
@@ -160,20 +163,26 @@ class ImageService
         string $destinationFilePath,
         string $wavFilePath,
         int $maxFrequency,
+        int $recording_id,
         int $channel = 0,
         int $minFrequency = 1
     )
     {
+        $recording = new RecordingFft();;
+        if ($recording->getUserRecordingFft(Auth::getUserID(), $recording_id)) {
+            $this->fftSize = $recording->getUserRecordingFft(Auth::getUserID(), $recording_id);
+        }
+        $width = $_SESSION['width'] ? $_SESSION['width'] : 1920;
         $command = ABSOLUTE_DIR . 'bin/svt.py ';
         if ($channel > 0) {
             $command .= "-c $channel ";
         }
         $command .= "-s $destinationFilePath ";
-        $command .= '-w 870 -h 400 ';
+        $command .= '-w ' . $width . ' -h 400 ';
         $command .= "-m $maxFrequency ";
         $command .= "-i $minFrequency ";
         $command .= '-f ' . $this->fftSize . ' ' . $wavFilePath;
-        (new Process($command))->mustRun();
+        return (int)explode('done',(new Process($command))->mustRun()->getOutput())[1];
     }
 
     /**
@@ -197,7 +206,8 @@ class ImageService
         $wavFilePath,
         $channel,
         $duration,
-        $destinationDirectory
+        $destinationDirectory,
+        $recording_id
     )
     {
         $spectrogramWidth = WINDOW_WIDTH - (SPECTROGRAM_LEFT + SPECTROGRAM_RIGHT);
@@ -215,17 +225,19 @@ class ImageService
         $viewPortFilePath .= '_' . $selectionRectangleHigh . "_" . $selectionRectangleLeft . "_";
         $viewPortFilePath .= $selectionRectangleRight . "_" . $channel . ".png";
 
-        if (!file_exists($viewPortFilePath)) {
-            $command = 'bin/svt.py -s ' . $viewPortFilePath . ' -w ' . $this::VIEWPORT_WIDTH;
-            $command .= ' -h ' . $viewPortHeight . ' -m ' . $nyQuist . ' -f ' . $this->fftSize;
-            $command .= ' -c ' . $channel . ' ' . $wavFilePath;
-            Utils::executeCommand($command);
-
-            $command = 'convert -stroke red -fill none -draw "rectangle ' . $selectionRectangleLeft . ',';
-            $command .= $selectionRectangleHigh . ' ' . $selectionRectangleRight . ',' . $selectionRectangleLow . '" ';
-            $command .= $viewPortFilePath . ' ' . $viewPortFilePath;
-            Utils::executeCommand($command);
+        $recording = new RecordingFft();
+        if ($recording->getUserRecordingFft(Auth::getUserID(), $recording_id)) {
+            $this->fftSize = $recording->getUserRecordingFft(Auth::getUserID(), $recording_id);
         }
+        $command = 'bin/svt.py -s ' . $viewPortFilePath . ' -w ' . $this::VIEWPORT_WIDTH;
+        $command .= ' -h ' . $viewPortHeight . ' -m ' . $nyQuist . ' -f ' . $this->fftSize;
+        $command .= ' -c ' . $channel . ' ' . $wavFilePath;
+        Utils::executeCommand($command);
+
+        $command = 'convert -stroke red -fill none -draw "rectangle ' . $selectionRectangleLeft . ',';
+        $command .= $selectionRectangleHigh . ' ' . $selectionRectangleRight . ',' . $selectionRectangleLow . '" ';
+        $command .= $viewPortFilePath . ' ' . $viewPortFilePath;
+        Utils::executeCommand($command);
         return $viewPortFilePath;
     }
 }

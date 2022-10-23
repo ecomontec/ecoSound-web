@@ -30,16 +30,23 @@
                         Utilities
                     </button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item" href="{{ player.filePath }}" download>
-                            <i class='fas fa-file-audio mr-1'></i>
-                            Download Recording</a>
-                        <a class="dropdown-item" href="{{ player.imageFilePath }}" download>
-                            <i class='fas fa-file-image mr-1'></i>
-                            Download Spectrogram</a>
-                        <a class="dropdown-item js-open-modal"
-                           href="{{ baseUrl }}/recording/details/{{ player.recording.recording_id }}">
-                            <i class='fas fa-info-circle mr-1'></i>
-                            File Info</a>
+                        <a class="dropdown-item" href="{{ player.filePath }}" download><i class='fas fa-file-audio mr-1'></i>Download Recording</a>
+                        <a class="dropdown-item" href="{{ player.imageFilePath }}" download><i class='fas fa-file-image mr-1'></i>Download Spectrogram</a>
+                        <a class="dropdown-item js-open-modal" href="{{ baseUrl }}/recording/details/{{ player.recording.recording_id }}"><i class='fas fa-info-circle mr-1'></i>File Info</a>
+                        {% if isUserLogged %}
+                            <form id="fftForm" class="form-inline ml-4">
+                                <div><i class="fas fa-file-medical-alt mr-1"></i>FFT Size</div>
+                                <input type="hidden" name="recording_id" value="{{ player.recording.recording_id }}"/>
+                                <input type="hidden" name="user_id" value="{{ user_id }}"/>
+                                <input type="hidden" id="FMaxE" value="{{ FMaxE }}"/>
+                                <select id="fft" name="fft" class="form-control form-control-sm ml-2">
+                                    <option></option>
+                                    {% for fft in ffts %}
+                                        <option {{ fft == fftsize  ? 'selected' : '' }}>{{ fft }}</option>
+                                    {% endfor %}
+                                </select>
+                            </form>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -155,7 +162,7 @@
         var frequency = {{ player.recording.sampling_rate }};
         var channelNum = {{ player.recording.channel_num }};
         var soundFilePath = '{{ player.filePath }}';
-console.log(soundFilePath)
+
         $(function () {
             document.addEventListener('submit', function (e) {
                 if (e.target && e.target.id === 'callDistanceForm') {
@@ -184,7 +191,12 @@ console.log(soundFilePath)
                 postRequest('{{ baseUrl }}/recording/update', new FormData($(this)[0]), false, false, function () {
                 });
             });
-
+            $('#fft').on('change', function (e) {
+                e.preventDefault();
+                postRequest('{{ baseUrl }}/recordingFft/save', new FormData($("#fftForm")[0]), false, false, function () {
+                    location.reload();
+                });
+            });
             $(document).on('click', '#newLabelButton', function () {
                 $('#newLabelForm').submit();
             });

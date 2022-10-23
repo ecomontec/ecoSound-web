@@ -165,10 +165,11 @@
             });
             $('.js-delete-modal').click(function (e) {
                 var id = $(this).data('id')
+                var name = $(this).data('name')
                 $.ajax({
                     type: 'POST', url: '{{ baseUrl }}/api/admin/collectionMgr/count/' + id
                 }).done(function (data) {
-                    $('#modal-collection').text($(this).data('name'))
+                    $('#modal-collection').text(name)
                     $("#confirm_input").val("")
                     $("#js-delete-button").hide()
                     $("#js-close-button").show()

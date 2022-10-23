@@ -47,6 +47,11 @@
             '</div>' +
             '</div>' +
             '</ul>'
+        $(document).ready(function (e) {
+            if ($(window).width() != '{{ window_width }}') {
+                postRequest('{{ baseUrl }}/admin/settings/width', {'width': $(window).width()}, false, false);
+            }
+        })
         var t = window.setInterval(function () {
             if (Date.parse(new Date()) / 1000 > parseInt(regenerate_timeout) + 1800) {
                 window.clearInterval(t)
@@ -57,7 +62,5 @@
         {% endif %}
     </script>
 {% endblock %}
-
-
 </body>
 </html>

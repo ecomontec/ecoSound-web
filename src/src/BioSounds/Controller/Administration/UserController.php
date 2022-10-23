@@ -28,7 +28,6 @@ class UserController extends BaseController
             'roles' => (new Role())->getRoles(),
             'users' => $userProducer->getList(),
             'default_color' => self::DEFAULT_TAG_COLOR,
-            'ffts' => [4096, 2048, 1024, 512, 256, 128,],
         ]);
     }
 

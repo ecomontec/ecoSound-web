@@ -24,7 +24,7 @@ class ProjectProvider extends BaseProvider
                 ->setCreatorId($item['creator_id'])
                 ->setCreationDate($item['creation_date'])
                 ->setUrl($item['url'])
-                ->setPictureId($item['picture_id'])
+                ->setPictureId($item['picture_id'] ? $item['picture_id'] : '')
                 ->setPublic($item['public']);
         }
 
@@ -48,7 +48,7 @@ class ProjectProvider extends BaseProvider
             ->setCreatorId($result['creator_id'])
             ->setCreationDate($result['creation_date'])
             ->setUrl($result['url'])
-            ->setPictureId($result['picture_id'])
+            ->setPictureId($result['picture_id'] ? $result['picture_id'] : '')
             ->setPublic($result['public']);
     }
 
@@ -72,7 +72,7 @@ class ProjectProvider extends BaseProvider
                 ->setCreatorId($item['creator_id'])
                 ->setCreationDate($item['creation_date'])
                 ->setUrl($item['url'])
-                ->setPictureId($item['picture_id'] == null ? "1.png" : $item['picture_id'])
+                ->setPictureId($result['picture_id'] ? $item['picture_id'] : '')
                 ->setPublic($item['public'])
                 ->setCollections((new CollectionProvider())->getByProject($item['project_id'], $userId))
                 ->setPermission($item['permission_id'] == null ? 0 : $item['permission_id'])

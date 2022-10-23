@@ -28,22 +28,49 @@ let elapsedRateTime = 0;
 let pause = false;
 let seek = 0;
 let clock;
+let download = 0;
 
-request.open('GET', soundFilePath, true);
-request.responseType = 'arraybuffer';
-request.onload = function () {
-    offctx.decodeAudioData(request.response).then(function (buffer) {
-        console.log("Sample rate of buffer: " + buffer.sampleRate);
-        bufferPlay = buffer;
-        playButton.prop('disabled', false);
+if ($("#continuous-play").is(':checked')) {
+    playButton.prop('disabled', true);
+    request.open('GET', soundFilePath, true);
+    request.responseType = 'arraybuffer';
+    request.onload = function () {
+        offctx.decodeAudioData(request.response).then(function (buffer) {
+            console.log("Sample rate of buffer: " + buffer.sampleRate);
+            bufferPlay = buffer;
+            playButton.prop('disabled', false);
 
-        if (isContinuous || isDirectStart) {
-            playButton.trigger('click');
-            isDirectStart = false;
-        }
-    });
+            if (isContinuous || isDirectStart) {
+                playButton.trigger('click');
+                isDirectStart = false;
+            }
+        });
+    }
+    request.send();
+    download = 1
 }
-request.send();
+
+playButton.mouseenter(function () {
+    if (download === 0) {
+        playButton.prop('disabled', true);
+        request.open('GET', soundFilePath, true);
+        request.responseType = 'arraybuffer';
+        request.onload = function () {
+            offctx.decodeAudioData(request.response).then(function (buffer) {
+                console.log("Sample rate of buffer: " + buffer.sampleRate);
+                bufferPlay = buffer;
+                playButton.prop('disabled', false);
+
+                if (isContinuous || isDirectStart) {
+                    playButton.trigger('click');
+                    isDirectStart = false;
+                }
+            });
+        }
+        request.send();
+        download = 1
+    }
+})
 
 playButton.click(function () {
     if (this.dataset.playing === 'false') {

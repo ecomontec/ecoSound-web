@@ -10,7 +10,7 @@
         <div class="row no-gutters mt-1">
             <div class="col-auto mr-auto">
                 <div>
-                    <button id="play" class="btn btn-link" data-playing="false" role="switch" aria-checked="false" disabled>
+                    <button id="play" class="btn btn-link" data-playing="false" role="switch" aria-checked="false">
                         <i class="fas fa-play"></i>
                     </button>
                     <button id="stop" class="btn btn-link">
@@ -53,9 +53,9 @@
                             <i class="fas fa-clipboard"></i>
                         </a>
                         {% if isManage %}
-                        <a href="{{ baseUrl }}/recording/maad" id="exportMaxF" class="btn btn-link" title="Export frequency of maximum energy to clipboard">
-                            <i class="fas fa-wave-square"></i>
-                        </a>
+                            <a href="#" id="exportMaxF" class="btn btn-link" title="Export frequency of maximum energy to clipboard">
+                                <i class="fas fa-wave-square"></i>
+                            </a>
                         {% endif %}
                         <button id="zoom-submit" class="btn btn-link" type="button" title="Zoom" disabled>
                             <i class="fas fa-search-plus"></i>

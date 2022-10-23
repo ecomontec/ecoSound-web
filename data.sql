@@ -166,7 +166,7 @@ VALUES (1, 'Accepted'),
 -- Dumping data for table `project`
 --
 INSERT INTO `project` (`project_id`, `name`, `description`, `creator_id`, `url`, `picture_id`, `active`)
-VALUES (101, 'Testing Project', 'This is a test project, You can set this up via the administration page.', '100', 'https://github.com/ecomontec/ecoSound-web', 'beo.jpg', 1);
+VALUES (101, 'Testing Project', 'This is a test project, You can set this up via the administration page.', '100', 'https://github.com/ecomontec/ecoSound-web', null, 1);
 --
 -- Dumping data for table `role`
 --

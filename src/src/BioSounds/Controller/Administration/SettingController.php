@@ -25,6 +25,7 @@ class SettingController extends BaseController
         echo Utils::getSetting('license');
 
         return $this->twig->render('administration/settings.html.twig', [
+            'user' => (new User)->getFftValue(Auth::getUserID()),
             'projectFft' => Utils::getSetting('fft'),
             'ffts' => [4096, 2048, 1024, 512, 256, 128,],
             'licenses' => [
@@ -65,5 +66,11 @@ class SettingController extends BaseController
             'errorCode' => 0,
             'message' => 'Settings saved successfully.',
         ]);
+    }
+
+    public function width()
+    {
+        $_SESSION['width'] = $_POST['width'];
+        return true;
     }
 }

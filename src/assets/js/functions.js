@@ -101,40 +101,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     });
-    $(document).on('keydown.autocomplete', '.js-users-autocomplete', function () {
-        var id = '';
-        if (typeof ($(this).attr('id').split('_')[1]) != 'undefined') {
-            id = $(this).attr('id').split('_')[1]
-        }
-        $(this).autocomplete({
-            source: function (request, response) {
-                $.post(baseUrl + '/userPermission/getList', {term: request.term})
-                    .done(function (data) {
-                        response(JSON.parse(data));
-                    })
-                    .fail(function (response) {
-                        showAlert(JSON.parse(response.responseText).message);
-                        response(null);
-                    });
-            },
-            minLength: 3,
-            change: function (event, ui) {
-                if (!ui.item) {
-                    $(this).val('');
-                    let type = $(this).data('type');
-                    $('.js-species-id' + id + '[data-type=' + type + ']').val($("#old_id" + id).val());
-                    $(this).val($("#old_name" + id).val());
-                }
-            },
-            select: function (e, ui) {
-                $(this).val(ui.item.label);
-                let type = $(this).data('type');
-                $("#user_id" + id).val(ui.item.value)
-                $('.js-users-id' + id + '[data-type=' + type + ']').val(ui.item.value);
-                e.preventDefault();
-            }
-        });
-    });
 });
 
 function showAlert(message) {
