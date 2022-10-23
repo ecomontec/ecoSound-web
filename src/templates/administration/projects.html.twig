@@ -39,7 +39,7 @@
                         </td>
                         <td>
                             <input type="file" name="picture_id_file" id="picture_id_file{{ project.id }}" class="picture_id_file file_upload" accept="image/*" data-project-id="{{ project.id }}" hidden>
-                            <a href="#" class="project-picture" data-project-id="{{ project.id }}"><img id="pic{{ project.id }}" src="{{ projectImagesUrl }}/{{ project.pictureId }}" alt="..." style="height:50px;"></a>
+                            <a href="#" class="project-picture" data-project-id="{{ project.id }}"><img id="pic{{ project.id }}" src="{{ baseUrl }}/sounds/projects/{{ project.pictureId }}" style="height:50px;"></a>
                         </td>
                         <td>{{ project.creationDate }}</td>
                         <td class="text-center" data-search="{{ project.active }}" data-order="{{ project.active }}">
@@ -72,7 +72,7 @@
                 "order": [[1, 'asc']],
                 "columnDefs": [{
                     "orderable": false,
-                    "targets": [0, 4, 6]
+                    "targets": [0, 4, 7]
                 }],
                 "bAutoWidth": false,
                 "scrollX": true,

@@ -345,14 +345,6 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
         RAOQ = maad.features.frequency_raoq(S_power, fn, bin_step=bin_step)
         # print
         print("RAOQ?" + str(RAOQ))
-    elif index_type == "max_frequency":
-        arr = []
-        # index
-        for a in s:
-            arr.append(a * fs)
-        maxF = arr[numpy.argmax(arr)]
-        # print
-        print(str(maxF))
     else:
         print(0)
 

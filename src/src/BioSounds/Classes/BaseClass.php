@@ -107,5 +107,6 @@ class BaseClass
         $this->twig->addGlobal('isManage', Auth::isManage());
         $this->twig->addGlobal('user_id', Auth::getUserID());
         $this->twig->addGlobal('regenerate_timeout', $_SESSION['regenerate_timeout']);
+        $this->twig->addGlobal('window_width', $_SESSION['width'] ? $_SESSION['width'] : 870);
     }
 }

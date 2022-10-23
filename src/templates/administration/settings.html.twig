@@ -35,7 +35,7 @@
 					<label for="fft">FFT window size</label>
 					<select id="fft" name="fft" class="form-control">
 						{% for fft in ffts %}
-							<option {{ fft == projectFft ? 'selected' : '' }}>{{ fft }}</option>
+							<option {{ fft == user ? 'selected' : '' }}>{{ fft }}</option>
 						{% endfor %}
 					</select>
 				</div>

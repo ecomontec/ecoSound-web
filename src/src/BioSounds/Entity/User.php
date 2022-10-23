@@ -16,18 +16,18 @@ class User extends BaseProvider
     /**
      * @return int
      */
-    public function getFftsize(): int
+    public function getFft(): int
     {
-        return $this->fftsize;
+        return $this->fft;
     }
 
     /**
-     * @param int $fftsize
+     * @param int $fft
      * @return User
      */
-    public function setFftsize(int $fftsize): User
+    public function setFft(int $fft): User
     {
-        $this->fftsize = $fftsize;
+        $this->fft = $fft;
         return $this;
     }
 
@@ -36,7 +36,7 @@ class User extends BaseProvider
      * @return string|null
      * @throws \Exception
      */
-    public function getFFT(string $user_id = null): ?string
+    public function getFftValue(string $user_id = null): ?string
     {
         if (empty($user_id)) {
             return null;
@@ -232,10 +232,16 @@ class User extends BaseProvider
      */
     public function getList(): array
     {
-        $this->database->prepareQuery('SELECT * FROM user');
+        $this->database->prepareQuery('SELECT * FROM user ORDER BY `name`');
         return $this->database->executeSelect();
     }
 
+    public function getName(): array
+    {
+        $this->database->prepareQuery('SELECT user_id,
+       `name` FROM user ORDER BY `name`');
+        return $this->database->executeSelect();
+    }
     /**
      * @return array
      * @throws \Exception

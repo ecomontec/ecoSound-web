@@ -356,7 +356,7 @@ CREATE TABLE `user`
     `email`      varchar(100) COLLATE utf8_unicode_ci NOT NULL,
     `color`      varchar(7) COLLATE utf8_unicode_ci   NOT NULL DEFAULT '#FFFFFF',
     `active`     tinyint(1) NOT NULL DEFAULT 1,
-    `fft`    int(11) NOT NULL DEFAULT 512
+    `fft`        int(11) NOT NULL DEFAULT 512
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
@@ -367,6 +367,16 @@ CREATE TABLE `user_permission`
     `user_id`       int(11) NOT NULL,
     `collection_id` int(11) NOT NULL,
     `permission_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Table structure for table `recording_fft`
+--
+CREATE TABLE `recording_fft`
+(
+    `user_id`       int(11) NOT NULL,
+    `recording_id`  int(11) NOT NULL,
+    `fft`           int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --

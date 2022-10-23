@@ -115,7 +115,7 @@ class TagController extends BaseController
                 'displayDeleteButton' => Auth::isUserAdmin() || $isUserTagOwner ? '' : 'hidden',
                 'displaySaveButton' => $displaySaveButton,
                 'disableTagForm' => !Auth::isUserAdmin() && !$isUserTagOwner,
-                'reviewPanel' => $isReviewGranted ? (new TagReviewController($this->twig))->show($tagId) : '',
+                'reviewPanel' => (new TagReviewController($this->twig))->show($tagId, $isReviewGranted),
                 'soundTypes' => (new SoundTypeProvider())->getList($tag->getTaxonClass(), $tag->getTaxonOrder()),
             ]),
         ]);

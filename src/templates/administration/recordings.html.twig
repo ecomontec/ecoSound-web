@@ -53,7 +53,6 @@
                     <td>
                         {{ recording.id }}
                         <input type="hidden" name="itemID" value="{{ recording.id }}"/>
-                        <input type="hidden" id="user_id{{ recording.id }}" name="user_id" value="{{ user_id }}"/>
                         <input id="old_id{{ recording.id }}" type="hidden" value="{{ recording.user_id }}">
                         <input id="old_name{{ recording.id }}" type="hidden" value="{{ recording.username }}">
                     </td>
@@ -62,10 +61,9 @@
                         <input type='text' class="form-control form-control-sm" style="width:200px;" title="Name" name="name" value="{{ recording.name }}">
                     </td>
                     <td data-search="{{ recording.username }}" data-order="{{ recording.username }}">
-                        <input id="username_{{ recording.id }}" style="width:150px;" data-type="edit" class="form-control form-control-sm js-users-autocomplete" type="text" size="30" value="{{ recording.username }}" required>
-                        <div class="invalid-feedback">
-                            Please select a users from the list.
-                        </div>
+                        <select id="user_id{{ recording.id }}" name="user_id" style="width:120px;" class="form-control form-control-sm show-menu-arrow" data-live-search="true">
+                            <option value="{{ recording.userId }}">{{ recording.username }}</option>
+                        </select>
                     </td>
                     <td data-search="{{ recording.siteName }}" data-order="{{ recording.siteName }}">
                         <select name="site_id" style="width:120px;" class="form-control form-control-sm">
@@ -85,14 +83,14 @@
                         </select>
                     </td>
                     <td data-search="{{ recording.type }}" data-order="{{ recording.type }}">
-                        <select name="type" style="width:100px;"  class="form-control form-control-sm">
+                        <select name="type" style="width:100px;" class="form-control form-control-sm">
                             <option {{ recording.type == 'Passive' ? 'selected' }}>Passive</option>
                             <option {{ recording.type == 'Focal' ? 'selected' }}>Focal</option>
                             <option {{ recording.type == 'Enclosure' ? 'selected' }}>Enclosure</option>
                         </select>
                     </td>
                     <td data-search="{{ recording.medium }}" data-order="{{ recording.medium }}">
-                        <select name="medium" style="width:80px;"  class="form-control form-control-sm">
+                        <select name="medium" style="width:80px;" class="form-control form-control-sm">
                             <option {{ recording.medium == 'Air' ? 'selected' }}>Air</option>
                             <option {{ recording.medium == 'Water' ? 'selected' }}>Water</option>
                         </select>
@@ -153,16 +151,18 @@
         {{ parent() }}
         <!-- PUpload -->
         <link rel="stylesheet" href="{{ baseUrl }}/assets/plupload/jquery.plupload.queue.css" media="screen">
+        <link rel="stylesheet" href="{{ baseUrl }}/assets/css/bootstrap-select.css">
 
         <script src="{{ baseUrl }}/assets/plupload/js/plupload.full.min.js" defer></script>
         <script src="{{ baseUrl }}/assets/plupload/js/jquery.plupload.queue.min.js" defer></script>
         <script src="{{ baseUrl }}/templates/administration/js/upload.js" defer></script>
+
     {% endblock %}
 
     {% block scripts %}
         {{ parent() }}
-
         <script>
+            var arr ={{ users|json_encode|raw }};
             $(document).ready(function () {
                 $('#recTable').show()
                 $('#recTable').DataTable({
@@ -214,10 +214,19 @@
                     table.rows(tr).invalidate()
                 });
 
-                $("#modal-div").keydown(function(e){
-                    if(e.keyCode==13){
+                $("#modal-div").keydown(function (e) {
+                    if (e.keyCode == 13) {
                         $("#modal-div").modal('hide');
                         event.preventDefault();
+                    }
+                });
+                $("select[name='user_id']").on('mouseenter ', function () {
+                    if ($(this)[0].options.length < 2) {
+                        for (var key in arr) {
+                            if ($(this).val() != arr[key]['user_id']) {
+                                $(this).append("<option value='" + arr[key]['user_id'] + "'>" + arr[key]['name'] + "</option>");
+                            }
+                        }
                     }
                 });
             });

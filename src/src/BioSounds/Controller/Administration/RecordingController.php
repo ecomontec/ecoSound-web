@@ -6,6 +6,7 @@ use BioSounds\Controller\BaseController;
 use BioSounds\Entity\License;
 use BioSounds\Entity\Recording;
 use BioSounds\Entity\Sensor;
+use BioSounds\Entity\User;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\IndexLogProvider;
@@ -47,6 +48,7 @@ class RecordingController extends BaseController
 
         $collection = (new CollectionProvider())->get($colId);
         $recordingProvider = new RecordingProvider();
+        $userProducer = new User();
 
         $recordings = $recordingProvider->getListByCollection(
             $colId,
@@ -60,6 +62,7 @@ class RecordingController extends BaseController
             'colId' => $colId,
             'recordings' => $recordings,
             'sites' => $userSites,
+            'users' => $userProducer->getName(),
             'sensors' => (new Sensor())->getBasicList(),
             'license' => (new License())->getBasicList(),
         ]);

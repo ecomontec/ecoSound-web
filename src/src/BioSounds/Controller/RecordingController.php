@@ -4,6 +4,7 @@ namespace BioSounds\Controller;
 
 use BioSounds\Entity\IndexLog;
 use BioSounds\Entity\Recording;
+use BioSounds\Entity\RecordingFft;
 use BioSounds\Entity\UserPermission;
 use BioSounds\Entity\Permission;
 use BioSounds\Entity\User;
@@ -32,7 +33,6 @@ class RecordingController extends BaseController
     const IMAGE_SOUND_PATH = 'sounds/images/%s/%s/%s';
 
     private $recordingId;
-    private $fftSize;
     private $recordingService;
 
     /**
@@ -51,7 +51,13 @@ class RecordingController extends BaseController
         $this->recordingPresenter = new RecordingPresenter();
         $this->recordingService = new RecordingService();
         $this->recordingPresenter->setSpectrogramHeight(SPECTROGRAM_HEIGHT);
-        $this->fftSize = Utils::getSetting('fft');
+        $user = new User();
+        if ($user->getFftValue(Auth::getUserID())) {
+            $fftSize = $user->getFftValue(Auth::getUserID());
+        } elseif (Utils::getSetting('fft')) {
+            $fftSize = Utils::getSetting('fft');
+        }
+        $this->fftSize = $fftSize;
     }
 
     /**
@@ -65,9 +71,11 @@ class RecordingController extends BaseController
         if (empty($id)) {
             throw new \Exception(ERROR_EMPTY_ID);
         }
-
+        $recording = new RecordingFft();
+        if ($recording->getUserRecordingFft(Auth::getUserID(), $id)) {
+            $recording_fft = $recording->getUserRecordingFft(Auth::getUserID(), $id);
+        }
         $this->recordingId = $id;
-
         $recordingData = (new RecordingProvider())->get($this->recordingId);
 
         //TODO: Remove when recording is an Entity. Add to it.
@@ -87,7 +95,7 @@ class RecordingController extends BaseController
         if (isset($_POST['estimateDistID'])) {
             $this->recordingPresenter->setEstimateDistID(filter_var($_POST['estimateDistID'], FILTER_VALIDATE_INT));
         }
-        $this->setCanvas($recordingData);
+        $FMaxE = $this->setCanvas($recordingData);
         return $this->twig->render('recording/recording.html.twig', [
             'project' => (new ProjectProvider())->get($this->recordingPresenter->getRecording()['collection']->getProject()),
             'player' => $this->recordingPresenter,
@@ -97,6 +105,9 @@ class RecordingController extends BaseController
             'labels' => Auth::isUserLogged() ? (new LabelProvider())->getBasicList(Auth::getUserLoggedID()) : '',
             'myLabel' => Auth::isUserLogged() ? (new LabelAssociationProvider())->getUserLabel($id, Auth::getUserLoggedID()) : '',
             'indexs' => Auth::isUserLogged() ? (new IndexTypeProvider())->getList() : '',
+            'ffts' => [4096, 2048, 1024, 512, 256, 128,],
+            'fftsize' => $recording_fft,
+            'FMaxE' => $FMaxE,
         ]);
     }
 
@@ -193,9 +204,12 @@ class RecordingController extends BaseController
         // Spectrogram Image Width
         $spectrogramWidth = WINDOW_WIDTH - (SPECTROGRAM_LEFT + SPECTROGRAM_RIGHT);
         $this->recordingPresenter->setSpectrogramWidth($spectrogramWidth);
-
+        $recording = new RecordingFft();
+        if ($recording->getUserRecordingFft(Auth::getUserID(), $recordingData[Recording::ID])) {
+            $recording_fft = $recording->getUserRecordingFft(Auth::getUserID(), $recordingData[Recording::ID]);
+        }
         $selectedFileName = $fileName[0] . '_' . $minFrequency . '-' . $maxFrequency . '_' . $minTime . '-'
-            . $maxTime . '_' . $this->fftSize . '_' . $this->recordingPresenter->getChannel();
+            . $maxTime . '_' . $this->fft . '_' . $this->recordingPresenter->getChannel();
 
         if (!file_exists($originalWavFilePath)) {
             Utils::generateWavFile($originalSoundFilePath);
@@ -263,10 +277,12 @@ class RecordingController extends BaseController
                 }
             }
         }
-        $this->recordingService->generateSpectrogramImage(
+
+        $FMaxE = $this->recordingService->generateSpectrogramImage(
             $spectrogramImagePath,
             Utils::generateWavFile($zoomedFilePath),
             $maxFrequency,
+            $recordingData[Recording::ID],
             $this->recordingPresenter->getChannel(),
             $minFrequency
         );
@@ -289,6 +305,7 @@ class RecordingController extends BaseController
             $this->recordingPresenter->getChannel(),
             $originalWavFilePath
         );
+        return $FMaxE;
         //$this->setViewPort($samplingRate, $this->recordingPresenter->getChannel(), $originalWavFilePath);
     }
 
@@ -515,34 +532,20 @@ class RecordingController extends BaseController
             } else {
                 $channel = 'Left';
             }
-            if ($data['index'] == 'max_frequency') {
-                return json_encode([
-                    'errorCode' => 0,
-                    'data' => $this->twig->render('recording/player/maadResult.html.twig', [
-                        'title' => $data['index'],
-                        'result' => "Frequency of maximum energy: " . (int)$result . " Hz(copied to clipboard)",
-                        'minTime' => $data['minTime'],
-                        'maxTime' => $data['maxTime'],
-                        'minFrequency' => $data['minFrequency'],
-                        'maxFrequency' => $data['maxFrequency'],
-                    ])
-                ]);
-            } else {
-                return json_encode([
-                    'errorCode' => 0,
-                    'data' => $this->twig->render('recording/player/maadResult.html.twig', [
-                        'title' => $data['index'],
-                        'result' => $result,
-                        'recording_id' => $data['recording_id'],
-                        'index_id' => $data['index_id'],
-                        'minTime' => $data['minTime'],
-                        'maxTime' => $data['maxTime'],
-                        'minFrequency' => $data['minFrequency'],
-                        'maxFrequency' => $data['maxFrequency'],
-                        'param' => substr('Channel?' . $channel . '@' . $data['param'], 0, -1),
-                    ])
-                ]);
-            }
+            return json_encode([
+                'errorCode' => 0,
+                'data' => $this->twig->render('recording/player/maadResult.html.twig', [
+                    'title' => $data['index'],
+                    'result' => $result,
+                    'recording_id' => $data['recording_id'],
+                    'index_id' => $data['index_id'],
+                    'minTime' => $data['minTime'],
+                    'maxTime' => $data['maxTime'],
+                    'minFrequency' => $data['minFrequency'],
+                    'maxFrequency' => $data['maxFrequency'],
+                    'param' => substr('Channel?' . $channel . '@' . $data['param'], 0, -1),
+                ])
+            ]);
         } else {
             return json_encode([
                 'errorCode' => 0,
@@ -553,6 +556,7 @@ class RecordingController extends BaseController
             ]);
         }
     }
+
 
     public function saveLabel()
     {
