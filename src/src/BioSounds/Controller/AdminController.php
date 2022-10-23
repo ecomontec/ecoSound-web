@@ -21,10 +21,6 @@ class AdminController extends BaseController
      */
     public function create()
     {
-        if (!Auth::isManage()) {
-            throw new ForbiddenException();
-        }
-
         return $this->settings();
     }
 

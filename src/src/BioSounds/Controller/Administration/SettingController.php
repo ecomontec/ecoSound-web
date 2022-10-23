@@ -19,9 +19,6 @@ class SettingController extends BaseController
      */
     public function show()
     {
-        if (!Auth::isManage()) {
-            throw new ForbiddenException();
-        }
         echo Utils::getSetting('license');
 
         return $this->twig->render('administration/settings.html.twig', [
@@ -46,9 +43,6 @@ class SettingController extends BaseController
      */
     public function save()
     {
-        if (!Auth::isManage()) {
-            throw new ForbiddenException();
-        }
         $setting = new Setting();
         foreach ($_POST as $key => $value) {
             if ($key == 'fft') {

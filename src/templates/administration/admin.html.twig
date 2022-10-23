@@ -14,12 +14,12 @@
         <div class="row">
             <div class="col-lg-2">
                 <ul class="nav flex-column nav-pills">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ baseUrl }}/admin/settings">
+                            <i class="fas fa-cog pr-1"></i>
+                            Settings</a>
+                    </li>
                     {% if isManage %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ baseUrl }}/admin/settings">
-                                <i class="fas fa-cog pr-1"></i>
-                                Settings</a>
-                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ baseUrl }}/admin/users">
                                 <i class="fas fa-user pr-1"></i>
