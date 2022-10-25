@@ -39,18 +39,13 @@ if ($("#continuous-play").is(':checked')) {
             console.log("Sample rate of buffer: " + buffer.sampleRate);
             bufferPlay = buffer;
             playButton.prop('disabled', false);
-
-            if (isContinuous || isDirectStart) {
-                playButton.trigger('click');
-                isDirectStart = false;
-            }
         });
     }
     request.send();
     download = 1
 }
 
-playButton.mouseenter(function () {
+playButton.click(function () {
     if (download === 0) {
         playButton.prop('disabled', true);
         request.open('GET', soundFilePath, true);
@@ -69,34 +64,41 @@ playButton.mouseenter(function () {
         }
         request.send();
         download = 1
-    }
-})
+    } else {
+        if (this.dataset.playing === 'false') {
+            createSource();
+            source.start(0, currentTime);
+            startTime = context.currentTime;
+            clock = setInterval(function () {
+                getCurrentTime();
+            }, 30);
 
-playButton.click(function() {
-    if (this.dataset.playing === 'false') {
-        createSource();
-        source.start(0, currentTime);
-        startTime = context.currentTime;
-        clock = setInterval(function(){
-            getCurrentTime();
-        }, 30);
+            if (!getCookie('playStartTime')) {
+                document.cookie = "playStartTime=" + new Date().valueOf() / 1000;
+            }
 
-        if (!getCookie('playStartTime')) {
-            document.cookie = "playStartTime=" + new Date().valueOf() / 1000;
+            this.dataset.playing = 'true';
+            playButton.html('<span class="fas fa-pause"></span>');
+            $('#playerCursor').draggable('disable');
+        } else if (this.dataset.playing === 'true') {
+            pause = true;
+            seek = 0;
+            clearSource();
         }
-
-        this.dataset.playing = 'true';
-        playButton.html('<span class="fas fa-pause"></span>');
-        $('#playerCursor').draggable('disable');
-    }
-    else if (this.dataset.playing === 'true') {
-        pause = true;
-        seek = 0;
-        clearSource();
     }
 });
 
-$("#stop").click(function() {
+request.onreadystatechange = function () {
+    if (request.readyState == 4 && request.status == 200) {
+        setTimeout(function () {
+            if (playButton.is(":disabled") == false) {
+                playButton.trigger('click');
+            }
+        }, 500);
+    }
+}
+
+$("#stop").click(function () {
     if (!source) {
         stop();
         return;
@@ -104,7 +106,7 @@ $("#stop").click(function() {
     clearSource();
 });
 
-playbackControl.oninput = function() {
+playbackControl.oninput = function () {
     if (source !== null) {
         elapsedRateTime = currentTime - ((context.currentTime - startTime) * this.value);
         source.playbackRate.value = this.value;
@@ -127,16 +129,14 @@ $('#playerCursor').draggable({
     }
 });
 
-function clearSource()
-{
+function clearSource() {
     if (source) {
         source.stop();
         source = null;
     }
 }
 
-function stop()
-{
+function stop() {
     clearInterval(clock);
 
     $('#playerCursor').draggable('enable');
@@ -161,12 +161,11 @@ function stop()
     }
 }
 
-function createSource()
-{
+function createSource() {
     source = context.createBufferSource();
     source.buffer = bufferPlay;
     source.loop = false;
-    source.onended = function() {
+    source.onended = function () {
         savePlayLog();
 
         if (isContinuous && !pause) {
@@ -179,8 +178,7 @@ function createSource()
     source.playbackRate.value = playbackControl.value;
 }
 
-function getCurrentTime()
-{
+function getCurrentTime() {
     if (source) {
         currentTime = (context.currentTime - startTime) * source.playbackRate.value + elapsedRateTime + seek;
         currentTime += elapsedRateTime === 0 ? pauseTime : 0;
@@ -190,13 +188,11 @@ function getCurrentTime()
     }
 }
 
-function resetCursor()
-{
+function resetCursor() {
     playerCursor.style.left = 0;
     seek = 0;
 }
 
-function moveCursor(time)
-{
+function moveCursor(time) {
     playerCursor.style.left = (time < 0 ? 0 : time / selectionDuration) * specWidth + 'px';
 }

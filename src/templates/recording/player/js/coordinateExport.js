@@ -27,7 +27,7 @@ $('#exportMaxF').on('click', function (e) {
 
     const input = document.createElement('input');
     document.body.appendChild(input);
-    input.value = message.split('(')[0]
+    input.value = $("#FMaxE").val()
     input.focus();
     input.select();
 

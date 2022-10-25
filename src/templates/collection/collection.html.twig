@@ -77,7 +77,11 @@
             maxZoom: 18,
         }).addTo(map);
         {% for a in leaflet.arr %}
-        var marker = L.marker([{{ a[2] }}, {{ a[3] }}], {id: '{{ a[0] }}', alt: '{{ a[5] }}'});
+
+        var childCount ={{ a[5] }}
+        var myIcon = L.divIcon({html: '<div class="marker-cluster-text"><br><br><br>' + childCount + '</div>', className: 'marker-cluster-number', iconSize: [25, 41]})
+        var marker = L.marker([{{ a[2] }}, {{ a[3] }}], {id: '{{ a[0] }}', alt: '{{ a[5] }}', icon: myIcon});
+
         marker.bindPopup('<input type="hidden" value="{{ a[0] }}site_id"><b>{{ a[1] }}</b><br>{{ a[4] }}'.replaceAll('!br!', '<br>'), {
             closeOnClick: false,
             maxHeight: 140,
@@ -93,7 +97,7 @@
             site = e.popup._content.split('value="')[1].split('site_id">')[0]
             col_js({{ collection.id }}, $("#display_view").val(), site)
         })
-        map.on('moveend zoomend', function () {
+        map.on('moveend', function () {
             if ($(".leaflet-popup-close-button").length > 0) {
                 $(".leaflet-popup-close-button")[0].click()
             }
@@ -111,7 +115,7 @@
                 }
             }
             {% endfor %}
-            if (site != $("#sites")) {
+            if (site != $("#sites").val()) {
                 col_js({{ collection.id }}, $("#display_view").val(), site)
             }
         })

@@ -34,11 +34,11 @@
                         <input type="hidden" class="form-control form-control-sm" name="itemID" value="{{ user.user_id }}">
                     </td>
                     <td data-search="{{ user.name }}" data-order="{{ user.name }}">
-                        <input type="text" class="form-control form-control-sm" name="name" value="{{ user.name }}">
+                        <input type="text" class="form-control form-control-sm" name="name" value="{{ user.name }}" {{ not is_admin and user.role_id == 1 ? 'disabled' }}>
                     </td>
                     <td>{{ user.username }}</td>
                     <td data-search="{{ user.email }}" data-order="{{ user.email }}">
-                        <input type="email" class="form-control form-control-sm" name="email" value="{{ user.email }}">
+                        <input type="email" class="form-control form-control-sm" name="email" value="{{ user.email }}" {{ not is_admin and user.role_id == 1 ? 'disabled' }}>
                     </td>
                     {% if is_admin %}
                         <td {% for role in roles %}{% if role.role_id == user.role_id %}data-search="{{ role.name }}" data-order="{{ role.name }}"{% endif %}{% endfor %}>
@@ -53,9 +53,11 @@
                         </td>
                     {% endif %}
                     <td>
-                        <a href="{{ baseUrl }}/admin/userMgr/editPassword" class="js-open-modal" data-id="{{ user.user_id }}" title="Edit Password">
-                            <i class='fas fa-edit'></i>
-                        </a>
+                        {% if user.role_id == 2 %}
+                            <a href="{{ baseUrl }}/admin/userMgr/editPassword" class="js-open-modal" data-id="{{ user.user_id }}" title="Edit Password">
+                                <i class='fas fa-edit'></i>
+                            </a>
+                        {% endif %}
                     </td>
                     <td>
                         {% if user.role_id == 2 %}
@@ -65,7 +67,7 @@
                         {% endif %}
                     </td>
                     <td>
-                        <input type="color" name="color" alt="Tag color" value="{{ user.color is empty ? default_color : user.color }}">
+                        <input type="color" name="color" alt="Tag color" value="{{ user.color is empty ? default_color : user.color }}" {{ not is_admin and user.role_id == 1 ? 'disabled' }} >
                     </td>
                 </tr>
             {% endfor %}

@@ -72,7 +72,7 @@ class ProjectProvider extends BaseProvider
                 ->setCreatorId($item['creator_id'])
                 ->setCreationDate($item['creation_date'])
                 ->setUrl($item['url'])
-                ->setPictureId($result['picture_id'] ? $item['picture_id'] : '')
+                ->setPictureId($item['picture_id'] ? $item['picture_id'] : '')
                 ->setPublic($item['public'])
                 ->setCollections((new CollectionProvider())->getByProject($item['project_id'], $userId))
                 ->setPermission($item['permission_id'] == null ? 0 : $item['permission_id'])

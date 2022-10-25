@@ -49,16 +49,16 @@ $(function () {
 
     $(".readingMode").click(function (e) {
         var time
-        if ($(this).text() == 'Birds') {
-            time = 60;
-        } else if ($(this).text() == 'Bats') {
-            time = 10;
+        if ($(this).text() == 'Birds(15 px/s)') {
+            time = $('#player_box').width() / 15;
+        } else if ($(this).text() == 'Bats(90 px/s)') {
+            time = $('#player_box').width() / 90;
         } else if ($("#reading_input").val() == '' || $("#reading_input").val() < 0) {
             showAlert('Please enter a positive integer')
             e.preventDefault();
             return false;
         } else {
-            time = $("#reading_input").val();
+            time = $('#player_box').width() / $("#reading_input").val();
         }
         $("#x").val(currentTime + minTime);
         $("#w").val(currentTime + minTime + time);

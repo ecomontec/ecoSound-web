@@ -73,7 +73,7 @@ class RecordingController extends BaseController
         }
         $recording = new RecordingFft();
         if ($recording->getUserRecordingFft(Auth::getUserID(), $id)) {
-            $recording_fft = $recording->getUserRecordingFft(Auth::getUserID(), $id);
+            $this->fftSize = $recording->getUserRecordingFft(Auth::getUserID(), $id);
         }
         $this->recordingId = $id;
         $recordingData = (new RecordingProvider())->get($this->recordingId);
@@ -106,7 +106,7 @@ class RecordingController extends BaseController
             'myLabel' => Auth::isUserLogged() ? (new LabelAssociationProvider())->getUserLabel($id, Auth::getUserLoggedID()) : '',
             'indexs' => Auth::isUserLogged() ? (new IndexTypeProvider())->getList() : '',
             'ffts' => [4096, 2048, 1024, 512, 256, 128,],
-            'fftsize' => $recording_fft,
+            'fftsize' => $this->fftSize,
             'FMaxE' => $FMaxE,
         ]);
     }
