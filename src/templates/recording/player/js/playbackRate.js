@@ -3,7 +3,6 @@ import {AudioContext, OfflineAudioContext} from 'https://jspm.dev/standardized-a
 let playButton = $('#play');
 let playbackControl = document.querySelector('.js-playback-rate-control');
 let playbackValue = document.querySelector('.playback-rate-value');
-let context = new AudioContext();
 
 // Quick fix for Firefox and Safari
 var userAgent = navigator.userAgent;
@@ -16,7 +15,7 @@ if (userAgent.indexOf("Firefox") > -1) {
     }
 }
 
-
+let context = new AudioContext({sampleRate: frequency});
 let offctx = new OfflineAudioContext(channelNum, 512, frequency);  // length (512) doesn't matter, just non-zero
 let source = null;
 let bufferPlay = null;
@@ -37,8 +36,12 @@ if ($("#continuous-play").is(':checked')) {
     request.onload = function () {
         offctx.decodeAudioData(request.response).then(function (buffer) {
             console.log("Sample rate of buffer: " + buffer.sampleRate);
-            bufferPlay = buffer;
             playButton.prop('disabled', false);
+            bufferPlay = buffer;
+            if (isContinuous || isDirectStart) {
+                playButton.trigger('click');
+                isDirectStart = false;
+            }
         });
     }
     request.send();
@@ -55,11 +58,8 @@ playButton.click(function () {
                 console.log("Sample rate of buffer: " + buffer.sampleRate);
                 bufferPlay = buffer;
                 playButton.prop('disabled', false);
-
-                if (isContinuous || isDirectStart) {
-                    playButton.trigger('click');
-                    isDirectStart = false;
-                }
+                playButton.trigger('click');
+                isDirectStart = false;
             });
         }
         request.send();
@@ -76,7 +76,6 @@ playButton.click(function () {
             if (!getCookie('playStartTime')) {
                 document.cookie = "playStartTime=" + new Date().valueOf() / 1000;
             }
-
             this.dataset.playing = 'true';
             playButton.html('<span class="fas fa-pause"></span>');
             $('#playerCursor').draggable('disable');
@@ -87,16 +86,6 @@ playButton.click(function () {
         }
     }
 });
-
-request.onreadystatechange = function () {
-    if (request.readyState == 4 && request.status == 200) {
-        setTimeout(function () {
-            if (playButton.is(":disabled") == false) {
-                playButton.trigger('click');
-            }
-        }, 500);
-    }
-}
 
 $("#stop").click(function () {
     if (!source) {

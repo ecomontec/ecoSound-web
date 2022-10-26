@@ -49,9 +49,9 @@ $(function () {
 
     $(".readingMode").click(function (e) {
         var time
-        if ($(this).text() == 'Birds(15 px/s)') {
+        if ($(this).attr('id') == 'btn-birds') {
             time = $('#player_box').width() / 15;
-        } else if ($(this).text() == 'Bats(90 px/s)') {
+        } else if ($(this).attr('id') == 'btn-bats') {
             time = $('#player_box').width() / 90;
         } else if ($("#reading_input").val() == '' || $("#reading_input").val() < 0) {
             showAlert('Please enter a positive integer')

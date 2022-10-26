@@ -2,7 +2,7 @@
 
 {% block body %}
     <div class="container mt-5">
-        <table id="projectTable" style="display:none">
+        <table id="projectTable" style="display:none ;table-layout: fixed;word-wrap:break-word;">
             <thead class="table-borderless" style="display:none">
             <tr>
                 <th></th>
@@ -12,22 +12,23 @@
             {% for project in projects %}
                 <tr>
                     <td style="border-top: 1px solid #dddddd;">
-                        <h2 class="mt-4">
+                        <h2>
                             <a href="{{ baseUrl }}/collection/index/{{ project.id }}">{{ project.name }}</a>
                         </h2>
-                        <br>
                         <div class="form-inline">
-                            <div class="project-div col-3" style="margin-bottom: auto;">
-                                <img class="project-img" src="{{ baseUrl }}/sounds/projects/{{ project.pictureId }}" style="width:300px;float:left">
+                            <div style="margin-bottom: auto;width: 25%">
+                                {% if project.pictureId %}
+                                    <img src="{{ baseUrl }}/sounds/projects/{{ project.pictureId }}" style="width:300px;">
+                                    <br>
+                                {% endif %}
+                                {% if project.url %}
+                                    <a href="{{ project.url }}" style="width: 300px;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;display: block;float: left;" target="_blank">{{ project.url }}</a>
+                                {% endif %}
                             </div>
-                            <div class="col-9" style="margin-bottom: auto;">
+                            <div style="margin-bottom: auto;display: block;width: 75%;word-wrap: break-word;">
                                 {% autoescape false %}{{ project.description }}{% endautoescape %}
                             </div>
                         </div>
-                        {% if project.url %}
-                            <br>
-                            <a href="{{ project.url }}" target="_blank">{{ project.url }}</a>
-                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}
@@ -45,8 +46,5 @@
             });
             $('#projectTable').show()
         });
-        $(window).resize(function () {
-            $('.project-img').width($('.project-div').width())
-        })
     </script>
 {% endblock %}

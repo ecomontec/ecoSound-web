@@ -86,11 +86,18 @@
                         <i class="fas fa-compact-disc"></i>
                     </a>
                     <div class="dropdown-menu">
-                        <small class="ml-2">Zoom into:</small>
-                        <a class="dropdown-item readingMode" href="{{ baseUrl }}/recording/show/{{ player.recording.recording_id }}">Bats<small>(90 px/s)</small></a>
-                        <a class="dropdown-item readingMode" href="{{ baseUrl }}/recording/show/{{ player.recording.recording_id }}">Birds<small>(15 px/s)</small></a>
+                        <small class="ml-2">Zoom into and play back:</small>
                         <div class="form-inline">
-                            <a class="dropdown-item readingMode" href="{{ baseUrl }}/recording/show/{{ player.recording.recording_id }}" style="width: 100px">Custom</a>
+                            <a class="btn readingMode" id="btn-bats" href="{{ baseUrl }}/recording/show/{{ player.recording.recording_id }}" style="width: 40px"><small class="fas fa-play"></small></a>
+                            <div class="inline">Bats<small>(90 px/s)</small></div>
+                        </div>
+                        <div class="form-inline">
+                            <a class="btn readingMode" id="btn-birds" href="{{ baseUrl }}/recording/show/{{ player.recording.recording_id }}" style="width: 40px"><small class="fas fa-play"></small></a>
+                            <div> Birds<small>(15 px/s)</small></div>
+                        </div>
+                         <div class="form-inline">
+                            <a class="btn readingMode" href="{{ baseUrl }}/recording/show/{{ player.recording.recording_id }}" style="width: 40px"><small class="fas fa-play"></small></a>
+                             <div>Custom </div>
                             <input class="form-control form-control-sm" id="reading_input" type="number" value="90" style="width: 50px;" required>
                             <small class="ml-2 mr-2">px/s</small>
                         </div>

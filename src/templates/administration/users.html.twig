@@ -53,7 +53,7 @@
                         </td>
                     {% endif %}
                     <td>
-                        {% if user.role_id == 2 %}
+                        {% if is_admin or user.role_id == 2 %}
                             <a href="{{ baseUrl }}/admin/userMgr/editPassword" class="js-open-modal" data-id="{{ user.user_id }}" title="Edit Password">
                                 <i class='fas fa-edit'></i>
                             </a>
