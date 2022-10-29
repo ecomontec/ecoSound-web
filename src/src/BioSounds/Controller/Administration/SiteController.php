@@ -7,6 +7,7 @@ use BioSounds\Entity\Explore;
 use BioSounds\Entity\Sensor;
 use BioSounds\Entity\Site;
 use BioSounds\Exception\ForbiddenException;
+use BioSounds\Provider\BaseProvider;
 use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\SiteProvider;
 use BioSounds\Utils\Auth;
@@ -44,7 +45,7 @@ class SiteController extends BaseController
             'explores' => $arr,
             'realms' => (new Explore())->getExplores(),
             'siteList' => $siteProvider->getList($projectId),
-            'gadm1' => json_decode($this->gadm()),
+            'gadm0' => json_decode($this->gadm()),
         ]);
     }
 
@@ -110,7 +111,6 @@ class SiteController extends BaseController
             }
         }
     }
-
 
     /**
      * @param int $id

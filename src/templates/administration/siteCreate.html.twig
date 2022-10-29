@@ -35,21 +35,21 @@
                     </span>
                 </div>
                 <div>
+                    <label for="gadm0" class="col-form-label-sm" style="width:33%">Global Administrative Areas level 0</label>
                     <label for="gadm1" class="col-form-label-sm" style="width:33%">Global Administrative Areas level 1</label>
                     <label for="gadm2" class="col-form-label-sm" style="width:33%">Global Administrative Areas level 2</label>
-                    <label for="gadm3" class="col-form-label-sm" style="width:33%">Global Administrative Areas level 3</label>
                 </div>
                 <div class="form-group">
-                    <select id="gadm1" name="gadm1_text" style="width:33%" class="form-control-sm">
+                    <select id="gadm0" name="gadm0_text" style="width:33%" class="form-control-sm">
                         <option></option>
-                        {% for g in gadm1 %}
+                        {% for g in gadm0 %}
                             <option value="{{ g.name }}">{{ g.name }}</option>
                         {% endfor %}
                     </select>
-                    <select id="gadm2" name="gadm2_text" style="width:33%" class="form-control-sm">
+                    <select id="gadm1" name="gadm1_text" style="width:33%" class="form-control-sm">
                         <option></option>
                     </select>
-                    <select id="gadm3" name="gadm3_text" style="width:33%" class="form-control-sm">
+                    <select id="gadm2" name="gadm2_text" style="width:33%" class="form-control-sm">
                         <option></option>
                     </select>
                 </div>

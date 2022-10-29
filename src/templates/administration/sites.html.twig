@@ -31,9 +31,9 @@
                 <th>Name</th>
                 <th>Longitude</th>
                 <th>Latitude</th>
+                <th>GADM 0</th>
                 <th>GADM 1</th>
                 <th>GADM 2</th>
-                <th>GADM 3</th>
                 <th>Realm</th>
                 <th>Biome</th>
                 <th>Functional Group</th>
@@ -63,22 +63,19 @@
                             Please provide a latitude value, from -90 to 90.
                         </div>
                     </td>
+                    <td data-search="{{ site.gadm0 }}" data-order="{{ site.gadm0 }}">
+                        <select id="gadm0_{{ site.id }}" name="gadm0" style="width:120px;" class="form-control form-control-sm">
+                            <option value="{{ site.gadm0 }}" selected>{{ site.gadm0 }}</option>
+                        </select>
+                    </td>
                     <td data-search="{{ site.gadm1 }}" data-order="{{ site.gadm1 }}">
                         <select id="gadm1_{{ site.id }}" name="gadm1" style="width:120px;" class="form-control form-control-sm">
-                            <option></option>
-                            {% for g in gadm1 %}
-                                <option value="{{ g.name }}" {{ site.gadm1==g.name?"selected" }}>{{ g.name }}</option>
-                            {% endfor %}
+                            <option value="{{ site.gadm1 }}" selected>{{ site.gadm1 }}</option>
                         </select>
                     </td>
                     <td data-search="{{ site.gadm2 }}" data-order="{{ site.gadm2 }}">
                         <select id="gadm2_{{ site.id }}" name="gadm2" style="width:120px;" class="form-control form-control-sm">
                             <option value="{{ site.gadm2 }}" selected>{{ site.gadm2 }}</option>
-                        </select>
-                    </td>
-                    <td data-search="{{ site.gadm3 }}" data-order="{{ site.gadm3 }}">
-                        <select id="gadm3_{{ site.id }}" name="gadm3" style="width:120px;" class="form-control form-control-sm">
-                            <option value="{{ site.gadm3 }}" selected>{{ site.gadm3 }}</option>
                         </select>
                     </td>
                     <td data-search="{{ site.realm }}" data-order="{{ site.realm }}">
@@ -212,21 +209,42 @@
             });
 
             /* GADM */
-            $("select[name='gadm1']").on('change', function () {
+            $("select[name='gadm0']").on('change', function () {
                 var id = $(this).attr('id').split('_')[1]
+                $("#gadm1_" + id).empty()
                 $("#gadm2_" + id).empty()
-                $("#gadm3_" + id).empty()
+                $("#gadm1_" + id).append("<option value='' selected></option>");
                 $("#gadm2_" + id).append("<option value='' selected></option>");
-                $("#gadm3_" + id).append("<option value='' selected></option>");
+                $("#gadm1_" + id).attr('disabled', true)
+                $("#gadm2_" + id).attr('disabled', true)
                 $.ajax({
                     url: "{{ baseUrl }}/admin/siteManager/gadm/1/" + $(this).val(),
                     success: function (data) {
                         if (data == '[]') {
+                            $("#gadm1_" + id).attr('disabled', true)
                             $("#gadm2_" + id).attr('disabled', true)
-                            $("#gadm3_" + id).attr('disabled', true)
+                        } else if (typeof (data) != 'undefined') {
+                            $("#gadm1_" + id).attr('disabled', false)
+                            data = JSON.parse(data)
+                            for (var key in data) {
+                                $("#gadm1_" + id).append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
+                            }
+                        }
+                    },
+                })
+            });
+            $("select[name='gadm1']").on('change', function () {
+                var id = $(this).attr('id').split('_')[1]
+                $("#gadm2_" + id).empty()
+                $("#gadm2_" + id).append("<option value='' selected></option>");
+                $("#gadm2_" + id).attr('disabled', true)
+                $.ajax({
+                    url: "{{ baseUrl }}/admin/siteManager/gadm/2/" + $(this).val(),
+                    success: function (data) {
+                        if (data == '[]') {
+                            $("#gadm2_" + id).attr('disabled', true)
                         } else if (typeof (data) != 'undefined') {
                             $("#gadm2_" + id).attr('disabled', false)
-                            $("#gadm3_" + id).attr('disabled', false)
                             data = JSON.parse(data)
                             for (var key in data) {
                                 $("#gadm2_" + id).append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
@@ -235,24 +253,56 @@
                     },
                 })
             });
-            $("select[name='gadm2']").on('change', function () {
-                var id = $(this).attr('id').split('_')[1]
-                $("#gadm3_" + id).empty()
-                $("#gadm3_" + id).append("<option value='' selected></option>");
-                $.ajax({
-                    url: "{{ baseUrl }}/admin/siteManager/gadm/2/" + $(this).val(),
-                    success: function (data) {
-                        if (data == '[]') {
-                            $("#gadm3_" + id).attr('disabled', true)
-                        } else if (typeof (data) != 'undefined') {
-                            $("#gadm3_" + id).attr('disabled', false)
-                            data = JSON.parse(data)
-                            for (var key in data) {
-                                $("#gadm3_" + id).append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
+            $("select[name='gadm0']").on('mouseenter ', function () {
+                if ($(this)[0].options.length < 2) {
+                    var id = $(this).attr('id').split('_')[1]
+                    if ($('#gadm0_' + id).val() != '') {
+                        $("#gadm0_" + id).prepend("<option></option>")
+                    }
+                    $("#gadm0_" + id).attr('disabled', true)
+                    $.ajax({
+                        url: "{{ baseUrl }}/admin/siteManager/gadm/0/0",
+                        success: function (data) {
+                            if (typeof (data) != 'undefined') {
+                                $("#gadm0_" + id).attr('disabled', false)
+                                data = JSON.parse(data)
+                                for (var key in data) {
+                                    if ($('#gadm0_' + id).val() != data[key]['name']) {
+                                        $("#gadm0_" + id).append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
+                                    }
+                                }
                             }
+                        },
+                    })
+                }
+            });
+            $("select[name='gadm1']").on('mouseenter ', function () {
+                if ($(this)[0].options.length < 2) {
+                    var id = $(this).attr('id').split('_')[1]
+                    if ($('#gadm0_' + id).val() != '') {
+                        if ($('#gadm1_' + id).val() != '') {
+                            $("#gadm1_" + id).prepend("<option></option>")
                         }
-                    },
-                })
+                        $("#gadm1_" + id).attr('disabled', true)
+                        $.ajax({
+                            url: "{{ baseUrl }}/admin/siteManager/gadm/1/" + $('#gadm0_' + id).val(),
+                            success: function (data) {
+                                if (data == '[]') {
+                                    $("#gadm1_" + id).attr('disabled', true)
+                                    $("#gadm2_" + id).attr('disabled', true)
+                                } else if (typeof (data) != 'undefined') {
+                                    $("#gadm1_" + id).attr('disabled', false)
+                                    data = JSON.parse(data)
+                                    for (var key in data) {
+                                        if ($('#gadm1_' + id).val() != data[key]['name']) {
+                                            $("#gadm1_" + id).append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
+                                        }
+                                    }
+                                }
+                            },
+                        })
+                    }
+                }
             });
             $("select[name='gadm2']").on('mouseenter ', function () {
                 if ($(this)[0].options.length < 2) {
@@ -261,13 +311,14 @@
                         if ($('#gadm2_' + id).val() != '') {
                             $("#gadm2_" + id).prepend("<option></option>")
                         }
+                        $("#gadm2_" + id).attr('disabled', true)
                         $.ajax({
-                            url: "{{ baseUrl }}/admin/siteManager/gadm/1/" + $('#gadm1_' + id).val(),
+                            url: "{{ baseUrl }}/admin/siteManager/gadm/2/" + $('#gadm1_' + id).val(),
                             success: function (data) {
                                 if (data == '[]') {
                                     $("#gadm2_" + id).attr('disabled', true)
-                                    $("#gadm3_" + id).attr('disabled', true)
                                 } else if (typeof (data) != 'undefined') {
+                                    $("#gadm2_" + id).attr('disabled', false)
                                     data = JSON.parse(data)
                                     for (var key in data) {
                                         if ($('#gadm2_' + id).val() != data[key]['name']) {
@@ -280,66 +331,43 @@
                     }
                 }
             });
-            $("select[name='gadm3']").on('mouseenter ', function () {
-                if ($(this)[0].options.length < 2) {
-                    var id = $(this).attr('id').split('_')[1]
-                    if ($('#gadm2_' + id).val() != '') {
-                        if ($('#gadm3_' + id).val() != '') {
-                            $("#gadm3_" + id).prepend("<option></option>")
-                        }
-                        $.ajax({
-                            url: "{{ baseUrl }}/admin/siteManager/gadm/2/" + $('#gadm2_' + id).val(),
-                            success: function (data) {
-                                if (data == '[]') {
-                                    $("#gadm3_" + id).attr('disabled', true)
-                                } else if (typeof (data) != 'undefined') {
-                                    data = JSON.parse(data)
-                                    for (var key in data) {
-                                        if ($('#gadm3_' + id).val() != data[key]['name']) {
-                                            $("#gadm3_" + id).append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
-                                        }
-                                    }
-                                }
-                            },
-                        })
-                    }
-                }
-            });
-            $("#gadm1").on('change', function () {
+            $("#gadm0").on('change', function () {
+                $("#gadm1").empty()
                 $("#gadm2").empty()
-                $("#gadm3").empty()
+                $("#gadm1").append("<option value='' selected></option>");
                 $("#gadm2").append("<option value='' selected></option>");
-                $("#gadm3").append("<option value='' selected></option>");
+                $("#gadm1").attr('disabled', true)
+                $("#gadm2").attr('disabled', true)
                 $.ajax({
                     url: "{{ baseUrl }}/admin/siteManager/gadm/1/" + $(this).val(),
                     success: function (data) {
                         if (data == '[]') {
+                            $("#gadm1").attr('disabled', true)
                             $("#gadm2").attr('disabled', true)
-                            $("#gadm3").attr('disabled', true)
                         } else if (typeof (data) != 'undefined') {
-                            $("#gadm2").attr('disabled', false)
-                            $("#gadm3").attr('disabled', false)
+                            $("#gadm1").attr('disabled', false)
                             data = JSON.parse(data)
                             for (var key in data) {
-                                $("#gadm2").append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
+                                $("#gadm1").append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
                             }
                         }
                     },
                 })
             });
-            $("#gadm2").on('change', function () {
-                $("#gadm3").empty()
-                $("#gadm3").append("<option value='' selected></option>");
+            $("#gadm1").on('change', function () {
+                $("#gadm2").empty()
+                $("#gadm2").append("<option value='' selected></option>");
+                $("#gadm2").attr('disabled', true)
                 $.ajax({
                     url: "{{ baseUrl }}/admin/siteManager/gadm/2/" + $(this).val(),
                     success: function (data) {
                         if (data == '[]') {
-                            $("#gadm3").attr('disabled', true)
+                            $("#gadm2").attr('disabled', true)
                         } else if (typeof (data) != 'undefined') {
-                            $("#gadm3").attr('disabled', false)
+                            $("#gadm2").attr('disabled', false)
                             data = JSON.parse(data)
                             for (var key in data) {
-                                $("#gadm3").append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
+                                $("#gadm2").append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
                             }
                         }
                     },

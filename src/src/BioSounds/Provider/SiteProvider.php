@@ -46,9 +46,9 @@ class SiteProvider extends BaseProvider
                 ->setCreationDateTime($item['creation_date_time'])
                 ->setLongitude($item['longitude_WGS84_dd_dddd'])
                 ->setLatitude($item['latitude_WGS84_dd_dddd'])
+                ->setGadm0($item['gadm0'])
                 ->setGadm1($item['gadm1'])
                 ->setGadm2($item['gadm2'])
-                ->setGadm3($item['gadm3'])
                 ->setRealmId($item['realm_id'])
                 ->setBiomeId($item['biome_id'])
                 ->setFunctionalGroupId($item['functional_group_id'])
@@ -71,7 +71,7 @@ class SiteProvider extends BaseProvider
         $this->database->prepareQuery('SELECT * FROM site WHERE site_id = :siteId');
 
         if (empty($result = $this->database->executeSelect([':siteId' => $siteId]))) {
-            throw new NotFoundException($siteId);
+            return null;
         }
         $result = $result[0];
         return (new Site())
@@ -82,9 +82,9 @@ class SiteProvider extends BaseProvider
             ->setCreationDateTime($result['creation_date_time'])
             ->setLongitude($result['longitude_WGS84_dd_dddd'])
             ->setLatitude($result['latitude_WGS84_dd_dddd'])
+            ->setGadm0($result['gadm0'])
             ->setGadm1($result['gadm1'])
             ->setGadm2($result['gadm2'])
-            ->setGadm3($result['gadm3'])
             ->setRealm($result['realm_id'])
             ->setBiome($result['biome_id'])
             ->setFunctionalGroup($result['functional_group_id'])
@@ -94,7 +94,8 @@ class SiteProvider extends BaseProvider
     public function getGamds(int $level = 0, string $pid = '0')
     {
         $this->database->prepareQuery('SELECT `name` FROM adm_' . $level . ' WHERE pid = "' . $pid . '" GROUP BY `name` ORDER BY `name`');
-        return $this->database->executeSelect();
+        $data = $this->database->executeSelect();
+        return $data;
     }
 
     public function getGamd(int $level, string $name)

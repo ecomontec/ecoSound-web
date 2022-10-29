@@ -23,7 +23,7 @@ document.getElementById('exportCoordinates').addEventListener('click', function 
 });
 
 $('#exportMaxF').on('click', function (e) {
-    let message = 'Frequency of maximum energy: ' + $("#FMaxE").val() + ' kHz (copied to clipboard)'
+    let message = 'Frequency of maximum energy: ' + $("#FMaxE").val() + ' Hz (copied to clipboard)'
 
     const input = document.createElement('input');
     document.body.appendChild(input);

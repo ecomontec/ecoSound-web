@@ -133,7 +133,7 @@ class AdminController extends BaseController
      * @param int|null $id
      * @return mixed
      */
-    public function siteManager(string $action, int $id = null, string $str = null)
+    public function siteManager(string $action, int $id = 0, string $str = '0')
     {
         return (new SiteController($this->twig))->$action($id, $str);
     }

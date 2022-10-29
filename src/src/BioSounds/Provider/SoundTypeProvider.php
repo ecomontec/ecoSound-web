@@ -32,7 +32,7 @@ class SoundTypeProvider extends BaseProvider
      * @return array
      * @throws \Exception
      */
-    public function getList(string $taxon_class, string $taxon_order)
+    public function getList(string $taxon_class = '', string $taxon_order = '')
     {
         $list = [];
         $this->database->prepareQuery("SELECT sound_type_id, `name` FROM sound_type WHERE IF ('$taxon_order' = '', taxon_class = '$taxon_class' AND taxon_order='', taxon_order = '$taxon_order') ORDER BY `name`");

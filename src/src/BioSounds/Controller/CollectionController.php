@@ -179,25 +179,26 @@ class CollectionController extends BaseController
                     $i = $i + 1;
                 }
             } else if ($site != null) {
-                $s = (new SiteProvider())->get($site);
-                if ($result = $this->gadm($s)) {
-                    $latitude[] = $result[1];
-                    $longitude[] = $result[0];
-                    if (in_array([$result[0], $result[1], $r->getSiteName()], $location)) {
-                        $k = array_search([$result[0], $result[1], $r->getSiteName()], $location);
-                        $array[$k][4] = $array[$k][4] . '!br!' . $r->getName();
-                        $array[$k][5]++;
-                    } else {
-                        $location[] = [$result[0], $result[1], $r->getSiteName()];
-                        $array[$i] = [$site, $siteName, $result[1], $result[0]];
-                        $array[$i][4] = $r->getName();
-                        if ($sites != '') {
-                            $sites = $sites . ',' . $site;
+                if($s = (new SiteProvider())->get($site)){
+                    if ($result = $this->gadm($s)) {
+                        $latitude[] = $result[1];
+                        $longitude[] = $result[0];
+                        if (in_array([$result[0], $result[1], $r->getSiteName()], $location)) {
+                            $k = array_search([$result[0], $result[1], $r->getSiteName()], $location);
+                            $array[$k][4] = $array[$k][4] . '!br!' . $r->getName();
+                            $array[$k][5]++;
                         } else {
-                            $sites = $site;
+                            $location[] = [$result[0], $result[1], $r->getSiteName()];
+                            $array[$i] = [$site, $siteName, $result[1], $result[0]];
+                            $array[$i][4] = $r->getName();
+                            if ($sites != '') {
+                                $sites = $sites . ',' . $site;
+                            } else {
+                                $sites = $site;
+                            }
+                            $array[$i][5] = 1;
+                            $i = $i + 1;
                         }
-                        $array[$i][5] = 1;
-                        $i = $i + 1;
                     }
                 }
             }
@@ -295,15 +296,15 @@ class CollectionController extends BaseController
 
     public function gadm($site)
     {
-        if ($site->getGadm3() != null) {
+        if ($site->getGadm2() != null) {
             $level = 2;
-            $name = $site->getGadm3();
-        } elseif ($site->getGadm2() != null) {
-            $level = 1;
             $name = $site->getGadm2();
         } elseif ($site->getGadm1() != null) {
-            $level = 0;
+            $level = 1;
             $name = $site->getGadm1();
+        } elseif ($site->getGadm0() != null) {
+            $level = 0;
+            $name = $site->getGadm0();
         } else {
             return false;
         }

@@ -347,7 +347,7 @@ VALUES ('1', '0', 'Terrestrial', '1'),
 --
 -- Dumping data for table `site`
 --
-INSERT INTO `site` (`site_id`, `name`, `user_id`, `project_id`, `creation_date_time`, `longitude_WGS84_dd_dddd`, `latitude_WGS84_dd_dddd`, `GADM1`, `GADM2`, `GADM3`, `realm_id`, `biome_id`, `functional_group_id`, `centroid`)
+INSERT INTO `site` (`site_id`, `name`, `user_id`, `project_id`, `creation_date_time`, `longitude_WGS84_dd_dddd`, `latitude_WGS84_dd_dddd`, `GADM0`, `GADM1`, `GADM2`, `realm_id`, `biome_id`, `functional_group_id`, `centroid`)
 VALUES (1, 'Demo site', 100, 101, now(), 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, 'false');
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

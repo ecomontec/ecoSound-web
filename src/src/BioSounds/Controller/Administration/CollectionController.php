@@ -10,6 +10,7 @@ use BioSounds\Entity\UserPermission;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\IndexLogProvider;
+use BioSounds\Provider\LabelAssociationProvider;
 use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\SoundProvider;
@@ -130,6 +131,7 @@ class CollectionController extends BaseController
         $recordingProvider = new RecordingProvider();
         $indexLogProvider = new indexLogProvider();
         $userProvider = new UserPermission();
+        $labelAssociationProvider= new LabelAssociationProvider();
 
         $recordings = $recordingProvider->getByCollection($id);
         $userProvider->deleteByCollection($id);
@@ -155,6 +157,7 @@ class CollectionController extends BaseController
                     unlink($soundsDir . $wavFileName);
                 }
 
+                $labelAssociationProvider->delete($recording[Recording::ID]);
                 $recordingProvider->delete($recording[Recording::ID]);
                 $indexLogProvider->deleteByRecording($recording[Recording::ID]);
 

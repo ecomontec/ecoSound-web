@@ -11,9 +11,9 @@ class Site extends AbstractProvider
     const CREATION_DATE_TIME = "creation_date_time";
     const LONGITUDE = "longitude_WGS84_dd_dddd";
     const LATITUDE = "latitude_WGS84_dd_dddd";
+    const GADM0 = "gadm0";
     const GADM1 = "gadm1";
     const GADM2 = "gadm2";
-    const GADM3 = "gadm3";
 
     const CENTROID = 'centroid';
 
@@ -55,17 +55,17 @@ class Site extends AbstractProvider
     /**
      * @var string
      */
+    private $gadm0;
+
+    /**
+     * @var string
+     */
     private $gadm1;
 
     /**
      * @var string
      */
     private $gadm2;
-
-    /**
-     * @var string
-     */
-    private $gadm3;
 
     /**
      * @var string
@@ -201,6 +201,24 @@ class Site extends AbstractProvider
     /**
      * @return string
      */
+    public function getGadm0(): ?string
+    {
+        return $this->gadm0;
+    }
+
+    /**
+     * @param string $gadm0
+     * @return site
+     */
+    public function setGadm0($gadm0 = NULL): Site
+    {
+        $this->gadm0 = $gadm0;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
     public function getGadm1(): ?string
     {
         return $this->gadm1;
@@ -231,24 +249,6 @@ class Site extends AbstractProvider
     public function setGadm2($gadm2 = NULL): Site
     {
         $this->gadm2 = $gadm2;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getGadm3(): ?string
-    {
-        return $this->gadm3;
-    }
-
-    /**
-     * @param string $gadm3
-     * @return site
-     */
-    public function setGadm3($gadm3 = NULL): Site
-    {
-        $this->gadm3 = $gadm3;
         return $this;
     }
     /**
