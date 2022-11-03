@@ -19,4 +19,14 @@ class ProjectController extends BaseController
             'projects' =>  $projectProvider->getList(),
         ]);
     }
+
+    public function about()
+    {
+        return $this->twig->render('about.html.twig', ['title' => 'ecoSound-web - About']);
+    }
+
+    public function gsp()
+    {
+        return $this->twig->render('gsp.html.twig', ['title' => 'ecoSound-web - Global Soundscapes Project']);
+    }
 }
