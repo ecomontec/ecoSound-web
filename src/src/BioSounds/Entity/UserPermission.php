@@ -103,7 +103,7 @@ class UserPermission extends BaseProvider
         foreach ($result as $r) {
             $r['permission_id'] = $r['permission_id'] == 4 ? 4 : 3;
             $this->database->prepareQuery("INSERT INTO user_permission (user_id, collection_id, permission_id) VALUES (" . $r['user_id'] . "," . $collection_id . "," . $r['permission_id'] . ")");
-            return $this->database->executeInsert();
+            $this->database->executeInsert();
         }
     }
 }

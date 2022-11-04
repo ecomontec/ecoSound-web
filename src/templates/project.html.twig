@@ -19,11 +19,11 @@
                             {% if project.pictureId or project.url %}
                                 <div class="col-3" style="margin-bottom: auto;">
                                     {% if project.pictureId %}
-                                        <img src="{{ baseUrl }}/sounds/projects/{{ project.pictureId }}" style="width:300px;">
+                                        <img src="{{ baseUrl }}/sounds/projects/{{ project.pictureId }}" style="width:100%;">
                                         <br>
                                     {% endif %}
                                     {% if project.url %}
-                                        <a href="{{ project.url }}" style="width: 300px;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;display: block;float: left;" target="_blank">{{ project.url }}</a>
+                                        <a href="{{ project.url }}" style="width: 100%;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;display: block;float: left;" target="_blank">{{ project.url }}</a>
                                     {% endif %}
                                 </div>
                             {% endif %}
