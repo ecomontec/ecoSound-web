@@ -100,7 +100,7 @@ class Utils
         $pathInfo = pathinfo($filePath);
         $resultFilePath = $pathInfo['dirname'] . '/' . $pathInfo['filename'] . '.wav';
 
-        if ($filePath === $resultFilePath) {
+        if (file_exists($resultFilePath)) {
             return $resultFilePath;
         }
 
