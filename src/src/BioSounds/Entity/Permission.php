@@ -41,6 +41,20 @@ class Permission extends BaseProvider
         return $result[0]['name'] == self::VIEW ? true : false;
     }
 
+    /**
+     * @param int $permissionId
+     * @return bool
+     * @throws \Exception
+     */
+    public function isManagePermission(int $permissionId): bool
+    {
+        $this->database->prepareQuery('SELECT name FROM permission WHERE permission_id = :permissionId');
+        if (empty($result = $this->database->executeSelect([':permissionId' => $permissionId]))) {
+            return false;
+        }
+
+        return $result[0]['name'] == self::MANAGE ? true : false;
+    }
 
     /**
      * @return int|null

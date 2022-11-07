@@ -56,6 +56,8 @@ class SpeciesController
                     'name' => $row->getName(),
                 ];
             }
+        }else{
+            return '';
         }
         return json_encode($data);
     }

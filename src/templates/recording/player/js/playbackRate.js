@@ -28,8 +28,14 @@ let pause = false;
 let seek = 0;
 let clock;
 let download = 0;
+let estimateDistID = $("input[name=estimateDistID]").val();
+let isDirectStart = false;
 
-if ($("#continuous-play").is(':checked')) {
+if (estimateDistID && estimateDistID > 0) {
+    isDirectStart = true;
+}
+
+if ($("#continuous-play").is(':checked') || isDirectStart) {
     playButton.prop('disabled', true);
     request.open('GET', soundFilePath, true);
     request.responseType = 'arraybuffer';

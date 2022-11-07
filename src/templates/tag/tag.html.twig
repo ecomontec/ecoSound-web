@@ -58,7 +58,7 @@
                             <div class="form-row align-items-center mt-2" id="distance_group">
                                 <div class="form-group col-auto">
                                     <label class="col-form-label-sm" for="callDistance">Call Distance </label>
-                                    <input id="callDistance" class="form-control form-control-sm" name="call_distance_m" type="number" value="{{ tag.callDistance }}" readonly>
+                                    <input id="callDistance" class="form-control form-control-sm" name="call_distance_m" type="number" value="{{ tag.callDistance }}" {{ tag.distanceNotEstimable ? "readonly" }}>
                                 </div>
                                 <div class="form-group col-auto">
                                     <div class="form-check form-control-sm pt-4" id="dist_check">

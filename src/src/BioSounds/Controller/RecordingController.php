@@ -396,9 +396,10 @@ class RecordingController extends BaseController
             $permission = new Permission();
             $reviewPermission = $permission->isReviewPermission($perm);
             $viewPermission = $permission->isViewPermission($perm);
+            $managePermission = $permission->isManagePermission($perm);
         }
 
-        if (Auth::isUserAdmin() || $reviewPermission || $viewPermission) {
+        if (Auth::isUserAdmin() || $reviewPermission || $viewPermission || $managePermission) {
             $tags = $tagProvider->getList($this->recordingId);
         } else {
             $tags = $tagProvider->getList($this->recordingId, Auth::getUserLoggedID());

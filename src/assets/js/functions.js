@@ -72,9 +72,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (id != '') {
                         $('.js-species-id' + id + '[data-type=' + type + ']').val($("#old_id" + id).val());
                         $(this).val($("#old_name" + id).val());
+                        $("#type" + id).attr('disabled', false)
                     } else {
                         $('.js-species-id' + id + '[data-type=' + type + ']').val('');
                         $("#type").empty()
+                        $("#type" + id).attr('disabled', true)
                     }
                     //$('#reviewSpeciesId').val('');
                 }
@@ -83,15 +85,24 @@ document.addEventListener("DOMContentLoaded", function () {
                 $(this).val(ui.item.label.split('(')[0]);
                 let type = $(this).data('type');
                 $('.js-species-id' + id + '[data-type=' + type + ']').val(ui.item.value);
-                $.post(baseUrl + '/species/getSoundType', {taxon_class: ui.item.class, taxon_order: ui.item.taxon_order})
+                $.post(baseUrl + '/species/getSoundType', {
+                    taxon_class: ui.item.class,
+                    taxon_order: ui.item.taxon_order
+                })
                     .done(function (data) {
-                        $("#taxon_class" + id).val(ui.item.class)
-                        $("#taxon_order" + id).val(ui.item.taxon_order)
-                        var json = JSON.parse(data)
-                        $("#type" + id).empty()
-                        $("#type" + id).append('<option value="0"></option>');
-                        for (var key in json) {
-                            $("#type" + id).append("<option value=" + json[key]['sound_type_id'] + ">" + json[key]['name'] + "</option>");
+                        console.log(data)
+                        if (data == '') {
+
+                        } else {
+                            $("#type" + id).attr('disabled', false)
+                            $("#taxon_class" + id).val(ui.item.class)
+                            $("#taxon_order" + id).val(ui.item.taxon_order)
+                            var json = JSON.parse(data)
+                            $("#type" + id).empty()
+                            $("#type" + id).append('<option value="0"></option>');
+                            for (var key in json) {
+                                $("#type" + id).append("<option value=" + json[key]['sound_type_id'] + ">" + json[key]['name'] + "</option>");
+                            }
                         }
                     })
                     .fail(function () {

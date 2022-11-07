@@ -49,14 +49,22 @@ selectData = function (coordinates) {
 
 
 $(function () {
+    $('.loading').show();
     $("#thumbnail").width($(".recording-navigation").width()).height('69px')
     var myJcrop = img_jcrop()
+    var resizeTimer = null;
     myJcrop.destroy()
     myJcrop = img_jcrop()
+    $('.loading').hide();
     $(window).resize(function () {
-        myJcrop.destroy()
+        $('.loading').show();
         $("#thumbnail").width($(".recording-navigation").width()).height('69px')
-        myJcrop = img_jcrop()
+        if (resizeTimer) clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function () {
+            myJcrop.destroy()
+            myJcrop = img_jcrop()
+            $('.loading').hide();
+        }, 200);
     })
 })
 
@@ -72,7 +80,6 @@ function img_jcrop() {
         onChange: setSelectionData,
         onSelect: selectData,
         addClass: 'custom',
-        bgColor: 'black',
     });
     $("#myCanvas > div.jcrop-holder.custom > div.jcrop-tracker").height('404px')
     $("#myCanvas > div.jcrop-holder.custom > div:nth-child(1) > div:nth-child(1) > img").height('400px')
