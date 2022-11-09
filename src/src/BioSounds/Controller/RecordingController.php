@@ -95,7 +95,7 @@ class RecordingController extends BaseController
         if (isset($_POST['estimateDistID'])) {
             $this->recordingPresenter->setEstimateDistID(filter_var($_POST['estimateDistID'], FILTER_VALIDATE_INT));
         }
-        $FMaxE = $this->setCanvas($recordingData);
+        $this->setCanvas($recordingData);
         return $this->twig->render('recording/recording.html.twig', [
             'project' => (new ProjectProvider())->get($this->recordingPresenter->getRecording()['collection']->getProject()),
             'player' => $this->recordingPresenter,
@@ -107,7 +107,6 @@ class RecordingController extends BaseController
             'indexs' => Auth::isUserLogged() ? (new IndexTypeProvider())->getList() : '',
             'ffts' => [4096, 2048, 1024, 512, 256, 128,],
             'fftsize' => $this->fftSize,
-            'FMaxE' => $FMaxE,
         ]);
     }
 
@@ -278,7 +277,7 @@ class RecordingController extends BaseController
             }
         }
 
-        $FMaxE = $this->recordingService->generateSpectrogramImage(
+        $this->recordingService->generateSpectrogramImage(
             $spectrogramImagePath,
             Utils::generateWavFile($zoomedFilePath),
             $maxFrequency,
@@ -305,7 +304,7 @@ class RecordingController extends BaseController
             $this->recordingPresenter->getChannel(),
             $originalWavFilePath
         );
-        return $FMaxE;
+
         //$this->setViewPort($samplingRate, $this->recordingPresenter->getChannel(), $originalWavFilePath);
     }
 
@@ -514,12 +513,14 @@ class RecordingController extends BaseController
         }
         $str = 'python3 ' . ABSOLUTE_DIR . 'bin/getMaad.py' .
             ' -f ' . ABSOLUTE_DIR . 'tmp/' . implode('.', explode('.', explode('/tmp/', $data['filename'])[1], -1)) .
-            ' --it ' . $data['index'] .
             ' --ch ' . ($data['channel'] == 2 ? 'right' : 'left') .
             ' --mint ' . $data['minTime'] .
             ' --maxt ' . $data['maxTime'] .
             ' --minf ' . $data['minFrequency'] .
             ' --maxf ' . $data['maxFrequency'];
+        if ($data['index'] != '') {
+            $str = $str . ' --it ' . $data['index'];
+        }
         if ($data['param'] != '') {
             $str = $str . ' --pa ' . substr($data['param'], 0, -1);
         }
@@ -533,20 +534,24 @@ class RecordingController extends BaseController
             } else {
                 $channel = 'Left';
             }
-            return json_encode([
-                'errorCode' => 0,
-                'data' => $this->twig->render('recording/player/maadResult.html.twig', [
-                    'title' => $data['index'],
-                    'result' => $result,
-                    'recording_id' => $data['recording_id'],
-                    'index_id' => $data['index_id'],
-                    'minTime' => $data['minTime'],
-                    'maxTime' => $data['maxTime'],
-                    'minFrequency' => $data['minFrequency'],
-                    'maxFrequency' => $data['maxFrequency'],
-                    'param' => substr('Channel?' . $channel . '@' . $data['param'], 0, -1),
-                ])
-            ]);
+            if ($data['index'] == '') {
+                return $result;
+            } else {
+                return json_encode([
+                    'errorCode' => 0,
+                    'data' => $this->twig->render('recording/player/maadResult.html.twig', [
+                        'title' => $data['index'],
+                        'result' => $result,
+                        'recording_id' => $data['recording_id'],
+                        'index_id' => $data['index_id'],
+                        'minTime' => $data['minTime'],
+                        'maxTime' => $data['maxTime'],
+                        'minFrequency' => $data['minFrequency'],
+                        'maxFrequency' => $data['maxFrequency'],
+                        'param' => substr('Channel?' . $channel . '@' . $data['param'], 0, -1),
+                    ])
+                ]);
+            }
         } else {
             return json_encode([
                 'errorCode' => 0,

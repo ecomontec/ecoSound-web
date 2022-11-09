@@ -41,7 +41,7 @@
                     <input type="hidden" name="maxTimeView" value="{{ player.maxTime }}">
                     <input type="hidden" name="minFreqView" value="{{ player.minFrequency }}">
                     <input type="hidden" name="maxFreqView" value="{{ player.maxFrequency }}">
-
+                    <input type="hidden" id="FMaxE" name="FMaxE" value="0">
                     {% include 'recording/player/timeBoxes.html.twig' with {
                         'minTime': player.minTime,
                         'maxTime': player.maxTime,
@@ -54,7 +54,7 @@
                             <i class="fas fa-clipboard"></i>
                         </a>
                         {% if isManage %}
-                            <a href="#" id="exportMaxF" class="btn btn-link" title="Export frequency of maximum energy to clipboard">
+                            <a href="{{ baseUrl }}/recording/maad" id="exportMaxF" class="btn btn-link" title="Export frequency of maximum energy to clipboard">
                                 <i class="fas fa-wave-square"></i>
                             </a>
                         {% endif %}
@@ -125,36 +125,6 @@
                     {% endfor %}
                 {% endif %}
                 <a href="{{ baseUrl }}/recording/maad" class="js-maad-modal btn btn-outline-primary">Submit</a>
-                <script>
-                    $(".js-maad-modal").click(function (e) {
-                        let data = []
-                        let param = ''
-                        {% if indexs[0].param is not null and indexs[0].param != '' %}
-                        {% for p in indexs[0].param|split('!') %}
-                        if ($('#{{ p|split('|')[0] }}').val() != '') {
-                            param = param + '{{ p|split('|')[0] }}' + '?' + $('#{{ p|split('|')[0] }}').val() + '@'
-                        }
-                        {% endfor %}
-                        {% endif %}
-                        data = {
-                            'minTime': $('input[name=minTimeView]').val(),
-                            'maxTime': $('input[name=maxTimeView]').val(),
-                            'minFrequency': $('input[name=minFreqView]').val(),
-                            'maxFrequency': $('input[name=maxFreqView]').val(),
-                            'collection_id': $('input[name=collection_id]').val(),
-                            'recording_id': $('input[name=recording_id]').val(),
-                            'filename': soundFilePath,
-                            'recording_directory': $('input[name=recording_directory]').val(),
-                            'index_id': $('#maad').val(),
-                            'index': $('#maad').find("option:selected").text(),
-                            'channel_num': $('input[name=channel_num]').val(),
-                            'channel': $('input[name=channel]').val(),
-                            'param': param,
-                        };
-                        requestModal(this.href, data, true);
-                        e.preventDefault();
-                    });
-                </script>
             </div>
         </div>
         <script>
@@ -175,6 +145,34 @@
                 }
                 {% endfor %}
             })
+            $(".js-maad-modal").click(function (e) {
+                let data = []
+                let param = ''
+                {% if indexs[0].param is not null and indexs[0].param != '' %}
+                {% for p in indexs[0].param|split('!') %}
+                if ($('#{{ p|split('|')[0] }}').val() != '') {
+                    param = param + '{{ p|split('|')[0] }}' + '?' + $('#{{ p|split('|')[0] }}').val() + '@'
+                }
+                {% endfor %}
+                {% endif %}
+                data = {
+                    'minTime': $('input[name=minTimeView]').val(),
+                    'maxTime': $('input[name=maxTimeView]').val(),
+                    'minFrequency': $('input[name=minFreqView]').val(),
+                    'maxFrequency': $('input[name=maxFreqView]').val(),
+                    'collection_id': $('input[name=collection_id]').val(),
+                    'recording_id': $('input[name=recording_id]').val(),
+                    'filename': soundFilePath,
+                    'recording_directory': $('input[name=recording_directory]').val(),
+                    'index_id': $('#maad').val(),
+                    'index': $('#maad').find("option:selected").text(),
+                    'channel_num': $('input[name=channel_num]').val(),
+                    'channel': $('input[name=channel]').val(),
+                    'param': param,
+                };
+                requestModal(this.href, data, true);
+                e.preventDefault();
+            });
         </script>
     {% endif %}
     {# {% include 'recording/player/frequencyScale.html.twig' %} #}

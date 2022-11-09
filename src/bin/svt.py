@@ -399,8 +399,6 @@ def create_png(input_filename, output_filename_w, output_filename_s, image_width
         waveform.save(output_filename_w)
     spectrogram.save(output_filename_s)
     print(" done")
-    print((numpy.where(arr == numpy.max(arr))[1][0] + 1) * (f_max - f_min) / ((len(arr[0])) - 1) + f_min)
-
 
 if __name__ == '__main__':
     parser = optparse.OptionParser("usage: %prog [options] input-filename", conflict_handler="resolve")

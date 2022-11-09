@@ -227,7 +227,7 @@ class RecordingService
     )
     {
         try {
-            return $this->imageService->generatePlayerImage(
+            $this->imageService->generatePlayerImage(
                 $imagePath,
                 $wavFilePath,
                 $maxFrequency,

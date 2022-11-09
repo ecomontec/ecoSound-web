@@ -38,7 +38,6 @@
                                 <div><i class="fas fa-file-medical-alt mr-1"></i>FFT Size</div>
                                 <input type="hidden" name="recording_id" value="{{ player.recording.recording_id }}"/>
                                 <input type="hidden" name="user_id" value="{{ user_id }}"/>
-                                <input type="hidden" id="FMaxE" value="{{ FMaxE }}"/>
                                 <select id="fft" name="fft" class="form-control form-control-sm ml-2">
                                     {% for fft in ffts %}
                                         <option {{ fft == fftsize  ? 'selected' : '' }}>{{ fft }}</option>
@@ -61,7 +60,8 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link js-toggle-tags" href="#" title="Toggle tags" data-show={{ player.isShowTags }}>
+                            <a class="nav-link js-toggle-tags" href="#" title="Toggle tags"
+                               data-show={{ player.isShowTags }}>
                                 {% if player.isShowTags %}
                                     <i class='fas fa-eye-slash'></i>
                                 {% else %}
@@ -95,9 +95,9 @@
                             <a class="btn readingMode" id="btn-birds" href="{{ baseUrl }}/recording/show/{{ player.recording.recording_id }}" style="width: 40px"><small class="fas fa-play"></small></a>
                             <div> Birds<small>(15 px/s)</small></div>
                         </div>
-                         <div class="form-inline">
+                        <div class="form-inline">
                             <a class="btn readingMode" href="{{ baseUrl }}/recording/show/{{ player.recording.recording_id }}" style="width: 40px"><small class="fas fa-play"></small></a>
-                             <div>Custom </div>
+                            <div>Custom</div>
                             <input class="form-control form-control-sm" id="reading_input" type="number" value="90" style="width: 50px;" required>
                             <small class="ml-2 mr-2">px/s</small>
                         </div>

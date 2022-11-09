@@ -182,7 +182,7 @@ class ImageService
         $command .= "-m $maxFrequency ";
         $command .= "-i $minFrequency ";
         $command .= '-f ' . $this->fftSize . ' ' . $wavFilePath;
-        return (int)explode('done', (new Process($command))->mustRun()->getOutput())[1];
+        (new Process($command))->mustRun();
     }
 
     /**

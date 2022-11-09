@@ -346,7 +346,9 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
         # print
         print("RAOQ?" + str(RAOQ))
     else:
-        print(0)
+        Sxx_power, tn, fn, ext = maad.sound.spectrogram(s, fs)
+        result = numpy.where(Sxx_power == numpy.max(Sxx_power))
+        print(int(fn[result[0][0]]))
 
 
 if __name__ == '__main__':
@@ -359,7 +361,7 @@ if __name__ == '__main__':
     parser.add_option('--maxt', type="string", dest='maxTime')
     parser.add_option('--minf', type="string", dest='minFrequency')
     parser.add_option('--maxf', type="string", dest='maxFrequency')
-    parser.set_defaults(filename=None, index_type=None, param=None, channel="1", minTime=None, maxTime=None, minFrequency=None, maxFrequency=None)
+    parser.set_defaults(filename=None, index_type=None, param=None, channel="left", minTime=None, maxTime=None, minFrequency=None, maxFrequency=None)
 
     (options, args) = parser.parse_args()
     getMaad(options.filename, options.index_type, options.param, options.channel, options.minTime, options.maxTime, options.minFrequency, options.maxFrequency)
