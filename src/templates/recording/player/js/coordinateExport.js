@@ -58,7 +58,7 @@ $('#exportMaxF').on('click', function (e) {
             const isSuccessful = document.execCommand('copy');
 
             if (!isSuccessful) {
-                message = 'Data copy to clipboard failed.';
+                message = 'Frequency of maximum energy: ' + result + ' Hz (Data copy to clipboard failed)';
             }
 
             input.remove();
