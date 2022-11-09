@@ -101,10 +101,12 @@ class BaseClass
         $this->twig->addGlobal('license_detail', Utils::getSetting(Setting::FILES_LICENSE_DETAIL));
         $this->twig->addGlobal('guide_url', self::GUIDE_URL);
         $this->twig->addGlobal('isUserLogged', Auth::isUserLogged());
-        $this->twig->addGlobal('collections', Auth::isUserAdmin() ? (new CollectionProvider())->getList() : (new CollectionProvider())->getAccessedList((Auth::getUserID() == null) ? 0 : Auth::getUserID()));
+        $this->twig->addGlobal('collections', Auth::isUserAdmin() ? (new CollectionProvider())->getList() : (new CollectionProvider())->getManageList((Auth::getUserID() == null) ? 0 : Auth::getUserID()));
         $this->twig->addGlobal('username', Auth::getUserName());
         $this->twig->addGlobal('is_admin', Auth::isUserAdmin());
+        $this->twig->addGlobal('isManage', Auth::isManage());
         $this->twig->addGlobal('user_id', Auth::getUserID());
         $this->twig->addGlobal('regenerate_timeout', $_SESSION['regenerate_timeout']);
+        $this->twig->addGlobal('window_width', $_SESSION['width'] ? $_SESSION['width'] : 870);
     }
 }

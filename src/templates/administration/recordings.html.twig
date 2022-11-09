@@ -7,7 +7,7 @@
         <div class="card-header border-light bg-white text-right">
             <div class="row">
                 <div class="col-auto mr-auto mt-2">
-                    <form id="collectionForm" class="form-inline" action="{{ baseUrl }}/admin/recordings" method="POST">
+                    <form id="collectionForm" class="form-inline" action="{{ baseUrl }}/admin/recordings">
                         <label for="colId">Collection</label>
                         <select id="colId" name="colId" class="form-control form-control-sm ml-3">
                             {% for collection in collections %}
@@ -26,13 +26,19 @@
                 </div>
             </div>
         </div>
-        <table id="recTable" style="display:none">
-            <thead class="form-control-sm table-borderless">
-            <tr>
+        <table id="recTable" style="display:none;white-space: nowrap;">
+            <thead class="table-borderless">
+            <tr style="font-size: .875rem;">
+                <th></th>
                 <th>#</th>
                 <th>Original Filename</th>
                 <th>Name</th>
+                <th>User</th>
                 <th>Site</th>
+                <th>License</th>
+                <th>Collection Type</th>
+                <th>Medium</th>
+                <th>Note</th>
                 <th>Date</th>
                 <th>Time</th>
                 <th></th>
@@ -42,16 +48,25 @@
             {% for recording in recordings %}
                 <tr>
                     <td>
+                        <a href="{{ baseUrl }}/recording/show/{{ recording.id }}" target="_blank"><i class="fa fa-eye"></i></a>
+                    </td>
+                    <td>
                         {{ recording.id }}
                         <input type="hidden" name="itemID" value="{{ recording.id }}"/>
-                        <input type="hidden" name="user_id" value="{{ user_id }}"/>
+                        <input id="old_id{{ recording.id }}" type="hidden" value="{{ recording.user_id }}">
+                        <input id="old_name{{ recording.id }}" type="hidden" value="{{ recording.username }}">
                     </td>
                     <td>{{ recording.filename }}</td>
                     <td data-search="{{ recording.name }}" data-order="{{ recording.name }}">
-                        <input type='text' class="form-control form-control-sm" title="Name" name="name" value="{{ recording.name }}">
+                        <input type='text' class="form-control form-control-sm" style="width:200px;" title="Name" name="name" value="{{ recording.name }}">
+                    </td>
+                    <td data-search="{{ recording.username }}" data-order="{{ recording.username }}">
+                        <select id="user_id{{ recording.id }}" name="user_id" style="width:120px;" class="form-control form-control-sm show-menu-arrow" data-live-search="true">
+                            <option value="{{ recording.userId }}">{{ recording.username }}</option>
+                        </select>
                     </td>
                     <td data-search="{{ recording.siteName }}" data-order="{{ recording.siteName }}">
-                        <select name="site_id" class="form-control form-control-sm">
+                        <select name="site_id" style="width:120px;" class="form-control form-control-sm">
                             <option value="0"></option>
                             {% for st in sites %}
                                 <option value="{{ st.id }}" {{ st.id == recording.site ? 'selected' }}>
@@ -60,6 +75,29 @@
                             {% endfor %}
                         </select>
                     </td>
+                    <td data-search="{{ recording.licenseName }}" data-order="{{ recording.licenseName }}">
+                        <select name="license_id" style="width:140px;" class="form-control form-control-sm">
+                            {% for licensed in license %}
+                                <option value="{{ licensed.license_id }}" {{ licensed.license_id == recording.license ? 'selected' }}>{{ licensed.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td data-search="{{ recording.type }}" data-order="{{ recording.type }}">
+                        <select name="type" style="width:100px;" class="form-control form-control-sm">
+                            <option {{ recording.type == 'Passive' ? 'selected' }}>Passive</option>
+                            <option {{ recording.type == 'Focal' ? 'selected' }}>Focal</option>
+                            <option {{ recording.type == 'Enclosure' ? 'selected' }}>Enclosure</option>
+                        </select>
+                    </td>
+                    <td data-search="{{ recording.medium }}" data-order="{{ recording.medium }}">
+                        <select name="medium" style="width:80px;" class="form-control form-control-sm">
+                            <option {{ recording.medium == 'Air' ? 'selected' }}>Air</option>
+                            <option {{ recording.medium == 'Water' ? 'selected' }}>Water</option>
+                        </select>
+                    </td>
+                    <td data-search="{{ recording.note }}" data-order="{{ recording.note }}">
+                        <input type='text' class="form-control form-control-sm" style="width:200px;" title="Note" name="note" value="{{ recording.note }}">
+                    </td>
                     <td data-search="{{ recording.fileDate }}" data-order="{{ recording.fileDate }}">
                         <input type='date' class="form-control form-control-sm" title="Date" name="file_date" value="{{ recording.fileDate }}">
                     </td>
@@ -67,7 +105,7 @@
                         <input type='time' class="form-control form-control-sm" title="Time" name="file_time" min="00:00:00" max="23:59:59" step="1" value="{{ recording.fileTime }}">
                     </td>
                     <td>
-                        <a class="js-delete-button" href="#" data-id="{{ recording.id }}" title="Delete recording">
+                        <a class="js-delete-modal" href="#" data-id="{{ recording.id }}" title="Delete recording">
                             <span class="fas fa-trash"></span>
                         </a>
                     </td>
@@ -76,64 +114,121 @@
             </tbody>
         </table>
     </div>
+    <div class="modal fade" id="modal-div" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">Warning</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body ml-3">
+                    <div>
+                        <div class="form-group">
+                            <input id="delete_id" type="hidden">
+                            <label>Deleting this recording will also delete the <b class="text-danger" id="count"></b> tags inside and cannot be reversed!</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="js-close-button" type="button" class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
+                    <button id="js-delete-button" type="button" class="btn btn-outline-danger">
+                        <i class="fas fa-trash-alt"></i>
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}
 
-{% block header %}
-    {{ parent() }}
-    <!-- PUpload -->
-    <link rel="stylesheet" href="{{ baseUrl }}/assets/plupload/jquery.plupload.queue.css" media="screen">
+    {% block header %}
+        {{ parent() }}
+        <!-- PUpload -->
+        <link rel="stylesheet" href="{{ baseUrl }}/assets/plupload/jquery.plupload.queue.css" media="screen">
+        <link rel="stylesheet" href="{{ baseUrl }}/assets/css/bootstrap-select.css">
 
-    <script src="{{ baseUrl }}/assets/plupload/js/plupload.full.min.js" defer></script>
-    <script src="{{ baseUrl }}/assets/plupload/js/jquery.plupload.queue.min.js" defer></script>
-    <script src="{{ baseUrl }}/templates/administration/js/upload.js" defer></script>
-{% endblock %}
+        <script src="{{ baseUrl }}/assets/plupload/js/plupload.full.min.js" defer></script>
+        <script src="{{ baseUrl }}/assets/plupload/js/jquery.plupload.queue.min.js" defer></script>
+        <script src="{{ baseUrl }}/templates/administration/js/upload.js" defer></script>
 
-{% block scripts %}
-    {{ parent() }}
+    {% endblock %}
 
-    <script>
-        $(document).ready(function () {
-            $('#recTable').DataTable({
-                "pageLength": 8,
-                "lengthChange": false,
-                "stateSave": true,
-                "StateDuration": -1,
-                "order": [[0, 'asc']],
-                "columnDefs": [{
-                    "orderable": false,
-                    "targets": [6]
-                }]
+    {% block scripts %}
+        {{ parent() }}
+        <script>
+            var arr ={{ users|json_encode|raw }};
+            $(document).ready(function () {
+                $('#recTable').show()
+                $('#recTable').DataTable({
+                    "pageLength": 8,
+                    "lengthChange": false,
+                    "stateSave": true,
+                    "StateDuration": -1,
+                    "order": [[1, 'asc']],
+                    "columnDefs": [{
+                        "orderable": false,
+                        "targets": [0, 12]
+                    }],
+                    "bAutoWidth": false,
+                    "scrollX": true,
+                });
             });
-            $('#recTable').show()
-        });
-        document.addEventListener("DOMContentLoaded", function (event) {
+            document.addEventListener("DOMContentLoaded", function (event) {
 
-            $("#uploadButton").click(function (e) {
-                $(this).toggle();
-                document.getElementById('uploadForm').hidden = false;
+                $("#uploadButton").click(function (e) {
+                    $(this).toggle();
+                    document.getElementById('uploadForm').hidden = false;
+                });
+                $('.js-delete-modal').click(function (e) {
+                    var id = $(this).data('id')
+                    $.ajax({
+                        type: 'POST', url: '{{ baseUrl }}/api/admin/recordingManager/count/' + id
+                    }).done(function (data) {
+                        $('#count').text(data)
+                        $('#delete_id').val(id)
+                        $("#modal-div").modal('show');
+                    })
+                })
+
+                $('#js-delete-button').click(function () {
+                    let row = $("#username_" + $('#delete_id').val()).parents("tr");
+                    deleteRequest('{{ baseUrl }}/api/admin/recordingManager/delete/' + $('#delete_id').val(), [], false, false, row.remove());
+                    $('#modal-div').modal('hide');
+                });
+
+                $('#colId').change(function () {
+                    $("#collectionForm").submit();
+                });
+
+                /* Save recordings list */
+                $(".js-recording-list").on('change', 'input, select, textarea', function () {
+                    saveFormList($(this), 'api/admin/recordingManager/save');
+                    var table = $('#recTable').DataTable()
+                    var tr = $(this).closest("tr")
+                    table.rows(tr).invalidate()
+                });
+
+                $("#modal-div").keydown(function (e) {
+                    if (e.keyCode == 13) {
+                        $("#modal-div").modal('hide');
+                        event.preventDefault();
+                    }
+                });
+                $("select[name='user_id']").on('mouseenter ', function () {
+                    if ($(this)[0].options.length < 2) {
+                        for (var key in arr) {
+                            if ($(this).val() != arr[key]['user_id']) {
+                                $(this).append("<option value='" + arr[key]['user_id'] + "'>" + arr[key]['name'] + "</option>");
+                            }
+                        }
+                    }
+                });
             });
-
-            $('.js-delete-button').click(function (e) {
-                if (!confirm('Are you sure you want to delete this recording?')) {
-                    return false;
-                }
-
-                let row = $(this).parents("tr");
-
-                deleteRequest('{{ baseUrl }}/api/admin/recordingManager/delete/' + $(this).data('id'), [], false, false, row.remove());
-            });
-
-            $('#colId').change(function () {
-                $("#collectionForm").submit();
-            });
-
-            /* Save recordings list */
-            $(".js-recording-list").on('change', 'input, select, textarea', function () {
-                saveFormList($(this), 'api/admin/recordingManager/save');
-                var table = $('#recTable').DataTable()
-                var tr = $(this).closest("tr")
-                table.rows(tr).invalidate()
-            });
-        });
-    </script>
-{% endblock %}
+        </script>
+    {% endblock %}

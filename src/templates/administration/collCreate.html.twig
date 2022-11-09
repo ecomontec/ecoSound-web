@@ -8,6 +8,7 @@
             <form id="collectionForm" novalidate>
                 <div class="form-group">
                     <input type="hidden" name="public" value="0">
+                    <input type="hidden" name="project_id_hidden" value="{{ projectId }}">
                     <label for="name" class="col-form-label-sm">Collection name</label>
                     <input id="name" type="text" name="name_text" class="form-control form-control-sm" maxlength="100"
                            required>

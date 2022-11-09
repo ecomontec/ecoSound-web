@@ -3,7 +3,6 @@ import {AudioContext, OfflineAudioContext} from 'https://jspm.dev/standardized-a
 let playButton = $('#play');
 let playbackControl = document.querySelector('.js-playback-rate-control');
 let playbackValue = document.querySelector('.playback-rate-value');
-let context = new AudioContext();
 
 // Quick fix for Firefox and Safari
 var userAgent = navigator.userAgent;
@@ -16,7 +15,7 @@ if (userAgent.indexOf("Firefox") > -1) {
     }
 }
 
-
+let context = new AudioContext({sampleRate: frequency});
 let offctx = new OfflineAudioContext(channelNum, 512, frequency);  // length (512) doesn't matter, just non-zero
 let source = null;
 let bufferPlay = null;
@@ -28,43 +27,69 @@ let elapsedRateTime = 0;
 let pause = false;
 let seek = 0;
 let clock;
+let download = 0;
+let estimateDistID = $("input[name=estimateDistID]").val();
+let isDirectStart = false;
 
-request.open('GET', soundFilePath, true);
-request.responseType = 'arraybuffer';
-request.onload = function () {
-    offctx.decodeAudioData(request.response).then(function (buffer) {
-        console.log("Sample rate of buffer: " + buffer.sampleRate);
-        bufferPlay = buffer;
-        playButton.prop('disabled', false);
-
-        if (isContinuous || isDirectStart) {
-            playButton.trigger('click');
-            isDirectStart = false;
-        }
-    });
+if (estimateDistID && estimateDistID > 0) {
+    isDirectStart = true;
 }
-request.send();
+
+if ($("#continuous-play").is(':checked') || isDirectStart) {
+    playButton.prop('disabled', true);
+    request.open('GET', soundFilePath, true);
+    request.responseType = 'arraybuffer';
+    request.onload = function () {
+        offctx.decodeAudioData(request.response).then(function (buffer) {
+            console.log("Sample rate of buffer: " + buffer.sampleRate);
+            playButton.prop('disabled', false);
+            bufferPlay = buffer;
+            if (isContinuous || isDirectStart) {
+                playButton.trigger('click');
+                isDirectStart = false;
+            }
+        });
+    }
+    request.send();
+    download = 1
+}
 
 playButton.click(function () {
-    if (this.dataset.playing === 'false') {
-        createSource();
-        source.start(0, currentTime);
-        startTime = context.currentTime;
-        clock = setInterval(function () {
-            getCurrentTime();
-        }, 30);
-
-        if (!getCookie('playStartTime')) {
-            document.cookie = "playStartTime=" + new Date().valueOf() / 1000;
+    if (download === 0) {
+        playButton.prop('disabled', true);
+        request.open('GET', soundFilePath, true);
+        request.responseType = 'arraybuffer';
+        request.onload = function () {
+            offctx.decodeAudioData(request.response).then(function (buffer) {
+                console.log("Sample rate of buffer: " + buffer.sampleRate);
+                bufferPlay = buffer;
+                playButton.prop('disabled', false);
+                playButton.trigger('click');
+                isDirectStart = false;
+            });
         }
+        request.send();
+        download = 1
+    } else {
+        if (this.dataset.playing === 'false') {
+            createSource();
+            source.start(0, currentTime);
+            startTime = context.currentTime;
+            clock = setInterval(function () {
+                getCurrentTime();
+            }, 30);
 
-        this.dataset.playing = 'true';
-        playButton.html('<span class="fas fa-pause"></span>');
-        $('#playerCursor').draggable('disable');
-    } else if (this.dataset.playing === 'true') {
-        pause = true;
-        seek = 0;
-        clearSource();
+            if (!getCookie('playStartTime')) {
+                document.cookie = "playStartTime=" + new Date().valueOf() / 1000;
+            }
+            this.dataset.playing = 'true';
+            playButton.html('<span class="fas fa-pause"></span>');
+            $('#playerCursor').draggable('disable');
+        } else if (this.dataset.playing === 'true') {
+            pause = true;
+            seek = 0;
+            clearSource();
+        }
     }
 });
 

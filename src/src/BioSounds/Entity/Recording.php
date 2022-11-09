@@ -23,6 +23,8 @@ class Recording
     const BITRATE = 'bitrate';
     const MD5_HASH = 'md5_hash';
     const DOI = "doi";
+    const Type = "type";
+    const Medium = "medium";
     //const LICENSE ="license";
     const LICENSE_ID = "license_id";
     const LICENSE_NAME = "license_name";
@@ -678,6 +680,79 @@ class Recording
         return $this;
     }
     /**
+     * @return null|string
+     */
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+
+    /**
+     * @param null|string $type
+     * @return Recording
+     */
+    public function setType(?string $type): Recording
+    {
+        $this->type = $type;
+        return $this;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getMedium(): ?string
+    {
+        return $this->medium;
+    }
+
+
+    /**
+     * @param null|string $medium
+     * @return Recording
+     */
+    public function setMedium(?string $medium): Recording
+    {
+        $this->medium = $medium;
+        return $this;
+    }
+    /**
+     * @return null|string
+     */
+    public function getNote(): ?string
+    {
+        return $this->note;
+    }
+
+
+    /**
+     * @param null|string $note
+     * @return Recording
+     */
+    public function setNote(?string $note): Recording
+    {
+        $this->note = $note;
+        return $this;
+    }
+    /**
+     * @return null|string
+     */
+    public function getUsername(): ?string
+    {
+        return $this->username;
+    }
+
+
+    /**
+     * @param null|string $username
+     * @return Recording
+     */
+    public function setUsername(?string $username): Recording
+    {
+        $this->username = $username;
+        return $this;
+    }
+    /**
      * @param array $values
      * @return $this
      */
@@ -700,9 +775,10 @@ class Recording
         $this->setDuration($values['duration']);
         $this->setDoi($values['doi']);
         $this->setSiteName($values['site_name']);
-        // $this->setLicense($values['license']);
+        $this->setLicense($values['license_id']);
         $this->setLicenseName($values['license_name']);
         $this->setUserId($values['user_id']);
+        $this->setUserName($values['user_name']);
         $this->setLabelId($values['label_id']);
         $this->setLabelName($values['label_name']);
         $this->setRealmName($values['realm']);
@@ -710,6 +786,9 @@ class Recording
         $this->setFunctionalGroupName($values['functionalGroup']);
         $this->setLongitude($values['longitude']);
         $this->setLatitude($values['latitude']);
+        $this->setType($values['type']);
+        $this->setMedium($values['medium']);
+        $this->setNote($values['note']);
         return $this;
     }
 }

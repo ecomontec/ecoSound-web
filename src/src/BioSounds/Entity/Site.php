@@ -11,9 +11,9 @@ class Site extends AbstractProvider
     const CREATION_DATE_TIME = "creation_date_time";
     const LONGITUDE = "longitude_WGS84_dd_dddd";
     const LATITUDE = "latitude_WGS84_dd_dddd";
+    const GADM0 = "gadm0";
     const GADM1 = "gadm1";
     const GADM2 = "gadm2";
-    const GADM3 = "gadm3";
 
     const CENTROID = 'centroid';
 
@@ -33,6 +33,11 @@ class Site extends AbstractProvider
     private $userId;
 
     /**
+     * @var int
+     */
+    private $projectId;
+
+    /**
      * @var string
      */
     private $creationDateTime;
@@ -50,17 +55,17 @@ class Site extends AbstractProvider
     /**
      * @var string
      */
+    private $gadm0;
+
+    /**
+     * @var string
+     */
     private $gadm1;
 
     /**
      * @var string
      */
     private $gadm2;
-
-    /**
-     * @var string
-     */
-    private $gadm3;
 
     /**
      * @var string
@@ -122,6 +127,24 @@ class Site extends AbstractProvider
     }
 
     /**
+     * @return int
+     */
+    public function getProjectId(): int
+    {
+        return $this->projectId;
+    }
+
+    /**
+     * @param int $projectId
+     * @return site
+     */
+    public function setProjectId(int $projectId): Site
+    {
+        $this->projectId = $projectId;
+        return $this;
+    }
+
+    /**
      * @return string
      */
     public function getCreationDateTime(): string
@@ -178,6 +201,24 @@ class Site extends AbstractProvider
     /**
      * @return string
      */
+    public function getGadm0(): ?string
+    {
+        return $this->gadm0;
+    }
+
+    /**
+     * @param string $gadm0
+     * @return site
+     */
+    public function setGadm0($gadm0 = NULL): Site
+    {
+        $this->gadm0 = $gadm0;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
     public function getGadm1(): ?string
     {
         return $this->gadm1;
@@ -208,24 +249,6 @@ class Site extends AbstractProvider
     public function setGadm2($gadm2 = NULL): Site
     {
         $this->gadm2 = $gadm2;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getGadm3(): ?string
-    {
-        return $this->gadm3;
-    }
-
-    /**
-     * @param string $gadm3
-     * @return site
-     */
-    public function setGadm3($gadm3 = NULL): Site
-    {
-        $this->gadm3 = $gadm3;
         return $this;
     }
     /**
@@ -371,13 +394,11 @@ class Site extends AbstractProvider
             $fields .= $key;
             $valuesNames .= ":" . $key;
             $values[":" . $key] = $value;
-            if (end($siteData) !== $value) {
-                $fields .= ", ";
-                $valuesNames .= ", ";
-            }
+            $fields .= ",";
+            $valuesNames .= ",";
         }
-        $fields .= " )";
-        $valuesNames .= " )";
+        $fields = substr($fields, 0, strlen($fields) - 1).' )';
+        $valuesNames = substr($valuesNames, 0, strlen($valuesNames) - 1).' )';
 
         $this->database->prepareQuery("INSERT INTO site $fields VALUES $valuesNames");
         return $this->database->executeInsert($values);
@@ -403,10 +424,9 @@ class Site extends AbstractProvider
         foreach ($siteData as $key => $value) {
             $fields .= $key . ' = :' . $key;
             $values[':' . $key] = $value;
-            if (end($siteData) !== $value) {
-                $fields .= ', ';
-            }
+            $fields .= ",";
         }
+        $fields = substr($fields, 0, strlen($fields) - 1);
 
         $values[':siteId'] = $steId;
         $this->database->prepareQuery("UPDATE site SET $fields WHERE site_id = :siteId");

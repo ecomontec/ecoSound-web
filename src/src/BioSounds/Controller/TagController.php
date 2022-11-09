@@ -80,10 +80,7 @@ class TagController extends BaseController
             throw new \Exception(ERROR_EMPTY_ID);
         }
 
-        if (!Auth::isUserAdmin()
-            && (!isset($_SESSION["user_col_permission"])
-                || empty($_SESSION["user_col_permission"]))
-        ) {
+        if (!Auth::isManage() && (!isset($_SESSION["user_col_permission"]) || empty($_SESSION["user_col_permission"]))) {
             throw new ForbiddenException();
         }
 
@@ -92,19 +89,20 @@ class TagController extends BaseController
         /* TAG USER CONTROL */
 
         $isUserTagOwner = $tag->getUser() == Auth::getUserLoggedID();
-        $isReviewGranted = Auth::isUserAdmin();
-        $displaySaveButton = Auth::isUserAdmin() || $isUserTagOwner ? '' : 'hidden';
+        $isReviewGranted = Auth::isUserLogged();
+        $displaySaveButton = Auth::isManage() || $isUserTagOwner ? '' : 'hidden';
 
-        if (!Auth::isUserAdmin() && !$isUserTagOwner) {
+        if (!Auth::isManage() && !$isUserTagOwner) {
             $permissionProvider = new Permission();
             $isReviewGranted = $permissionProvider->isReviewPermission($_SESSION["user_col_permission"]);
             $isViewGranted = $permissionProvider->isViewPermission($_SESSION["user_col_permission"]);
+            $isManageGranted = $permissionProvider->isManagePermission($_SESSION["user_col_permission"]);
 
-            if (!$isReviewGranted && !$isViewGranted) {
+            if (!$isReviewGranted && !$isViewGranted && !$isManageGranted) {
                 throw new ForbiddenException();
             }
 
-            $displaySaveButton = $isReviewGranted ? '' : 'hidden';
+            $displaySaveButton = $isReviewGranted || $isManageGranted ? '' : 'hidden';
         }
         /**********************/
         return json_encode([
@@ -112,10 +110,10 @@ class TagController extends BaseController
             'data' => $this->twig->render('tag/tag.html.twig', [
                 'tag' => $tag,
                 'recordingName' => isset($_POST['recording_name']) ? $_POST['recording_name'] : null,
-                'displayDeleteButton' => Auth::isUserAdmin() || $isUserTagOwner ? '' : 'hidden',
+                'displayDeleteButton' => Auth::isManage() || $isUserTagOwner ? '' : 'hidden',
                 'displaySaveButton' => $displaySaveButton,
-                'disableTagForm' => !Auth::isUserAdmin() && !$isUserTagOwner,
-                'reviewPanel' => $isReviewGranted ? (new TagReviewController($this->twig))->show($tagId) : '',
+                'disableTagForm' => !Auth::isManage() && !$isUserTagOwner,
+                'reviewPanel' => (new TagReviewController($this->twig))->show($tagId, $isReviewGranted || $isManageGranted),
                 'soundTypes' => (new SoundTypeProvider())->getList($tag->getTaxonClass(), $tag->getTaxonOrder()),
             ]),
         ]);

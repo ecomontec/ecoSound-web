@@ -66,7 +66,8 @@ class LabelAssociationProvider extends BaseProvider
      */
     public function delete(int $id): void
     {
-        $this->database->prepareQuery('DELETE FROM site WHERE ' . Label::PRIMARY_KEY . ' = :id');
+        $this->database->prepareQuery('DELETE FROM label_association WHERE recording_id = :id');
         $this->database->executeDelete([':id' => $id]);
     }
+
 }

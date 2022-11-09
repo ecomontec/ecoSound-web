@@ -448,6 +448,44 @@ class File
         return $this;
     }
 
+    /**
+     * @return null|string
+     */
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+
+    /**
+     * @param null|string $type
+     * @return File
+     */
+    public function setType(?string $type): File
+    {
+        $this->type = $type;
+        return $this;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getMedium(): ?string
+    {
+        return $this->medium;
+    }
+
+
+    /**
+     * @param null|string $medium
+     * @return File
+     */
+    public function setMedium(?string $medium): File
+    {
+        $this->medium = $medium;
+        return $this;
+    }
+
     public function getDatabaseValues(): array
     {
         return [
@@ -466,7 +504,9 @@ class File
             ':subtype' => $this->getSubtype(),
             ':rating' => $this->getRating(),
             ':doi' => $this->getDoi(),
-            ':license' => $this->getLicense()
+            ':license' => $this->getLicense(),
+            ':type' => $this->getType(),
+            ':medium' => $this->getMedium(),
         ];
     }
 }

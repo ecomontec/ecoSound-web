@@ -15,13 +15,14 @@ SET time_zone = "+00:00";
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
-
+DROP DATABASE `biosounds`;
 --
 -- Database: `biosounds`
 --
 CREATE DATABASE IF NOT EXISTS `biosounds` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 USE `biosounds`;
 
+SELECT concat('DROP TABLE IF EXISTS ', table_name, ';') FROM information_schema.tables WHERE table_schema = 'biosounds';
 -- --------------------------------------------------------
 
 --
@@ -92,6 +93,8 @@ CREATE TABLE `file_upload`
     `sound_type_id`  int(11) DEFAULT NULL,
     `subtype`        char(1) COLLATE utf8_unicode_ci               DEFAULT NULL,
     `rating`         enum('A','B','C','D','E') COLLATE utf8_unicode_ci DEFAULT NULL,
+    `type`           varchar(50) COLLATE utf8_unicode_ci           DEFAULT NULL,
+    `medium`         varchar(50) COLLATE utf8_unicode_ci           DEFAULT NULL,
     `user_id`        int(11) NOT NULL,
     `error`          text COLLATE utf8_unicode_ci                  DEFAULT NULL,
     `creation_date`  timestamp                            NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp ()
@@ -144,13 +147,15 @@ CREATE TABLE `play_log`
 --
 CREATE TABLE `project`
 (
-    `project_id`  int(11) NOT NULL,
+    `project_id`  int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `name`        varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-    `author`      varchar(80) COLLATE utf8_unicode_ci  NOT NULL,
-    `open`        int(1) NOT NULL,
-    `description` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+    `description` longblob,
+    `creator_id`  int(11) NOT NULL,
+    `creation_date` timestamp                          NOT NULL DEFAULT current_timestamp(),
     `url`         varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-    `picture_id`  int(11) DEFAULT NULL
+    `picture_id`  varchar(255) COLLATE utf8_unicode_ci,
+    `public`      tinyint(1) NOT NULL DEFAULT 1,
+    `active`     tinyint(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
@@ -178,6 +183,8 @@ CREATE TABLE `recording`
     `channel_num`   int(1) NOT NULL DEFAULT 1,
     `duration`      float                                NOT NULL,
     `note`          varchar(250) COLLATE utf8_unicode_ci          DEFAULT NULL,
+    `type`          varchar(50) COLLATE utf8_unicode_ci           DEFAULT NULL,
+    `medium`        varchar(50) COLLATE utf8_unicode_ci           DEFAULT NULL,
     `creation_date` timestamp                            NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -220,12 +227,13 @@ CREATE TABLE `site`
     `site_id`                 int(11) NOT NULL,
     `name`                    varchar(100) COLLATE utf8_unicode_ci NOT NULL,
     `user_id`                 int(11) NOT NULL,
+    `project_id`              int(11) NOT NULL,
     `creation_date_time`      datetime                             NOT NULL,
     `longitude_WGS84_dd_dddd` double     DEFAULT NULL,
     `latitude_WGS84_dd_dddd`  double     DEFAULT NULL,
+    `gadm0`                   varchar(100),
     `gadm1`                   varchar(100),
     `gadm2`                   varchar(100),
-    `gadm3`                   varchar(100),
     `realm_id`                int(11),
     `biome_id`                int(11),
     `functional_group_id`     int(11),
@@ -347,7 +355,8 @@ CREATE TABLE `user`
     `name`       varchar(100) COLLATE utf8_unicode_ci NOT NULL,
     `email`      varchar(100) COLLATE utf8_unicode_ci NOT NULL,
     `color`      varchar(7) COLLATE utf8_unicode_ci   NOT NULL DEFAULT '#FFFFFF',
-    `active`     tinyint(1) NOT NULL DEFAULT 1
+    `active`     tinyint(1) NOT NULL DEFAULT 1,
+    `fft`        int(11) NOT NULL DEFAULT 512
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
@@ -358,6 +367,16 @@ CREATE TABLE `user_permission`
     `user_id`       int(11) NOT NULL,
     `collection_id` int(11) NOT NULL,
     `permission_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Table structure for table `recording_fft`
+--
+CREATE TABLE `recording_fft`
+(
+    `user_id`       int(11) NOT NULL,
+    `recording_id`  int(11) NOT NULL,
+    `fft`           int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
@@ -435,12 +454,6 @@ ALTER TABLE `play_log`
     ADD PRIMARY KEY (`play_log_id`) USING BTREE,
   ADD KEY `recording_id` (`recording_id`),
   ADD KEY `user_id` (`user_id`);
-
---
--- Indexes for table `project`
---
-ALTER TABLE `project`
-    ADD PRIMARY KEY (`project_id`);
 
 --
 -- Indexes for table `recording`

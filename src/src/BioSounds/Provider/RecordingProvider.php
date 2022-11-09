@@ -63,7 +63,7 @@ class RecordingProvider extends BaseProvider
         ];
 
         $query = 'SELECT recording.recording_id, recording.name, filename, col_id, directory, sensor_id, recording.site_id, recording.user_id, ';
-        $query .= 'recording.sound_id, file_size, bitrate, channel_num, duration, site.name as site_name, license.name as license_name, ';
+        $query .= 'recording.sound_id,recording.type, recording.medium, recording.note, user.name AS user_name,  file_size, bitrate, channel_num, duration, site.name as site_name, license.license_id, license.name as license_name, ';
         $query .= 'lba.label_id, lba.name as label_name,e1.`name` as realm,e2.`name` as biome,e3.`name` as functionalGroup,site.longitude_WGS84_dd_dddd AS longitude,site.latitude_WGS84_dd_dddd AS latitude,';
         $query .= 'DATE_FORMAT(file_date, \'%Y-%m-%d\') AS file_date, ';
         $query .= 'DATE_FORMAT(file_time, \'%H:%i:%s\') AS file_time, sampling_rate, recording.doi FROM recording ';
@@ -76,6 +76,7 @@ class RecordingProvider extends BaseProvider
 
         //default view for site and license
         $query .= 'LEFT JOIN site ON ( recording.site_id) = ( site.site_id) ';
+        $query .= 'LEFT JOIN user ON ( recording.user_id) = ( user.user_id) ';
         $query .= 'LEFT JOIN license ON recording.license_id = license.license_id ';
         $query .= 'LEFT JOIN 
                 ( SELECT label.label_id, label.name, label_association.recording_id FROM label LEFT JOIN label_association 
@@ -88,7 +89,7 @@ class RecordingProvider extends BaseProvider
         $query .= " WHERE col_id = :colId ";
 
         if ($sites) {
-            $query .= " AND site.site_id in ($sites) ";
+            $query .= " AND (site.site_id in ($sites) OR site.site_id is null) ";
         }
 
         $query .= ' ORDER BY recording_id';
@@ -129,6 +130,24 @@ class RecordingProvider extends BaseProvider
         }
 
         return $result[0];
+    }
+    /**
+     * @param int $id
+     * @return array
+     * @throws \Exception
+     */
+    public function getByCollection(int $id): array
+    {
+        $query = 'SELECT *, (SELECT filename FROM spectrogram ';
+        $query .= 'WHERE ' . Recording::TABLE_NAME . '.' . Recording::ID . ' = spectrogram.recording_id ';
+        $query .= 'AND type = \'spectrogram-player\') AS ImageFile ';
+        $query .= 'FROM ' . Recording::TABLE_NAME . ' ';
+        $query .= 'WHERE ' . Recording::TABLE_NAME . '.' . Recording::COL_ID . ' = :id';
+
+        $this->database->prepareQuery($query);
+        $result = $this->database->executeSelect([':id' => $id]);
+
+        return $result;
     }
 
     /**
@@ -176,6 +195,17 @@ class RecordingProvider extends BaseProvider
             return null;
         }
         return $result[0];
+    }
+
+    public function getNullCount(int $id): int
+    {
+        $query = 'SELECT * FROM recording WHERE col_id = :id AND site_id IS NULL';
+
+
+        $this->database->prepareQuery($query);
+        $result = $this->database->executeSelect([':id' => $id]);
+
+        return count($result);
     }
 
     /**

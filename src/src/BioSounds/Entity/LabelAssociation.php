@@ -99,13 +99,11 @@ class LabelAssociation extends BaseProvider
             $fields .= $key;
             $valuesNames .= ":" . $key;
             $values[":" . $key] = $value;
-            if (end($siteData) !== $value) {
-                $fields .= ", ";
-                $valuesNames .= ", ";
-            }
+            $fields .= ",";
+            $valuesNames .= ",";
         }
-        $fields .= " )";
-        $valuesNames .= " )";
+        $fields = substr($fields, 0, strlen($fields) - 1).' )';
+        $valuesNames = substr($valuesNames, 0, strlen($valuesNames) - 1).' )';
 
         $this->database->prepareQuery("INSERT INTO label_association $fields VALUES $valuesNames");
         return $this->database->executeInsert($values);

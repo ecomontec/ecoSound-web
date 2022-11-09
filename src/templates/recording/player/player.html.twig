@@ -1,16 +1,17 @@
 <div class="row">
-    <div class="col-6-auto">
+    <div id="player_box" class="col-9">
         <div id="myCanvas" class="canvas">
             {% if isUserLogged %}
                 {% include 'recording/player/tagBoxes.html.twig' with {'tags': player.tags, 'show_tags': player.isShowTags} %}
             {% endif %}
             <div id="playerCursor" class="player-line"></div>
-            <img src="{{ player.imageFilePath }}" id="cropbox"/>
+            <img class="player_img" src="{{ player.imageFilePath }}" id="cropbox"/>
         </div>
         <div class="row no-gutters mt-1">
             <div class="col-auto mr-auto">
                 <div>
-                    <button id="play" class="btn btn-link" data-playing="false" role="switch" aria-checked="false" disabled>
+                    <button id="play_hidden" style="display: none"></button>
+                    <button id="play" class="btn btn-link" data-playing="false" role="switch" aria-checked="false">
                         <i class="fas fa-play"></i>
                     </button>
                     <button id="stop" class="btn btn-link">
@@ -19,8 +20,7 @@
                     <h8>
                         <span id="time_sec_div">{{ player.minTime > 0 ? player.minTime|round: 0 }}</span>
                         /
-                        <span id="duration">{{ (player.maxTime - player.minTime|round) }}
-                            s</span>
+                        <span id="duration">{{ (player.maxTime - player.minTime|round) }}s</span>
                     </h8>
                 </div>
             </div>
@@ -41,7 +41,6 @@
                     <input type="hidden" name="maxTimeView" value="{{ player.maxTime }}">
                     <input type="hidden" name="minFreqView" value="{{ player.minFrequency }}">
                     <input type="hidden" name="maxFreqView" value="{{ player.maxFrequency }}">
-
                     {% include 'recording/player/timeBoxes.html.twig' with {
                         'minTime': player.minTime,
                         'maxTime': player.maxTime,
@@ -53,6 +52,11 @@
                         <a href="#" id="exportCoordinates" class="btn btn-link" title="Export coordinates to clipboard">
                             <i class="fas fa-clipboard"></i>
                         </a>
+                        {% if isManage %}
+                            <a href="{{ baseUrl }}/recording/maad" id="exportMaxF" class="btn btn-link" title="Export frequency of maximum energy to clipboard">
+                                <i class="fas fa-wave-square"></i>
+                            </a>
+                        {% endif %}
                         <button id="zoom-submit" class="btn btn-link" type="button" title="Zoom" disabled>
                             <i class="fas fa-search-plus"></i>
                         </button>
@@ -120,36 +124,6 @@
                     {% endfor %}
                 {% endif %}
                 <a href="{{ baseUrl }}/recording/maad" class="js-maad-modal btn btn-outline-primary">Submit</a>
-                <script>
-                    $(".js-maad-modal").click(function (e) {
-                        let data = []
-                        let param = ''
-                        {% if indexs[0].param is not null and indexs[0].param != '' %}
-                        {% for p in indexs[0].param|split('!') %}
-                        if ($('#{{ p|split('|')[0] }}').val() != '') {
-                            param = param + '{{ p|split('|')[0] }}' + '?' + $('#{{ p|split('|')[0] }}').val() + '@'
-                        }
-                        {% endfor %}
-                        {% endif %}
-                        data = {
-                            'minTime': $('input[name=minTimeView]').val(),
-                            'maxTime': $('input[name=maxTimeView]').val(),
-                            'minFrequency': $('input[name=minFreqView]').val(),
-                            'maxFrequency': $('input[name=maxFreqView]').val(),
-                            'collection_id': $('input[name=collection_id]').val(),
-                            'recording_id': $('input[name=recording_id]').val(),
-                            'filename': $('input[name=filename]').val(),
-                            'recording_directory': $('input[name=recording_directory]').val(),
-                            'index_id': $('#maad').val(),
-                            'index': $('#maad').find("option:selected").text(),
-                            'channel_num': $('input[name=channel_num]').val(),
-                            'channel': $('input[name=channel]').val(),
-                            'param': param,
-                        };
-                        requestModal(this.href, data, true);
-                        e.preventDefault();
-                    });
-                </script>
             </div>
         </div>
         <script>
@@ -170,6 +144,34 @@
                 }
                 {% endfor %}
             })
+            $(".js-maad-modal").click(function (e) {
+                let data = []
+                let param = ''
+                {% if indexs[0].param is not null and indexs[0].param != '' %}
+                {% for p in indexs[0].param|split('!') %}
+                if ($('#{{ p|split('|')[0] }}').val() != '') {
+                    param = param + '{{ p|split('|')[0] }}' + '?' + $('#{{ p|split('|')[0] }}').val() + '@'
+                }
+                {% endfor %}
+                {% endif %}
+                data = {
+                    'minTime': $('input[name=minTimeView]').val(),
+                    'maxTime': $('input[name=maxTimeView]').val(),
+                    'minFrequency': $('input[name=minFreqView]').val(),
+                    'maxFrequency': $('input[name=maxFreqView]').val(),
+                    'collection_id': $('input[name=collection_id]').val(),
+                    'recording_id': $('input[name=recording_id]').val(),
+                    'filename': soundFilePath,
+                    'recording_directory': $('input[name=recording_directory]').val(),
+                    'index_id': $('#maad').val(),
+                    'index': $('#maad').find("option:selected").text(),
+                    'channel_num': $('input[name=channel_num]').val(),
+                    'channel': $('input[name=channel]').val(),
+                    'param': param,
+                };
+                requestModal(this.href, data, true);
+                e.preventDefault();
+            });
         </script>
     {% endif %}
     {# {% include 'recording/player/frequencyScale.html.twig' %} #}

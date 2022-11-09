@@ -19,7 +19,7 @@ class FileController
      */
     public function upload(string $uploadDirectory)
     {
-		if (!Auth::isUserAdmin()){
+		if (!Auth::isManage()){
 			throw new ForbiddenException();
 		}
 

@@ -10,11 +10,45 @@ class User extends BaseProvider
     const ID = "user_id";
     const NAME = "username";
     const FULL_NAME = "name";
-    const EMAIL = "email";
-    const ROLE = "role_id";
-    const ACTIVE = "active";
     const PASSWORD = "password";
     const TAG_COLOR = "color";
+
+    /**
+     * @return int
+     */
+    public function getFft(): int
+    {
+        return $this->fft;
+    }
+
+    /**
+     * @param int $fft
+     * @return User
+     */
+    public function setFft(int $fft): User
+    {
+        $this->fft = $fft;
+        return $this;
+    }
+
+    /**
+     * @param string $user_id
+     * @return string|null
+     * @throws \Exception
+     */
+    public function getFftValue(string $user_id = null): ?string
+    {
+        if (empty($user_id)) {
+            return null;
+        }
+
+        $this->database->prepareQuery('SELECT fft FROM user WHERE user_id = :user_id');
+        if (empty($result = $this->database->executeSelect([":user_id" => $user_id]))) {
+            return null;
+        }
+
+        return $result[0]["fft"];
+    }
 
     /**
      * @param string $username
@@ -148,6 +182,41 @@ class User extends BaseProvider
     }
 
     /**
+     * @param int $userId
+     * @return bool
+     * @throws \Exception
+     */
+    public function isManage(int $userId): bool
+    {
+        $this->database->prepareQuery(
+            'SELECT count(*) AS result FROM user u LEFT JOIN user_permission p ON u.user_id = p.user_id WHERE p.user_id = :userId AND permission_id = 4'
+        );
+
+        if (empty($result = $this->database->executeSelect([":userId" => $userId]))) {
+            throw new \Exception("User $userId doesn't exist.");
+        }
+        return ($result[0]["result"] ? true : false);
+    }
+
+    /**
+     * @param int $userId
+     * @return int
+     * @throws \Exception
+     */
+    public function getPermission(int $userId): int
+    {
+        $this->database->prepareQuery(
+            'SELECT MAX(c.) AS result FROM user ' .
+            'LEFT JOIN role ON user.role_id = role.role_id WHERE user_id = :userId'
+        );
+
+        if (empty($result = $this->database->executeSelect([":userId" => $userId, ":roleName" => Role::ADMIN_ROLE]))) {
+            throw new \Exception("User $userId doesn't exist.");
+        }
+        return ($result[0]["result"] == 0 ? true : false);
+    }
+
+    /**
      * @return array
      * @throws \Exception
      */
@@ -163,7 +232,23 @@ class User extends BaseProvider
      */
     public function getList(): array
     {
-        $this->database->prepareQuery('SELECT * FROM user');
+        $this->database->prepareQuery('SELECT * FROM user ORDER BY `name`');
+        return $this->database->executeSelect();
+    }
+
+    public function getName(): array
+    {
+        $this->database->prepareQuery('SELECT user_id,
+       `name` FROM user ORDER BY `name`');
+        return $this->database->executeSelect();
+    }
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    public function getUser(): array
+    {
+        $this->database->prepareQuery('SELECT * FROM user WHERE role_id = 2');
         return $this->database->executeSelect();
     }
 
@@ -212,13 +297,11 @@ class User extends BaseProvider
             $fields .= $key;
             $valuesNames .= ":" . $key;
             $values[":" . $key] = $value;
-            if (end($userData) !== $value) {
-                $fields .= ", ";
-                $valuesNames .= ", ";
-            }
+            $fields .= ",";
+            $valuesNames .= ",";
         }
-        $fields .= " )";
-        $valuesNames .= " )";
+        $fields = substr($fields, 0, strlen($fields) - 1) . ' )';
+        $valuesNames = substr($valuesNames, 0, strlen($valuesNames) - 1) . ' )';
 
         $this->database->prepareQuery("INSERT INTO user $fields VALUES $valuesNames");
         return $this->database->executeInsert($values);
@@ -243,10 +326,9 @@ class User extends BaseProvider
         foreach ($userData as $key => $value) {
             $fields .= $key . ' = :' . $key;
             $values[':' . $key] = $value;
-            if (end($userData) !== $value) {
-                $fields .= ', ';
-            }
+            $fields .= ",";
         }
+        $fields = substr($fields, 0, strlen($fields) - 1);
         $values[':userId'] = $userId;
         $this->database->prepareQuery("UPDATE user SET $fields WHERE user_id = :userId");
         return $this->database->executeUpdate($values);
@@ -265,5 +347,35 @@ class User extends BaseProvider
 
         $this->database->prepareQuery("UPDATE user SET password = :nePasswd WHERE user_id = :userId");
         return $this->database->executeUpdate($values);
+    }
+
+    /**
+     * @param array $names
+     * @return array|int
+     * @throws \Exception
+     */
+    public function getInputList(array $names)
+    {
+        $query = 'SELECT * FROM ' . self::TABLE_NAME;
+
+        $fields = [];
+        if (isset($names)) {
+            if (count($names) == 1) {
+                $query .= ' WHERE name LIKE :name ';
+                $fields = [':name' => "%$names[0]%"];
+            } else {
+                $query .= 'WHERE (name LIKE :name1 AND name LIKE :name2) ';
+                $fields = [
+                    ':name1' => "%$names[0]%",
+                    ':name2' => "%$names[1]%"
+                ];
+            }
+        }
+        $query .= 'ORDER BY name ASC LIMIT 0,15';
+
+        $this->database->prepareQuery($query);
+        $result = $this->database->executeSelect($fields);
+
+        return $result;
     }
 }

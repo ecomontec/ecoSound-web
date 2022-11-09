@@ -11,6 +11,7 @@ use BioSounds\Controller\Administration\SettingController as SettingController;
 use BioSounds\Controller\Administration\RecordingController as RecordingController;
 use BioSounds\Controller\Administration\SiteController as SiteController;
 use BioSounds\Controller\Administration\TagController as TagController;
+use BioSounds\Controller\Administration\ProjectController as ProjectController;
 
 class AdminController extends BaseController
 {
@@ -20,10 +21,6 @@ class AdminController extends BaseController
      */
     public function create()
     {
-        if (!Auth::isUserAdmin()) {
-            throw new ForbiddenException();
-        }
-
         return $this->settings();
     }
 
@@ -52,17 +49,33 @@ class AdminController extends BaseController
     /**
      * @throws \Exception
      */
-    public function collections(int $page = 1)
+    public function collections(int $id = null)
     {
-        return (new CollectionController($this->twig))->show();
+        return (new CollectionController($this->twig))->show($id);
     }
 
     /**
      * @throws \Exception
      */
-    public function collectionMgr(?string $action = null)
+    public function collectionMgr(?string $action = null, int $id = null)
     {
-        return (new CollectionController($this->twig))->$action();
+        return (new CollectionController($this->twig))->$action($id);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function projects()
+    {
+        return (new ProjectController($this->twig))->show();
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function projectMgr(?string $action = null, int $id = null)
+    {
+        return (new ProjectController($this->twig))->$action($id);
     }
 
     /**
@@ -70,7 +83,7 @@ class AdminController extends BaseController
      * @return false|string
      * @throws \Exception
      */
-    public function users(int $pageId = 1)
+    public function users()
     {
         return (new UserController($this->twig))->show();
     }
@@ -120,9 +133,9 @@ class AdminController extends BaseController
      * @param int|null $id
      * @return mixed
      */
-    public function siteManager(string $action, int $id = null)
+    public function siteManager(string $action, int $id = 0, string $str = '0')
     {
-        return (new SiteController($this->twig))->$action($id);
+        return (new SiteController($this->twig))->$action($id, $str);
     }
 
     /**

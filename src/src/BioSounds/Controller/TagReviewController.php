@@ -14,43 +14,37 @@ class TagReviewController extends BaseController
      * @return false|string
      * @throws \Exception
      */
-	public function show(int $tagId)
-    {
-		if (!Auth::isUserLogged()) {
-			throw new NotAuthenticatedException();
-		}
-
-		if (empty($tagId)) {
-			throw new \Exception(ERROR_EMPTY_ID);
-		}
-
-		if(!Auth::isUserAdmin() &&
-            (!isset($_SESSION['user_col_permission']) ||
-                empty($_SESSION['user_col_permission']))
-        ) {
-			throw new ForbiddenException();
-		}
-
-		$tagReview = new TagReview();
-
-        return $this->twig->render('tag/tagReview.html.twig', [
-            'disableReviewForm' => !Auth::isUserAdmin() && $tagReview->hasUserReviewed(Auth::getUserLoggedID(), $tagId),
-            'reviews' => $tagReview->getListByTag($tagId),
-            'tagId' => $tagId,
-        ]);
-	}
-
-    /**
-     * @return array|bool|int|null
-     * @throws \Exception
-     */
-	public function save()
+    public function show(int $tagId, bool $isReviewGranted)
     {
         if (!Auth::isUserLogged()) {
             throw new NotAuthenticatedException();
         }
 
-        if(!Auth::isUserAdmin() &&
+        if (empty($tagId)) {
+            throw new \Exception(ERROR_EMPTY_ID);
+        }
+
+        $tagReview = new TagReview();
+
+        return $this->twig->render('tag/tagReview.html.twig', [
+            'disableReviewForm' => !Auth::isUserAdmin() && $tagReview->hasUserReviewed(Auth::getUserLoggedID(), $tagId),
+            'reviews' => $tagReview->getListByTag($tagId),
+            'tagId' => $tagId,
+            'isReviewGranted' => $isReviewGranted
+        ]);
+    }
+
+    /**
+     * @return array|bool|int|null
+     * @throws \Exception
+     */
+    public function save()
+    {
+        if (!Auth::isUserLogged()) {
+            throw new NotAuthenticatedException();
+        }
+
+        if (!Auth::isUserAdmin() &&
             (!isset($_SESSION['user_col_permission']) ||
                 empty($_SESSION['user_col_permission']))
         ) {
@@ -73,5 +67,5 @@ class TagReviewController extends BaseController
             'errorCode' => 0,
             'message' => 'Tag review saved successfully.',
         ]);
-	}
+    }
 }

@@ -7,7 +7,12 @@
                 <nav aria-label="breadcrumb">
                     <ul class="breadcrumb bg-white">
                         <li class="breadcrumb-item" aria-current="page">
-                            <a href="{{ baseUrl }}/collection/index">Collections</a>
+                            <a href="{{ baseUrl }}/project/show">Projects</a>
+                        </li>
+                        <li class="breadcrumb-item" aria-current="page">
+                            <a href="{{ baseUrl }}/collection/index/{{ project.id }}">
+                                {{ project.name }}
+                            </a>
                         </li>
                         <li class="breadcrumb-item" aria-current="page">
                             <a href="{{ baseUrl }}/collection/show/{{ player.recording.col_id }}/gallery">
@@ -18,32 +23,35 @@
                     </ul>
                 </nav>
             </div>
-            <div class="col-2 mt-1 text-right">
+            <div class="col-2 text-right">
                 <div class="dropdown">
-                    <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
-                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-cog"></i>
                         Utilities
                     </button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item" href="{{ player.filePath }}" download>
-                            <i class='fas fa-file-audio mr-1'></i>
-                            Download Recording</a>
-                        <a class="dropdown-item" href="{{ player.imageFilePath }}" download>
-                            <i class='fas fa-file-image mr-1'></i>
-                            Download Spectrogram</a>
-                        <a class="dropdown-item js-open-modal"
-                           href="{{ baseUrl }}/recording/details/{{ player.recording.recording_id }}">
-                            <i class='fas fa-info-circle mr-1'></i>
-                            File Info</a>
+                        <a class="dropdown-item" href="{{ player.filePath }}" download><i class='fas fa-file-audio mr-1'></i>Download Recording</a>
+                        <a class="dropdown-item" href="{{ player.imageFilePath }}" download><i class='fas fa-file-image mr-1'></i>Download Spectrogram</a>
+                        <a class="dropdown-item js-open-modal" href="{{ baseUrl }}/recording/details/{{ player.recording.recording_id }}"><i class='fas fa-info-circle mr-1'></i>File Info</a>
+                        {% if isUserLogged %}
+                            <form id="fftForm" class="form-inline ml-4">
+                                <div><i class="fas fa-file-medical-alt mr-1"></i>FFT Size</div>
+                                <input type="hidden" name="recording_id" value="{{ player.recording.recording_id }}"/>
+                                <input type="hidden" name="user_id" value="{{ user_id }}"/>
+                                <select id="fft" name="fft" class="form-control form-control-sm ml-2">
+                                    {% for fft in ffts %}
+                                        <option {{ fft == fftsize  ? 'selected' : '' }}>{{ fft }}</option>
+                                    {% endfor %}
+                                </select>
+                            </form>
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
         <hr>
-
         <div class="row mb-5">
-            <div class="col-2 ml-auto mr-5 text-center recording-navigation">
+            <div class="col-2 text-center recording-navigation">
                 <ul class="nav flex-column nav-pills nav-fill">
                     {% if isUserLogged %}
                         <li class="nav-item">
@@ -52,7 +60,8 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link js-toggle-tags" href="#" title="Toggle tags" data-show={{ player.isShowTags }}>
+                            <a class="nav-link js-toggle-tags" href="#" title="Toggle tags"
+                               data-show={{ player.isShowTags }}>
                                 {% if player.isShowTags %}
                                     <i class='fas fa-eye-slash'></i>
                                 {% else %}
@@ -61,12 +70,6 @@
                             </a>
                         </li>
                     {% endif %}
-                    <li class="nav-item">
-                        <a class="nav-link readingMode"
-                           href="{{ baseUrl }}/recording/show/{{ player.recording.recording_id }}" title="Reading mode">
-                            <i class="fas fa-compact-disc"></i>
-                        </a>
-                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#" id="shift-left" title="Shift left">
                             <i class="fas fa-arrow-left"></i>
@@ -78,6 +81,28 @@
                         </a>
                     </li>
                 </ul>
+                <div class="dropdown">
+                    <a class="nav-link" href="#" title="Reading mode" data-toggle="dropdown">
+                        <i class="fas fa-compact-disc"></i>
+                    </a>
+                    <div class="dropdown-menu">
+                        <small class="ml-2">Zoom into and play back:</small>
+                        <div class="form-inline">
+                            <a class="btn readingMode" id="btn-bats" href="{{ baseUrl }}/recording/show/{{ player.recording.recording_id }}" style="width: 40px"><small class="fas fa-play"></small></a>
+                            <div class="inline">Bats<small>(90 px/s)</small></div>
+                        </div>
+                        <div class="form-inline">
+                            <a class="btn readingMode" id="btn-birds" href="{{ baseUrl }}/recording/show/{{ player.recording.recording_id }}" style="width: 40px"><small class="fas fa-play"></small></a>
+                            <div> Birds<small>(15 px/s)</small></div>
+                        </div>
+                        <div class="form-inline">
+                            <a class="btn readingMode" href="{{ baseUrl }}/recording/show/{{ player.recording.recording_id }}" style="width: 40px"><small class="fas fa-play"></small></a>
+                            <div>Custom</div>
+                            <input class="form-control form-control-sm" id="reading_input" type="number" value="90" style="width: 50px;" required>
+                            <small class="ml-2 mr-2">px/s</small>
+                        </div>
+                    </div>
+                </div>
                 <hr>
                 {% if player.recording.channel_num > 1 %}
                     <label class="{{ player.channel == 1 ? 'active' : '' }}">
@@ -95,15 +120,12 @@
                     <label>Mono File</label>
                 {% endif %}
                 <hr>
-                <a href="#" class="viewport" title="Overall view"><img
-                            src="{{ baseUrl }}/{{ player.viewPortFilePath }}"></a>
+                <a href="#" class="viewport" title="Overall view"><img style="max-width: 150px" id="thumbnail" src="{{ baseUrl }}/{{ player.viewPortFilePath }}"></a>
                 <hr>
-                <input id="playback-rate" class="custom-range js-playback-rate-control" type="range" min="0.05" max="1"
-                       step="0.01" value="1">
-                <label for="playback-rate">Speed:
-                    <span class="playback-rate-value">1.0</span>x</label>
+                <input id="playback-rate" class="custom-range js-playback-rate-control" type="range" min="0.05" max="1" step="0.01" value="1">
+                <label for="playback-rate">Speed:<span class="playback-rate-value">1.0</span>x</label>
             </div>
-            <div class="col-9 mr-auto">
+            <div class="col-10">
                 {% include 'recording/player/player.html.twig' %}
             </div>
         </div>
@@ -171,17 +193,22 @@
 
             $('#reclabelform').submit(function (e) {
                 e.preventDefault();
-                postRequest('{{ baseUrl }}/recording/update', $(this).serialize(), false, false, function () {
+                postRequest('{{ baseUrl }}/recording/update', new FormData($(this)[0]), false, false, function () {
                 });
             });
-
+            $('#fft').on('change', function (e) {
+                e.preventDefault();
+                postRequest('{{ baseUrl }}/recordingFft/save', new FormData($("#fftForm")[0]), false, false, function () {
+                    location.reload();
+                });
+            });
             $(document).on('click', '#newLabelButton', function () {
                 $('#newLabelForm').submit();
             });
 
             $(document).on('submit', '#newLabelForm', function (e) {
                 e.preventDefault();
-                postRequest('{{ baseUrl }}/recording/saveLabel', $(this).serialize(), false, false, function () {
+                postRequest('{{ baseUrl }}/recording/saveLabel', new FormData($(this)[0]), false, false, function () {
                     location.reload();
                 });
             });
@@ -193,7 +220,7 @@
 
             $(document).on('submit', '#maadResultForm', function (e) {
                 e.preventDefault();
-                postRequest('{{ baseUrl }}/recording/saveMaadResult', $(this).serialize(), false, false, function () {
+                postRequest('{{ baseUrl }}/recording/saveMaadResult', new FormData($(this)[0]), false, false, function () {
                     $('#modal-div').modal('hide');
                 });
             });

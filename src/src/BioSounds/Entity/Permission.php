@@ -9,6 +9,7 @@ class Permission extends BaseProvider
     const ACCESS = 'Access';
     const VIEW = 'View';
     const REVIEW = 'Review';
+    const MANAGE = 'Manage';
 
     /**
      * @param int $permissionId
@@ -40,6 +41,20 @@ class Permission extends BaseProvider
         return $result[0]['name'] == self::VIEW ? true : false;
     }
 
+    /**
+     * @param int $permissionId
+     * @return bool
+     * @throws \Exception
+     */
+    public function isManagePermission(int $permissionId): bool
+    {
+        $this->database->prepareQuery('SELECT name FROM permission WHERE permission_id = :permissionId');
+        if (empty($result = $this->database->executeSelect([':permissionId' => $permissionId]))) {
+            return false;
+        }
+
+        return $result[0]['name'] == self::MANAGE ? true : false;
+    }
 
     /**
      * @return int|null
@@ -77,6 +92,20 @@ class Permission extends BaseProvider
     {
         $this->database->prepareQuery('SELECT permission_id FROM permission WHERE name = :name');
         if (empty($result = $this->database->executeSelect([':name' => self::REVIEW]))) {
+            return null;
+        }
+
+        return $result[0]['permission_id'];
+    }
+
+    /**
+     * @return int|null
+     * @throws \Exception
+     */
+    public function getManageId(): ?int
+    {
+        $this->database->prepareQuery('SELECT permission_id FROM permission WHERE name = :name');
+        if (empty($result = $this->database->executeSelect([':name' => self::MANAGE]))) {
             return null;
         }
 

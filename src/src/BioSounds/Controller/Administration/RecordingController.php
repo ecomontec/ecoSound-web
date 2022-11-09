@@ -6,14 +6,16 @@ use BioSounds\Controller\BaseController;
 use BioSounds\Entity\License;
 use BioSounds\Entity\Recording;
 use BioSounds\Entity\Sensor;
+use BioSounds\Entity\User;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\IndexLogProvider;
+use BioSounds\Provider\LabelAssociationProvider;
 use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\SpectrogramProvider;
 use BioSounds\Provider\SiteProvider;
 use BioSounds\Provider\SoundProvider;
-use BioSounds\Provider\SoundTypeProvider;
+use BioSounds\Provider\TagProvider;
 use BioSounds\Utils\Auth;
 
 class RecordingController extends BaseController
@@ -28,36 +30,40 @@ class RecordingController extends BaseController
      */
     public function show(int $cId = null)
     {
-        if (!Auth::isUserAdmin()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
 
         // colId proceesing
-        if (isset($_POST['colId'])) {
-            $colId = $_POST['colId'];
+        if (isset($_GET['colId'])) {
+            $colId = $_GET['colId'];
         }
         if (!empty($cId)) {
             $colId = $cId;
         }
 
-        $collections = (new CollectionProvider())->getList();
+        $collections = Auth::isUserAdmin() ? (new CollectionProvider())->getList() : (new CollectionProvider())->getManageList(Auth::getUserID());
         if (empty($colId)) {
             $colId = $collections[0]->getId();
         }
 
+        $collection = (new CollectionProvider())->get($colId);
         $recordingProvider = new RecordingProvider();
+        $userProducer = new User();
 
         $recordings = $recordingProvider->getListByCollection(
             $colId,
             (Auth::getUserID() == null) ? 0 : Auth::getUserID()
         );
 
-        $userSites = (new SiteProvider())->getBasicList();
+        $projectId = $collection->getProject();
+        $userSites = (new SiteProvider())->getBasicList($projectId);
 
         return $this->twig->render('administration/recordings.html.twig', [
             'colId' => $colId,
             'recordings' => $recordings,
             'sites' => $userSites,
+            'users' => $userProducer->getName(),
             'sensors' => (new Sensor())->getBasicList(),
             'license' => (new License())->getBasicList(),
         ]);
@@ -69,36 +75,39 @@ class RecordingController extends BaseController
      */
     public function save()
     {
-        if (!Auth::isUserAdmin()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
 
         $data = [];
-        foreach ($_POST as $key => $value) {
-            if (strpos($key, "_")) {
-                $type = substr($key, strripos($key, "_") + 1, strlen($key));
-                $key = substr($key, 0, strripos($key, "_"));
-                switch ($type) {
-                    case "date":
-                        $data[$key] =  $value;
-                        break;
-                    case "time":
-                        $data[$key] =  $value;
-                        break;
-                    case "text":
-                        $data[$key] =  $value;
-                        break;
-                    case 'select-one':
-                        $data[$key] =  filter_var($value, FILTER_SANITIZE_NUMBER_INT);
-                        break;
-                    case "hidden":
-                        $data[$key] =  filter_var($value, FILTER_SANITIZE_NUMBER_INT);
-                        break;
-                }
-            } else
-                $data[$key] =  $value;
-        }
 
+        foreach ($_POST as $key => $value) {
+            if ($key != "_text" && $key != "_hidden") {
+                if (strpos($key, "_")) {
+                    $type = substr($key, strripos($key, "_") + 1, strlen($key));
+                    $key = substr($key, 0, strripos($key, "_"));
+                    switch ($type) {
+                        case "date":
+                            $data[$key] = $value;
+                            break;
+                        case "time":
+                            $data[$key] = $value;
+                            break;
+                        case "text":
+                            $data[$key] = $value;
+                            break;
+                        case 'select-one':
+                            $data[$key] = $value;
+                            break;
+                        case "hidden":
+                            $data[$key] = filter_var($value, FILTER_SANITIZE_NUMBER_INT);
+                            break;
+                    }
+                } else
+                    $data[$key] = $value;
+            }
+        }
+        $data["site_id"] = $data["site_id"] == 0 ? null : $data["site_id"];
         if (isset($data["itemID"])) {
             (new RecordingProvider())->update($data);
 
@@ -116,7 +125,7 @@ class RecordingController extends BaseController
      */
     public function delete(int $id)
     {
-        if (!Auth::isUserAdmin()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
 
@@ -126,6 +135,7 @@ class RecordingController extends BaseController
 
         $recordingProvider = new RecordingProvider();
         $indexLogProvider = new indexLogProvider();
+        $labelAssociationProvider= new LabelAssociationProvider();
         $recording = $recordingProvider->get($id);
 
         $fileName = $recording[Recording::FILENAME];
@@ -148,6 +158,7 @@ class RecordingController extends BaseController
             unlink($soundsDir . $wavFileName);
         }
 
+        $labelAssociationProvider->delete($id);
         $recordingProvider->delete($id);
         $indexLogProvider->deleteByRecording($id);
 
@@ -159,5 +170,11 @@ class RecordingController extends BaseController
             'errorCode' => 0,
             'message' => 'Recording deleted successfully.',
         ]);
+    }
+
+    public function count($id)
+    {
+        $count = count((new tagProvider())->getList($id));
+        return $count;
     }
 }

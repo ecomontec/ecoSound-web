@@ -4,6 +4,7 @@ namespace BioSounds\Controller;
 
 use BioSounds\Entity\IndexLog;
 use BioSounds\Entity\Recording;
+use BioSounds\Entity\RecordingFft;
 use BioSounds\Entity\UserPermission;
 use BioSounds\Entity\Permission;
 use BioSounds\Entity\User;
@@ -16,6 +17,7 @@ use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\IndexTypeProvider;
 use BioSounds\Provider\LabelAssociationProvider;
 use BioSounds\Provider\LabelProvider;
+use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\TagProvider;
 use BioSounds\Service\RecordingService;
@@ -31,7 +33,6 @@ class RecordingController extends BaseController
     const IMAGE_SOUND_PATH = 'sounds/images/%s/%s/%s';
 
     private $recordingId;
-    private $fftSize;
     private $recordingService;
 
     /**
@@ -50,7 +51,13 @@ class RecordingController extends BaseController
         $this->recordingPresenter = new RecordingPresenter();
         $this->recordingService = new RecordingService();
         $this->recordingPresenter->setSpectrogramHeight(SPECTROGRAM_HEIGHT);
-        $this->fftSize = Utils::getSetting('fft');
+        $user = new User();
+        if ($user->getFftValue(Auth::getUserID())) {
+            $fftSize = $user->getFftValue(Auth::getUserID());
+        } elseif (Utils::getSetting('fft')) {
+            $fftSize = Utils::getSetting('fft');
+        }
+        $this->fftSize = $fftSize;
     }
 
     /**
@@ -64,12 +71,12 @@ class RecordingController extends BaseController
         if (empty($id)) {
             throw new \Exception(ERROR_EMPTY_ID);
         }
-
+        $recording = new RecordingFft();
+        if ($recording->getUserRecordingFft(Auth::getUserID(), $id)) {
+            $this->fftSize = $recording->getUserRecordingFft(Auth::getUserID(), $id);
+        }
         $this->recordingId = $id;
-
         $recordingData = (new RecordingProvider())->get($this->recordingId);
-
-        $collectionId = $recordingData[Recording::COL_ID];
 
         //TODO: Remove when recording is an Entity. Add to it.
         $recordingData['collection'] = (new CollectionProvider())->get($recordingData[Recording::COL_ID]);
@@ -90,6 +97,7 @@ class RecordingController extends BaseController
         }
         $this->setCanvas($recordingData);
         return $this->twig->render('recording/recording.html.twig', [
+            'project' => (new ProjectProvider())->get($this->recordingPresenter->getRecording()['collection']->getProject()),
             'player' => $this->recordingPresenter,
             'sound' => $this->recordingPresenter->getRecording(),
             'frequency_data' => $this->recordingPresenter->getFrequencyScaleData(),
@@ -97,6 +105,8 @@ class RecordingController extends BaseController
             'labels' => Auth::isUserLogged() ? (new LabelProvider())->getBasicList(Auth::getUserLoggedID()) : '',
             'myLabel' => Auth::isUserLogged() ? (new LabelAssociationProvider())->getUserLabel($id, Auth::getUserLoggedID()) : '',
             'indexs' => Auth::isUserLogged() ? (new IndexTypeProvider())->getList() : '',
+            'ffts' => [4096, 2048, 1024, 512, 256, 128,],
+            'fftsize' => $this->fftSize,
         ]);
     }
 
@@ -193,9 +203,12 @@ class RecordingController extends BaseController
         // Spectrogram Image Width
         $spectrogramWidth = WINDOW_WIDTH - (SPECTROGRAM_LEFT + SPECTROGRAM_RIGHT);
         $this->recordingPresenter->setSpectrogramWidth($spectrogramWidth);
-
+        $recording = new RecordingFft();
+        if ($recording->getUserRecordingFft(Auth::getUserID(), $recordingData[Recording::ID])) {
+            $recording_fft = $recording->getUserRecordingFft(Auth::getUserID(), $recordingData[Recording::ID]);
+        }
         $selectedFileName = $fileName[0] . '_' . $minFrequency . '-' . $maxFrequency . '_' . $minTime . '-'
-            . $maxTime . '_' . $this->fftSize . '_' . $this->recordingPresenter->getChannel();
+            . $maxTime . '_' . $this->fft . '_' . $this->recordingPresenter->getChannel();
 
         if (!file_exists($originalWavFilePath)) {
             Utils::generateWavFile($originalSoundFilePath);
@@ -263,10 +276,12 @@ class RecordingController extends BaseController
                 }
             }
         }
+
         $this->recordingService->generateSpectrogramImage(
             $spectrogramImagePath,
             Utils::generateWavFile($zoomedFilePath),
             $maxFrequency,
+            $recordingData[Recording::ID],
             $this->recordingPresenter->getChannel(),
             $minFrequency
         );
@@ -289,6 +304,7 @@ class RecordingController extends BaseController
             $this->recordingPresenter->getChannel(),
             $originalWavFilePath
         );
+
         //$this->setViewPort($samplingRate, $this->recordingPresenter->getChannel(), $originalWavFilePath);
     }
 
@@ -379,9 +395,10 @@ class RecordingController extends BaseController
             $permission = new Permission();
             $reviewPermission = $permission->isReviewPermission($perm);
             $viewPermission = $permission->isViewPermission($perm);
+            $managePermission = $permission->isManagePermission($perm);
         }
 
-        if (Auth::isUserAdmin() || $reviewPermission || $viewPermission) {
+        if (Auth::isUserAdmin() || $reviewPermission || $viewPermission || $managePermission) {
             $tags = $tagProvider->getList($this->recordingId);
         } else {
             $tags = $tagProvider->getList($this->recordingId, Auth::getUserLoggedID());
@@ -495,14 +512,15 @@ class RecordingController extends BaseController
             $data[$key] = $value;
         }
         $str = 'python3 ' . ABSOLUTE_DIR . 'bin/getMaad.py' .
-            ' -p ' . ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . '/' . $data['recording_directory'] . '/' .
-            ' -f ' . explode('.', $data['filename'])[0] .
-            ' --it ' . $data['index'] .
+            ' -f ' . ABSOLUTE_DIR . 'tmp/' . implode('.', explode('.', explode('/tmp/', $data['filename'])[1], -1)) .
             ' --ch ' . ($data['channel'] == 2 ? 'right' : 'left') .
             ' --mint ' . $data['minTime'] .
             ' --maxt ' . $data['maxTime'] .
             ' --minf ' . $data['minFrequency'] .
             ' --maxf ' . $data['maxFrequency'];
+        if ($data['index'] != '') {
+            $str = $str . ' --it ' . $data['index'];
+        }
         if ($data['param'] != '') {
             $str = $str . ' --pa ' . substr($data['param'], 0, -1);
         }
@@ -516,20 +534,24 @@ class RecordingController extends BaseController
             } else {
                 $channel = 'Left';
             }
-            return json_encode([
-                'errorCode' => 0,
-                'data' => $this->twig->render('recording/player/maadResult.html.twig', [
-                    'title' => $data['index'],
-                    'result' => $result,
-                    'recording_id' => $data['recording_id'],
-                    'index_id' => $data['index_id'],
-                    'minTime' => $data['minTime'],
-                    'maxTime' => $data['maxTime'],
-                    'minFrequency' => $data['minFrequency'],
-                    'maxFrequency' => $data['maxFrequency'],
-                    'param' => substr('Channel?' . $channel . '@' . $data['param'], 0, -1),
-                ])
-            ]);
+            if ($data['index'] == '') {
+                return $result;
+            } else {
+                return json_encode([
+                    'errorCode' => 0,
+                    'data' => $this->twig->render('recording/player/maadResult.html.twig', [
+                        'title' => $data['index'],
+                        'result' => $result,
+                        'recording_id' => $data['recording_id'],
+                        'index_id' => $data['index_id'],
+                        'minTime' => $data['minTime'],
+                        'maxTime' => $data['maxTime'],
+                        'minFrequency' => $data['minFrequency'],
+                        'maxFrequency' => $data['maxFrequency'],
+                        'param' => substr('Channel?' . $channel . '@' . $data['param'], 0, -1),
+                    ])
+                ]);
+            }
         } else {
             return json_encode([
                 'errorCode' => 0,
@@ -540,6 +562,7 @@ class RecordingController extends BaseController
             ]);
         }
     }
+
 
     public function saveLabel()
     {

@@ -1,0 +1,57 @@
+<div class="modal fade" id="modal-div" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form id="projectEditForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">Description</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <div class="projectEdit">{% autoescape false %}{{ project.description }}{% endautoescape %}</div>
+                        <input id="description{{ project.id }}" type="hidden" name="description" value="{{ project.description }}">
+                        <input id="project{{ project.id }}" type="hidden" name="projectId" value="{{ project.id }}">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="saveButton" type="submit" class="btn btn-outline-primary">
+                        <i class="fas fa-save"></i>
+                        Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    var quillEdit = new Quill('.projectEdit', {
+        modules: {
+            'toolbar': [
+                ['bold', 'italic', 'underline', 'strike'],
+                [{'color': []}, {'background': []}],
+                [{'script': 'super'}, {'script': 'sub'}],
+                ['link', 'image', 'video'],
+                ['clean']
+            ],
+        },
+        theme: 'snow',
+    });
+
+    quillEdit.on('text-change', function () {
+        $("#description{{ project.id }}").val($(".ql-editor")[1].innerHTML)
+    });
+
+    $('#projectEditForm').submit(function (e) {
+        e.preventDefault();
+        if (this.checkValidity() === false) {
+            e.stopPropagation();
+        } else {
+            postRequest('{{ baseUrl }}/api/admin/projectMgr/save', new FormData($(this)[0]), false, false, function () {
+                location.reload();
+            });
+        }
+        this.classList.add('was-validated');
+    });
+</script>

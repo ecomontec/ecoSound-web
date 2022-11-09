@@ -90,6 +90,18 @@
                     My Label:
                     <small>{{ item.recording.labelName }}</small>
                 </h6>
+                {% if item.recording.type is not empty %}
+                    <h6>
+                        Recording Type:
+                        <small>{{ item.recording.type }}</small>
+                    </h6>
+                {% endif %}
+                {% if item.recording.medium is not empty %}
+                    <h6>
+                        Medium:
+                        <small>{{ item.recording.medium }}</small>
+                    </h6>
+                {% endif %}
                 {% if item.recording.realmName is not empty %}
                     <h6>
                         Realm:
@@ -114,7 +126,7 @@
                 <a href="{{ baseUrl }}/recording/show/{{ item.recording.id }}" title="BioSounds player">
                     <img class="small-player-image" src="{{ baseUrl }}/{{ item.playerImage }}">
                 </a>
-                <audio id="player" data-id="{{ item.recording.id }}" controls>
+                <audio id="player" data-id="{{ item.recording.id }}" controls preload="none">
                     <source src="{{ baseUrl }}/{{ item.playerRecording }}"/>
                 </audio>
             </td>
@@ -131,6 +143,7 @@
             "StateDuration": -1,
             "order": [[0, 'asc']],
             "destroy": true,
+            "info": false,
         });
         $('#recordingTable').show()
     });

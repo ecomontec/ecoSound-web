@@ -5,21 +5,35 @@
     {% include 'administration/siteCreate.html.twig' %}
     <div class="card mb-3" id="siteList">
         <div class="card-header border-light bg-white text-right">
-            <button id="siteFormButton" class="btn btn-outline-primary btn-sm mt-2" type="button" data-toggle="collapse" data-target="#siteFormSection" aria-expanded="false" aria-controls="siteFormSection">
-                <i class="fas fa-plus"></i>
-                Add Site
-            </button>
+            <div class="row">
+                <div class="col-auto mr-auto mt-2">
+                    <form id="projectForm" class="form-inline" action="{{ baseUrl }}/admin/sites">
+                        <label for="projectId">Project</label>
+                        <select id="projectId" name="projectId" class="form-control form-control-sm ml-3">
+                            {% for project in projects %}
+                                <option value="{{ project.id }}" {{ project.id == projectId ? 'selected' }}>
+                                    {{ project.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
+                <button id="siteFormButton" class="btn btn-outline-primary btn-sm mt-2" type="button" data-toggle="collapse" data-target="#siteFormSection" aria-expanded="false" aria-controls="siteFormSection">
+                    <i class="fas fa-plus"></i>
+                    Add Site
+                </button>
+            </div>
         </div>
-        <table id="siteTable" style="display:none">
-            <thead class="form-control-sm table-borderless">
+        <table id="siteTable" style="display:none;white-space: nowrap;">
+            <thead class="table-borderless">
             <tr>
                 <th>#</th>
                 <th>Name</th>
                 <th>Longitude</th>
                 <th>Latitude</th>
+                <th>GADM 0</th>
                 <th>GADM 1</th>
                 <th>GADM 2</th>
-                <th>GADM 3</th>
                 <th>Realm</th>
                 <th>Biome</th>
                 <th>Functional Group</th>
@@ -49,14 +63,20 @@
                             Please provide a latitude value, from -90 to 90.
                         </div>
                     </td>
+                    <td data-search="{{ site.gadm0 }}" data-order="{{ site.gadm0 }}">
+                        <select id="gadm0_{{ site.id }}" name="gadm0" style="width:120px;" class="form-control form-control-sm">
+                            <option value="{{ site.gadm0 }}" selected>{{ site.gadm0 }}</option>
+                        </select>
+                    </td>
                     <td data-search="{{ site.gadm1 }}" data-order="{{ site.gadm1 }}">
-                        <input type="text" class="form-control form-control-sm" style="width:120px;" name="gadm1" value="{{ site.gadm1 }}">
+                        <select id="gadm1_{{ site.id }}" name="gadm1" style="width:120px;" class="form-control form-control-sm">
+                            <option value="{{ site.gadm1 }}" selected>{{ site.gadm1 }}</option>
+                        </select>
                     </td>
                     <td data-search="{{ site.gadm2 }}" data-order="{{ site.gadm2 }}">
-                        <input type="text" class="form-control form-control-sm" style="width:120px;" name="gadm2" value="{{ site.gadm2 }}">
-                    </td>
-                    <td data-search="{{ site.gadm3 }}" data-order="{{ site.gadm3 }}">
-                        <input type="text" class="form-control form-control-sm" style="width:120px;" name="gadm3" value="{{ site.gadm3 }}">
+                        <select id="gadm2_{{ site.id }}" name="gadm2" style="width:120px;" class="form-control form-control-sm">
+                            <option value="{{ site.gadm2 }}" selected>{{ site.gadm2 }}</option>
+                        </select>
                     </td>
                     <td data-search="{{ site.realm }}" data-order="{{ site.realm }}">
                         <select id="realm_{{ site.id }}" name="realm_id" style="width:120px;" class="form-control form-control-sm">
@@ -101,18 +121,20 @@
         $(function () {
             var arr ={{ explores|json_encode|raw }};
             $(document).ready(function () {
+                $('#siteTable').show()
                 $('#siteTable').DataTable({
                     "pageLength": 8,
                     "lengthChange": false,
                     "stateSave": true,
                     "StateDuration": -1,
                     "order": [[0, 'asc']],
-                    "columnDefs":[{
-                        "orderable":false,
-                        "targets":[11]
-                    }]
+                    "columnDefs": [{
+                        "orderable": false,
+                        "targets": [11]
+                    }],
+                    "bAutoWidth": false,
+                    "scrollX": true,
                 });
-                $('#siteTable').show()
             });
             'use strict';
             $("select[name='realm_id']").on('change', function () {
@@ -185,35 +207,171 @@
                     $("#functionalGroup").append("<option value=" + functionalGroups[key][0] + ">" + functionalGroups[key][1] + "</option>");
                 }
             });
-            /* Save site list */
-            $('.js-site-list').on('change', 'input, select, textarea', function () {
-                if (this.checkValidity() === false) { // this.style.border = "1px solid red";
-                    let tdLongDiv = $(this).parent().children("div");
-                    tdLongDiv.addClass("d-block");
-                } else {
-                    let tdLongDiv = $(this).parent().children("div");
-                    tdLongDiv.removeClass("d-block");
-                    saveFormList($(this), 'api/admin/siteManager/save');
-                    var table = $('#siteTable').DataTable()
-                    var tr = $(this).closest("tr")
-                    table.rows(tr).invalidate()
-                }
 
+            /* GADM */
+            $("select[name='gadm0']").on('change', function () {
+                var id = $(this).attr('id').split('_')[1]
+                $("#gadm1_" + id).empty()
+                $("#gadm2_" + id).empty()
+                $("#gadm1_" + id).append("<option value='' selected></option>");
+                $("#gadm2_" + id).append("<option value='' selected></option>");
+                $("#gadm1_" + id).attr('disabled', true)
+                $("#gadm2_" + id).attr('disabled', true)
+                $.ajax({
+                    url: "{{ baseUrl }}/admin/siteManager/gadm/1/" + $(this).val(),
+                    success: function (data) {
+                        if (data == '[]') {
+                            $("#gadm1_" + id).attr('disabled', true)
+                            $("#gadm2_" + id).attr('disabled', true)
+                        } else if (typeof (data) != 'undefined') {
+                            $("#gadm1_" + id).attr('disabled', false)
+                            data = JSON.parse(data)
+                            for (var key in data) {
+                                $("#gadm1_" + id).append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
+                            }
+                        }
+                    },
+                })
             });
-
-
-            $(document).on('click', '#saveButton', function () {
-                $('#siteEdit').submit();
+            $("select[name='gadm1']").on('change', function () {
+                var id = $(this).attr('id').split('_')[1]
+                $("#gadm2_" + id).empty()
+                $("#gadm2_" + id).append("<option value='' selected></option>");
+                $("#gadm2_" + id).attr('disabled', true)
+                $.ajax({
+                    url: "{{ baseUrl }}/admin/siteManager/gadm/2/" + $(this).val(),
+                    success: function (data) {
+                        if (data == '[]') {
+                            $("#gadm2_" + id).attr('disabled', true)
+                        } else if (typeof (data) != 'undefined') {
+                            $("#gadm2_" + id).attr('disabled', false)
+                            data = JSON.parse(data)
+                            for (var key in data) {
+                                $("#gadm2_" + id).append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
+                            }
+                        }
+                    },
+                })
             });
-
-            $('.js-site-delete').click(function (e) {
-                if (!confirm('Are you sure you want to delete this site?')) {
-                    return false;
+            $("select[name='gadm0']").on('mouseenter ', function () {
+                if ($(this)[0].options.length < 2) {
+                    var id = $(this).attr('id').split('_')[1]
+                    if ($('#gadm0_' + id).val() != '') {
+                        $("#gadm0_" + id).prepend("<option></option>")
+                    }
+                    $("#gadm0_" + id).attr('disabled', true)
+                    $.ajax({
+                        url: "{{ baseUrl }}/admin/siteManager/gadm/0/0",
+                        success: function (data) {
+                            if (typeof (data) != 'undefined') {
+                                $("#gadm0_" + id).attr('disabled', false)
+                                data = JSON.parse(data)
+                                for (var key in data) {
+                                    if ($('#gadm0_' + id).val() != data[key]['name']) {
+                                        $("#gadm0_" + id).append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
+                                    }
+                                }
+                            }
+                        },
+                    })
                 }
-
-                let row = $(this).parents("tr");
-
-                deleteRequest('{{ baseUrl }}/api/admin/siteManager/delete/' + $(this).data('id'), [], false, false, row.remove());
+            });
+            $("select[name='gadm1']").on('mouseenter ', function () {
+                if ($(this)[0].options.length < 2) {
+                    var id = $(this).attr('id').split('_')[1]
+                    if ($('#gadm0_' + id).val() != '') {
+                        if ($('#gadm1_' + id).val() != '') {
+                            $("#gadm1_" + id).prepend("<option></option>")
+                        }
+                        $("#gadm1_" + id).attr('disabled', true)
+                        $.ajax({
+                            url: "{{ baseUrl }}/admin/siteManager/gadm/1/" + $('#gadm0_' + id).val(),
+                            success: function (data) {
+                                if (data == '[]') {
+                                    $("#gadm1_" + id).attr('disabled', true)
+                                    $("#gadm2_" + id).attr('disabled', true)
+                                } else if (typeof (data) != 'undefined') {
+                                    $("#gadm1_" + id).attr('disabled', false)
+                                    data = JSON.parse(data)
+                                    for (var key in data) {
+                                        if ($('#gadm1_' + id).val() != data[key]['name']) {
+                                            $("#gadm1_" + id).append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
+                                        }
+                                    }
+                                }
+                            },
+                        })
+                    }
+                }
+            });
+            $("select[name='gadm2']").on('mouseenter ', function () {
+                if ($(this)[0].options.length < 2) {
+                    var id = $(this).attr('id').split('_')[1]
+                    if ($('#gadm1_' + id).val() != '') {
+                        if ($('#gadm2_' + id).val() != '') {
+                            $("#gadm2_" + id).prepend("<option></option>")
+                        }
+                        $("#gadm2_" + id).attr('disabled', true)
+                        $.ajax({
+                            url: "{{ baseUrl }}/admin/siteManager/gadm/2/" + $('#gadm1_' + id).val(),
+                            success: function (data) {
+                                if (data == '[]') {
+                                    $("#gadm2_" + id).attr('disabled', true)
+                                } else if (typeof (data) != 'undefined') {
+                                    $("#gadm2_" + id).attr('disabled', false)
+                                    data = JSON.parse(data)
+                                    for (var key in data) {
+                                        if ($('#gadm2_' + id).val() != data[key]['name']) {
+                                            $("#gadm2_" + id).append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
+                                        }
+                                    }
+                                }
+                            },
+                        })
+                    }
+                }
+            });
+            $("#gadm0").on('change', function () {
+                $("#gadm1").empty()
+                $("#gadm2").empty()
+                $("#gadm1").append("<option value='' selected></option>");
+                $("#gadm2").append("<option value='' selected></option>");
+                $("#gadm1").attr('disabled', true)
+                $("#gadm2").attr('disabled', true)
+                $.ajax({
+                    url: "{{ baseUrl }}/admin/siteManager/gadm/1/" + $(this).val(),
+                    success: function (data) {
+                        if (data == '[]') {
+                            $("#gadm1").attr('disabled', true)
+                            $("#gadm2").attr('disabled', true)
+                        } else if (typeof (data) != 'undefined') {
+                            $("#gadm1").attr('disabled', false)
+                            data = JSON.parse(data)
+                            for (var key in data) {
+                                $("#gadm1").append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
+                            }
+                        }
+                    },
+                })
+            });
+            $("#gadm1").on('change', function () {
+                $("#gadm2").empty()
+                $("#gadm2").append("<option value='' selected></option>");
+                $("#gadm2").attr('disabled', true)
+                $.ajax({
+                    url: "{{ baseUrl }}/admin/siteManager/gadm/2/" + $(this).val(),
+                    success: function (data) {
+                        if (data == '[]') {
+                            $("#gadm2").attr('disabled', true)
+                        } else if (typeof (data) != 'undefined') {
+                            $("#gadm2").attr('disabled', false)
+                            data = JSON.parse(data)
+                            for (var key in data) {
+                                $("#gadm2").append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
+                            }
+                        }
+                    },
+                })
             });
 
             $('#longitude').on('change', function () {
@@ -253,13 +411,44 @@
                 if (this.checkValidity() === false) {
                     e.stopPropagation();
                 } else {
-                    postRequest('{{ baseUrl }}/api/admin/siteManager/save', $(this).serialize(), false, false, function () {
+                    postRequest('{{ baseUrl }}/api/admin/siteManager/save', new FormData($(this)[0]), false, false, function () {
                         location.reload();
                     });
                 }
                 this.classList.add('was-validated');
             });
+            $('#projectId').change(function () {
+                $("#projectForm").submit();
+            });
 
+            /* Save site list */
+            $('.js-site-list').on('change', 'input, select, textarea', function () {
+                if (this.checkValidity() === false) { // this.style.border = "1px solid red";
+                    let tdLongDiv = $(this).parent().children("div");
+                    tdLongDiv.addClass("d-block");
+                } else {
+                    let tdLongDiv = $(this).parent().children("div");
+                    tdLongDiv.removeClass("d-block");
+                    saveFormList($(this), 'api/admin/siteManager/save');
+                    var table = $('#siteTable').DataTable()
+                    var tr = $(this).closest("tr")
+                    table.rows(tr).invalidate()
+                }
+            });
+
+            $(document).on('click', '#saveButton', function () {
+                $('#siteEdit').submit();
+            });
+
+            $('.js-site-delete').click(function (e) {
+                if (!confirm('Are you sure you want to delete this site?')) {
+                    return false;
+                }
+
+                let row = $(this).parents("tr");
+
+                deleteRequest('{{ baseUrl }}/api/admin/siteManager/delete/' + $(this).data('id'), [], false, false, row.remove());
+            });
         });
     </script>
 {% endblock %}

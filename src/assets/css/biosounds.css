@@ -152,7 +152,6 @@ div .inline {
 .canvas {
     position: relative;
     left: 0;
-    display: inline-block;
 }
 
 .player-line {

@@ -35,7 +35,7 @@ $("#file-uploader").pluploadQueue({
 $('#uploadForm')
     .submit(function(e){
         $('#save_button').toggleDisabled();
-        let values = $(this).serialize();
+        let values = new FormData($(this)[0]);
         values["colID"] = $("#collection").val();
 
         postRequest(

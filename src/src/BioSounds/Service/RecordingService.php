@@ -30,7 +30,7 @@ class RecordingService
      * @return RecordingListPresenter[]
      * @throws \Exception
      */
-    public function getListWithImages(int $colId, int $userId,  string $sites = null): array
+    public function getListWithImages(int $colId, int $userId, string $sites = null): array
     {
         $result = [];
         $list = (new RecordingProvider())->getListByCollection($colId, $userId, $sites);
@@ -220,9 +220,10 @@ class RecordingService
     public function generateSpectrogramImage(
         string $imagePath,
         string $wavFilePath,
-        int    $maxFrequency,
-        int    $channel,
-        int    $minFrequency
+        int $maxFrequency,
+        int $recording_id,
+        int $channel,
+        int $minFrequency
     )
     {
         try {
@@ -230,6 +231,7 @@ class RecordingService
                 $imagePath,
                 $wavFilePath,
                 $maxFrequency,
+                $recording_id,
                 $channel,
                 $minFrequency
             );
@@ -247,9 +249,9 @@ class RecordingService
      */
     public function setViewPort(
         RecordingPresenter $recordingPresenter,
-        int                $samplingRate,
-        int                $channel,
-        string             $fileName
+        int $samplingRate,
+        int $channel,
+        string $fileName
     )
     {
         $recordingPresenter->setViewPortFilePath($this->imageService->generateViewPort(
@@ -261,7 +263,8 @@ class RecordingService
             $fileName,
             $channel,
             $recordingPresenter->getDuration(),
-            'tmp/' . $_SESSION['random_id'] . '/'
+            'tmp/' . $_SESSION['random_id'] . '/',
+            $recordingPresenter->getRecording()['recording_id']
         ));
     }
 }

@@ -34,15 +34,15 @@ class UserPermission extends BaseProvider
      * @return array
      * @throws \Exception
      */
-    public function getColPermissionsByUser(int $userId): array
+    public function getColPermissionsByProject(int $projectId): array
     {
         $this->database->prepareQuery(
             'SELECT collection.collection_id, collection.name, user_permission.permission_id,collection.public ' .
             'FROM collection LEFT JOIN user_permission ON user_permission.collection_id = ' .
-            Collection::TABLE_NAME . '.' . Collection::PRIMARY_KEY . ' AND user_permission.user_id = :userId ORDER BY ' .
+            Collection::TABLE_NAME . '.' . Collection::PRIMARY_KEY . ' AND collection.project_id = :projectId ORDER BY ' .
             Collection::TABLE_NAME . '.' . Collection::PRIMARY_KEY
         );
-        return $this->database->executeSelect([':userId' => $userId]);
+        return $this->database->executeSelect([':projectId' => $projectId]);
     }
 
     /**
@@ -64,13 +64,11 @@ class UserPermission extends BaseProvider
             $fields .= $key;
             $valuesNames .= ':' . $key;
             $values[':' . $key] = $value;
-            if (end($permissionData) !== $value) {
-                $fields .= ', ';
-                $valuesNames .= ', ';
-            }
+            $fields .= ",";
+            $valuesNames .= ",";
         }
-        $fields .= ' )';
-        $valuesNames .= ' )';
+        $fields = substr($fields, 0, strlen($fields) - 1) . ' )';
+        $valuesNames = substr($valuesNames, 0, strlen($valuesNames) - 1) . ' )';
         $this->database->prepareQuery("INSERT INTO user_permission $fields VALUES $valuesNames");
         return $this->database->executeInsert($values);
     }
@@ -85,5 +83,27 @@ class UserPermission extends BaseProvider
     {
         $this->database->prepareQuery('DELETE FROM user_permission WHERE user_id = :userId AND collection_id =:colId');
         return $this->database->executeDelete([':userId' => $userId, ':colId' => $colId]);
+    }
+
+    /**
+     * @param int $colId
+     * @return int|null
+     * @throws \Exception
+     */
+    public function deleteByCollection(int $colId): ?int
+    {
+        $this->database->prepareQuery('DELETE FROM user_permission WHERE collection_id =:colId');
+        return $this->database->executeDelete([':colId' => $colId]);
+    }
+
+    public function updataPermission($collection_id)
+    {
+        $this->database->prepareQuery("SELECT user_id, MAX(permission_id) AS permission_id FROM user_permission WHERE collection_id IN (SELECT collection_id FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = $collection_id)) GROUP BY user_id");
+        $result = $this->database->executeSelect();
+        foreach ($result as $r) {
+            $r['permission_id'] = $r['permission_id'] == 4 ? 4 : 3;
+            $this->database->prepareQuery("INSERT INTO user_permission (user_id, collection_id, permission_id) VALUES (" . $r['user_id'] . "," . $collection_id . "," . $r['permission_id'] . ")");
+            $this->database->executeInsert();
+        }
     }
 }

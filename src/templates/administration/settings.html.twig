@@ -1,49 +1,49 @@
 {% extends 'administration/admin.html.twig' %}
 
 {% block admin_content %}
-	<div class="card">
-		<div class="card-body">
-			<form action="{{ baseUrl }}/admin/settings/save" class="js-async-form">
-				<input type="hidden" name="settings" value="top">
-				<input type="hidden" name="settings" value="image">
+    <div class="card">
+        <div class="card-body">
+            <form action="{{ baseUrl }}/admin/settings/save" class="js-async-form" id="settingForm">
+                <input type="hidden" name="settings" value="top">
+                <input type="hidden" name="settings" value="image">
+                {% if is_admin %}
+                    <div class="form-group input-group-sm">
+                        <label for="project_name">Project Name:</label>
+                        <input id="project_name" type="text" name="projectName" value="{{ project_name }}" class="form-control" autofocus>
+                    </div>
 
-				<div class="form-group input-group-sm">
-					<label for="project_name">Project Name:</label>
-					<input id="project_name" type="text" name="projectName" value="{{ project_name }}" class="form-control" autofocus>
-				</div>
+                    <div class="form-group input-group-sm">
+                        <label for="project_description">Short description of the project:</label>
+                        <input id="project_description" type="text" name="projectDescription" value="{{ project_description }}" class="form-control">
+                    </div>
 
-				<div class="form-group input-group-sm">
-					<label for="project_description">Short description of the project:</label>
-					<input id="project_description" type="text" name="projectDescription" value="{{ project_description }}" class="form-control">
-				</div>
+                    <div class="form-group input-group-sm">
+                        <label for="files_license">Retain copyright or share with a <a href="http://creativecommons.org/licenses/" target=_blank>Creative Commons</a> license?</label>
+                        <div class="form-inline input-group-sm">
+                            <select id="files_license" name="filesLicense" class="form-control">
+                                {% for license in licenses %}
+                                    <option value="{{ license.value }}" {{ license.value == projectLicense ? 'selected' : '' }}>
+                                        {{ license.description }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <input type="text" class="form-control" name="filesLicenseDetail" maxlength="250" value="{{ license_detail }}">
+                        </div>
+                    </div>
+                {% endif %}
+                <div class="form-group input-group-sm">
+                    <label for="fft">FFT window size</label>
+                    <select id="fft" name="fft" class="form-control">
+                        {% for fft in ffts %}
+                            <option {{ fft == user ? 'selected' : '' }}>{{ fft }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-				<div class="form-group input-group-sm">
-					<label for="files_license">Retain copyright or share with a <a href="http://creativecommons.org/licenses/" target=_blank>Creative Commons</a> license?</label>
-					<div class="form-inline input-group-sm">
-						<select id="files_license" name="filesLicense" class="form-control">
-							{% for license in licenses %}
-								<option value="{{ license.value }}" {{ license.value == projectLicense ? 'selected' : '' }}>
-									{{ license.description }}
-								</option>
-							{% endfor %}
-						</select>
-						<input type="text" class="form-control" name="filesLicenseDetail" maxlength="250" value="{{ license_detail }}">
-					</div>
-				</div>
-
-				<div class="form-group input-group-sm">
-					<label for="fft">FFT window size</label>
-					<select id="fft" name="fft" class="form-control">
-						{% for fft in ffts %}
-							<option {{ fft == projectFft ? 'selected' : '' }}>{{ fft }}</option>
-						{% endfor %}
-					</select>
-				</div>
-
-				<div class="form-group text-right">
-					<button type="submit" class="btn btn-outline-primary"><i class="fas fa-save"></i> Save</button>
-				</div>
-			</form>
-		</div>
-	</div>
+                <div class="form-group text-right">
+                    <button type="submit" class="btn btn-outline-primary"><i class="fas fa-save"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
 {% endblock %}

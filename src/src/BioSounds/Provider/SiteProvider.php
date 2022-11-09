@@ -14,9 +14,9 @@ class SiteProvider extends BaseProvider
      * @return Site[]
      * @throws \Exception
      */
-    public function getBasicList(): array
+    public function getBasicList($project_id): array
     {
-        return $this->getList(Auth::getUserID(), 'site_id');
+        return $this->getList($project_id);
     }
 
     /**
@@ -24,7 +24,7 @@ class SiteProvider extends BaseProvider
      * @return Site[]
      * @throws \Exception
      */
-    public function getList(int $userId, string $order = 'name'): array
+    public function getList(int $projectId, string $order = 'name'): array
     {
         $data = [];
         $this->database->prepareQuery(
@@ -32,7 +32,7 @@ class SiteProvider extends BaseProvider
                     LEFT JOIN explore e1 ON e1.explore_id = s.realm_id 
                     LEFT JOIN explore e2 ON e2.explore_id = s.biome_id 
                     LEFT JOIN explore e3 ON e3.explore_id = s.functional_group_id 
-                    where user_id = $userId ORDER BY $order"
+                    where project_id = $projectId ORDER BY $order"
         );
 
         $result = $this->database->executeSelect();
@@ -42,12 +42,13 @@ class SiteProvider extends BaseProvider
                 ->setId($item['site_id'])
                 ->setName($item['name'])
                 ->setUserId($item['user_id'])
+                ->setProjectId($item['project_id'])
                 ->setCreationDateTime($item['creation_date_time'])
                 ->setLongitude($item['longitude_WGS84_dd_dddd'])
                 ->setLatitude($item['latitude_WGS84_dd_dddd'])
+                ->setGadm0($item['gadm0'])
                 ->setGadm1($item['gadm1'])
                 ->setGadm2($item['gadm2'])
-                ->setGadm3($item['gadm3'])
                 ->setRealmId($item['realm_id'])
                 ->setBiomeId($item['biome_id'])
                 ->setFunctionalGroupId($item['functional_group_id'])
@@ -61,34 +62,46 @@ class SiteProvider extends BaseProvider
     }
 
     /**
-     * @param int $siteId, $userId
+     * @param string $siteId
      * @return Site|null
      * @throws \Exception
      */
-    public function get(int $siteId, int $userId): ?Site
+    public function get(string $siteId): ?Site
     {
-        $this->database->prepareQuery('SELECT * FROM site WHERE site_id = :siteId and user_id = :userId');
+        $this->database->prepareQuery('SELECT * FROM site WHERE site_id = :siteId');
 
-        if (empty($result = $this->database->executeSelect([':siteId' => $siteId, ':userId' => $userId]))) {
-            throw new NotFoundException($siteId, $userId);
+        if (empty($result = $this->database->executeSelect([':siteId' => $siteId]))) {
+            return null;
         }
-
         $result = $result[0];
-
         return (new Site())
             ->setId($result['site_id'])
             ->setName($result['name'])
             ->setUserId($result['user_id'])
+            ->setProjectId($result['project_id'])
             ->setCreationDateTime($result['creation_date_time'])
             ->setLongitude($result['longitude_WGS84_dd_dddd'])
             ->setLatitude($result['latitude_WGS84_dd_dddd'])
+            ->setGadm0($result['gadm0'])
             ->setGadm1($result['gadm1'])
             ->setGadm2($result['gadm2'])
-            ->setGadm3($result['gadm3'])
             ->setRealm($result['realm_id'])
             ->setBiome($result['biome_id'])
             ->setFunctionalGroup($result['functional_group_id'])
             ->setCentroId($result['centroid']);
+    }
+
+    public function getGamds(int $level = 0, string $pid = '0')
+    {
+        $this->database->prepareQuery('SELECT `name` FROM adm_' . $level . ' WHERE pid = "' . $pid . '" GROUP BY `name` ORDER BY `name`');
+        $data = $this->database->executeSelect();
+        return $data;
+    }
+
+    public function getGamd(int $level, string $name)
+    {
+        $this->database->prepareQuery('SELECT x,y FROM adm_' . $level . ' WHERE name = "' . $name . '"');
+        return $this->database->executeSelect()[0];
     }
 
     /**

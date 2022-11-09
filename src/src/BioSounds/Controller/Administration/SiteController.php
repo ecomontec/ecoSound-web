@@ -7,6 +7,8 @@ use BioSounds\Entity\Explore;
 use BioSounds\Entity\Sensor;
 use BioSounds\Entity\Site;
 use BioSounds\Exception\ForbiddenException;
+use BioSounds\Provider\BaseProvider;
+use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\SiteProvider;
 use BioSounds\Utils\Auth;
 
@@ -19,10 +21,17 @@ class SiteController extends BaseController
      * @return false|string
      * @throws \Exception
      */
-    public function show()
+    public function show($projectId = null)
     {
-        if (!Auth::isUserAdmin()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
+        }
+        if (isset($_GET['projectId'])) {
+            $projectId = $_GET['projectId'];
+        }
+        $projects = (new ProjectProvider())->getWithPermission(Auth::getUserID());
+        if (empty($projectId)) {
+            $projectId = $projects[0]->getId();
         }
         $arr = [];
         $siteProvider = new SiteProvider();
@@ -31,9 +40,12 @@ class SiteController extends BaseController
             $arr['pid' . $explore['pid']]['id' . $explore['explore_id']] = [$explore['explore_id'], $explore['name']];
         }
         return $this->twig->render('administration/sites.html.twig', [
+            'projects' => $projects,
+            'projectId' => $projectId,
             'explores' => $arr,
             'realms' => (new Explore())->getExplores(),
-            'siteList' => $siteProvider->getList(Auth::getUserID()),
+            'siteList' => $siteProvider->getList($projectId),
+            'gadm0' => json_decode($this->gadm()),
         ]);
     }
 
@@ -45,7 +57,7 @@ class SiteController extends BaseController
     {
         $siteEnt = new Site();
 
-        if (!Auth::isUserAdmin()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
 
@@ -60,7 +72,6 @@ class SiteController extends BaseController
             if ($sitePdoValue != '0' && empty($sitePdoValue)) {
                 $sitePdoValue = '';
             }
-
             switch ($key) {
                 case 'realm_id':
                     $data['realm_id'] = $sitePdoValue == '' ? 0 : $sitePdoValue;
@@ -72,10 +83,10 @@ class SiteController extends BaseController
                     $data['functional_group_id'] = $sitePdoValue == '' ? 0 : $sitePdoValue;
                     break;
                 case 'longitude':
-                    $data['longitude_WGS84_dd_dddd'] = $sitePdoValue;
+                    $data['longitude_WGS84_dd_dddd'] = $sitePdoValue == '' ? null : $sitePdoValue;
                     break;
                 case 'latitude':
-                    $data['latitude_WGS84_dd_dddd'] = $sitePdoValue;
+                    $data['latitude_WGS84_dd_dddd'] = $sitePdoValue == '' ? null : $sitePdoValue;
                     break;
                 default:
                     $data[$key] = $sitePdoValue;
@@ -101,7 +112,6 @@ class SiteController extends BaseController
         }
     }
 
-
     /**
      * @param int $id
      * @return false|string
@@ -109,7 +119,7 @@ class SiteController extends BaseController
      */
     public function delete(int $id)
     {
-        if (!Auth::isUserAdmin()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
 
@@ -130,5 +140,10 @@ class SiteController extends BaseController
     {
         $explores = (new Explore())->getExplores($pid);
         return json_encode($explores);
+    }
+
+    public function gadm(int $level = 0, string $pid = '0')
+    {
+        return json_encode((new SiteProvider())->getGamds($level, $pid));
     }
 }

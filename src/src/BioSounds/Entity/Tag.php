@@ -541,7 +541,7 @@ class Tag extends BaseProvider
      */
     public function getTaxonOrder(): ?string
     {
-        return $this->taxon_order;
+        return $this->taxon_order?$this->taxon_order:'';
     }
 
     /**
@@ -558,7 +558,7 @@ class Tag extends BaseProvider
      */
     public function getTaxonClass(): ?string
     {
-        return $this->taxon_class;
+        return $this->taxon_class?$this->taxon_class:'';
     }
 
     /**

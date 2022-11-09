@@ -5,7 +5,7 @@
         <div class="card-header border-light bg-white text-right">
             <div class="row">
                 <div class="col-auto mr-auto mt-2">
-                    <form id="collectionForm" class="form-inline" action="{{ baseUrl }}/admin/tags" method="POST">
+                    <form id="collectionForm" class="form-inline" action="{{ baseUrl }}/admin/tags">
                         <label for="colId">Collection</label>
                         <select id="colId" name="colId" class="form-control form-control-sm ml-3">
                             {% for collection in collections %}
@@ -24,7 +24,7 @@
                 </div>
             </div>
         </div>
-        <table id="tagsTable" style="display:none;">
+        <table id="tagsTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
             <tr style="font-size: .875rem;">
                 <th></th>
@@ -96,7 +96,7 @@
                         <input type="number" class="form-control form-control-sm" name="number_of_individuals" min="0" max="1000" value="{{ tag.numberIndividuals }}" required>
                     </td>
                     <td data-search="{{ tag.type }}" data-order="{{ tag.type }}">
-                        <select id="type{{ tag.Id }}" name="type" class="form-control form-control-sm" style="width:100px;">
+                        <select id="sound_type{{ tag.Id }}" name="type" class="form-control form-control-sm" style="width:180px;">
                             <option value="{{ tag.typeId }}" selected>{{ tag.type }}</option>
                         </select>
                     </td>
@@ -133,6 +133,7 @@
                     "orderable": false,
                     "targets": [0, 17]
                 }],
+                "bAutoWidth": false,
                 "scrollX": true,
             });
         });
@@ -141,7 +142,7 @@
             var arr ={{ sound_types|json_encode|raw }};
             'use strict';
             $(document).on('click', '#tagsExport', function () {
-                window.location.href = '{{ baseUrl }}/api/admin/tagMgr/export';
+                window.location.href = '{{ baseUrl }}/api/admin/tagMgr/export/{{ colId }}';
             });
 
             $('.js-delete-button').click(function (e) {
@@ -176,7 +177,6 @@
                     if ($(this).val() > 0) {
                         $("#type" + id).prepend("<option value='0'></option>")
                     }
-                    console.log($("#taxon_class" + id).val() + $("#taxon_order" + id).val())
                     var data = arr[$("#taxon_class" + id).val() + $("#taxon_order" + id).val()]
                     for (var key in data) {
                         if ($(this).val() != data[key][0]) {

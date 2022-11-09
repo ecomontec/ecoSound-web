@@ -37,6 +37,7 @@ class SpeciesController
         }
         return json_encode($data);
     }
+
     /**
      * @return string
      * @throws \Exception
@@ -44,19 +45,19 @@ class SpeciesController
     public function getSoundType(): string
     {
         $data = [];
-        $taxon_class = isset($_POST['taxon_class']) ? $_POST['taxon_class'] : null;
-        $taxon_order = isset($_POST['taxon_order']) ? $_POST['taxon_order'] : null;
-        if (!empty($taxon_class) && !empty($taxon_order)) {
-            $soundTypeProvider = new SoundTypeProvider;
-            $result = $soundTypeProvider->getList($taxon_class, $taxon_order);
-            if (!empty($result)) {
-                foreach ($result as $row) {
-                    $data[] = [
-                        'sound_type_id' => $row->getSoundTypeId(),
-                        'name' => $row->getName(),
-                    ];
-                }
+        $taxon_class = $_POST['taxon_class'];
+        $taxon_order = $_POST['taxon_order'];
+        $soundTypeProvider = new SoundTypeProvider;
+        $result = $soundTypeProvider->getList($taxon_class, $taxon_order);
+        if (!empty($result)) {
+            foreach ($result as $row) {
+                $data[] = [
+                    'sound_type_id' => $row->getSoundTypeId(),
+                    'name' => $row->getName(),
+                ];
             }
+        }else{
+            return '';
         }
         return json_encode($data);
     }

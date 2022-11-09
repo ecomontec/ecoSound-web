@@ -20,7 +20,7 @@ class UserController extends BaseController
      */
     public function show()
     {
-        if (!Auth::isUserAdmin()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
         $userProducer = new User();
@@ -38,10 +38,6 @@ class UserController extends BaseController
     public function save()
     {
         $userProvider = new User();
-
-        if (!Auth::isUserAdmin()) {
-            throw new ForbiddenException();
-        }
 
         if (isset($_POST['admin_pwd'])) {
             $adminPwd = $_POST['admin_pwd'];
@@ -61,13 +57,13 @@ class UserController extends BaseController
 
                 switch ($type) {
                     case 'email':
-                        $data[$key] =  filter_var($value, FILTER_SANITIZE_EMAIL);
+                        $data[$key] = filter_var($value, FILTER_SANITIZE_EMAIL);
                         break;
                     case 'checkbox':
-                        $data[$key] =  filter_var($value, FILTER_SANITIZE_NUMBER_INT);
+                        $data[$key] = filter_var($value, FILTER_SANITIZE_NUMBER_INT);
                         break;
                     case 'select-one':
-                        $data[$key] =  filter_var($value, FILTER_SANITIZE_NUMBER_INT);
+                        $data[$key] = filter_var($value, FILTER_SANITIZE_NUMBER_INT);
                         break;
                     case 'password':
                         $password = $value;
@@ -78,7 +74,7 @@ class UserController extends BaseController
                         break;
                 }
             } else {
-                $data[$key] =  $value;
+                $data[$key] = $value;
             }
         }
 
@@ -131,7 +127,7 @@ class UserController extends BaseController
                         break;
                 }
             } else {
-                $data[$key] =  $value;
+                $data[$key] = $value;
             }
         }
 
@@ -156,7 +152,7 @@ class UserController extends BaseController
      */
     public function editPassword()
     {
-        if (!Auth::isUserAdmin()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
 

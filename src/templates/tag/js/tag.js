@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 let tagId = $("input[name='tag_id']").val();
 
-                postRequest(baseUrl + '/api/tag/save', $(this).serialize(), false, false, function (response) {
+                postRequest(baseUrl + '/api/tag/save', new FormData($(this)[0]), false, false, function (response) {
                     calculateCoordinates();
 
                     if (response.tagId && response.tagId > 1) {
@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 e.stopPropagation();
             } else {
                 if (reviewStatus.val()) {
-                    postRequest(baseUrl + '/api/tagReview/save', $(this).serialize(), false, false, function () {
+                    postRequest(baseUrl + '/api/tagReview/save', new FormData($(this)[0]), false, false, function () {
                         $('#' + $('input[name=tag_id]').val()).removeClass('tag-dashed');
                     })
                 }

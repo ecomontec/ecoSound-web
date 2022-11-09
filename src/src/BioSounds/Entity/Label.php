@@ -149,13 +149,11 @@ class Label extends BaseProvider
             $fields .= $key;
             $valuesNames .= ":" . $key;
             $values[":" . $key] = $value;
-            if (end($siteData) !== $value) {
-                $fields .= ", ";
-                $valuesNames .= ", ";
-            }
+            $fields .= ",";
+            $valuesNames .= ",";
         }
-        $fields .= " )";
-        $valuesNames .= " )";
+        $fields = substr($fields, 0, strlen($fields) - 1).' )';
+        $valuesNames = substr($valuesNames, 0, strlen($valuesNames) - 1).' )';
 
         $this->database->prepareQuery("INSERT INTO label $fields VALUES $valuesNames");
         return $this->database->executeInsert($values);
@@ -181,10 +179,9 @@ class Label extends BaseProvider
         foreach ($labelData as $key => $value) {
             $fields .= $key . ' = :' . $key;
             $values[':' . $key] = $value;
-            if (end($labelData) !== $value) {
-                $fields .= ', ';
-            }
+            $fields .= ",";
         }
+        $fields = substr($fields, 0, strlen($fields) - 1);
 
         $values[':labelId'] = $lbeId;
         $this->database->prepareQuery("UPDATE label SET $fields WHERE label_id = :labelId");

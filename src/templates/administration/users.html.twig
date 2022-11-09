@@ -10,15 +10,17 @@
                 Add User
             </button>
         </div>
-        <table id="userTable" style="display:none">
-            <thead class="form-control-sm table-borderless">
-            <tr>
+        <table id="userTable" style="display:none;white-space: nowrap;">
+            <thead class="table-borderless">
+            <tr style="font-size: .875rem;">
                 <th>#</th>
                 <th>Name</th>
                 <th>Username</th>
                 <th>Email</th>
-                <th>Role</th>
-                <th>Active</th>
+                {% if is_admin %}
+                    <th>Role</th>
+                    <th>Active</th>
+                {% endif %}
                 <th></th>
                 <th></th>
                 <th></th>
@@ -32,34 +34,40 @@
                         <input type="hidden" class="form-control form-control-sm" name="itemID" value="{{ user.user_id }}">
                     </td>
                     <td data-search="{{ user.name }}" data-order="{{ user.name }}">
-                        <input type="text" class="form-control form-control-sm" name="name" value="{{ user.name }}">
+                        <input type="text" class="form-control form-control-sm" name="name" value="{{ user.name }}" {{ not is_admin and user.role_id == 1 ? 'disabled' }}>
                     </td>
                     <td>{{ user.username }}</td>
                     <td data-search="{{ user.email }}" data-order="{{ user.email }}">
-                        <input type="email" class="form-control form-control-sm" name="email" value="{{ user.email }}">
+                        <input type="email" class="form-control form-control-sm" name="email" value="{{ user.email }}" {{ not is_admin and user.role_id == 1 ? 'disabled' }}>
                     </td>
-                    <td {% for role in roles %}{% if role.role_id == user.role_id %}data-search="{{ role.name }}" data-order="{{ role.name }}"{% endif %}{% endfor %}>
-                        <select name="role_id" class="form-control form-control-sm">
-                            {% for role in roles %}
-                                <option value="{{ role.role_id }}" {{ role.role_id == user.role_id ? "selected" }}>{{ role.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </td>
-                    <td class="text-center" data-search="{{ user.active }}" data-order="{{ user.active }}">
-                        <input name="active" type="checkbox" {{ user.active ? 'checked' }}>
+                    {% if is_admin %}
+                        <td {% for role in roles %}{% if role.role_id == user.role_id %}data-search="{{ role.name }}" data-order="{{ role.name }}"{% endif %}{% endfor %}>
+                            <select name="role_id" class="form-control form-control-sm">
+                                {% for role in roles %}
+                                    <option value="{{ role.role_id }}" {{ role.role_id == user.role_id ? "selected" }}>{{ role.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td class="text-center" data-search="{{ user.active }}" data-order="{{ user.active }}">
+                            <input name="active" type="checkbox" {{ user.active ? 'checked' }}>
+                        </td>
+                    {% endif %}
+                    <td>
+                        {% if is_admin or user.role_id == 2 %}
+                            <a href="{{ baseUrl }}/admin/userMgr/editPassword" class="js-open-modal" data-id="{{ user.user_id }}" title="Edit Password">
+                                <i class='fas fa-edit'></i>
+                            </a>
+                        {% endif %}
                     </td>
                     <td>
-                        <a href="{{ baseUrl }}/admin/userMgr/editPassword" class="js-open-modal" data-id="{{ user.user_id }}" title="Edit Password">
-                            <i class='fas fa-edit'></i>
-                        </a>
+                        {% if user.role_id == 2 %}
+                            <a href="{{ baseUrl }}/UserPermission/{{ user.user_id == user_id and not is_admin?'view':'show' }}/{{ user.user_id }}" class="js-open-modal" title="Collection Privileges" $privhidden>
+                                <i class='fas fa-tasks'></i>
+                            </a>
+                        {% endif %}
                     </td>
                     <td>
-                        <a href="{{ baseUrl }}/UserPermission/show/{{ user.user_id }}" class="js-open-modal" title="Collection Privileges" $privhidden>
-                            <i class='fas fa-tasks'></i>
-                        </a>
-                    </td>
-                    <td>
-                        <input type="color" name="color" alt="Tag color" value="{{ user.color is empty ? default_color : user.color }}">
+                        <input type="color" name="color" alt="Tag color" value="{{ user.color is empty ? default_color : user.color }}" {{ not is_admin and user.role_id == 1 ? 'disabled' }} >
                     </td>
                 </tr>
             {% endfor %}
@@ -72,18 +80,20 @@
     {{ parent() }}
     <script>
         $(document).ready(function () {
+            $('#userTable').show()
             $('#userTable').DataTable({
                 "pageLength": 8,
                 "lengthChange": false,
                 "stateSave": true,
                 "StateDuration": -1,
                 "order": [[0, 'asc']],
-                "columnDefs":[{
-                    "orderable":false,
-                    "targets":[6,7,8]
-                }]
+                "columnDefs": [{
+                    "orderable": false,
+                    "targets": [{% if is_admin %}6, 7, 8{% else %}4, 5, 6{% endif %}]
+                }],
+                "bAutoWidth": false,
+                "scrollX": true,
             });
-            $('#userTable').show()
         });
         $(function () {
             'use strict';
@@ -121,7 +131,7 @@
                 if (this.checkValidity() === false) {
                     e.stopPropagation();
                 } else {
-                    $.ajax({type: 'POST', url: '{{ baseUrl }}/api/admin/userMgr/save', data: $(this).serialize()}).done(function (response) {
+                    $.ajax({type: 'POST', url: '{{ baseUrl }}/api/admin/userMgr/save', data: new FormData($(this)[0])}).done(function (response) {
                         showAlert(response.message);
                         $('#modal-div').modal('hide');
                     }).fail(function (response) {
@@ -141,7 +151,7 @@
                 if (this.checkValidity() === false) {
                     e.stopPropagation();
                 } else {
-                    postRequest('{{ baseUrl }}/api/admin/userMgr/save', $(this).serialize(), false, false, function () {
+                    postRequest('{{ baseUrl }}/api/admin/userMgr/save', new FormData($(this)[0]), false, false, function () {
                         location.reload();
                     });
                 }

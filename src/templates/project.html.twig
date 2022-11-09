@@ -1,85 +1,52 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    <div class="jumbotron text-center bg-light py-4">
-        <img src="{{ imagesUrl }}/biosounds_logo_large.png" alt="ecoSound-web">
-        <p class="lead mt-2">Open-source online platform for ecoacoustics</p>
+    <div class="container mt-5">
+        <table id="projectTable" style="display:none ;table-layout: fixed;word-wrap:break-word;">
+            <thead class="table-borderless" style="display:none">
+            <tr>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody class="js-project-list">
+            {% for project in projects %}
+                <tr>
+                    <td style="border-top: 1px solid #dddddd;">
+                        <h2>
+                            <a href="{{ baseUrl }}/collection/index/{{ project.id }}">{{ project.name }}</a>
+                        </h2>
+                        <div class="form-inline">
+                            {% if project.pictureId or project.url %}
+                                <div class="col-3" style="margin-bottom: auto;">
+                                    {% if project.pictureId %}
+                                        <img src="{{ baseUrl }}/sounds/projects/{{ project.pictureId }}" style="width:100%;">
+                                        <br>
+                                    {% endif %}
+                                    {% if project.url %}
+                                        <a href="{{ project.url }}" style="width: 100%;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;display: block;float: left;" target="_blank">{{ project.url }}</a>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                            <div class="col-{{ not project.pictureId and not project.url?'12':'9' }}" style="margin-bottom: auto;">
+                                {% autoescape false %}{{ project.description }}{% endautoescape %}
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
     </div>
-    <div class="container mb-5">
-        <h2>
-            <a href="{{ baseUrl }}/project/gsp">Global Soundscapes Project</a>
-        </h2>
-        <p>{{ project_description }}</p>
-        <p><img src="{{ projectImagesUrl }}/Fig_S1_compact.png" class="rounded" alt="Global map" style="width:300px;margin-right:15px;float:left">
-            We collate and analyse soundscape datasets from the terrestrial, marine, and freshwater realms for the first global, comprehensive, quantitate synthesis of soundscapes. We use stationary, unattended, omnidirectional, ambient recordings over multiple sites and/or days. Collaborators welcome!
-            <br><br><br><br><br><br>
-        </p>
-        <h2>SoundEFForTS</h2>
-        <p>{{ project_description }}</p>
-        <p><img src="{{ projectImagesUrl }}/beo.jpg" class="rounded" alt="Beo" style="width:300px;margin-right:15px;float:left">
-            The original ecoacoustics project of the
-            <b>
-                <a href="https://www.uni-goettingen.de/en/310995.html">Collaborative Research Center 990</a>
-            </b>
-            (EFForTS), led by
-            <b>
-                <a href="https://www.uni-goettingen.de/en/b09+-+aboveground+biodiversity+patterns+and+processes+across+rainforest+transformation+landscapes/412081.html">B09</a>
-            </b>
-            in Jambi, Indonesia. We analysed soundscapes from our core plots in lowland rainforest, jungle rubber, oil palm, and rubber plantations (published in various syntheses),
-            <b>
-                <a href="https://f1000research.com/articles/7-229/v2">Berbak National park</a>
-            </b>, the oil palm
-            <b>
-                <a href="http://onlinelibrary.wiley.com/doi/10.1002/ecy.1882/abstract">exclusion</a>
-            </b>
-            and
-            <b>
-                <a href="https://www.frontiersin.org/articles/10.3389/ffgc.2019.00065/full">management</a>
-            </b>
-            experiment, the
-            <b>
-                <a href="https://peerj.com/articles/9955">microphone signal-to-noise study</a>
-            </b>. We also reference species recordings of several Anura species (<b>
-                <a href="http://www.sciencedirect.com/science/article/pii/S2351989418301033">corresponding paper</a>
-            </b>) and the recordings of our
-            <b>
-                <a href="https://onlinelibrary.wiley.com/doi/10.1002/ece3.8356">bat point counts</a>
-            </b>.
-            <br><br><br><br><br><br><br>
-        </p>
-        <p>
-            <h2>Reference collections / call libraries</h2>
-        </p>
-        <p><img src="{{ projectImagesUrl }}/Vignette.jpg" class="rounded" alt="Vignette" style="width:300px;margin-right:15px;float:left;border:1px solid #000;">Apart from the annotation of soundscapes, BioSounds also offers reference call collections (a.k.a. "call libraries"). This offer is unique as it allows sound recording archival, public access (visualisation and playback), and reference in scientific publications. At the moment, we host species recordings for Sumatran bats and amphibians, as well as Madagascan primates.
-        </p>
-        <p>The reference collections can be found under "Open Collections".</p>
-        <p>Coming soon: Peruvian and European bats, location management.
-            <br><br><br><br><br><br><br><br><br>
-        </p>
-        <p>
-            <h2>Project CNFEREF</h2>
-        </p>
-        <p><img src="{{ projectImagesUrl }}/Gabelstreifenmaki.jpg" class="rounded" alt="Maki" style="width:300px;margin-right:15px;float:left">
-            We host annotated night soundscapes and lemur reference recordings from Kirindy Private Reserve, Madagascar, obtained within the frame of the Centre National de Formation, d’Etudes et de Recherche en Environnement et Forestier and the
-            <b>
-                <a href="https://www.dpz.eu/en/unit/sociobiology-homepage/study-sites/madagascar.html">German Primate Center</a>
-            </b>.
-            <br><br><br><br><br><br><br><br>
-        </p>
-        <p>
-            <h2>Flower fields in Göttingen</h2>
-        </p>
-        <p><img src="{{ projectImagesUrl }}/PP_SM2Bat.JPG" class="rounded" alt="SM2Bat+" style="width:300px;margin-right:15px;float:left">
-            We study the impact of flower fields on bird diversity in bordering agricultural fields in several locations around Göttingen, Germany. We repeated our sampling protocol yearly since 2018, and conducted this study in the frame of student projects under the lead of the
-            <b>
-                <a href="https://www.uni-goettingen.de/en/74726.html">Agroecology</a>
-            </b>
-            and
-            <b>
-                <a href="https://www.uni-goettingen.de/en/596513.html">Functional Agrobiodiversity</a>
-            </b>
-            groups.
-            <br><br><br><br><br><br><br><br><br>
-        </p>
-    </div>
+    <script>
+        $(document).ready(function () {
+            $('#projectTable').DataTable({
+                "pageLength": 8,
+                "lengthChange": false,
+                "stateSave": true,
+                "StateDuration": -1,
+                "order": [[0, 'asc']],
+            });
+            $('#projectTable').show()
+        });
+    </script>
 {% endblock %}

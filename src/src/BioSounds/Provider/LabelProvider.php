@@ -43,7 +43,7 @@ class LabelProvider extends BaseProvider
     }
 
     /**
-     * @param int $siteId, $userId
+     * @param int $siteId , $userId
      * @return Site|null
      * @throws \Exception
      */

@@ -142,22 +142,19 @@ class TagProvider extends BaseProvider
 
     public function getTagPagesByCollection(int $colId): array
     {
-        $this->database->prepareQuery(
-            "SELECT t.*,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass FROM tag t 
+        $sql="SELECT t.*,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass FROM tag t 
             INNER JOIN recording r ON r.recording_id = t.recording_id
             LEFT JOIN species s ON s.species_id = t.species_id
             LEFT JOIN collection c ON c.collection_id = r.col_id
             LEFT JOIN user u ON u.user_id = t.user_id
-            LEFT JOIN sound_type st ON st.sound_type_id = t.type
-            WHERE (t.user_id = :user_id1 OR c.user_id = :user_id2) AND c.collection_id = :colId
-            ORDER BY t.tag_id "
-        );
+            LEFT JOIN sound_type st ON st.sound_type_id = t.type WHERE c.collection_id = :colId ";
+        if(!Auth::isManage()){
+            $sql.=" AND t.user_id = " .Auth::getUserID();
+        }
+        $sql.=" ORDER BY t.tag_id";
+        $this->database->prepareQuery($sql);
 
-        $result = $this->database->executeSelect([
-            ":user_id1" => Auth::getUserLoggedID(),
-            ":user_id2" => Auth::getUserLoggedID(),
-            ":colId" => $colId,
-        ]);
+        $result = $this->database->executeSelect([":colId" => $colId,]);
 
         $data = [];
         foreach ($result as $item) {

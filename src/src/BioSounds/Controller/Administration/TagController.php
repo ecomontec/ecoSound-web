@@ -25,13 +25,13 @@ class TagController extends BaseController
         if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
         }
-        if (isset($_POST['colId'])) {
-            $colId = $_POST['colId'];
+        if (isset($_GET['colId'])) {
+            $colId = $_GET['colId'];
         }
         if (!empty($cId)) {
             $colId = $cId;
         }
-        $collections = (new CollectionProvider())->getList();
+        $collections = Auth::isUserAdmin() ? (new CollectionProvider())->getList() : (new CollectionProvider())->getPublicList(Auth::getUserID());
         if (empty($colId)) {
             $colId = $collections[0]->getId();
         }
@@ -42,6 +42,7 @@ class TagController extends BaseController
         }
 
         return $this->twig->render('administration/tags.html.twig', [
+            'collections' => $collections,
             'colId' => $colId,
             'tags' => (new TagProvider())->getTagPagesByCollection($colId),
             'sound_types' => $arr,
@@ -51,7 +52,7 @@ class TagController extends BaseController
     /**
      * @throws \Exception
      */
-    public function export()
+    public function export(int $collection_id)
     {
         if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
@@ -63,7 +64,7 @@ class TagController extends BaseController
         header('Accept-Ranges:bytes');
         header('Content-Disposition: attachment; filename=' . $file_name);
 
-        $tagList = (new TagProvider())->getListByTags();
+        $tagList = (new TagProvider())->getTagPagesByCollection($collection_id);
         $tagAls[] = array('#', 'Species', 'Recording', 'User', 'Time Start', 'Time End', 'Min Frequency', 'Max Frequency', 'Uncertain', 'Call Distance', 'Distance Not Estimable', 'Number of Individuals', 'Type', 'Reference Call', 'Comments', 'Creation Date(UTC)');
         foreach ($tagList as $tagItem) {
             $tagArray = array(
@@ -100,7 +101,7 @@ class TagController extends BaseController
      */
     public function save()
     {
-        if (!Auth::isUserAdmin()) {
+        if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
         }
         $tagProvider = new TagProvider();
