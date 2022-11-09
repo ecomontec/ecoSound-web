@@ -8,7 +8,7 @@ Web application for ecoacoustics to archive and manage soundscapes, host referen
 
 ## Credits and license
 
-Developed by [Noemi Perez](https://github.com/nperezg) and [Kevin Darras](https://github.com/kdarras). ecoSound-web was forked from [BioSounds](https://github.com/nperezg/biosounds) and is licensed under the [GNU General Public License, v3](https://www.gnu.org/licenses/gpl-3.0.en.html).
+Designed by [Kevin Darras](http://kevindarras.weebly.com/index.html), developed by [Noemi Perez](https://github.com/nperezg) and Dilong Liu. ecoSound-web was forked from [BioSounds](https://github.com/nperezg/biosounds) and is licensed under the [GNU General Public License, v3](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
 The corresponding updatable scientific publication is in [F1000Research](https://f1000research.com/).
 
