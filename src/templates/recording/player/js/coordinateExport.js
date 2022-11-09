@@ -23,6 +23,7 @@ document.getElementById('exportCoordinates').addEventListener('click', function 
 });
 
 $('#exportMaxF').on('click', function (e) {
+    $('.loading').toggle();
     let data = {
         'minTime': $('input[name=minTimeView]').val(),
         'maxTime': $('input[name=maxTimeView]').val(),
@@ -61,7 +62,7 @@ $('#exportMaxF').on('click', function (e) {
             }
 
             input.remove();
-
+            $('.loading').toggle();
             showAlert(message);
         })
     e.preventDefault();
