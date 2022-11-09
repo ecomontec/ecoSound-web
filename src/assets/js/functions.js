@@ -72,11 +72,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (id != '') {
                         $('.js-species-id' + id + '[data-type=' + type + ']').val($("#old_id" + id).val());
                         $(this).val($("#old_name" + id).val());
-                        $("#type" + id).attr('disabled', false)
+                        $("#sound_type" + id).attr('disabled', false)
                     } else {
                         $('.js-species-id' + id + '[data-type=' + type + ']').val('');
-                        $("#type").empty()
-                        $("#type" + id).attr('disabled', true)
+                        $("#sound_type").empty()
+                        $("#sound_type" + id).attr('disabled', true)
                     }
                     //$('#reviewSpeciesId').val('');
                 }
@@ -94,14 +94,14 @@ document.addEventListener("DOMContentLoaded", function () {
                         if (data == '') {
 
                         } else {
-                            $("#type" + id).attr('disabled', false)
+                            $("#sound_type" + id).attr('disabled', false)
                             $("#taxon_class" + id).val(ui.item.class)
                             $("#taxon_order" + id).val(ui.item.taxon_order)
                             var json = JSON.parse(data)
-                            $("#type" + id).empty()
-                            $("#type" + id).append('<option value="0"></option>');
+                            $("#sound_type" + id).empty()
+                            $("#sound_type" + id).append('<option value="0"></option>');
                             for (var key in json) {
-                                $("#type" + id).append("<option value=" + json[key]['sound_type_id'] + ">" + json[key]['name'] + "</option>");
+                                $("#sound_type" + id).append("<option value=" + json[key]['sound_type_id'] + ">" + json[key]['name'] + "</option>");
                             }
                         }
                     })

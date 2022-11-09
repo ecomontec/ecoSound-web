@@ -92,9 +92,9 @@
                     </div>
                     <div class="row">
                         <div class="form-group col-md-6">
-                            <label for="type" class="col-form-label-sm">Sound Type
+                            <label for="sound_type" class="col-form-label-sm">Sound Type
                             </label>
-                            <select id="type" name="sound-type" class="form-control form-control-sm js-reference-field js-field-required" disabled>
+                            <select id="sound_type" name="sound-type" class="form-control form-control-sm js-reference-field js-field-required" disabled>
                                 {% for soundType in soundTypes %}
                                     <option value="{{ soundType.soundTypeId }}">{{ soundType.name }}</option>
                                 {% endfor %}
