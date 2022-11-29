@@ -5,14 +5,21 @@
                 <img src="{{ logoUrl }}" alt="ecoSound-web">
             </a>
             <ul class="nav navbar-nav">
-                <li class="navbar-item">
-                    <a class="nav-link" href="{{ baseUrl}}/project/show">Projects</a>
-                </li>
                 {% if isUserLogged %}
                     <li class="navbar-item">
                         <a class="nav-link" target="_blank" href="{{ guide_url }}">Guide</a>
                     </li>
+                {% else %}
+                    <li class="navbar-item">
+                        <a class="nav-link" href="#" data-target="#loginForm" data-toggle="collapse">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Login
+                        </a>
+                    </li>
                 {% endif %}
+                <li class="navbar-item">
+                    <a class="nav-link" href="{{ baseUrl}}/project/show">Projects</a>
+                </li>
                 <li class="navbar-item">
                     <a class="nav-link" href="{{baseUrl}}/project/about">About</a>
                 </li>
