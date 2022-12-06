@@ -24,28 +24,32 @@ class SiteProvider extends BaseProvider
      * @return Site[]
      * @throws \Exception
      */
-    public function getList(int $projectId, string $order = 'name'): array
+    public function getList(int $projectId, int $collectionId = null, string $order = 'name'): array
     {
         $data = [];
-        $this->database->prepareQuery(
-            "SELECT s.*,e1.`name` AS realm,e2.`name` AS biome,e3.`name` AS functional_group FROM site s 
+        $sql = "SELECT s.*, e1.`name` AS realm,e2.`name` AS biome,e3.`name` AS functional_group FROM site s 
                     LEFT JOIN explore e1 ON e1.explore_id = s.realm_id 
                     LEFT JOIN explore e2 ON e2.explore_id = s.biome_id 
                     LEFT JOIN explore e3 ON e3.explore_id = s.functional_group_id 
-                    where project_id = $projectId ORDER BY $order"
-        );
-
+                    LEFT JOIN site_collection sc ON sc.site_id = s.site_id
+                    LEFT JOIN collection c ON c.collection_id = sc.collection_id
+                    WHERE c.project_id = $projectId ";
+        if ($collectionId != null) {
+            $sql .= " AND c.collection_id = $collectionId ";
+        }
+        $sql .= " GROUP BY s.site_id ORDER BY $order";
+        $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
-
         foreach ($result as $item) {
             $data[] = (new Site())
                 ->setId($item['site_id'])
                 ->setName($item['name'])
                 ->setUserId($item['user_id'])
-                ->setProjectId($item['project_id'])
                 ->setCreationDateTime($item['creation_date_time'])
                 ->setLongitude($item['longitude_WGS84_dd_dddd'])
                 ->setLatitude($item['latitude_WGS84_dd_dddd'])
+                ->setTopography($item['topography_m'])
+                ->setFreshwaterDepth($item['freshwater_depth_m'])
                 ->setGadm0($item['gadm0'])
                 ->setGadm1($item['gadm1'])
                 ->setGadm2($item['gadm2'])
@@ -54,10 +58,8 @@ class SiteProvider extends BaseProvider
                 ->setFunctionalGroupId($item['functional_group_id'])
                 ->setRealm($item['realm'])
                 ->setBiome($item['biome'])
-                ->setFunctionalGroup($item['functional_group'])
-                ->setCentroId($item['centroid']);
+                ->setFunctionalGroup($item['functional_group']);
         }
-
         return $data;
     }
 
@@ -78,17 +80,17 @@ class SiteProvider extends BaseProvider
             ->setId($result['site_id'])
             ->setName($result['name'])
             ->setUserId($result['user_id'])
-            ->setProjectId($result['project_id'])
             ->setCreationDateTime($result['creation_date_time'])
             ->setLongitude($result['longitude_WGS84_dd_dddd'])
             ->setLatitude($result['latitude_WGS84_dd_dddd'])
+            ->setTopography($result['topography_m'])
+            ->setFreshwaterDepth($result['freshwater_depth_m'])
             ->setGadm0($result['gadm0'])
             ->setGadm1($result['gadm1'])
             ->setGadm2($result['gadm2'])
             ->setRealm($result['realm_id'])
             ->setBiome($result['biome_id'])
-            ->setFunctionalGroup($result['functional_group_id'])
-            ->setCentroId($result['centroid']);
+            ->setFunctionalGroup($result['functional_group_id']);
     }
 
     public function getGamds(int $level = 0, string $pid = '0')
@@ -111,6 +113,8 @@ class SiteProvider extends BaseProvider
     public function delete(int $id): void
     {
         $this->database->prepareQuery('DELETE FROM site WHERE ' . Site::PRIMARY_KEY . ' = :id');
+        $this->database->executeDelete([':id' => $id]);
+        $this->database->prepareQuery('DELETE FROM site_collection WHERE site_id = :id');
         $this->database->executeDelete([':id' => $id]);
     }
 }

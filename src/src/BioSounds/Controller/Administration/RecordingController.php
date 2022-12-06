@@ -4,6 +4,8 @@ namespace BioSounds\Controller\Administration;
 
 use BioSounds\Controller\BaseController;
 use BioSounds\Entity\License;
+use BioSounds\Entity\Microphone;
+use BioSounds\Entity\Recorder;
 use BioSounds\Entity\Recording;
 use BioSounds\Entity\Sensor;
 use BioSounds\Entity\User;
@@ -64,7 +66,8 @@ class RecordingController extends BaseController
             'recordings' => $recordings,
             'sites' => $userSites,
             'users' => $userProducer->getName(),
-            'sensors' => (new Sensor())->getBasicList(),
+            'recorders' => (new Recorder())->getBasicList(),
+            'microphones' => (new Microphone())->getBasicList(),
             'license' => (new License())->getBasicList(),
         ]);
     }

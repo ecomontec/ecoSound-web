@@ -1,31 +1,31 @@
 <div class="modal fade" id="modal-div" tabindex="-1" role="dialog">
-	<div class="modal-dialog" role="document">
-		<div class="modal-content">
-			<form id="callDistanceForm" action="{{ baseUrl }}/api/tag/save" class="js-async-form">
-				<div class="modal-header">
-					<h5 class="modal-title">Call Distance Estimation</h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-				</div>
-				<div class="modal-body">					
-						<input name="tag_id" type="hidden" value="{{ tagId }}">
-						<div class="form-group">						
-							<label for="callDistance">Introduce Call Distance Estimation</label>
-							<input class="form-control" id="callDistance" name="call_distance_m" type="number">
-							<div class="checkbox" id="dist_check">
-								<label>
-									<input id='distance' name="distance_not_estimable" type="checkbox" value="1"> Distance not estimable
-								</label>
-							</div>
-						</div> 
-				</div>
-				<div class="modal-footer">
-					<button id="saveButton" type="submit" class="btn btn-outline-primary">
-						<i class="fas fa-save"></i> Save
-					</button>
-				</div>
-			</form>
-		</div>
-	</div>
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form id="callDistanceForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">Call Distance Estimation</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input name="tag_id" type="hidden" value="{{ tagId }}">
+                    <div class="form-group">
+                        <label for="call_distance">Introduce Call Distance Estimation</label>
+                        <input class="form-control" id="call_distance" name="sound_distance_m" type="number">
+                        <div class="checkbox" id="dist_check">
+                            <label>
+                                <input id='distance' name="distance_not_estimable" type="checkbox" value="1"> Distance not estimable
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button id="distanceButton" class="btn btn-outline-primary">
+                    <i class="fas fa-save"></i> Save
+                </button>
+            </div>
+        </div>
+    </div>
 </div>

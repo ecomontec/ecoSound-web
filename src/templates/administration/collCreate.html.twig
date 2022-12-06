@@ -31,10 +31,24 @@
                     </div>
                 </div>
                 <div class="form-group">
+                    <label for="domain" class="col-form-label-sm">Domain</label>
+                    <select id="domain" name="domain_select-one" class="form-control form-control-sm">
+                        <option></option>
+                        <option value="hydrosphere" {{ collection.domain == 'hydrosphere' ? 'selected' }}>hydrosphere</option>
+                        <option value="cryosphere" {{ collection.domain == 'cryosphere' ? 'selected' }}>cryosphere</option>
+                        <option value="lithosphere" {{ collection.domain == 'lithosphere' ? 'selected' }}>lithosphere</option>
+                        <option value="pedosphere" {{ collection.domain == 'pedosphere' ? 'selected' }}>pedosphere</option>
+                        <option value="atmopshere" {{ collection.domain == 'atmopshere' ? 'selected' }}>atmopshere</option>
+                        <option value="biosphere" {{ collection.domain == 'biosphere' ? 'selected' }}>biosphere</option>
+                        <option value="anthroposphere" {{ collection.domain == 'anthroposphere' ? 'selected' }}>anthroposphere</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label for="view" class="col-form-label-sm">View</label>
                     <select id="view" name="view_select-one" class="form-control form-control-sm" required>
                         <option value="gallery">gallery</option>
                         <option value="list">list</option>
+                        <option value="timeline">timeline</option>
                     </select>
                 </div>
                 <div class="form-group text-right">

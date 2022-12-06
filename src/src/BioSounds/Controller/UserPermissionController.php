@@ -63,7 +63,6 @@ class UserPermissionController extends BaseController
      */
     public function save(): string
     {
-
         $userProvider = new UserPermission();
         foreach ($_POST['data'] as $row) {
             if (isset($row['collection_id'])) {

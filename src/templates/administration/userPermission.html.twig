@@ -50,20 +50,16 @@
                                     </td>
                                     <td>{{ collection.name }}</td>
                                     <td class="text-center">
-                                        <input class="js-access-checkbox" value="{{ accessId }}" type="checkbox" name="access" data-project-id="{{ project.id }}" hidden
-                                               data-collection-id="{{ collection.id }}" {{ collection.permission == manageId ? "checked" }} {{ collection.permission == reviewId ? "checked" }} {{ collection.permission == viewId ? "checked" }} {{ collection.permission == accessId ? "checked" }}>
+                                        <input class="js-access-checkbox" value="{{ accessId }}" type="checkbox" name="access" data-project-id="{{ project.id }}" hidden data-collection-id="{{ collection.id }}" {{ collection.permission == manageId ? "checked" }} {{ collection.permission == reviewId ? "checked" }} {{ collection.permission == viewId ? "checked" }} {{ collection.permission == accessId ? "checked" }}>
                                     </td>
                                     <td class="text-center">
-                                        <input class="js-manage-checkbox" value="{{ manageId }}" type="checkbox" name="manage" data-project-id="{{ project.id }}" hidden
-                                               data-collection-id="{{ collection.id }}" {{ collection.permission == manageId ? "checked" }}>
+                                        <input class="js-manage-checkbox" value="{{ manageId }}" type="checkbox" name="manage" data-project-id="{{ project.id }}" hidden data-collection-id="{{ collection.id }}" {{ collection.permission == manageId ? "checked" }}>
                                     </td>
                                     <td class="text-center">
-                                        <input class="js-view-checkbox" value="{{ viewId }}" type="checkbox" name="view" data-project-id="{{ project.id }}"
-                                               data-collection-id="{{ collection.id }}" {{ collection.permission == manageId ? "checked disabled" }} {{ collection.permission == reviewId ? "checked disabled" }} {{ collection.permission == viewId ? "checked" }}>
+                                        <input class="js-view-checkbox" value="{{ viewId }}" type="checkbox" name="view" data-project-id="{{ project.id }}" data-collection-id="{{ collection.id }}" {{ collection.permission == manageId ? "checked disabled" }} {{ collection.permission == reviewId ? "checked disabled" }} {{ collection.permission == viewId ? "checked" }}>
                                     </td>
                                     <td class="text-center">
-                                        <input class="js-review-checkbox" value="{{ reviewId }}" type="checkbox" name="review" data-project-id="{{ project.id }}"
-                                               data-collection-id="{{ collection.id }}" {{ collection.permission == manageId ? "checked disabled" }} {{ collection.permission == reviewId ? "checked" }}>
+                                        <input class="js-review-checkbox" value="{{ reviewId }}" type="checkbox" name="review" data-project-id="{{ project.id }}" data-collection-id="{{ collection.id }}" {{ collection.permission == manageId ? "checked disabled" }} {{ collection.permission == reviewId ? "checked" }}>
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -140,12 +136,12 @@
             $('table#user-perm tbody tr').each(function (i) {
                 let dataInput = $(this).children('td').find(".js-data-input");
                 if (dataInput.length > 0) {
+                    console.log(dataInput)
                     data.append('data[' + i + '][collection_id]', dataInput.data('collection-id'));
                     data.append('data[' + i + '][permission_id]', dataInput.data('permission-id'));
                     data.append('data[' + i + '][user_id]', $('#user_id').val());
                 }
             });
-
             postRequest('{{ baseUrl }}/api/UserPermission/save', data, true, false, function () {
                 $('#modal-div').modal('hide');
             });

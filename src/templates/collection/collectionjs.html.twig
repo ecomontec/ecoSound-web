@@ -13,6 +13,10 @@
             <i class="fas fa-th-list" aria-hidden="true"></i>
             List View
         </a>
+        <a onclick="col_js({{ collection.id }},'timeline','{{ leaflet.sites }}')" type="button" class="btn btn-outline-primary btn-sm view {{ display == 'timeline' ? 'active' }}" aria-pressed="true">
+            <i class="fas fa-bars-staggered" aria-hidden="true"></i>
+            Timeline View
+        </a>
         <input id="display_view" value="{{ display }}" type="hidden">
         <input id="sites" value="{{ leaflet.sites }}" type="hidden">
     </div>
@@ -29,4 +33,4 @@
     </div>
 </div>
 
-{% include display == 'list' ? 'collection/views/list.html.twig' : 'collection/views/gallery.html.twig' %}
+{% include display == 'list' ? 'collection/views/list.html.twig' : display == 'gallery' ? 'collection/views/gallery.html.twig' : 'collection/views/timeline.html.twig' %}

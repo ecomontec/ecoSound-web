@@ -15,8 +15,6 @@ class Site extends AbstractProvider
     const GADM1 = "gadm1";
     const GADM2 = "gadm2";
 
-    const CENTROID = 'centroid';
-
     /**
      * @var int
      */
@@ -35,7 +33,12 @@ class Site extends AbstractProvider
     /**
      * @var int
      */
-    private $projectId;
+    private $collectionId;
+
+    /**
+     * @var string
+     */
+    private $collection;
 
     /**
      * @var string
@@ -53,6 +56,16 @@ class Site extends AbstractProvider
     private $latitude;
 
     /**
+     * @var float
+     */
+    private $topography;
+
+    /**
+     * @var float
+     */
+    private $freshwater_depth;
+
+    /**
      * @var string
      */
     private $gadm0;
@@ -66,11 +79,6 @@ class Site extends AbstractProvider
      * @var string
      */
     private $gadm2;
-
-    /**
-     * @var string
-     */
-    private $centroId;
 
     /**
      * @return int
@@ -123,24 +131,6 @@ class Site extends AbstractProvider
     public function setUserId(int $userId): Site
     {
         $this->userId = $userId;
-        return $this;
-    }
-
-    /**
-     * @return int
-     */
-    public function getProjectId(): int
-    {
-        return $this->projectId;
-    }
-
-    /**
-     * @param int $projectId
-     * @return site
-     */
-    public function setProjectId(int $projectId): Site
-    {
-        $this->projectId = $projectId;
         return $this;
     }
 
@@ -199,6 +189,42 @@ class Site extends AbstractProvider
     }
 
     /**
+     * @return float
+     */
+    public function getTopography(): ?float
+    {
+        return $this->topography;
+    }
+
+    /**
+     * @param float $topography
+     * @return site
+     */
+    public function setTopography(?float $topography): Site
+    {
+        $this->topography = $topography;
+        return $this;
+    }
+
+    /**
+     * @return float
+     */
+    public function getFreshwaterDepth(): ?float
+    {
+        return $this->freshwater_depth;
+    }
+
+    /**
+     * @param float $freshwater_depth
+     * @return site
+     */
+    public function setFreshwaterDepth(?float $freshwater_depth): Site
+    {
+        $this->freshwater_depth = $freshwater_depth;
+        return $this;
+    }
+
+    /**
      * @return string
      */
     public function getGadm0(): ?string
@@ -251,6 +277,7 @@ class Site extends AbstractProvider
         $this->gadm2 = $gadm2;
         return $this;
     }
+
     /**
      * @return int
      */
@@ -304,6 +331,7 @@ class Site extends AbstractProvider
         $this->functional_group_id = $functional_group_id;
         return $this;
     }
+
     /**
      * @return string
      */
@@ -357,30 +385,22 @@ class Site extends AbstractProvider
         $this->functional_group = $functional_group;
         return $this;
     }
-    /**
-     * @return bool
-     */
-    public function getCentroId(): string
-    {
-        return $this->centroId;
-    }
 
-    /**
-     * @param string $centroId
-     * @return site
-     */
-    public function setCentroId(string $centroId): Site
+    public function getCollection(int $site_id, string $collections)
     {
-        $this->centroId = $centroId;
-        return $this;
+        $this->database->prepareQuery("SELECT collection_id FROM site_collection WHERE site_id = :site_id AND collection_id IN ($collections)");
+        if (empty($result = $this->database->executeSelect([":site_id" => $site_id]))) {
+            return null;
+        }
+        return $result;
     }
 
     /**
      * @param array $siteData
-     * @return bool
+     * @return int
      * @throws \Exception
      */
-    public function insert(array $siteData): bool
+    public function insert(array $siteData): int
     {
         if (empty($siteData)) {
             return false;
@@ -397,9 +417,8 @@ class Site extends AbstractProvider
             $fields .= ",";
             $valuesNames .= ",";
         }
-        $fields = substr($fields, 0, strlen($fields) - 1).' )';
-        $valuesNames = substr($valuesNames, 0, strlen($valuesNames) - 1).' )';
-
+        $fields = substr($fields, 0, strlen($fields) - 1) . ' )';
+        $valuesNames = substr($valuesNames, 0, strlen($valuesNames) - 1) . ' )';
         $this->database->prepareQuery("INSERT INTO site $fields VALUES $valuesNames");
         return $this->database->executeInsert($values);
     }

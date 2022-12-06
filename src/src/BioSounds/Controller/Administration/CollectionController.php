@@ -6,6 +6,7 @@ use BioSounds\Controller\BaseController;
 use BioSounds\Controller\UserPermissionController;
 use BioSounds\Entity\Collection;
 use BioSounds\Entity\Recording;
+use BioSounds\Entity\SiteCollection;
 use BioSounds\Entity\UserPermission;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\CollectionProvider;
@@ -75,7 +76,8 @@ class CollectionController extends BaseController
             ]);
         } else {
             $id = $collProvider->insertColl($data);
-            (new UserPermission())->updataPermission($id);
+            (new UserPermission())->updatePermission($id);
+            (new SiteCollection())->insertByCollection($data['project_id'],$id);
             return json_encode([
                 'errorCode' => 0,
                 'message' => 'Collection created successfully.',
@@ -99,10 +101,10 @@ class CollectionController extends BaseController
         header('Content-Disposition: attachment; filename=' . $file_name);
 
         $collList = (new CollectionProvider())->getByProject($project_id, Auth::getUserID());
-        $colAls[] = array('#', 'Name', 'User', 'DOI', 'Description', 'Creation Date(UTC)', 'View', 'Public');
+        $colAls[] = array('#', 'Name', 'User', 'DOI', 'Domain', 'Description', 'Creation Date(UTC)', 'View', 'Public');
 
         foreach ($collList as $collItem) {
-            $colArray = array($collItem->getId(), $collItem->getName(), $collItem->getAuthor(), $collItem->getDoi(), $collItem->getNote(), $collItem->getCreationDate(), $collItem->getView(), $collItem->getPublic());
+            $colArray = array($collItem->getId(), $collItem->getName(), $collItem->getAuthor(), $collItem->getDoi(), $collItem->getDomain(), $collItem->getNote(), $collItem->getCreationDate(), $collItem->getView(), $collItem->getPublic());
             $colAls[] = $colArray;
         }
 
@@ -131,7 +133,7 @@ class CollectionController extends BaseController
         $recordingProvider = new RecordingProvider();
         $indexLogProvider = new indexLogProvider();
         $userProvider = new UserPermission();
-        $labelAssociationProvider= new LabelAssociationProvider();
+        $labelAssociationProvider = new LabelAssociationProvider();
 
         $recordings = $recordingProvider->getByCollection($id);
         $userProvider->deleteByCollection($id);

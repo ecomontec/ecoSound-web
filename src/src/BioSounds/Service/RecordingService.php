@@ -49,7 +49,7 @@ class RecordingService
             }
             $recordingListPresenter->setRecording($item);
 
-            $recordingListPresenter->setPlayerImage('assets/images/notready-small.png');
+            $recordingListPresenter->setPlayerImage('assets/images/notready-medium.png');
             if (
                 !empty($playerImage = $spectrogramService->getPlayerImage($item->getId()))
                 && is_file(sprintf(
@@ -143,7 +143,7 @@ class RecordingService
             }
             $recordingListPresenter->setRecording($item);
 
-            $recordingListPresenter->setPlayerImage('assets/images/notready-small.png');
+            $recordingListPresenter->setPlayerImage('assets/images/notready-medium.png');
             if (
                 !empty($playerImage = $spectrogramService->getPlayerImage($item->getId()))
                 && is_file(sprintf(

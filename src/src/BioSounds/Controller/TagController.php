@@ -6,6 +6,7 @@ use BioSounds\Entity\Tag;
 use BioSounds\Entity\Permission;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Exception\NotAuthenticatedException;
+use BioSounds\Provider\SoundProvider;
 use BioSounds\Provider\SoundTypeProvider;
 use BioSounds\Provider\TagProvider;
 use BioSounds\Utils\Auth;
@@ -53,14 +54,13 @@ class TagController extends BaseController
             ->setMaxFrequency(filter_var($_POST["f_max"], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION))
             ->setUserName(Auth::getUserName())
             ->setUser(Auth::getUserLoggedID());
-
-
         return json_encode([
             'errorCode' => 0,
             'data' => $this->twig->render('tag/tag.html.twig', [
                 'tag' => $tag,
                 'displayDeleteButton' => 'hidden',
                 'recordingName' => isset($_POST['recording_name']) ? $_POST['recording_name'] : null,
+                'phonys' => (new SoundProvider())->get(),
             ]),
         ]);
     }
@@ -115,6 +115,7 @@ class TagController extends BaseController
                 'disableTagForm' => !Auth::isManage() && !$isUserTagOwner,
                 'reviewPanel' => (new TagReviewController($this->twig))->show($tagId, $isReviewGranted || $isManageGranted),
                 'soundTypes' => (new SoundTypeProvider())->getList($tag->getTaxonClass(), $tag->getTaxonOrder()),
+                'phonys' => (new SoundProvider())->get(),
             ]),
         ]);
     }
@@ -139,6 +140,13 @@ class TagController extends BaseController
             if ($key === Tag::CALL_DISTANCE && empty($value)) {
                 $data[$key] = null;
             }
+        }
+        if ($data['sound_id'] != 1 || isset($data['sound_id'])== false) {
+            unset($data['species_id']);
+            unset($data['uncertain']);
+            unset($data['sound_distance_m']);
+            unset($data['distance_not_estimable']);
+            unset($data['animal_sound_type']);
         }
 
         if (isset($data[Tag::ID]) && !empty($data[Tag::ID])) {

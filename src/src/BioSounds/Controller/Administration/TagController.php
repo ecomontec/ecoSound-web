@@ -8,6 +8,7 @@ use BioSounds\Entity\SoundType;
 use BioSounds\Entity\Tag;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\CollectionProvider;
+use BioSounds\Provider\SoundProvider;
 use BioSounds\Provider\SoundTypeProvider;
 use BioSounds\Provider\TagProvider;
 use BioSounds\Utils\Auth;
@@ -46,6 +47,7 @@ class TagController extends BaseController
             'colId' => $colId,
             'tags' => (new TagProvider())->getTagPagesByCollection($colId),
             'sound_types' => $arr,
+            'phonys'=>(new SoundProvider())->get(),
         ]);
     }
 
@@ -118,7 +120,13 @@ class TagController extends BaseController
                 }
             }
         }
-
+        if ($data['sound_id'] != 1) {
+            unset($data['species_id']);
+            unset($data['uncertain']);
+            unset($data['sound_distance_m']);
+            unset($data['distance_not_estimable']);
+            unset($data['animal_sound_type']);
+        }
         $tagProvider->update($data);
         return json_encode([
             'errorCode' => 0,

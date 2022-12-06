@@ -14,8 +14,8 @@ class FileProvider extends BaseProvider
     public function insert(File $file)
     {
         $query = 'INSERT INTO file_upload (path, filename, date, time, site_id, collection_id, directory, ';
-        $query .= 'sensor_id, recording_id, user_id, species_id, sound_type_id, subtype, rating, doi, license_id,type,medium) ';
-        $query .= 'VALUES (:path, :filename, :date, :time, :site, :collection, :directory, :sensor, ';
+        $query .= 'recorder_id, microphone_id, recording_id, user_id, species_id, sound_type_id, subtype, rating, doi, license_id,type,medium) ';
+        $query .= 'VALUES (:path, :filename, :date, :time, :site, :collection, :directory, :recorder, :microphone, ';
         $query .= ':recording, :user, :species, :soundType, :subtype, :rating, :doi, :license,:type,:medium)';
 
         $this->database->prepareQuery($query);
@@ -41,7 +41,8 @@ class FileProvider extends BaseProvider
                 ->setSite($result['site_id'])
                 ->setCollection($result['collection_id'])
                 ->setDirectory($result['directory'])
-                ->setSensor($result['sensor_id'])
+                ->setRecorder($result['recorder_id'])
+                ->setMicrophone($result['microphone_id'])
                 ->setId($result['file_upload_id'])
                 ->setUser($result['user_id'])
                 ->setSpecies($result['species_id'])

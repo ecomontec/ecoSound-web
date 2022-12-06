@@ -98,6 +98,16 @@ document.addEventListener('DOMContentLoaded', function () {
             callDistance.prop('readonly', false);
         });
 
+        $('#distance').click(function () {
+            let callDistance = $('#call_distance');
+            if ($(this).is(':checked')) {
+                callDistance.val(null);
+                callDistance.prop('readonly', true);
+                return;
+            }
+            callDistance.prop('readonly', false);
+        });
+
         $("#review-accept-btn").click(function (e) {
             $('#reviewSpeciesName').prop('disabled', true);
             $('.js-species-id[data-type=review]').val('');
@@ -158,6 +168,16 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
         });
 
+        $('#distanceButton').click(function () {
+            $("#callDistanceForm").submit()
+        });
+
+        $("#callDistanceForm").submit(function (e) {
+            postRequest(baseUrl + '/api/tag/save', new FormData($(this)[0]), true, false);
+            $('#modal-div').modal('hide');
+            e.preventDefault();
+        });
+
         let createTag = function (tagId) {
             let speciesName = $('#speciesName').val();
 
@@ -181,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function () {
             let tagElement = $('#' + tagId);
 
             tagElement.removeClass('tag-orange');
-            console.log(callDistance);
+
             if (!callDistance && !distanceNotEstimable) {
                 tagElement.addClass('tag-orange');
             }

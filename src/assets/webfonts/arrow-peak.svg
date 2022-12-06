@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 576 512"
+   version="1.1"
+   id="svg4"
+   sodipodi:docname="arrow-peak.svg"
+   inkscape:version="1.2.1 (8a69933317, 2022-10-28, custom)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs8" />
+  <sodipodi:namedview
+     id="namedview6"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="true"
+     inkscape:zoom="1.0882816"
+     inkscape:cx="249.01644"
+     inkscape:cy="354.22819"
+     inkscape:window-width="1860"
+     inkscape:window-height="1016"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg4">
+    <inkscape:grid
+       type="xygrid"
+       id="grid126" />
+  </sodipodi:namedview>
+  <!--! Font Awesome Pro 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
+  <path
+     style="fill:none;stroke:#000000;stroke-width:64;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1;stroke-linejoin:round"
+     d="m 50,470 90,-130 80,60 160,-240 160,220"
+     id="path334-7"
+     sodipodi:nodetypes="ccccc" />
+  <g
+     id="g1113"
+     style="stroke-width:27.2;stroke-dasharray:none"
+     transform="translate(-12.889955,-9.11004)">
+    <path
+       style="fill:#000000;stroke:#000000;stroke-width:32;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+       d="M 47.889955,124.11004 308.88995,122.9837"
+       id="path334"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:#000000;stroke:#000000;stroke-width:32;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+       d="m 227.95312,43.030575 81.87366,79.906255"
+       id="path334-3"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:#000000;stroke:#000000;stroke-width:32;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+       d="M 228.88995,202.9837 308.7962,125.11004"
+       id="path334-3-6"
+       sodipodi:nodetypes="cc" />
+  </g>
+</svg>

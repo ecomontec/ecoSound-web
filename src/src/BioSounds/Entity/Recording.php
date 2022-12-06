@@ -9,7 +9,10 @@ class Recording
     const ID = 'recording_id';
     const COL_ID = 'col_id';
     const SITE_ID = 'site_id';
-    const SENSOR_ID = 'sensor_id';
+    const RECORDER_ID = 'recorder_id';
+    const MICROPHONE_ID = 'microphone_id';
+    const RECORDER_NAME = 'modal';
+    const MICROPHONE_NAME = 'name';
     const SOUND_ID = 'sound_id';
     const DIRECTORY = 'directory';
     const FILE_SIZE = "file_size";
@@ -25,7 +28,6 @@ class Recording
     const DOI = "doi";
     const Type = "type";
     const Medium = "medium";
-    //const LICENSE ="license";
     const LICENSE_ID = "license_id";
     const LICENSE_NAME = "license_name";
     const SITE_NAME = "site_name";
@@ -80,7 +82,12 @@ class Recording
     /**
      * @var int
      */
-    private $sensor;
+    private $recorder;
+
+    /**
+     * @var int
+     */
+    private $microphone;
 
     /**
      * @var int
@@ -133,10 +140,7 @@ class Recording
      */
     private $soundData;
 
-
-
     /**
-     *
      * @var int
      */
     private $user_id;
@@ -155,6 +159,18 @@ class Recording
      * @var string
      */
     private $labelName;
+    private $realmName;
+    private $biomeName;
+    private $functionalGroupName;
+    private $longitude;
+    private $latitude;
+    private $type;
+    private $medium;
+    private $note;
+    private $username;
+    private $recorderName;
+    private $microphoneName;
+    private $startDate;
 
     /**
      * @return int
@@ -249,18 +265,72 @@ class Recording
     /**
      * @return int|null
      */
-    public function getSensor(): ?int
+    public function getRecorder(): ?int
     {
-        return $this->sensor;
+        return $this->recorder;
     }
 
     /**
-     * @param int|null $sensor
+     * @param int|null $recorder
      * @return Recording
      */
-    public function setSensor(?int $sensor): Recording
+    public function setRecorder(?int $recorder): Recording
     {
-        $this->sensor = $sensor;
+        $this->recorder = $recorder;
+        return $this;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getRecorderName(): ?string
+    {
+        return $this->recorderName;
+    }
+
+    /**
+     * @param string|null $recorderName
+     * @return Recording
+     */
+    public function setRecorderName(?string $recorderName): Recording
+    {
+        $this->recorderName = $recorderName;
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getMicrophone(): ?int
+    {
+        return $this->microphone;
+    }
+
+    /**
+     * @param int|null $microphone
+     * @return Recording
+     */
+    public function setMicrophone(?int $microphone): Recording
+    {
+        $this->microphone = $microphone;
+        return $this;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getMicrophoneName(): ?string
+    {
+        return $this->microphoneName;
+    }
+
+    /**
+     * @param string|null $microphoneName
+     * @return Recording
+     */
+    public function setMicrophoneName(?string $microphoneName): Recording
+    {
+        $this->microphoneName = $microphoneName;
         return $this;
     }
 
@@ -341,6 +411,42 @@ class Recording
     public function setFileDate(?string $fileDate): Recording
     {
         $this->fileDate = $fileDate;
+        return $this;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getStartDate(): ?string
+    {
+        return $this->startDate;
+    }
+
+    /**
+     * @param null|string $startDate
+     * @return Recording
+     */
+    public function setStartDate(?string $startDate): Recording
+    {
+        $this->startDate = $startDate;
+        return $this;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getEndDate(): ?string
+    {
+        return $this->endDate;
+    }
+
+    /**
+     * @param null|string $endDate
+     * @return Recording
+     */
+    public function setEndDate(?string $endDate): Recording
+    {
+        $this->endDate = $endDate;
         return $this;
     }
 
@@ -557,8 +663,6 @@ class Recording
         return $this;
     }
 
-
-
     /**
      * @return null|int
      */
@@ -762,8 +866,13 @@ class Recording
         $this->setName($values['name']);
         $this->setCollection($values['col_id']);
         $this->setDirectory($values['directory']);
-        $this->setSensor($values['sensor_id']);
+        $this->setRecorder($values['recorder_id']);
+        $this->setMicrophone($values['microphone_id']);
         $this->setSite($values['site_id']);
+        $this->setRecorder($values['recorder_id']);
+        $this->setRecorderName($values['recorderName']);
+        $this->setMicrophone($values['microphone_id']);
+        $this->setMicrophoneName($values['microphoneName']);
         $this->setSound($values['sound_id']);
         $this->setFileName($values['filename']);
         $this->setFileDate($values['file_date']);
@@ -789,6 +898,8 @@ class Recording
         $this->setType($values['type']);
         $this->setMedium($values['medium']);
         $this->setNote($values['note']);
+        $this->setStartDate($values['start_date']);
+        $this->setEndDate($values['end_date']);
         return $this;
     }
 }

@@ -12,8 +12,21 @@
                             <input name="tag_id" type="hidden" value="{{ tag.id }}">
                             <input name="recording_id" type="hidden" value="{{ tag.recording }}">
                             <input class='js-species-id' data-type="edit" name='species_id' type='hidden' value="{{ tag.species }}">
-
                             <div class="form-row align-items-center">
+                                <div class="form-group col-auto">
+                                    <label class="col-form-label-sm" for="sound_id">Phony</label>
+                                    {% if tag.soundId %}
+                                        <div>{{ tag.phony }}</div>
+                                    {% else %}
+                                        <select id="sound_id" name="sound_id" class="custom-select custom-select-sm">
+                                            {% for phony in phonys %}
+                                                <option value="{{ phony.soundId }}" {{ phony.soundId == tag.soundId ? "selected" }}>{{ phony.phony }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="form-row align-items-center biophony" {{ tag.phony!='biophony' and tag.soundId is not null?'hidden' }}>
                                 <div class="form-group col-auto">
                                     <label class="col-form-label-sm" for="speciesName">Species</label>
                                     <input id="speciesName"
@@ -22,7 +35,7 @@
                                            type="text"
                                            size="30"
                                            value="{{ tag.speciesName }}"
-                                           required
+                                            {{ tag.phony=='biophony'?'required' }}
                                     >
                                     <div class="invalid-feedback">
                                         Please select a species from the list.
@@ -55,10 +68,10 @@
                                 </div>
                             </div>
 
-                            <div class="form-row align-items-center mt-2" id="distance_group">
+                            <div class="form-row align-items-center mt-2 biophony" id="distance_group" {{ tag.phony!='biophony' and tag.soundId is not null?'hidden' }}>
                                 <div class="form-group col-auto">
-                                    <label class="col-form-label-sm" for="callDistance">Call Distance </label>
-                                    <input id="callDistance" class="form-control form-control-sm" name="call_distance_m" type="number" value="{{ tag.callDistance }}" {{ tag.distanceNotEstimable ? "readonly" }}>
+                                    <label class="col-form-label-sm" for="callDistance">Sound Distance </label>
+                                    <input id="callDistance" class="form-control form-control-sm" name="sound_distance_m" type="number" value="{{ tag.callDistance }}" {{ tag.distanceNotEstimable ? "readonly" }}>
                                 </div>
                                 <div class="form-group col-auto">
                                     <div class="form-check form-control-sm pt-4" id="dist_check">
@@ -72,15 +85,15 @@
 
                             <div class="form-row">
                                 <div class="form-group col-4" id="individuals_group">
-                                    <label class="col-form-label-sm" for="number_of_individuals">Number of individuals </label>
-                                    <input id="number_of_individuals" class="form-control form-control-sm" name="number_of_individuals" min="0" max="1000" type="number" value="{{ tag.numberIndividuals }}" required>
+                                    <label class="col-form-label-sm" for="individuals">Number of individuals </label>
+                                    <input id="individuals" class="form-control form-control-sm" name="individuals" min="0" max="1000" type="number" value="{{ tag.numberIndividuals }}" required>
                                     <div class="invalid-feedback">
                                         Please introduce a valid number of individuals.
                                     </div>
                                 </div>
-                                <div class="form-group col-4">
-                                    <label class="col-form-label-sm" for="type">Type</label>
-                                    <select id="sound_type" name="type" class="custom-select custom-select-sm">
+                                <div class="form-group col-4 biophony" {{ tag.phony!='biophony' and tag.soundId is not null?'hidden' }}>
+                                    <label class="col-form-label-sm" for="type">Animal Sound Type</label>
+                                    <select id="animal_sound_type" name="animal_sound_type" class="custom-select custom-select-sm">
                                         <option value="0"></option>
                                         {% for soundType in soundTypes %}
                                             <option value="{{ soundType.soundTypeId }}" {{ tag.type == soundType.soundTypeId ? "selected" }}>{{ soundType.name }}</option>
@@ -130,12 +143,18 @@
         </div>
     </div>
 </div>
-{% if reviewPanel == '' %}
-    <script>
-        $(document).ready(function () {
-            $("#modal-div").on('shown.bs.modal', function () {
-                $(this).find('#speciesName').focus();
-            });
-        });
-    </script>
-{% endif %}
+<script>
+    $("#modal-div").on('shown.bs.modal', function () {
+        if ($("#animal_sound_type")[0].options.length == 1) {
+            $("#animal_sound_type").attr('disabled', true)
+        }
+        $(this).find('#speciesName').focus();
+    });
+    $("#sound_id").on('change', function () {
+        if ($("#sound_id").find("option:selected").text() == 'biophony') {
+            $(".biophony").show()
+        } else {
+            $(".biophony").hide()
+        }
+    })
+</script>

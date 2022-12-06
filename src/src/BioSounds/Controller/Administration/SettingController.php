@@ -25,15 +25,6 @@ class SettingController extends BaseController
             'user' => (new User)->getFftValue(Auth::getUserID()),
             'projectFft' => Utils::getSetting('fft'),
             'ffts' => [4096, 2048, 1024, 512, 256, 128,],
-            'licenses' => [
-                ['value' => 'Copyright', 'description' => 'Copyright'],
-                ['value' => 'CC BY', 'description' => 'CC BY'],
-                ['value' => 'CC BY-SA', 'description' => 'CC BY-SA'],
-                ['value' => 'CC BY-ND', 'description' => 'CC BY-ND'],
-                ['value' => 'CC BY-NC', 'description' => 'CC BY-NC'],
-                ['value' => 'CC BY-NC-SA', 'description' => 'CC BY-NC-SA'],
-                ['value' => 'CC BY-NC-ND', 'description' => 'CC BY-NC-ND'],
-            ],
         ]);
     }
 
@@ -44,14 +35,10 @@ class SettingController extends BaseController
     public function save()
     {
         $setting = new Setting();
-        foreach ($_POST as $key => $value) {
-            if ($key == 'fft') {
-                $data['itemID'] = Auth::getUserID();
-                $data['fft'] = $value;
-                (new User())->updateUser($data);
-            } else {
-                $setting->update($key, $value);
-            }
+        foreach ($_POST as $value) {
+            $data['itemID'] = Auth::getUserID();
+            $data['fft'] = $value;
+            (new User())->updateUser($data);
         }
 
         $_SESSION['settings'] = $setting->getList();

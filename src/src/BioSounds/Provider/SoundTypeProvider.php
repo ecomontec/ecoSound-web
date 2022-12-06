@@ -35,12 +35,21 @@ class SoundTypeProvider extends BaseProvider
     public function getList(string $taxon_class = '', string $taxon_order = '')
     {
         $list = [];
-        $this->database->prepareQuery("SELECT sound_type_id, `name` FROM sound_type WHERE IF ('$taxon_order' = '', taxon_class = '$taxon_class' AND taxon_order='', taxon_order = '$taxon_order') ORDER BY `name`");
-        if (!empty($result = $this->database->executeSelect())) {
+        $this->database->prepareQuery("SELECT sound_type_id, `name` FROM sound_type WHERE taxon_order = '$taxon_order' ORDER BY `name`");
+        if (!empty($result = $this->database->executeSelect()) && $taxon_order != '') {
             foreach ($result as $soundType) {
                 $list[] = (new SoundType())
                     ->setSoundTypeId($soundType['sound_type_id'])
                     ->setName($soundType['name']);
+            }
+        } else {
+            $this->database->prepareQuery("SELECT sound_type_id, `name` FROM sound_type WHERE taxon_class = '$taxon_class' ORDER BY `name`");
+            if (!empty($result = $this->database->executeSelect())) {
+                foreach ($result as $soundType) {
+                    $list[] = (new SoundType())
+                        ->setSoundTypeId($soundType['sound_type_id'])
+                        ->setName($soundType['name']);
+                }
             }
         }
         return $list;

@@ -35,6 +35,8 @@
                 <th>Name</th>
                 <th>User</th>
                 <th>Site</th>
+                <th>Recorder</th>
+                <th>Microphone</th>
                 <th>License</th>
                 <th>Collection Type</th>
                 <th>Medium</th>
@@ -73,6 +75,21 @@
                                     {{ st.name }}
                                 </option>
                             {% endfor %}
+                        </select>
+                    </td>
+                    <td data-search="{{ recording.recorderName }}" data-order="{{ recording.recorderName }}">
+                        <select name="recorder_id" id="recorder_{{ recording.id }}" style="width:250px;" class="form-control form-control-sm">
+                            <option value="0"></option>
+                            {% for recorder in recorders %}
+                                <option value="{{ recorder.recorder_id }}" data-microphone="{{ recorder.microphone }}" {{ recorder.recorder_id == recording.recorder ? 'selected' }}>
+                                    {{ recorder.modal }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td data-search="{{ recording.microphoneName }}" data-order="{{ recording.microphoneName }}">
+                        <select name="microphone_id" id="microphone_{{ recording.id }}" style="width:250px;" class="form-control form-control-sm">
+                            <option value="{{ recording.microphone }}">{{ recording.microphoneName }}</option>
                         </select>
                     </td>
                     <td data-search="{{ recording.licenseName }}" data-order="{{ recording.licenseName }}">
@@ -163,6 +180,7 @@
         {{ parent() }}
         <script>
             var arr ={{ users|json_encode|raw }};
+            var microphones ={{ microphones|json_encode|raw }};
             $(document).ready(function () {
                 $('#recTable').show()
                 $('#recTable').DataTable({
@@ -225,6 +243,47 @@
                         for (var key in arr) {
                             if ($(this).val() != arr[key]['user_id']) {
                                 $(this).append("<option value='" + arr[key]['user_id'] + "'>" + arr[key]['name'] + "</option>");
+                            }
+                        }
+                    }
+                });
+
+                $("#recorder").on('change', function () {
+                    $('#microphone').empty()
+                    $('#microphone').removeAttr('readonly')
+                    var microphone = $(this).find('option:selected').attr('data-microphone').split(',')
+                    $('#microphone').append("<option></option>")
+                    for (var key in microphones) {
+                        if ($.inArray(microphones[key]['microphone_id'] += '', microphone) >= 0) {
+                            $('#microphone').append("<option value='" + microphones[key]['microphone_id'] + "'>" + microphones[key]['name'] + "</option>");
+                        }
+                    }
+                });
+                $("select[name='recorder_id']").on('change', function () {
+                    var id = $(this).attr('id').split('_')[1]
+                    $("#microphone_" + id).empty()
+                    $("#microphone_" + id).append("<option value='0'></option>");
+                    var microphone = $(this).find('option:selected').attr('data-microphone').split(',')
+                    for (var key in microphones) {
+                        if ($.inArray(microphones[key]['microphone_id'] += '', microphone) >= 0) {
+                            $('#microphone_' + id).append("<option value='" + microphones[key]['microphone_id'] + "'>" + microphones[key]['name'] + "</option>");
+                        }
+                    }
+                });
+                $("select[name='microphone_id']").on('mouseenter ', function () {
+                    if ($(this)[0].options.length < 2) {
+                        var id = $(this).attr('id').split('_')[1]
+                        if ($('#recorder_' + id).val() != 0) {
+                            if ($(this).val() > 0) {
+                                $("#microphone_" + id).prepend("<option value='0'></option>")
+                            }
+                            var microphone = $('#recorder_' + id).find('option:selected').attr('data-microphone').split(',')
+                            for (var key in microphones) {
+                                if ($.inArray(microphones[key]['microphone_id'] += '', microphone) >= 0) {
+                                    if ($(this).val() != microphones[key]['microphone_id']) {
+                                        $('#microphone_' + id).append("<option value='" + microphones[key]['microphone_id'] + "'>" + microphones[key]['name'] + "</option>");
+                                    }
+                                }
                             }
                         }
                     }

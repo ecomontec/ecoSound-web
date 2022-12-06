@@ -16,11 +16,12 @@ class Tag extends BaseProvider
     const MAX_FREQ = "max_freq";
     const UNCERTAIN = "uncertain";
     const REFERENCE_CALL = "reference_call";
-    const CALL_DISTANCE = "call_distance_m";
+    const CALL_DISTANCE = "sound_distance_m";
     const DISTANCE_NOT_ESTIMABLE = "distance_not_estimable";
-    const NUMBER_INDIVIDUALS = "number_of_individuals";
+    const NUMBER_INDIVIDUALS = "individuals";
     const COMMENTS = "comments";
-    const TYPE = 'type';
+    const TYPE = 'animal_sound_type';
+    const SOUND_ID = 'sound_id';
 
     /**
      * @var integer
@@ -98,6 +99,11 @@ class Tag extends BaseProvider
     private $type;
 
     /**
+     * @var int
+     */
+    private $sound_id;
+
+    /**
      * @var integer
      */
     private $reviewNumber;
@@ -147,6 +153,24 @@ class Tag extends BaseProvider
     public function setSpecies(?int $species): Tag
     {
         $this->species = $species;
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getSoundId(): ?int
+    {
+        return $this->sound_id;
+    }
+
+    /**
+     * @param int|null $sound_id
+     * @return Tag
+     */
+    public function setSoundId(?int $sound_id): Tag
+    {
+        $this->sound_id = $sound_id;
         return $this;
     }
 
@@ -570,6 +594,17 @@ class Tag extends BaseProvider
         $this->taxon_class = $taxon_class;
         return $this;
     }
+
+    /**
+     * @param string|null $phony
+     * @return Tag
+     */
+    public function setPhony(?string $phony): Tag
+    {
+        $this->phony = $phony;
+        return $this;
+    }
+
     /**
      * @param array $values
      * @return $this
@@ -584,19 +619,21 @@ class Tag extends BaseProvider
         $this->setMaxTime($values['max_time']);
         $this->setMinFrequency($values['min_freq']);
         $this->setMaxFrequency($values['max_freq']);
-        $this->setUncertain($values['uncertain']);
-        $this->setCallDistance($values['call_distance_m']);
+        $this->setUncertain(isset($values['uncertain']) ? $values['uncertain'] : 0);
+        $this->setCallDistance($values['sound_distance_m']);
         $this->setReferenceCall(isset($values['reference_call']) ? $values['reference_call'] : null);
         $this->setDistanceNotEstimable($values['distance_not_estimable'] ?: false);
-        $this->setNumberIndividuals(isset($values['number_of_individuals']) ? $values['number_of_individuals'] : null);
-        $this->setComments(isset($values['number_of_individuals']) ? $values['comments'] : null);
-        $this->setType(isset($values['type']) ? $values['type'] : null);
+        $this->setNumberIndividuals(isset($values['individuals']) ? $values['individuals'] : null);
+        $this->setComments(isset($values['individuals']) ? $values['comments'] : null);
+        $this->setType(isset($values['animal_sound_type']) ? $values['animal_sound_type'] : null);
         $this->setReviewNumber(isset($values['review_number']) ? $values['review_number'] : null);
         $this->setSpeciesName($values['species_name']);
         $this->setUserName(isset($values['name']) ? $values['name'] : null);
         $this->setCreationDate($values['creation_date']);
         $this->setTaxonOrder(isset($values['taxon_order']) ? $values['taxon_order'] : null);
         $this->setTaxonClass(isset($values['class']) ? $values['class'] : null);
+        $this->setSoundId(isset($values['sound_id']) ? $values['sound_id'] : null);
+        $this->setPhony(isset($values['phony']) ? $values['phony'] : null);
         return $this;
     }
 }

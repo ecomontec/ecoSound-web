@@ -37,7 +37,12 @@ class File
     /**
      * @var int
      */
-    private $sensor;
+    private $recorder;
+
+    /**
+     * @var int
+     */
+    private $microphone;
 
     /**
      * @var int
@@ -197,18 +202,36 @@ class File
     /**
      * @return int
      */
-    public function getSensor(): int
+    public function getRecorder(): int
     {
-        return $this->sensor;
+        return $this->recorder;
     }
 
     /**
-     * @param int $sensor
+     * @param int $recorder
      * @return File
      */
-    public function setSensor(int $sensor): File
+    public function setRecorder(int $recorder): File
     {
-        $this->sensor = $sensor;
+        $this->recorder = $recorder;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMicrophone(): int
+    {
+        return $this->microphone;
+    }
+
+    /**
+     * @param int $microphone
+     * @return File
+     */
+    public function setMicrophone(int $microphone): File
+    {
+        $this->microphone = $microphone;
         return $this;
     }
 
@@ -496,7 +519,8 @@ class File
             ':site' => $this->getSite(),
             ':collection' => $this->getCollection(),
             ':directory' => $this->getDirectory(),
-            ':sensor' => $this->getSensor(),
+            ':recorder' => $this->getRecorder(),
+            ':microphone' => $this->getMicrophone(),
             ':recording' => $this->getRecording(),
             ':user' => $this->getUser(),
             ':species' => $this->getSpecies(),

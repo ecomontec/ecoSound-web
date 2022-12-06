@@ -62,9 +62,10 @@ class RecordingProvider extends BaseProvider
             ':userId' => $userId,
         ];
 
-        $query = 'SELECT recording.recording_id, recording.name, filename, col_id, directory, sensor_id, recording.site_id, recording.user_id, ';
+        $query = 'SELECT recording.recording_id, recording.name, filename, col_id, directory, sensor_id, recording.site_id, recording.user_id,recorder.modal AS recorderName,recorder.recorder_id,microphone.name AS microphoneName,microphone.microphone_id,';
         $query .= 'recording.sound_id,recording.type, recording.medium, recording.note, user.name AS user_name,  file_size, bitrate, channel_num, duration, site.name as site_name, license.license_id, license.name as license_name, ';
         $query .= 'lba.label_id, lba.name as label_name,e1.`name` as realm,e2.`name` as biome,e3.`name` as functionalGroup,site.longitude_WGS84_dd_dddd AS longitude,site.latitude_WGS84_dd_dddd AS latitude,';
+        $query .= "CONCAT(file_date,' ', file_time) AS start_date,DATE_ADD(STR_TO_DATE(CONCAT(file_date ,' ',file_time),'%Y-%m-%d %H:%i:%S'),INTERVAL duration second) AS end_date,";
         $query .= 'DATE_FORMAT(file_date, \'%Y-%m-%d\') AS file_date, ';
         $query .= 'DATE_FORMAT(file_time, \'%H:%i:%s\') AS file_time, sampling_rate, recording.doi FROM recording ';
         $query .= 'LEFT JOIN 
@@ -85,6 +86,8 @@ class RecordingProvider extends BaseProvider
         $query .= 'LEFT JOIN explore e1 ON site.realm_id = e1.explore_id
                    LEFT JOIN explore e2 ON site.biome_id = e2.explore_id
                    LEFT JOIN explore e3 ON site.functional_group_id = e3.explore_id ';
+        $query .= 'LEFT JOIN recorder ON recording.recorder_id = recorder.recorder_id
+                   LEFT JOIN microphone ON recording.microphone_id = microphone.microphone_id';
 
         $query .= " WHERE col_id = :colId ";
 
@@ -108,6 +111,7 @@ class RecordingProvider extends BaseProvider
             }
             $data[] = $recording;
         }
+
         return $data;
     }
 
@@ -131,6 +135,7 @@ class RecordingProvider extends BaseProvider
 
         return $result[0];
     }
+
     /**
      * @param int $id
      * @return array

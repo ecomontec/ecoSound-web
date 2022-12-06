@@ -29,6 +29,7 @@
             <tr style="font-size: .875rem;">
                 <th></th>
                 <th>#</th>
+                <th>Phony</th>
                 <th>Species</th>
                 <th>Recording</th>
                 <th>User</th>
@@ -40,7 +41,7 @@
                 <th>Call Distance</th>
                 <th>Distance Not Estimable</th>
                 <th>Number of Individuals</th>
-                <th>Type</th>
+                <th>Animal Sound Type</th>
                 <th>Reference Call</th>
                 <th>Comments</th>
                 <th style="width: 120px">Creation Date (UTC)</th>
@@ -62,8 +63,9 @@
                         {{ tag.Id }}
                         <input type="hidden" name="tag_id" value="{{ tag.Id }}"/>
                     </td>
+                    <td>{{ tag.phony }}</td>
                     <td data-search="{{ tag.speciesName }}" data-order="{{ tag.speciesName }}">
-                        <input id="speciesName_{{ tag.Id }}" style="width:150px;" data-type="edit" class="form-control form-control-sm js-species-autocomplete" type="text" size="30" value="{{ tag.speciesName }}" required>
+                        <input id="speciesName_{{ tag.Id }}" style="width:150px;" data-type="edit" class="form-control form-control-sm js-species-autocomplete" type="text" size="30" value="{{ tag.speciesName }}" {{ tag.phony!='biophony'?'hidden':'required' }}>
                         <div class="invalid-feedback">
                             Please select a species from the list.
                         </div>
@@ -83,20 +85,19 @@
                         <input type="number" class="form-control form-control-sm" style="width:75px;" name="max_freq" maxlength="100" value="{{ tag.maxFrequency }}">
                     </td>
                     <td class="text-center" data-search="{{ tag.uncertain }}" data-order="{{ tag.uncertain }}">
-                        <input name="uncertain" type="checkbox" {{ tag.uncertain ? 'checked' }}>
+                        <input name="uncertain" type="checkbox" {{ tag.uncertain ? 'checked' }} {{ tag.phony!='biophony'?'hidden' }}>
                     </td>
                     <td data-search="{{ tag.callDistance }}" data-order="{{ tag.callDistance }}">
-                        <input id="call_distance_m{{ tag.Id }}" type="number" class="form-control form-control-sm" style="width:75px;" name="call_distance_m" maxlength="100"
-                               value="{{ tag.callDistance }}" {{ tag.distanceNotEstimable ? 'readonly' }}>
+                        <input id="sound_distance_m{{ tag.Id }}" type="number" class="form-control form-control-sm" style="width:75px;" name="sound_distance_m" maxlength="100" value="{{ tag.callDistance }}" {{ tag.distanceNotEstimable ? 'readonly' }} {{ tag.phony!='biophony'?'hidden' }}>
                     </td>
                     <td class="text-center" data-search="{{ tag.distanceNotEstimable }}" data-order="{{ tag.distanceNotEstimable }}">
-                        <input id="distance_not_estimable_{{ tag.Id }}" name="distance_not_estimable" type="checkbox" {{ tag.distanceNotEstimable ? 'checked' }}>
+                        <input id="distance_not_estimable_{{ tag.Id }}" name="distance_not_estimable" type="checkbox" {{ tag.distanceNotEstimable ? 'checked' }} {{ tag.phony!='biophony'?'hidden' }}>
                     </td>
                     <td data-search="{{ tag.numberIndividuals }}" data-order="{{ tag.numberIndividuals }}">
-                        <input type="number" class="form-control form-control-sm" name="number_of_individuals" min="0" max="1000" value="{{ tag.numberIndividuals }}" required>
+                        <input type="number" class="form-control form-control-sm" name="individuals" min="0" max="1000" value="{{ tag.numberIndividuals }}" required>
                     </td>
                     <td data-search="{{ tag.type }}" data-order="{{ tag.type }}">
-                        <select id="sound_type{{ tag.Id }}" name="type" class="form-control form-control-sm" style="width:180px;">
+                        <select id="animal_sound_type{{ tag.Id }}" name="animal_sound_type" class="form-control form-control-sm" style="width:180px;" {{ tag.phony!='biophony'?'hidden' }}>
                             <option value="{{ tag.typeId }}" selected>{{ tag.type }}</option>
                         </select>
                     </td>
@@ -163,7 +164,7 @@
             });
             $('input[name=distance_not_estimable]').click(function () {
                 var id = $(this).attr('id').split('_')[3]
-                let callDistance = $('#call_distance_m' + id);
+                let callDistance = $('#sound_distance_m' + id);
                 if ($(this).is(':checked')) {
                     callDistance.val(null);
                     callDistance.prop('readonly', true);
@@ -171,16 +172,16 @@
                 }
                 callDistance.prop('readonly', false);
             });
-            $("select[name='type']").on('mouseenter ', function () {
+            $("select[name='animal_sound_type']").on('mouseenter ', function () {
                 if ($(this)[0].options.length < 2) {
                     var id = $(this).attr('id').split('e')[1]
                     if ($(this).val() > 0) {
-                        $("#type" + id).prepend("<option value='0'></option>")
+                        $("#animal_sound_type" + id).prepend("<option value='0'></option>")
                     }
                     var data = arr[$("#taxon_class" + id).val() + $("#taxon_order" + id).val()]
                     for (var key in data) {
                         if ($(this).val() != data[key][0]) {
-                            $("#type" + id).append("<option value=" + data[key][0] + ">" + data[key][1] + "</option>");
+                            $("#animal_sound_type" + id).append("<option value=" + data[key][0] + ">" + data[key][1] + "</option>");
                         }
                     }
                 }

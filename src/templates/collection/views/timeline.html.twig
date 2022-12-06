@@ -1,0 +1,56 @@
+<link rel="stylesheet" href="{{ baseUrl }}/assets/css/timeline.css">
+
+<div id="timeline" style="width:100%;height: 900px"></div>
+<script src="{{ baseUrl }}/assets/js/timeline.js" defer></script>
+<script>
+    DateArr = []
+    {% for item in list %}
+    DateArr.push(parseInt("{{ item.recording.startDate }}".substring(0, 4)))
+    {% endfor %}
+    minYear = Math.min.apply(null, DateArr)
+    maxYear = Math.max.apply(null, DateArr)
+    timeline = new TL.Timeline('timeline',
+        {
+            "events": [
+                {% for item in list %}
+                {
+                    "media": {
+                        "url": "{{ baseUrl }}/{{ item.playerImage }}",
+                        "credit": "User:<a>{{ item.recording.getUserFullName }}</a>",
+                        "link": "{{ baseUrl }}/recording/show/{{ item.recording.id }}",
+                    },
+                    "start_date": {
+                        "year": "{{ item.recording.startDate }}".substring(0, 4),
+                        "month": "{{ item.recording.startDate }}".substring(5, 7),
+                        "day": "{{ item.recording.startDate }}".substring(8, 10),
+                        "hour": "{{ item.recording.startDate }}".substring(11, 13),
+                        "minute": "{{ item.recording.startDate }}".substring(14, 16),
+                        "second": "{{ item.recording.startDate }}".substring(17, 19),
+                    },
+                    "end_date": {
+                        "year": "{{ item.recording.endDate }}".substring(0, 4),
+                        "month": "{{ item.recording.endDate }}".substring(5, 7),
+                        "day": "{{ item.recording.endDate }}".substring(8, 10),
+                        "hour": "{{ item.recording.endDate }}".substring(11, 13),
+                        "minute": "{{ item.recording.endDate }}".substring(14, 16),
+                        "second": "{{ item.recording.endDate }}".substring(17, 19),
+                    },
+                    "text": {
+                        "headline": "{{ item.recording.name }}",
+                    },
+                    "group": "{{ item.recording.siteName?item.recording.siteName:'not geo-referenced' }}",
+                    "display_date": "{{ item.recording.startDate }}"
+                },
+                {% endfor %}
+            ],
+        },
+        {
+            "scale_factor": 8,
+            "timenav_height": 550,
+            "optimal_tick_width": 500,
+        }
+    );
+    $(document).ready(function () {
+        $(".tl-menubar").hide()
+    });
+</script>

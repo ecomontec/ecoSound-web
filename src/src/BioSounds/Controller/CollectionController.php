@@ -30,9 +30,13 @@ class CollectionController extends BaseController
      */
     public function index(int $projectId): string
     {
+        $str = '';
         $collections = (new CollectionProvider())->getCollectionPagesByPermission($projectId);
+        foreach ($collections as $collection) {
+            $str .= $collection->getId() . ',';
+        }
         $sites = (new SiteProvider())->getList($projectId);
-        $this->leaflet = $this->getProjectLeaflet($sites);
+        $this->leaflet = $this->getProjectLeaflet($sites, substr($str, 0, strlen($str) - 1));
         return $this->twig->render('collection/collections.html.twig', [
             'project' => (new ProjectProvider())->get($projectId),
             'collections' => $collections,
@@ -179,7 +183,7 @@ class CollectionController extends BaseController
                     $i = $i + 1;
                 }
             } else if ($site != null) {
-                if($s = (new SiteProvider())->get($site)){
+                if ($s = (new SiteProvider())->get($site)) {
                     if ($result = $this->gadm($s)) {
                         $latitude[] = $result[1];
                         $longitude[] = $result[0];
@@ -240,21 +244,22 @@ class CollectionController extends BaseController
         return $arr;
     }
 
-    public function getProjectLeaflet(array $allSites): array
+    public function getProjectLeaflet(array $allSites, string $collections): array
     {
         $array = array();
         $arr = array();
         $j = 0;
+
         foreach ($allSites as $site) {
             if (strlen($site->getLongitude()) > 0 && strlen($site->getLatitude()) > 0) {
                 $latitude[] = $site->getLatitude();
                 $longitude[] = $site->getLongitude();
-                $array[] = [$site->getId(), $site->getName(), $site->getLatitude(), $site->getLongitude()];
+                $array[] = [$site->getId(), $site->getName(), $site->getLatitude(), $site->getLongitude(), $site->getCollection($site->getId(), $collections)];
             } else {
                 if ($result = $this->gadm($site)) {
                     $latitude[] = $result[1];
                     $longitude[] = $result[0];
-                    $array[] = [$site->getId(), $site->getName(), $result[1], $result[0]];
+                    $array[] = [$site->getId(), $site->getName(), $result[1], $result[0], $site->getCollection($site->getId(), $collections)];
                 }
             }
         }
@@ -308,7 +313,7 @@ class CollectionController extends BaseController
         } else {
             return false;
         }
-        $result=(new SiteProvider())->getGamd($level, $name);
-        return [$result['x'],$result['y']];
+        $result = (new SiteProvider())->getGamd($level, $name);
+        return [$result['x'], $result['y']];
     }
 }
