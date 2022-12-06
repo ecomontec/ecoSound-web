@@ -144,6 +144,10 @@
     </div>
 </div>
 <script>
+    $(document).ready(function () {
+        var sound_id = $.cookie('sound_id');
+        $("#sound_id").val(sound_id).change()
+    });
     $("#modal-div").on('shown.bs.modal', function () {
         if ($("#animal_sound_type")[0].options.length == 1) {
             $("#animal_sound_type").attr('disabled', true)
@@ -156,5 +160,6 @@
         } else {
             $(".biophony").hide()
         }
+        $.cookie('sound_id', $("#sound_id").val(), {expires: 7});
     })
 </script>

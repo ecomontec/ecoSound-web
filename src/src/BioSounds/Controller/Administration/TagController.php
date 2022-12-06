@@ -13,6 +13,7 @@ use BioSounds\Provider\SoundTypeProvider;
 use BioSounds\Provider\TagProvider;
 use BioSounds\Utils\Auth;
 
+
 class TagController extends BaseController
 {
     const SECTION_TITLE = 'Tags';
@@ -120,6 +121,7 @@ class TagController extends BaseController
                 }
             }
         }
+
         if ($data['sound_id'] != 1) {
             unset($data['species_id']);
             unset($data['uncertain']);
