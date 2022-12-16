@@ -608,6 +608,14 @@ class Tag extends BaseProvider
     }
 
     /**
+     * @return string|null
+     */
+    public function getPhony(): ?string
+    {
+        return $this->phony ;
+    }
+
+    /**
      * @param string|null $phony
      * @return Tag
      */

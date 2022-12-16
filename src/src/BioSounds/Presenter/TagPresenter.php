@@ -9,7 +9,7 @@ class TagPresenter
 
     private $id;
 
-    private $sound_id;
+    private $phony;
 
     private $style;
 
@@ -64,18 +64,18 @@ class TagPresenter
     /**
      * @return mixed
      */
-    public function getSoundId()
+    public function getPhony()
     {
-        return $this->sound_id;
+        return $this->phony;
     }
 
     /**
-     * @param mixed $sound_id
+     * @param mixed $phony
      * @return TagPresenter
      */
-    public function setSoundId($sound_id)
+    public function setPhony($phony)
     {
-        $this->sound_id = $sound_id;
+        $this->phony = $phony;
         return $this;
     }
 

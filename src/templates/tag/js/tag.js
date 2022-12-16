@@ -170,6 +170,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         let createTag = function (tagId) {
             let speciesName = $('#speciesName').val();
+            let phony = $('#phony').val();
 
             let newTag = "<div class='tag-controls tag-dashed' id='" + tagId + "' style='z-index:800; border-color: white; left: ";
             newTag += left + "px; top: " + top + "px; height: " + height + "px; width: " + width + "px;'></div>";
@@ -178,7 +179,9 @@ document.addEventListener('DOMContentLoaded', function () {
             newTag += "<a href='" + baseUrl + "/tag/edit/" + tagId + "' class='btn btn-outline-primary btn-sm js-tag' title='Edit tag'>";
             newTag += "<i class='fas fa-edit' aria-hidden='true'></i></a>";
             newTag += "<a href='#' onclick='return false;' class='btn btn-outline-primary btn-sm zoom-tag' title='Zoom tag'><i class='fas fa-search' aria-hidden='true'></i></a>";
-            newTag += "<a href='#' onclick='return false;' id='est_" + tagId + "' type='button' class='btn btn-outline-primary btn-sm estimate-distance' title='Estimate call distance'><i class='fas fa-bullhorn' aria-hidden='true'></i></a>";
+            if(phony=="biophony"){
+                newTag += "<a href='#' onclick='return false;' id='est_" + tagId + "' type='button' class='btn btn-outline-primary btn-sm estimate-distance' title='Estimate call distance'><i class='fas fa-bullhorn' aria-hidden='true'></i></a>";
+            }
             newTag += "</div></div></div>";
 
             $('#myCanvas').append(newTag);
