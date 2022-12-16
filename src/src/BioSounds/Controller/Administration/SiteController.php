@@ -86,6 +86,9 @@ class SiteController extends BaseController
                 case 'project_id':
                     $project_id = $sitePdoValue;
                     break;
+                case 'collection_id':
+                    $collection_id = $sitePdoValue;
+                    break;
                 case 'realm_id':
                     $data['realm_id'] = $sitePdoValue == '' ? 0 : $sitePdoValue;
                     break;
@@ -123,7 +126,11 @@ class SiteController extends BaseController
             $data['user_id'] = Auth::getUserID();
             $site_id = $siteEnt->insert($data);
             $siteCollection = new SiteCollection();
-            $siteCollection->insertByProject($project_id, $site_id);
+            if (isset($collection_id)) {
+                $siteCollection->insert($collection_id, $site_id);
+            } else {
+                $siteCollection->insertByProject($project_id, $site_id);
+            }
             return json_encode([
                 'errorCode' => 0,
                 'message' => 'Site created successfully.',

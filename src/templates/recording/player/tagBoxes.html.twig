@@ -16,7 +16,7 @@
                 <a href='#' onclick='return false;' class='btn btn-outline-primary btn-sm zoom-tag' title='Zoom tag(+Alt: open in new tab)'>
                     <i class='fas fa-search' aria-hidden='true'></i>
                 </a>
-                {% if tag.title %}
+                {% if tag.soundId == 1 %}
                     <a href='#' onclick='return false;' id="est_{{ tag.id }}" type='button'
                        class='btn btn-outline-primary btn-sm estimate-distance' title='Estimate call distance'>
                         <i class='fas fa-bullhorn' aria-hidden='true'></i>

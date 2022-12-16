@@ -37,8 +37,8 @@
 
                         </td>
                         <td style="width: 55%;border-top: 1px solid #dddddd;">
-                            {% if collection.domain is not empty %}
-                                <h6>Domain: <small>{{ collection.domain }}</small></h6>
+                            {% if collection.sphere is not empty %}
+                                <h6>Sphere: <small>{{ collection.sphere }}</small></h6>
                             {% endif %}
                             {% if collection.note is not empty %}
                                 <h6>Description: <small>{{ collection.note }}</small></h6>
@@ -114,6 +114,7 @@
         groupAll.addTo(map)
         control.addTo(map)
         {% endif %}
+        map.fitBounds(groupAll.getBounds());
 
         $("#btn_map").click(function () {
             $("#map").toggle()

@@ -21,6 +21,7 @@ class Tag extends BaseProvider
     const NUMBER_INDIVIDUALS = "individuals";
     const COMMENTS = "comments";
     const TYPE = 'animal_sound_type';
+    const PHONY = 'phony';
     const SOUND_ID = 'sound_id';
 
     /**
@@ -389,6 +390,7 @@ class Tag extends BaseProvider
         $this->comments = $comments;
         return $this;
     }
+
     /**
      * @return int|null
      */
@@ -406,6 +408,7 @@ class Tag extends BaseProvider
         $this->type_id = $type_id;
         return $this;
     }
+
     /**
      * @return string|null
      */
@@ -441,6 +444,7 @@ class Tag extends BaseProvider
         $this->reviewNumber = $reviewNumber;
         return $this;
     }
+
     /**
      * @return int|null
      */
@@ -458,6 +462,7 @@ class Tag extends BaseProvider
         $this->species_id = $species_id;
         return $this;
     }
+
     /**
      * @return string|null
      */
@@ -475,6 +480,7 @@ class Tag extends BaseProvider
         $this->speciesName = $speciesName;
         return $this;
     }
+
     /**
      * @return string|null
      */
@@ -492,6 +498,7 @@ class Tag extends BaseProvider
         $this->recordingName = $recordingName;
         return $this;
     }
+
     /**
      * @return string|null
      */
@@ -509,6 +516,7 @@ class Tag extends BaseProvider
         $this->userName = $userName;
         return $this;
     }
+
     /**
      * @return string|null
      */
@@ -526,6 +534,7 @@ class Tag extends BaseProvider
         $this->time = $time;
         return $this;
     }
+
     /**
      * @return string|null
      */
@@ -543,6 +552,7 @@ class Tag extends BaseProvider
         $this->frequency = $frequency;
         return $this;
     }
+
     /**
      * @return string|null
      */
@@ -560,12 +570,13 @@ class Tag extends BaseProvider
         $this->creationDate = $creationDate;
         return $this;
     }
+
     /**
      * @return string|null
      */
     public function getTaxonOrder(): ?string
     {
-        return $this->taxon_order?$this->taxon_order:'';
+        return $this->taxon_order ? $this->taxon_order : '';
     }
 
     /**
@@ -577,12 +588,13 @@ class Tag extends BaseProvider
         $this->taxon_order = $taxon_order;
         return $this;
     }
+
     /**
      * @return string|null
      */
     public function getTaxonClass(): ?string
     {
-        return $this->taxon_class?$this->taxon_class:'';
+        return $this->taxon_class ? $this->taxon_class : '';
     }
 
     /**
@@ -602,6 +614,16 @@ class Tag extends BaseProvider
     public function setPhony(?string $phony): Tag
     {
         $this->phony = $phony;
+        return $this;
+    }
+
+    /**
+     * @param string|null $sound_type
+     * @return Tag
+     */
+    public function setSoundType(?string $sound_type): Tag
+    {
+        $this->sound_type = $sound_type;
         return $this;
     }
 
@@ -634,6 +656,7 @@ class Tag extends BaseProvider
         $this->setTaxonClass(isset($values['class']) ? $values['class'] : null);
         $this->setSoundId(isset($values['sound_id']) ? $values['sound_id'] : null);
         $this->setPhony(isset($values['phony']) ? $values['phony'] : null);
+        $this->setSoundType(isset($values['sound_type']) ? $values['sound_type'] : null);
         return $this;
     }
 }

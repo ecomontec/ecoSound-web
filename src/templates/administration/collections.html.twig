@@ -36,7 +36,7 @@
                 <th>Name</th>
                 <th>User</th>
                 <th>DOI</th>
-                <th>Domain</th>
+                <th>Sphere</th>
                 <th>Description</th>
                 <th>Creation Date (UTC)</th>
                 <th>View</th>
@@ -61,16 +61,16 @@
                     <td data-search="{{ collection.doi }}" data-order="{{ collection.doi }}">
                         <input type="text" class="form-control form-control-sm" name="doi" value="{{ collection.doi }}">
                     </td>
-                    <td data-search="{{ collection.domain }}" data-order="{{ collection.domain }}">
-                        <select id="domain" name="domain" class="form-control form-control-sm">
+                    <td data-search="{{ collection.sphere }}" data-order="{{ collection.sphere }}">
+                        <select id="sphere" name="sphere" class="form-control form-control-sm">
                             <option></option>
-                            <option value="hydrosphere" {{ collection.domain == 'hydrosphere' ? 'selected' }}>hydrosphere</option>
-                            <option value="cryosphere" {{ collection.domain == 'cryosphere' ? 'selected' }}>cryosphere</option>
-                            <option value="lithosphere" {{ collection.domain == 'lithosphere' ? 'selected' }}>lithosphere</option>
-                            <option value="pedosphere" {{ collection.domain == 'pedosphere' ? 'selected' }}>pedosphere</option>
-                            <option value="atmopshere" {{ collection.domain == 'atmopshere' ? 'selected' }}>atmopshere</option>
-                            <option value="biosphere" {{ collection.domain == 'biosphere' ? 'selected' }}>biosphere</option>
-                            <option value="anthroposphere" {{ collection.domain == 'anthroposphere' ? 'selected' }}>anthroposphere</option>
+                            <option value="hydrosphere" {{ collection.sphere == 'hydrosphere' ? 'selected' }}>hydrosphere</option>
+                            <option value="cryosphere" {{ collection.sphere == 'cryosphere' ? 'selected' }}>cryosphere</option>
+                            <option value="lithosphere" {{ collection.sphere == 'lithosphere' ? 'selected' }}>lithosphere</option>
+                            <option value="pedosphere" {{ collection.sphere == 'pedosphere' ? 'selected' }}>pedosphere</option>
+                            <option value="atmopshere" {{ collection.sphere == 'atmopshere' ? 'selected' }}>atmopshere</option>
+                            <option value="biosphere" {{ collection.sphere == 'biosphere' ? 'selected' }}>biosphere</option>
+                            <option value="anthroposphere" {{ collection.sphere == 'anthroposphere' ? 'selected' }}>anthroposphere</option>
                         </select>
                     </td>
                     <td data-search="{{ collection.note }}" data-order="{{ collection.note }}">

@@ -20,7 +20,7 @@ class TagProvider extends BaseProvider
      */
     public function get(int $tagId): Tag
     {
-        $query = 'SELECT tag.*,sound.phony, species.taxon_order, species.class, ' . User::FULL_NAME;
+        $query = 'SELECT tag.*,sound.phony,sound.sound_type, species.taxon_order, species.class, ' . User::FULL_NAME;
         $query .= ', ' . Species::BINOMIAL . ' as species_name ';
         $query .= 'FROM ' . self::TABLE_NAME . ' ';
         $query .= 'LEFT JOIN ' . Species::TABLE_NAME . ' ON ';
@@ -48,7 +48,7 @@ class TagProvider extends BaseProvider
     {
         $result = [];
 
-        $query = 'SELECT tag_id, recording_id, min_time, max_time, min_freq, max_freq, user_id, uncertain, ';
+        $query = 'SELECT tag_id, recording_id, min_time, max_time, min_freq, max_freq, user_id, uncertain,sound_id, ';
         $query .= 'binomial as species_name, sound_distance_m, distance_not_estimable, ';
         $query .= '(SELECT COUNT(*) FROM tag_review WHERE tag_id = tag.tag_id) AS review_number, ';
         $query .= '(( max_time - min_time ) + (max_freq - min_time )) AS time ';
@@ -143,7 +143,7 @@ class TagProvider extends BaseProvider
 
     public function getTagPagesByCollection(int $colId): array
     {
-        $sql = "SELECT t.*,sound.phony,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass FROM tag t 
+        $sql = "SELECT t.*,sound.phony,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass FROM tag t 
             INNER JOIN recording r ON r.recording_id = t.recording_id
             LEFT JOIN species s ON s.species_id = t.species_id
             LEFT JOIN collection c ON c.collection_id = r.col_id
@@ -183,7 +183,8 @@ class TagProvider extends BaseProvider
                 ->setTaxonOrder($item['TaxonOrder'])
                 ->setTaxonClass($item['TaxonClass'])
                 ->setPhony($item['phony'])
-                ->setSoundId($item['sound_id']);
+                ->setSoundId($item['sound_id'])
+                ->setSoundType($item['sound_type']);
         }
         return $data;
     }

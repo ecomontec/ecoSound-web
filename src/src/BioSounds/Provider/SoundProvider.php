@@ -8,17 +8,22 @@ class SoundProvider extends BaseProvider
 {
     public function get()
     {
-        $query = 'SELECT * FROM sound ORDER BY sound_id';
+        $query = 'SELECT phony FROM sound GROUP BY phony';
         $this->database->prepareQuery($query);
         $result = $this->database->executeSelect();
         $data = [];
         foreach ($result as $item) {
             $data[] = (new Sound())
-                ->setSoundId($item['sound_id'])
-                ->setPhony($item['phony'])
-                ->setSoundType($item['sound_type']);
+                ->setPhony($item['phony']);
         }
         return $data;
+    }
+
+    public function getAll()
+    {
+        $query = 'SELECT * FROM sound ORDER BY sound_type';
+        $this->database->prepareQuery($query);
+        return $this->database->executeSelect();
     }
 
     /**

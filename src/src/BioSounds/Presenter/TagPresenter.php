@@ -9,6 +9,8 @@ class TagPresenter
 
     private $id;
 
+    private $sound_id;
+
     private $style;
 
     private $top;
@@ -56,6 +58,24 @@ class TagPresenter
     public function setId($id)
     {
         $this->id = $id;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSoundId()
+    {
+        return $this->sound_id;
+    }
+
+    /**
+     * @param mixed $sound_id
+     * @return TagPresenter
+     */
+    public function setSoundId($sound_id)
+    {
+        $this->sound_id = $sound_id;
         return $this;
     }
 

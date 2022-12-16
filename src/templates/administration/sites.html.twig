@@ -83,9 +83,9 @@
                         </div>
                     </td>
                     <td data-search="{{ site.freshwaterDepth }}" data-order="{{ site.freshwaterDepth }}">
-                        <input type="number" class="form-control form-control-sm" style="width:120px;" name="freshwater_depth_m" min="-15000" max="10000" step="0.1" pattern="##.##" value="{{ site.freshwaterDepth }}">
+                        <input type="number" class="form-control form-control-sm" style="width:120px;" name="freshwater_depth_m" min="-2000" max="0" step="0.1" pattern="##.##" value="{{ site.freshwaterDepth }}">
                         <div class="invalid-feedback">
-                            Please provide a freshwater depth value, from -15000.0 to 10000.0.
+                            Please provide a freshwater depth value, from -2000.0 to 0.0.
                         </div>
                     </td>
                     <td data-search="{{ site.gadm0 }}" data-order="{{ site.gadm0 }}">
@@ -123,7 +123,7 @@
                     </td>
                     {% if isManage %}
                         <td>
-                            <a href="{{ baseUrl }}/admin/siteCollections/{{ site.id }}" class="js-open-modal" title="Site Privileges">
+                            <a href="{{ baseUrl }}/admin/siteCollections/{{ site.id }}" class="js-open-modal" title="Site Assignment">
                                 <i class='fas fa-edit'></i>
                             </a>
                         </td>

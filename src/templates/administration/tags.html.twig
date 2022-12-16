@@ -30,17 +30,18 @@
                 <th></th>
                 <th>#</th>
                 <th>Phony</th>
-                <th>Species</th>
+                <th>Sound Type</th>
                 <th>Recording</th>
                 <th>User</th>
                 <th>Time Start</th>
                 <th>Time End</th>
                 <th>Min Freq</th>
                 <th>Max Freq</th>
+                <th>Species</th>
                 <th>Uncertain</th>
                 <th>Call Distance</th>
                 <th>Distance Not Estimable</th>
-                <th>Number of Individuals</th>
+                <th>Individuals</th>
                 <th>Animal Sound Type</th>
                 <th>Reference Call</th>
                 <th>Comments</th>
@@ -64,11 +65,14 @@
                         <input type="hidden" name="tag_id" value="{{ tag.Id }}"/>
                     </td>
                     <td>{{ tag.phony }}</td>
-                    <td data-search="{{ tag.speciesName }}" data-order="{{ tag.speciesName }}">
-                        <input id="speciesName_{{ tag.Id }}" style="width:150px;" data-type="edit" class="form-control form-control-sm js-species-autocomplete" type="text" size="30" value="{{ tag.speciesName }}" {{ tag.phony!='biophony'?'hidden':'required' }}>
-                        <div class="invalid-feedback">
-                            Please select a species from the list.
-                        </div>
+                    <td data-search="{{ tag.sound_type }}" data-order="{{ tag.sound_type }}">
+                        <select id="sound_id{{ tag.Id }}" name="sound_id" class="form-control form-control-sm" style="width:180px;">
+                            {% for soundType in soundTypes %}
+                                {% if soundType.phony == tag.phony %}
+                                    <option value="{{ soundType.sound_id }}" {{ tag.soundId == soundType.sound_id ? "selected" }}>{{ soundType.sound_type }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
                     </td>
                     <td>{{ tag.recordingName }}</td>
                     <td>{{ tag.userName }}</td>
@@ -84,6 +88,12 @@
                     <td data-search="{{ tag.maxFrequency }}" data-order="{{ tag.maxFrequency }}">
                         <input type="number" class="form-control form-control-sm" style="width:75px;" name="max_freq" maxlength="100" value="{{ tag.maxFrequency }}">
                     </td>
+                    <td data-search="{{ tag.speciesName }}" data-order="{{ tag.speciesName }}">
+                        <input id="speciesName_{{ tag.Id }}" style="width:150px;" data-type="edit" class="form-control form-control-sm js-species-autocomplete" type="text" size="30" value="{{ tag.speciesName }}" {{ tag.phony!='biophony'?'hidden':'required' }}>
+                        <div class="invalid-feedback">
+                            Please select a species from the list.
+                        </div>
+                    </td>
                     <td class="text-center" data-search="{{ tag.uncertain }}" data-order="{{ tag.uncertain }}">
                         <input name="uncertain" type="checkbox" {{ tag.uncertain ? 'checked' }} {{ tag.phony!='biophony'?'hidden' }}>
                     </td>
@@ -94,7 +104,7 @@
                         <input id="distance_not_estimable_{{ tag.Id }}" name="distance_not_estimable" type="checkbox" {{ tag.distanceNotEstimable ? 'checked' }} {{ tag.phony!='biophony'?'hidden' }}>
                     </td>
                     <td data-search="{{ tag.numberIndividuals }}" data-order="{{ tag.numberIndividuals }}">
-                        <input type="number" class="form-control form-control-sm" name="individuals" min="0" max="1000" value="{{ tag.numberIndividuals }}" required>
+                        <input type="number" class="form-control form-control-sm" name="individuals" min="0" max="1000" value="{{ tag.numberIndividuals }}" {{ tag.phony!='biophony'?'hidden' }}>
                     </td>
                     <td data-search="{{ tag.type }}" data-order="{{ tag.type }}">
                         <select id="animal_sound_type{{ tag.Id }}" name="animal_sound_type" class="form-control form-control-sm" style="width:180px;" {{ tag.phony!='biophony'?'hidden' }}>
@@ -140,7 +150,7 @@
         });
 
         document.addEventListener("DOMContentLoaded", function () {
-            var arr ={{ sound_types|json_encode|raw }};
+            var arr ={{ animal_sound_types|json_encode|raw }};
             'use strict';
             $(document).on('click', '#tagsExport', function () {
                 window.location.href = '{{ baseUrl }}/api/admin/tagMgr/export/{{ colId }}';

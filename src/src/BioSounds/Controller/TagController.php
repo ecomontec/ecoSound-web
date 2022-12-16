@@ -61,6 +61,7 @@ class TagController extends BaseController
                 'displayDeleteButton' => 'hidden',
                 'recordingName' => isset($_POST['recording_name']) ? $_POST['recording_name'] : null,
                 'phonys' => (new SoundProvider())->get(),
+                'soundTypes' => (new SoundProvider())->getAll(),
             ]),
         ]);
     }
@@ -114,8 +115,9 @@ class TagController extends BaseController
                 'displaySaveButton' => $displaySaveButton,
                 'disableTagForm' => !Auth::isManage() && !$isUserTagOwner,
                 'reviewPanel' => (new TagReviewController($this->twig))->show($tagId, $isReviewGranted || $isManageGranted),
-                'soundTypes' => (new SoundTypeProvider())->getList($tag->getTaxonClass(), $tag->getTaxonOrder()),
+                'animalSoundTypes' => (new SoundTypeProvider())->getList($tag->getTaxonClass(), $tag->getTaxonOrder()),
                 'phonys' => (new SoundProvider())->get(),
+                'soundTypes' => (new SoundProvider())->getAll(),
             ]),
         ]);
     }
@@ -141,14 +143,14 @@ class TagController extends BaseController
                 $data[$key] = null;
             }
         }
-        if ($data['sound_id'] != 1 || isset($data['sound_id'])== false) {
+        if ($data['phony'] != "biophony") {
             unset($data['species_id']);
             unset($data['uncertain']);
             unset($data['sound_distance_m']);
             unset($data['distance_not_estimable']);
             unset($data['animal_sound_type']);
         }
-
+        unset($data[Tag::PHONY]);
         if (isset($data[Tag::ID]) && !empty($data[Tag::ID])) {
             (new TagProvider())->update($data);
             return json_encode([
@@ -161,7 +163,9 @@ class TagController extends BaseController
         if ($data[Tag::DISTANCE_NOT_ESTIMABLE] != 1) {
             $data[Tag::DISTANCE_NOT_ESTIMABLE] = null;
         }
-
+        if ($data['species_id'] == '') {
+            unset($data[Tag::SPECIES_ID]);
+        }
         unset($data[Tag::ID]);
 
         return json_encode([

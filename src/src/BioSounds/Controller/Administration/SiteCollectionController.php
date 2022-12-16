@@ -45,7 +45,7 @@ class SiteCollectionController extends BaseController
         }
         return json_encode([
             'errorCode' => 0,
-            'message' => 'successfully changed site privileges',
+            'message' => 'successfully changed site assignment',
         ]);
     }
 }

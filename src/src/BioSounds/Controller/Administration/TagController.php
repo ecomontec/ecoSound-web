@@ -38,17 +38,17 @@ class TagController extends BaseController
             $colId = $collections[0]->getId();
         }
         $arr = [];
-        $sound_types = (new SoundTypeProvider())->getAllList();
-        foreach ($sound_types as $sound_type) {
-            $arr[$sound_type->getTaxonClass() . $sound_type->getTaxonOrder()][$sound_type->getSoundTypeId()] = [$sound_type->getSoundTypeId(), $sound_type->getName()];
+        $animal_sound_types = (new SoundTypeProvider())->getAllList();
+        foreach ($animal_sound_types as $animal_sound_type) {
+            $arr[$animal_sound_type->getTaxonClass() . $animal_sound_type->getTaxonOrder()][$animal_sound_type->getSoundTypeId()] = [$animal_sound_type->getSoundTypeId(), $animal_sound_type->getName()];
         }
 
         return $this->twig->render('administration/tags.html.twig', [
             'collections' => $collections,
             'colId' => $colId,
             'tags' => (new TagProvider())->getTagPagesByCollection($colId),
-            'sound_types' => $arr,
-            'phonys'=>(new SoundProvider())->get(),
+            'animal_sound_types' => $arr,
+            'soundTypes' => (new SoundProvider())->getAll(),
         ]);
     }
 
@@ -68,7 +68,7 @@ class TagController extends BaseController
         header('Content-Disposition: attachment; filename=' . $file_name);
 
         $tagList = (new TagProvider())->getTagPagesByCollection($collection_id);
-        $tagAls[] = array('#', 'Species', 'Recording', 'User', 'Time Start', 'Time End', 'Min Frequency', 'Max Frequency', 'Uncertain', 'Call Distance', 'Distance Not Estimable', 'Number of Individuals', 'Type', 'Reference Call', 'Comments', 'Creation Date(UTC)');
+        $tagAls[] = array('#', 'Species', 'Recording', 'User', 'Time Start', 'Time End', 'Min Frequency', 'Max Frequency', 'Uncertain', 'Call Distance', 'Distance Not Estimable', 'Individuals', 'Type', 'Reference Call', 'Comments', 'Creation Date(UTC)');
         foreach ($tagList as $tagItem) {
             $tagArray = array(
                 $tagItem->getId(),
@@ -122,7 +122,7 @@ class TagController extends BaseController
             }
         }
 
-        if ($data['sound_id'] != 1) {
+        if ($data['phony'] != "biophony") {
             unset($data['species_id']);
             unset($data['uncertain']);
             unset($data['sound_distance_m']);

@@ -73,7 +73,7 @@ CREATE TABLE `collection`
     `doi`           varchar(255) COLLATE utf8_unicode_ci          DEFAULT NULL COMMENT 'Citation in cientific format or full URL',
     `note`          text COLLATE utf8_unicode_ci                  DEFAULT NULL,
     `view`          enum('gallery','list') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'gallery',
-    `domain`        varchar(100) COLLATE utf8_unicode_ci          DEFAULT NULL,
+    `sphere`        varchar(100) COLLATE utf8_unicode_ci          DEFAULT NULL,
     `public`        tinyint(1) NOT NULL DEFAULT 0,
     `creation_date` timestamp                            NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;

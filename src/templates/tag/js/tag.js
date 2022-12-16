@@ -88,16 +88,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        $('#distanceNotEstimable').click(function () {
-            let callDistance = $('#callDistance');
-            if ($(this).is(':checked')) {
-                callDistance.val(null);
-                callDistance.prop('readonly', true);
-                return;
-            }
-            callDistance.prop('readonly', false);
-        });
-
         $('#distance').click(function () {
             let callDistance = $('#call_distance');
             if ($(this).is(':checked')) {
