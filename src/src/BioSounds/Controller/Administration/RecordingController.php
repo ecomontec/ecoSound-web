@@ -59,7 +59,7 @@ class RecordingController extends BaseController
         );
 
         $projectId = $collection->getProject();
-        $userSites = (new SiteProvider())->getBasicList($projectId);
+        $userSites = (new SiteProvider())->getBasicList($projectId,$colId);
 
         return $this->twig->render('administration/recordings.html.twig', [
             'colId' => $colId,

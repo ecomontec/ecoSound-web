@@ -72,7 +72,7 @@
                                 <div class="form-group col-auto">
                                     <div class="form-check form-control-sm pt-4" id="dist_check">
                                         <input class="form-check-input" id='distanceNotEstimable' name="distance_not_estimable" type="checkbox" value="1" {{ tag.distanceNotEstimable ? "checked" }}>
-                                        <label class="form-check-label">
+                                        <label class="form-check-label" for="distanceNotEstimable">
                                             Distance not estimable
                                         </label>
                                     </div>
@@ -151,8 +151,6 @@
         $("#phony").val(phony).change()
         $("#sound_id").find("option[value=" + sound_id + "]").prop("selected", true);
         {% endif %}
-        $("#distanceNotEstimable").attr('disabled', true)
-
     });
     $("#modal-div").on('shown.bs.modal', function () {
         if ($("#animal_sound_type")[0].options.length == 1) {

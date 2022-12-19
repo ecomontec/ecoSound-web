@@ -14,9 +14,9 @@ class SiteProvider extends BaseProvider
      * @return Site[]
      * @throws \Exception
      */
-    public function getBasicList($project_id): array
+    public function getBasicList($project_id,$collection_id): array
     {
-        return $this->getList($project_id);
+        return $this->getList($project_id,$collection_id);
     }
 
     /**

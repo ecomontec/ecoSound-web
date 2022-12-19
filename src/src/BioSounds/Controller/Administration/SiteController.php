@@ -126,7 +126,7 @@ class SiteController extends BaseController
             $data['user_id'] = Auth::getUserID();
             $site_id = $siteEnt->insert($data);
             $siteCollection = new SiteCollection();
-            if (isset($collection_id)) {
+            if ($collection_id != "") {
                 $siteCollection->insert($collection_id, $site_id);
             } else {
                 $siteCollection->insertByProject($project_id, $site_id);
