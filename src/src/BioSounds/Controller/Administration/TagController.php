@@ -49,6 +49,7 @@ class TagController extends BaseController
             'tags' => (new TagProvider())->getTagPagesByCollection($colId),
             'animal_sound_types' => $arr,
             'soundTypes' => (new SoundProvider())->getAll(),
+            'phonys' => (new SoundProvider())->get(),
         ]);
     }
 
@@ -121,14 +122,18 @@ class TagController extends BaseController
                 }
             }
         }
-
-        if ($data['phony'] != "biophony") {
+        unset($data['_search']);
+        if ($data['species_id'] == '') {
             unset($data['species_id']);
-            unset($data['uncertain']);
-            unset($data['sound_distance_m']);
-            unset($data['distance_not_estimable']);
-            unset($data['animal_sound_type']);
         }
+        if ($data['phony'] != "biophony") {
+            $data['species_id'] = null;
+            $data['uncertain'] = null;
+            $data['animal_sound_type'] = null;
+            $data['distance_not_estimable'] = null;
+            $data['sound_distance_m'] = null;
+        }
+        unset($data['phony']);
         $tagProvider->update($data);
         return json_encode([
             'errorCode' => 0,

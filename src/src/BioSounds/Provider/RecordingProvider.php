@@ -62,7 +62,7 @@ class RecordingProvider extends BaseProvider
             ':userId' => $userId,
         ];
 
-        $query = 'SELECT recording.recording_id, recording.name, filename, col_id, directory, sensor_id, recording.site_id, recording.user_id,recorder.modal AS recorderName,recorder.recorder_id,microphone.name AS microphoneName,microphone.microphone_id,';
+        $query = 'SELECT recording.recording_id, recording.name, filename, col_id, directory, sensor_id, recording.site_id, recording.user_id,recorder.modal AS recorderName,recorder.brand AS brand,recorder.recorder_id,microphone.name AS microphoneName,microphone.microphone_id,';
         $query .= 'recording.sound_id,recording.type, recording.medium, recording.note, user.name AS user_name,  file_size, bitrate, channel_num, duration, site.name as site_name, license.license_id, license.name as license_name, ';
         $query .= 'lba.label_id, lba.name as label_name,e1.`name` as realm,e2.`name` as biome,e3.`name` as functionalGroup,site.longitude_WGS84_dd_dddd AS longitude,site.latitude_WGS84_dd_dddd AS latitude,';
         $query .= "CONCAT(file_date,' ', file_time) AS start_date,DATE_ADD(STR_TO_DATE(CONCAT(file_date ,' ',file_time),'%Y-%m-%d %H:%i:%S'),INTERVAL duration second) AS end_date,";

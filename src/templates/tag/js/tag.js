@@ -170,16 +170,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
         let createTag = function (tagId) {
             let speciesName = $('#speciesName').val();
+            let soundType = $('#sound_id').find("option:selected").text();
             let phony = $('#phony').val();
+            let tagName = speciesName ? speciesName : soundType ? soundType : phony
 
             let newTag = "<div class='tag-controls tag-dashed' id='" + tagId + "' style='z-index:800; border-color: white; left: ";
             newTag += left + "px; top: " + top + "px; height: " + height + "px; width: " + width + "px;'></div>";
-            newTag += "<div class='card js-panel-tag'><div class='card-header'><small>" + tagId + " | " + speciesName + "</small></div>";
+            newTag += "<div class='card js-panel-tag'><div class='card-header'><small>" + tagId + " | " + tagName + "</small></div>";
             newTag += "<div class='card-body mx-auto'><div class='btn-group' role='group'>";
             newTag += "<a href='" + baseUrl + "/tag/edit/" + tagId + "' class='btn btn-outline-primary btn-sm js-tag' title='Edit tag'>";
             newTag += "<i class='fas fa-edit' aria-hidden='true'></i></a>";
             newTag += "<a href='#' onclick='return false;' class='btn btn-outline-primary btn-sm zoom-tag' title='Zoom tag'><i class='fas fa-search' aria-hidden='true'></i></a>";
-            if(phony=="biophony"){
+            if (phony == "biophony") {
                 newTag += "<a href='#' onclick='return false;' id='est_" + tagId + "' type='button' class='btn btn-outline-primary btn-sm estimate-distance' title='Estimate call distance'><i class='fas fa-bullhorn' aria-hidden='true'></i></a>";
             }
             newTag += "</div></div></div>";
@@ -191,6 +193,11 @@ document.addEventListener('DOMContentLoaded', function () {
             const callDistance = $('#callDistance').val();
             const distanceNotEstimable = $('#distanceNotEstimable').is(':checked');
 
+            let speciesName = $('#speciesName').val();
+            let soundType = $('#sound_id').find("option:selected").text();
+            let phony = $('#phony').val();
+            let tagName = speciesName ? speciesName : soundType ? soundType : phony
+
             let tagElement = $('#' + tagId);
 
             tagElement.removeClass('tag-orange');
@@ -199,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 tagElement.addClass('tag-orange');
             }
 
-            tagElement.next('.js-panel-tag').find('.card-header').find('small').text(tagId + " | " + $('#speciesName').val());
+            tagElement.next('.js-panel-tag').find('.card-header').find('small').text(tagId + " | " + tagName);
             tagElement
                 .css('width', width + 'px')
                 .css('height', height + 'px')

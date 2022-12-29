@@ -80,6 +80,24 @@ class TagPresenter
     }
 
     /**
+     * @return string|null
+     */
+    public function getSoundType(): ?string
+    {
+        return $this->sound_type ;
+    }
+
+    /**
+     * @param string|null $sound_type
+     * @return TagPresenter
+     */
+    public function setSoundType(?string $sound_type)
+    {
+        $this->sound_type = $sound_type;
+        return $this;
+    }
+
+    /**
      * @return mixed
      */
     public function getStyle()

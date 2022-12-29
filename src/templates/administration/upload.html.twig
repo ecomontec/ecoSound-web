@@ -32,7 +32,7 @@
                             <select id="recorder" name="recorder" class="form-control form-control-sm" required>
                                 <option></option>
                                 {% for recorder in recorders %}
-                                    <option value="{{ recorder.recorder_id }}" data-microphone="{{ recorder.microphone }}">{{ recorder.modal }}</option>
+                                    <option value="{{ recorder.recorder_id }}" data-microphone="{{ recorder.microphone }}">{{ recorder.modal }}{% if recorder.brand!='' or recorder.brand is not null %} | {{ recorder.brand }}{% endif %}</option>
                                 {% endfor %}
                             </select>
                         </div>

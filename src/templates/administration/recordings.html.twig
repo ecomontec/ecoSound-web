@@ -77,12 +77,12 @@
                             {% endfor %}
                         </select>
                     </td>
-                    <td data-search="{{ recording.recorderName }}" data-order="{{ recording.recorderName }}">
+                    <td data-search="{{ recording.recorderName }}{{ recording.brand }}" data-order="{{ recording.brand }}">
                         <select name="recorder_id" id="recorder_{{ recording.id }}" style="width:250px;" class="form-control form-control-sm">
                             <option value="0"></option>
                             {% for recorder in recorders %}
                                 <option value="{{ recorder.recorder_id }}" data-microphone="{{ recorder.microphone }}" {{ recorder.recorder_id == recording.recorder ? 'selected' }}>
-                                    {{ recorder.modal }}
+                                    {{ recorder.modal }}{% if recorder.brand!='' or recorder.brand is not null %} | {{ recorder.brand }}{% endif %}
                                 </option>
                             {% endfor %}
                         </select>

@@ -143,12 +143,15 @@ class TagController extends BaseController
                 $data[$key] = null;
             }
         }
+        if ($data['species_id'] == '') {
+            unset($data[Tag::SPECIES_ID]);
+        }
         if ($data['phony'] != "biophony") {
-            unset($data['species_id']);
-            unset($data['uncertain']);
-            unset($data['sound_distance_m']);
-            unset($data['distance_not_estimable']);
-            unset($data['animal_sound_type']);
+            $data['species_id'] = null;
+            $data['uncertain'] = null;
+            $data['animal_sound_type'] = null;
+            $data['distance_not_estimable'] = null;
+            $data['sound_distance_m'] = null;
         }
         unset($data[Tag::PHONY]);
         if (isset($data[Tag::ID]) && !empty($data[Tag::ID])) {
@@ -163,9 +166,7 @@ class TagController extends BaseController
         if ($data[Tag::DISTANCE_NOT_ESTIMABLE] != 1) {
             $data[Tag::DISTANCE_NOT_ESTIMABLE] = null;
         }
-        if ($data['species_id'] == '') {
-            unset($data[Tag::SPECIES_ID]);
-        }
+
         unset($data[Tag::ID]);
 
         return json_encode([

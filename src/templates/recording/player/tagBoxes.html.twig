@@ -4,7 +4,7 @@
 
     <div class="card js-panel-tag" style="display:none;">
         <div class="card-header">
-            <small>{{ tag.id }} | {{ tag.title }}</small>
+            <small>{{ tag.id }} | {{ tag.title?tag.title:tag.soundType?tag.soundType:tag.phony }}</small>
         </div>
         <div class="card-body mx-auto">
             <div class="btn-group" role="group">

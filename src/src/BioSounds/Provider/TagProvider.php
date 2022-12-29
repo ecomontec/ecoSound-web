@@ -48,7 +48,7 @@ class TagProvider extends BaseProvider
     {
         $result = [];
 
-        $query = 'SELECT tag.tag_id, tag.recording_id, tag.min_time, tag.max_time, tag.min_freq, tag.max_freq, tag.user_id, tag.uncertain,sound.phony, ';
+        $query = 'SELECT tag.tag_id, tag.recording_id, tag.min_time, tag.max_time, tag.min_freq, tag.max_freq, tag.user_id, tag.uncertain,sound.phony,sound.sound_type, ';
         $query .= 'species.binomial as species_name, tag.sound_distance_m, tag.distance_not_estimable, ';
         $query .= '(SELECT COUNT(*) FROM tag_review WHERE tag_id = tag.tag_id) AS review_number, ';
         $query .= '(( tag.max_time - tag.min_time ) + (tag.max_freq - tag.min_time )) AS time ';

@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="{{ baseUrl }}/assets/css/bootstrap-select.css">
 <div class="modal fade" id="modal-div" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -21,12 +22,18 @@
                                         {% endfor %}
                                     </select>
                                 </div>
-                                <div class="form-group col-auto">
+                                <div class="form-group col-4">
                                     <label class="col-form-label-sm" for="sound_id">Sound Type</label>
-                                    <select id="sound_id" name="sound_id" class="custom-select custom-select-sm"></select>
+                                    <select id="sound_id" name="sound_id" data-live-search="true">
+                                        {% for soundType in soundTypes %}
+                                            {% if soundType.phony==tag.phony %}
+                                                <option value="{{ soundType.sound_id }}" {{ soundType.sound_id == tag.soundId ? "selected" }}>{{ soundType.sound_type }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
                                 </div>
                             </div>
-                            <div class="form-row align-items-center biophony" {{ tag.phony!='biophony' and tag.soundId is not null?'hidden' }}>
+                            <div class="form-row align-items-center biophony">
                                 <div class="form-group col-auto">
                                     <label class="col-form-label-sm" for="speciesName">Species</label>
                                     <input id="speciesName"
@@ -64,7 +71,7 @@
                                 </div>
                             </div>
 
-                            <div class="form-row align-items-center mt-2 biophony" id="distance_group" {{ tag.phony!='biophony' and tag.soundId is not null?'hidden' }}>
+                            <div class="form-row align-items-center mt-2 biophony" id="distance_group">
                                 <div class="form-group col-auto">
                                     <label class="col-form-label-sm" for="callDistance">Sound Distance </label>
                                     <input id="callDistance" class="form-control form-control-sm" name="sound_distance_m" type="number" value="{{ tag.callDistance }}" readonly>
@@ -87,7 +94,7 @@
                                         Please introduce a valid individuals.
                                     </div>
                                 </div>
-                                <div class="form-group col-4 biophony" {{ tag.phony!='biophony' and tag.soundId is not null?'hidden' }}>
+                                <div class="form-group col-4 biophony">
                                     <label class="col-form-label-sm" for="type">Animal Sound Type</label>
                                     <select id="animal_sound_type" name="animal_sound_type" class="custom-select custom-select-sm">
                                         <option value="0"></option>
@@ -139,11 +146,11 @@
         </div>
     </div>
 </div>
+<script src="{{ baseUrl }}/assets/js/bootstrap-select.js" defer></script>
 <script>
     var soundTypes ={{ soundTypes|json_encode|raw }};
     $(document).ready(function () {
         {% if tag.soundId %}
-        $("#phony").attr('disabled', true)
         $("#phony").change()
         {% else %}
         var phony = $.cookie('phony');
@@ -151,6 +158,8 @@
         $("#phony").val(phony).change()
         $("#sound_id").find("option[value=" + sound_id + "]").prop("selected", true);
         {% endif %}
+        $('#sound_id').selectpicker('refresh');
+        $(".btn").css("text-align", "left");
     });
     $("#modal-div").on('shown.bs.modal', function () {
         if ($("#animal_sound_type")[0].options.length == 1) {
@@ -171,12 +180,15 @@
         {% endif %}
         $('#sound_id').empty()
         for (var key in soundTypes) {
-            if (soundTypes[key]['sound_id'] == '{{ tag.soundId }}') {
-                $('#sound_id').append("<option value='" + soundTypes[key]['sound_id'] + "' selected>" + soundTypes[key]['sound_type'] + "</option>");
-            } else if (soundTypes[key]['phony'] == $("#phony").find("option:selected").text()) {
-                $('#sound_id').append("<option value='" + soundTypes[key]['sound_id'] + "'>" + soundTypes[key]['sound_type'] + "</option>");
+            if (soundTypes[key]['phony'] == $("#phony").find("option:selected").text()) {
+                if (soundTypes[key]['sound_id'] == '{{ tag.soundId }}') {
+                    $('#sound_id').append("<option value='" + soundTypes[key]['sound_id'] + "' selected>" + soundTypes[key]['sound_type'] + "</option>");
+                } else {
+                    $('#sound_id').append("<option value='" + soundTypes[key]['sound_id'] + "'>" + soundTypes[key]['sound_type'] + "</option>");
+                }
             }
         }
+        $('#sound_id').selectpicker('refresh');
     })
     {% if not tag.soundId %}
     $("#sound_id").on('change', function () {

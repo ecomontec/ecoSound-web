@@ -626,6 +626,14 @@ class Tag extends BaseProvider
     }
 
     /**
+     * @return string|null
+     */
+    public function getSoundType(): ?string
+    {
+        return $this->sound_type ;
+    }
+
+    /**
      * @param string|null $sound_type
      * @return Tag
      */

@@ -420,6 +420,7 @@ class RecordingController extends BaseController
                 $tagFreqMax = $tag->getMaxFrequency();
                 $tagStyle = empty($tag->getCallDistance()) && empty($tag->isDistanceNotEstimable()) ? 'tag-orange' : '';
                 $tagStyle = empty($tag->getReviewNumber()) ? $tagStyle . ' tag-dashed' : $tagStyle;
+                $tagSoundType = $tag->getSoundType();
                 $tagPhony = $tag->getPhony();
 
                 if (empty($userTagColor = $user->getTagColor($tag->getUser()))) {
@@ -462,6 +463,7 @@ class RecordingController extends BaseController
                         ->setTop($freq_i)
                         ->setStyle($tagStyle)
                         ->setColor($userTagColor)
+                        ->setSoundType($tagSoundType)
                         ->setPhony($tagPhony);
                     $i--;
                 }
