@@ -65,7 +65,7 @@ class RecordingController extends BaseController
             'colId' => $colId,
             'recordings' => $recordings,
             'sites' => $userSites,
-            'users' => $userProducer->getName(),
+            'users' => $userProducer->getList(),
             'recorders' => (new Recorder())->getBasicList(),
             'microphones' => (new Microphone())->getBasicList(),
             'license' => (new License())->getBasicList(),

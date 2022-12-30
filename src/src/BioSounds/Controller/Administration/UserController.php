@@ -5,6 +5,7 @@ namespace BioSounds\Controller\Administration;
 use BioSounds\Controller\BaseController;
 use BioSounds\Entity\User;
 use BioSounds\Entity\Role;
+use BioSounds\Entity\UserPermission;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Utils\Auth;
 use BioSounds\Utils\Utils;
@@ -84,7 +85,18 @@ class UserController extends BaseController
                 'errorCode' => 0,
                 'message' => 'User updated successfully.'
             ]);
-        } else if ($userProvider->insertUser($data) > 0) {
+        } else if ($user_id = $userProvider->insertUser($data)) {
+            if (!Auth::isUserAdmin()) {
+                $userProvider = new UserPermission();
+                $permission = (new User())->getManageList();
+                foreach ($permission as $row) {
+                    if (isset($row['collection_id'])) {
+                        $row['user_id'] = $user_id;
+                        $row['permission_id'] = 3;
+                        $userProvider->insert($row);
+                    }
+                }
+            }
             return json_encode([
                 'errorCode' => 0,
                 'message' => 'User created successfully.',
