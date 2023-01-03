@@ -215,7 +215,7 @@
                 })
 
                 $('#js-delete-button').click(function () {
-                    let row = $("#username_" + $('#delete_id').val()).parents("tr");
+                    let row = $("#user_id" + $('#delete_id').val()).parents("tr");
                     deleteRequest('{{ baseUrl }}/api/admin/recordingManager/delete/' + $('#delete_id').val(), [], false, false, row.remove());
                     $('#modal-div').modal('hide');
                 });

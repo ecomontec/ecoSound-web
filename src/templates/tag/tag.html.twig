@@ -13,6 +13,7 @@
                             <input name="tag_id" type="hidden" value="{{ tag.id }}">
                             <input name="recording_id" type="hidden" value="{{ tag.recording }}">
                             <input class='js-species-id' data-type="edit" name='species_id' type='hidden' value="{{ tag.species }}">
+                            <input id="old_call_distance" type="hidden" value="{{ tag.callDistance }}">
                             <div class="form-row align-items-center">
                                 <div class="form-group col-auto">
                                     <label class="col-form-label-sm" for="phony">Phony</label>
@@ -195,4 +196,11 @@
         $.cookie('sound_id', $("#sound_id").val(), {expires: 7});
     })
     {% endif %}
+    $('#distanceNotEstimable').click(function () {
+        if ($(this).is(':checked')) {
+            $('#callDistance').val(null);
+        } else {
+            $('#callDistance').val($('#old_call_distance').val())
+        }
+    });
 </script>

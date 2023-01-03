@@ -144,7 +144,7 @@ class TagController extends BaseController
             }
         }
         if ($data['species_id'] == '') {
-            unset($data[Tag::SPECIES_ID]);
+            $data[Tag::SPECIES_ID] = null;
         }
         if ($data['phony'] != "biophony") {
             $data['species_id'] = null;

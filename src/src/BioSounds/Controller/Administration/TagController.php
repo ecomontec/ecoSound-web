@@ -124,7 +124,7 @@ class TagController extends BaseController
         }
         unset($data['_search']);
         if ($data['species_id'] == '') {
-            unset($data['species_id']);
+            $data['species_id'] = null;
         }
         if ($data['phony'] != "biophony") {
             $data['species_id'] = null;

@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             tagElement.removeClass('tag-orange');
 
-            if (!callDistance && !distanceNotEstimable) {
+            if (!callDistance && !distanceNotEstimable && phony == 'biophony') {
                 tagElement.addClass('tag-orange');
             }
 
