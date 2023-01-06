@@ -6,8 +6,10 @@ use BioSounds\Controller\BaseController;
 use BioSounds\Entity\Explore;
 use BioSounds\Entity\Sensor;
 use BioSounds\Entity\Site;
+use BioSounds\Entity\SiteCollection;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\BaseProvider;
+use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\SiteProvider;
 use BioSounds\Utils\Auth;
@@ -21,7 +23,7 @@ class SiteController extends BaseController
      * @return false|string
      * @throws \Exception
      */
-    public function show($projectId = null)
+    public function show($projectId = null, $collectionId = null)
     {
         if (!Auth::isManage()) {
             throw new ForbiddenException();
@@ -29,10 +31,17 @@ class SiteController extends BaseController
         if (isset($_GET['projectId'])) {
             $projectId = $_GET['projectId'];
         }
+        if (isset($_GET['collectionId'])) {
+            $collectionId = $_GET['collectionId'];
+        }
+        if ($collectionId == '') {
+            $collectionId = null;
+        }
         $projects = (new ProjectProvider())->getWithPermission(Auth::getUserID());
         if (empty($projectId)) {
             $projectId = $projects[0]->getId();
         }
+        $collections = (new CollectionProvider())->getByProject($projectId, Auth::getUserID());
         $arr = [];
         $siteProvider = new SiteProvider();
         $explores = (new Explore())->getAllExplores();
@@ -41,10 +50,12 @@ class SiteController extends BaseController
         }
         return $this->twig->render('administration/sites.html.twig', [
             'projects' => $projects,
+            'collections' => $collections,
             'projectId' => $projectId,
+            'collectionId' => $collectionId,
             'explores' => $arr,
             'realms' => (new Explore())->getExplores(),
-            'siteList' => $siteProvider->getList($projectId),
+            'siteList' => $siteProvider->getList($projectId, $collectionId),
             'gadm0' => json_decode($this->gadm()),
         ]);
     }
@@ -62,7 +73,6 @@ class SiteController extends BaseController
         }
 
         $data = [];
-        $sitePdoValue = '';
         foreach ($_POST as $key => $value) {
             if (strrpos($key, '_')) {
                 $type = substr($key, strrpos($key, '_') + 1, strlen($key));
@@ -73,6 +83,12 @@ class SiteController extends BaseController
                 $sitePdoValue = '';
             }
             switch ($key) {
+                case 'project_id':
+                    $project_id = $sitePdoValue;
+                    break;
+                case 'collection_id':
+                    $collection_id = $sitePdoValue;
+                    break;
                 case 'realm_id':
                     $data['realm_id'] = $sitePdoValue == '' ? 0 : $sitePdoValue;
                     break;
@@ -88,6 +104,12 @@ class SiteController extends BaseController
                 case 'latitude':
                     $data['latitude_WGS84_dd_dddd'] = $sitePdoValue == '' ? null : $sitePdoValue;
                     break;
+                case 'topography_m':
+                    $data['topography_m'] = $sitePdoValue == '' ? null : $sitePdoValue;
+                    break;
+                case 'freshwater_depth_m':
+                    $data['freshwater_depth_m'] = $sitePdoValue == '' ? null : $sitePdoValue;
+                    break;
                 default:
                     $data[$key] = $sitePdoValue;
             }
@@ -102,13 +124,17 @@ class SiteController extends BaseController
         } else {
             $data['creation_date_time'] = date('Y-m-d H:i:s', time());
             $data['user_id'] = Auth::getUserID();
-
-            if ($siteEnt->insert($data) > 0) {
-                return json_encode([
-                    'errorCode' => 0,
-                    'message' => 'Site created successfully.',
-                ]);
+            $site_id = $siteEnt->insert($data);
+            $siteCollection = new SiteCollection();
+            if ($collection_id != "") {
+                $siteCollection->insert($collection_id, $site_id);
+            } else {
+                $siteCollection->insertByProject($project_id, $site_id);
             }
+            return json_encode([
+                'errorCode' => 0,
+                'message' => 'Site created successfully.',
+            ]);
         }
     }
 

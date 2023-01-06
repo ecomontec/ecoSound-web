@@ -10,6 +10,7 @@
                     <label for="name" class="col-form-label-sm">Name</label>
                     <input id="name" type="text" name="name_text" class="form-control form-control-sm" maxlength="100" required>
                     <input id="project_id" type="hidden" name="project_id_text" value="{{ projectId }}">
+                    <input id="collection_id" type="hidden" name="collection_id_text" value="{{ collectionId }}">
                     <div class="invalid-feedback">
                         Please provide a site name.
                     </div>
@@ -32,6 +33,26 @@
                     </span>
                     <span id="invalidLatDiv" class="invalid-feedback">
                         Please provide valid latitude value.
+                    </span>
+                </div>
+                <div>
+                    <label style="width:50%" class="col-form-label-sm" for="topography_m">Topography [-15000,10000]</label>
+                    <label style="width:49.5%" class="col-form-label-sm" for="freshwater_depth_m">Freshwater Depth [-2000,0]</label>
+                </div>
+                <div>
+                    <span>
+                        <input id="topography_m" type="number" min="-15000" max="10000" step="0.1" pattern="##.##" name="topography_m_number" style="width:50%" maxlength="100">
+                    </span>
+                    <span>
+                        <input id="freshwater_depth_m" type="number" min="-2000" max="0" step="0.1" pattern="##.##" name="freshwater_depth_m_number" style="width:49.5%" maxlength="100">
+                    </span>
+                </div>
+                <div>
+                    <span id="invalidTopographyDiv" class="invalid-feedback">
+                        Please provide valid topography value.
+                    </span>
+                    <span id="invalidFreshwaterDepthDiv" class="invalid-feedback">
+                        Please provide valid freshwater depth value.
                     </span>
                 </div>
                 <div>
@@ -70,13 +91,6 @@
                     </select>
                     <select id="functionalGroup" name="functional_group_id_text" style="width:33%" class="form-control-sm">
                         <option></option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="centro" class="col-form-label-sm">Centroid</label>
-                    <select id="centro" name="centroid_select-one" class="form-control form-control-sm" required>
-                        <option value="true">true</option>
-                        <option value="false">false</option>
                     </select>
                 </div>
                 <div class="form-group text-right">

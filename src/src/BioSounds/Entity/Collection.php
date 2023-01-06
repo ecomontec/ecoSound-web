@@ -13,7 +13,7 @@ class Collection extends BaseProvider
     const AUTHOR = "author";
     const DOI = "doi";
     const NOTE = "note";
-
+    const SPHERE = "sphere";
     const GALLERY_VIEW = 'gallery';
     const LIST_VIEW = 'list';
 
@@ -41,6 +41,11 @@ class Collection extends BaseProvider
      * @var string
      */
     private $note;
+
+    /**
+     * @var string
+     */
+    private $sphere;
 
     /**
      * @var string
@@ -158,6 +163,24 @@ class Collection extends BaseProvider
     public function setDoi(?string $doi): Collection
     {
         $this->doi = $doi;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSphere(): string
+    {
+        return $this->sphere;
+    }
+
+    /**
+     * @param string $sphere
+     * @return Collection
+     */
+    public function setSphere(string $sphere): Collection
+    {
+        $this->sphere = $sphere;
         return $this;
     }
 

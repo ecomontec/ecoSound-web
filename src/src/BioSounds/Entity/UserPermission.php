@@ -96,7 +96,7 @@ class UserPermission extends BaseProvider
         return $this->database->executeDelete([':colId' => $colId]);
     }
 
-    public function updataPermission($collection_id)
+    public function updatePermission($collection_id)
     {
         $this->database->prepareQuery("SELECT user_id, MAX(permission_id) AS permission_id FROM user_permission WHERE collection_id IN (SELECT collection_id FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = $collection_id)) GROUP BY user_id");
         $result = $this->database->executeSelect();

@@ -63,7 +63,6 @@ class UserPermissionController extends BaseController
      */
     public function save(): string
     {
-
         $userProvider = new UserPermission();
         foreach ($_POST['data'] as $row) {
             if (isset($row['collection_id'])) {
@@ -77,33 +76,5 @@ class UserPermissionController extends BaseController
             'errorCode' => 0,
             'message' => 'successfully changed user permissions',
         ]);
-    }
-
-    /**
-     * @return string
-     * @throws \Exception
-     */
-    public function getList(): string
-    {
-        $data = [];
-
-        $terms = isset($_POST['term']) ? $_POST['term'] : null;
-
-        if (!empty($terms)) {
-            $words = preg_split("/[\s,]+/", $terms);
-
-            $animal = new User;
-            $result = $animal->getInputList($words);
-
-            if (!empty($result)) {
-                foreach ($result as $row) {
-                    $data[] = [
-                        'label' => $row['name'],
-                        'value' => $row['user_id'],
-                    ];
-                }
-            }
-        }
-        return json_encode($data);
     }
 }

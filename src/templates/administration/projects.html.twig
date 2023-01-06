@@ -121,19 +121,17 @@
                 }
                 this.classList.add('was-validated');
             });
-
-            $('.project-picture').click(function () {
+            $('#projectTable tbody').on('click', '.project-picture', function () {
                 var id = $(this).data('project-id')
                 $('#picture_id_file' + id).click();
-            });
-            $('.file_upload').change(function () {
+            })
+            $('#projectTable tbody').on('change', '.file_upload', function () {
                 var id = $(this).data('project-id')
                 var reads = new FileReader();
                 var f = $('#picture_id_file' + id)[0].files[0]
-                if(f['size']>2048000){
+                if (f['size'] > 2048000) {
                     showAlert('Warning: Maximum image size 2M.');
-                }
-                else{
+                } else {
                     reads.readAsDataURL(f);
                     reads.onload = function (e) {
                         document.getElementById('pic' + id).src = this.result;

@@ -4,6 +4,8 @@ namespace BioSounds\Controller\Administration;
 
 use BioSounds\Controller\BaseController;
 use BioSounds\Entity\License;
+use BioSounds\Entity\Microphone;
+use BioSounds\Entity\Recorder;
 use BioSounds\Entity\Recording;
 use BioSounds\Entity\Sensor;
 use BioSounds\Entity\User;
@@ -57,14 +59,15 @@ class RecordingController extends BaseController
         );
 
         $projectId = $collection->getProject();
-        $userSites = (new SiteProvider())->getBasicList($projectId);
+        $userSites = (new SiteProvider())->getBasicList($projectId,$colId);
 
         return $this->twig->render('administration/recordings.html.twig', [
             'colId' => $colId,
             'recordings' => $recordings,
             'sites' => $userSites,
-            'users' => $userProducer->getName(),
-            'sensors' => (new Sensor())->getBasicList(),
+            'users' => $userProducer->getList(),
+            'recorders' => (new Recorder())->getBasicList(),
+            'microphones' => (new Microphone())->getBasicList(),
             'license' => (new License())->getBasicList(),
         ]);
     }

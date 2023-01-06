@@ -6,6 +6,7 @@ use BioSounds\Entity\Tag;
 use BioSounds\Entity\Permission;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Exception\NotAuthenticatedException;
+use BioSounds\Provider\SoundProvider;
 use BioSounds\Provider\SoundTypeProvider;
 use BioSounds\Provider\TagProvider;
 use BioSounds\Utils\Auth;
@@ -53,14 +54,14 @@ class TagController extends BaseController
             ->setMaxFrequency(filter_var($_POST["f_max"], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION))
             ->setUserName(Auth::getUserName())
             ->setUser(Auth::getUserLoggedID());
-
-
         return json_encode([
             'errorCode' => 0,
             'data' => $this->twig->render('tag/tag.html.twig', [
                 'tag' => $tag,
                 'displayDeleteButton' => 'hidden',
                 'recordingName' => isset($_POST['recording_name']) ? $_POST['recording_name'] : null,
+                'phonys' => (new SoundProvider())->get(),
+                'soundTypes' => (new SoundProvider())->getAll(),
             ]),
         ]);
     }
@@ -114,7 +115,9 @@ class TagController extends BaseController
                 'displaySaveButton' => $displaySaveButton,
                 'disableTagForm' => !Auth::isManage() && !$isUserTagOwner,
                 'reviewPanel' => (new TagReviewController($this->twig))->show($tagId, $isReviewGranted || $isManageGranted),
-                'soundTypes' => (new SoundTypeProvider())->getList($tag->getTaxonClass(), $tag->getTaxonOrder()),
+                'animalSoundTypes' => (new SoundTypeProvider())->getList($tag->getTaxonClass(), $tag->getTaxonOrder()),
+                'phonys' => (new SoundProvider())->get(),
+                'soundTypes' => (new SoundProvider())->getAll(),
             ]),
         ]);
     }
@@ -140,7 +143,17 @@ class TagController extends BaseController
                 $data[$key] = null;
             }
         }
-
+        if ($data['species_id'] == '') {
+            $data[Tag::SPECIES_ID] = null;
+        }
+        if ($data['phony'] != "biophony") {
+            $data['species_id'] = null;
+            $data['uncertain'] = null;
+            $data['animal_sound_type'] = null;
+            $data['distance_not_estimable'] = null;
+            $data['sound_distance_m'] = null;
+        }
+        unset($data[Tag::PHONY]);
         if (isset($data[Tag::ID]) && !empty($data[Tag::ID])) {
             (new TagProvider())->update($data);
             return json_encode([

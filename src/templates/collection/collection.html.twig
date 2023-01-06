@@ -34,21 +34,27 @@
                     <i class="fas fa-th-list" aria-hidden="true"></i>
                     List View
                 </a>
+                <a onclick="col_js({{ collection.id }},'timeline','{{ leaflet.sites }}')" type="button" class="btn btn-outline-primary btn-sm view {{ display == 'timeline' ? 'active' }}" aria-pressed="true">
+                    <i class="fas fa-bars-staggered" aria-hidden="true"></i>
+                    Timeline View
+                </a>
                 <input id="display_view" value="{{ display }}" type="hidden">
                 <input id="sites" value="{{ leaflet.sites }}" type="hidden">
             </div>
         </div>
         <div class="row mt-4">
             <div class="col-auto mr-auto">
+                {% if collection.sphere is not empty %}
+                    <strong>Sphere:</strong>
+                    {{ collection.sphere }}
+                {% endif %}
                 {% if collection.note is not empty %}
-                    <p>
-                        <strong>Description:</strong>
-                        {{ collection.note }}
-                    </p>
+                    <strong>Description:</strong>
+                    {{ collection.note }}
                 {% endif %}
             </div>
         </div>
-        {% include display == 'list' ? 'collection/views/list.html.twig' : 'collection/views/gallery.html.twig' %}
+        {% include display == 'list' ? 'collection/views/list.html.twig' : display == 'gallery' ? 'collection/views/gallery.html.twig' : 'collection/views/timeline.html.twig' %}
     </div>
 {% endblock %}
 
@@ -65,8 +71,9 @@
         {% include 'collection/js/collection.js' %}
         {% include 'collection/js/smallPlayer.js' %}
     </script>
-    <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js" integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ==" crossorigin=""></script>
+    <script src="{{ baseUrl }}/assets/js/leaflet-src.js"></script>
     <script src="{{ baseUrl }}/assets/js/leaflet.markercluster-src.js"></script>
+    <script src="{{ baseUrl }}/assets/js/leaflet.featuregroup.subgroup-src.js"></script>
     <script>
         {% if leaflet.arr %}
         var map = L.map('map').setView([{{ leaflet.latitude_center }}, {{ leaflet.longitude_center }}],  {{ leaflet.count==1?10:5 }});

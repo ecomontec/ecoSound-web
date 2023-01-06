@@ -72,11 +72,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (id != '') {
                         $('.js-species-id' + id + '[data-type=' + type + ']').val($("#old_id" + id).val());
                         $(this).val($("#old_name" + id).val());
-                        $("#sound_type" + id).attr('disabled', false)
+                        $("#animal_sound_type" + id).attr('disabled', false)
                     } else {
                         $('.js-species-id' + id + '[data-type=' + type + ']').val('');
-                        $("#sound_type").empty()
-                        $("#sound_type" + id).attr('disabled', true)
+                        $("#animal_sound_type").empty()
+                        $("#animal_sound_type" + id).attr('disabled', true)
                     }
                     //$('#reviewSpeciesId').val('');
                 }
@@ -90,18 +90,18 @@ document.addEventListener("DOMContentLoaded", function () {
                     taxon_order: ui.item.taxon_order
                 })
                     .done(function (data) {
-                        console.log(data)
                         if (data == '') {
-
+                            $("#animal_sound_type" + id).empty()
+                            $("#animal_sound_type" + id).attr('disabled', true)
                         } else {
-                            $("#sound_type" + id).attr('disabled', false)
+                            $("#animal_sound_type" + id).attr('disabled', false)
                             $("#taxon_class" + id).val(ui.item.class)
                             $("#taxon_order" + id).val(ui.item.taxon_order)
                             var json = JSON.parse(data)
-                            $("#sound_type" + id).empty()
-                            $("#sound_type" + id).append('<option value="0"></option>');
+                            $("#animal_sound_type" + id).empty()
+                            $("#animal_sound_type" + id).append('<option value="0"></option>');
                             for (var key in json) {
-                                $("#sound_type" + id).append("<option value=" + json[key]['sound_type_id'] + ">" + json[key]['name'] + "</option>");
+                                $("#animal_sound_type" + id).append("<option value=" + json[key]['sound_type_id'] + ">" + json[key]['name'] + "</option>");
                             }
                         }
                     })

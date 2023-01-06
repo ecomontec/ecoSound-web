@@ -55,10 +55,10 @@ class ProjectProvider extends BaseProvider
     public function getWithPermission($userId, int $disalbe = 1): array
     {
         if (Auth::isUserAdmin()) {
-            $sql = "SELECT p.*,MAX( u.permission_id ) AS permission_id FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u ON u.collection_id = c.collection_id AND u.user_id = :userId GROUP BY p.project_id ORDER BY p.name";
+            $sql = "SELECT p.*,MAX( u.permission_id ) AS permission_id FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u ON u.collection_id = c.collection_id AND u.user_id = :userId GROUP BY p.project_id ORDER BY p.project_id";
         } else {
             $str = $disalbe ? ' WHERE u1.permission_id = 4 ' : ' WHERE u1.permission_id IS NOT NULL';
-            $sql = "SELECT p.*,MAX( u2.permission_id ) AS permission_id FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = " . Auth::getUserID() . " LEFT JOIN user_permission u2 ON u2.collection_id = c.collection_id AND u2.user_id = :userId " . $str . " GROUP BY p.project_id ORDER BY p.name";
+            $sql = "SELECT p.*,MAX( u2.permission_id ) AS permission_id FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = " . Auth::getUserID() . " LEFT JOIN user_permission u2 ON u2.collection_id = c.collection_id AND u2.user_id = :userId " . $str . " GROUP BY p.project_id ORDER BY p.project_id";
         }
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect([':userId' => $userId]);
@@ -79,6 +79,34 @@ class ProjectProvider extends BaseProvider
                 ->setActive($item['active']);
         }
 
+        return $data;
+    }
+
+    public function getSiteProjectWithPermission($userId,$siteId): array
+    {
+        if (Auth::isUserAdmin()) {
+            $sql = "SELECT p.* FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN site_collection sc ON sc.collection_id = c.collection_id GROUP BY p.project_id ORDER BY p.project_id";
+        } else {
+            $sql = "SELECT p.* FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN site_collection sc ON sc.collection_id = c.collection_id LEFT JOIN user_permission u ON u.collection_id = c.collection_id WHERE u.permission_id = 4 AND u.user_id = $userId GROUP BY p.project_id ORDER BY p.project_id";
+        }
+        $this->database->prepareQuery($sql);
+        $result = $this->database->executeSelect();
+
+        $data = [];
+        foreach ($result as $item) {
+            $data[] = (new Project())
+                ->setId($item['project_id'])
+                ->setName($item['name'])
+                ->setDescription($item['description'])
+                ->setCreatorId($item['creator_id'])
+                ->setCreationDate($item['creation_date'])
+                ->setUrl($item['url'])
+                ->setPictureId($item['picture_id'] ? $item['picture_id'] : '')
+                ->setPublic($item['public'])
+                ->setCollections((new CollectionProvider())->getWithSite($item['project_id'],$siteId))
+                ->setPermission($item['permission_id'] == null ? 0 : $item['permission_id'])
+                ->setActive($item['active']);
+        }
         return $data;
     }
 

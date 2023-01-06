@@ -1,0 +1,116 @@
+<div class="modal fade" id="modal-div" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document" style="max-width: 50% !important;">
+        <div class="modal-content">
+            <form id="siteCollectionForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">Site Assignment</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table id="user-perm" class="table table-sm table-hover" style="white-space: nowrap;">
+                        <thead class="table-borderless">
+                        <tr>
+                            <th></th>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Assignment</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for project in projects %}
+                            <tr>
+                                <td>{% if project.collections|length > 0 %}<a href="#"><i class="fa fa-plus btn-fa" data-project="{{ project.id }}"></i></a>{% endif %}</td>
+                                <td>{{ project.id }}</td>
+                                <td>{{ project.name }}</td>
+                                <td>
+                                    <input class="js-project-checkbox" type="checkbox" name="project" data-project="{{ project.id }}">
+                                </td>
+                            </tr>
+                            {% for collection in project.collections %}
+                                <tr class="data_collection data{{ project.id }}" style="font-size: .875rem;background-color: #f1f1f1">
+                                    <td></td>
+                                    <td>
+                                        {{ collection.id }}
+                                    </td>
+                                    <td>{{ collection.name }}</td>
+                                    <td>
+                                        <input class="js-collection-checkbox" type="checkbox" name="collection" data-project-id="{{ project.id }}" data-collection-id="{{ collection.id }}" {{ collection.permission ? 'checked' }}>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button id="saveButton" type="submit" class="btn btn-outline-primary">
+                        <i class="fas fa-save"></i>
+                        Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $(".data_collection").hide()
+        $('table#user-perm tbody tr .js-collection-checkbox').each(function (i) {
+            if ($('[data-project-id="' + $(this).data('project-id') + '"]').length == $('[data-project-id="' + $(this).data('project-id') + '"]:checked').length) {
+                $('[data-project="' + $(this).data('project-id') + '"]').prop('checked', true);
+            }
+        });
+    });
+    $(function () {
+        $(".btn-fa").click(function () {
+            if ($(this).hasClass('fa-plus')) {
+                $(".data" + $(this).data('project')).show();
+                $(this).removeClass('fa-plus')
+                $(this).addClass('fa-minus')
+            } else {
+                $(".data" + $(this).data('project')).hide();
+                $(this).removeClass('fa-minus')
+                $(this).addClass('fa-plus')
+            }
+        })
+
+        $('.js-project-checkbox').change(function (e) {
+            $('[data-project-id="' + $(this).data('project') + '"]').prop('checked', this.checked);
+        });
+
+        $('.js-collection-checkbox').change(function (e) {
+            if ($('[data-project-id="' + $(this).data('project-id') + '"]').length == $('[data-project-id="' + $(this).data('project-id') + '"]:checked').length) {
+                $('[data-project="' + $(this).data('project-id') + '"]').prop('checked', true);
+            } else {
+                $('[data-project="' + $(this).data('project-id') + '"]').prop('checked', false);
+            }
+        });
+
+        $('#siteCollectionForm').submit(function (e) {
+            let data = new FormData();
+            let checked = 0
+            $('table#user-perm tbody tr').each(function (i) {
+                let dataInput = $(this).children('td').find(".js-collection-checkbox");
+                if (dataInput.length > 0) {
+                    data.append('data[' + i + '][collection_id]', dataInput.data('collection-id'));
+                    data.append('data[' + i + '][site_id]', '{{ site_id }}');
+                    data.append('data[' + i + '][check]', dataInput.is(':checked'));
+                    if (dataInput.is(':checked')) {
+                        checked = 1
+                    }
+                }
+            });
+            if (checked) {
+                postRequest('{{ baseUrl }}/admin/siteCollectionManager/save', data, true, false, function () {
+                    $('#modal-div').modal('hide');
+                });
+            } else {
+                showAlert('Select at least one collection.')
+            }
+            e.preventDefault();
+        });
+    });
+</script>

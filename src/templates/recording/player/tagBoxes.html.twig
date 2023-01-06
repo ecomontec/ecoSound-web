@@ -4,7 +4,7 @@
 
     <div class="card js-panel-tag" style="display:none;">
         <div class="card-header">
-            <small>{{ tag.id }} | {{ tag.title }}</small>
+            <small>{{ tag.id }} | {{ tag.title?tag.title:tag.soundType?tag.soundType:tag.phony }}</small>
         </div>
         <div class="card-body mx-auto">
             <div class="btn-group" role="group">
@@ -16,10 +16,12 @@
                 <a href='#' onclick='return false;' class='btn btn-outline-primary btn-sm zoom-tag' title='Zoom tag(+Alt: open in new tab)'>
                     <i class='fas fa-search' aria-hidden='true'></i>
                 </a>
-                <a href='#' onclick='return false;' id="est_{{ tag.id }}" type='button'
-                   class='btn btn-outline-primary btn-sm estimate-distance' title='Estimate call distance'>
-                    <i class='fas fa-bullhorn' aria-hidden='true'></i>
-                </a>
+                {% if tag.phony == "biophony" %}
+                    <a href='#' onclick='return false;' id="est_{{ tag.id }}" type='button'
+                       class='btn btn-outline-primary btn-sm estimate-distance' title='Estimate call distance'>
+                        <i class='fas fa-bullhorn' aria-hidden='true'></i>
+                    </a>
+                {% endif %}
             </div>
         </div>
     </div>

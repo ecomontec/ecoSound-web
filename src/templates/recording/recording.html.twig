@@ -169,22 +169,6 @@
         var soundFilePath = '{{ player.filePath }}';
 
         $(function () {
-            document.addEventListener('submit', function (e) {
-                if (e.target && e.target.id === 'callDistanceForm') {
-                    $('#modal-div').modal('hide');
-                }
-            });
-
-            document.addEventListener('click', function (e) {
-                if (e.target && e.target.id === 'distance') {
-                    let input = document.getElementById('callDistance');
-                    input.value = null;
-                    input.readOnly = this.checked;
-                }
-            });
-        });
-
-        $(function () {
             'use strict';
 
             $('#reclabel').on('change', function () {

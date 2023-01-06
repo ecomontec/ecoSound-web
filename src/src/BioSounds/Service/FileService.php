@@ -5,7 +5,6 @@ namespace BioSounds\Service;
 use BioSounds\Entity\File;
 use BioSounds\Entity\Recording;
 use BioSounds\Entity\Sound;
-use BioSounds\Exception\File\ExtensionInvalidException;
 use BioSounds\Exception\File\FileCopyException;
 use BioSounds\Exception\File\FileExistsException;
 use BioSounds\Exception\File\FileInvalidException;
@@ -67,24 +66,18 @@ class FileService
     public function upload(array $request, string $uploadPath): array
     {
         $message = $this::SUCCESS_MESSAGE;
-
         $colID = $request['colId'];
         $site = isset($request['site']) ? $request['site'] : null;
         $site = $site == 0 ? null : $site;
-        $sensor = $request['sensor'];
+        $recorder = $request['recorder'];
+        $microphone = $request['microphone'];
         $dateFromFile = isset($request['dateFromFile']) ? $request['dateFromFile'] : false;
         $time = isset($request['time']) ? $request['time'] : null;
         $date = isset($request['date']) ? $request['date'] : null;
         $doi = isset($request['doi']) && !empty($request['doi']) ? $request['doi'] : null;
         $license = isset($request['license']) ? $request['license'] : null;
-        $reference = isset($request['reference']) ? $request['reference'] : false;
-        $species = isset($request['species']) ? $request['species'] : null;
-        $soundType = isset($request['sound-type']) ? $request['sound-type'] : null;
-        $soundSubtype = isset($request['subtype']) && !empty($request['subtype']) ? $request['subtype'] : null;
-        $rating = isset($request['rating']) && !empty($request['rating']) ? $request['rating'] : null;
         $type = isset($request['type']) && !empty($request['type']) ? $request['type'] : null;
         $medium = isset($request['medium']) && !empty($request['medium']) ? $request['medium'] : null;
-
 
         if (!is_dir($uploadPath) || !$handle = opendir($uploadPath)) {
             throw new FileNotFoundException($uploadPath);
@@ -104,11 +97,6 @@ class FileService
                     continue;
                 }
 
-                //Check that the extension is valid
-                //                if (substr_count(Utils::getSoundExtensions(), strtolower(pathinfo($fileName, PATHINFO_EXTENSION))) < 1) {
-                //                    throw new ExtensionInvalidException(strtolower(pathinfo($fileName, PATHINFO_EXTENSION)), $fileName);
-                //                }
-
                 if ($dateFromFile) {
                     if (!preg_match($this::DATE_TIME_PATTERN, $fileName, $dateTime)) {
                         $message = sprintf($message . ' ' . $this::DATETIME_INVALID_MESSAGE, $fileName);
@@ -124,22 +112,15 @@ class FileService
                     ->setTime($fileTime)
                     ->setCollection($colID)
                     ->setDirectory(rand(1, 100))
-                    ->setSensor($sensor)
                     ->setSite($site)
+                    ->setRecorder($recorder)
+                    ->setMicrophone($microphone)
                     ->setName($fileName)
                     ->setDoi($doi)
                     ->setLicense($license)
                     ->setUser(Auth::getUserID())
                     ->setType($type)
                     ->setMedium($medium);
-
-                if ($reference) {
-                    $file->setSpecies($species)
-                        ->setSoundType($soundType)
-                        ->setSubtype($soundSubtype)
-                        ->setRating($rating);
-                }
-
                 $this->queueService->add($this->fileProvider->insert($file));
             }
         } catch (\Exception $exception) {
@@ -196,7 +177,8 @@ class FileService
                 Recording::DIRECTORY => $file->getDirectory(),
                 Recording::FILE_TIME => $file->getTime(),
                 Recording::SITE_ID => $file->getSite(),
-                Recording::SENSOR_ID => $file->getSensor(),
+                Recording::RECORDER_ID => $file->getRecorder(),
+                Recording::MICROPHONE_ID => $file->getMicrophone(),
                 Recording::FILENAME => $file->getName(),
                 Recording::CHANNEL_NUM => Utils::getFileChannels($wavFilePath),
                 Recording::FILE_SIZE => filesize($wavFilePath),
@@ -211,16 +193,6 @@ class FileService
                 Recording::Type => $file->getType(),
                 Recording::Medium => $file->getMedium(),
             ];
-
-            if (!empty($file->getSpecies())) {
-                $sound[Recording::SOUND_ID] = (new SoundProvider())->insert(
-                    (new Sound())
-                        ->setSpecies($file->getSpecies())
-                        ->setType($file->getSoundType())
-                        ->setSubtype($file->getSubtype())
-                        ->setRating($file->getRating())
-                );
-            }
 
             $sound[Recording::ID] = (new RecordingProvider())->insert($sound);
             $soundId = $sound[Recording::ID];

@@ -3,6 +3,7 @@
 namespace BioSounds\Entity;
 
 use BioSounds\Provider\BaseProvider;
+use BioSounds\Utils\Auth;
 
 class User extends BaseProvider
 {
@@ -232,7 +233,21 @@ class User extends BaseProvider
      */
     public function getList(): array
     {
-        $this->database->prepareQuery('SELECT * FROM user ORDER BY `name`');
+        if (Auth::isUserAdmin()) {
+            $sql = 'SELECT * FROM user ORDER BY `name`';
+        } else {
+            $user_id = Auth::getUserID();
+            $sql = "SELECT u.* FROM user u LEFT JOIN user_permission p ON u.user_id = p.user_id WHERE p.collection_id IN (SELECT collection_id FROM user_permission WHERE user_id = $user_id AND permission_id = 4) GROUP BY u.user_id ORDER BY u.name";
+        }
+        $this->database->prepareQuery($sql);
+        return $this->database->executeSelect();
+    }
+
+    public function getManageList(): array
+    {
+        $user_id = Auth::getUserID();
+        $sql = "SELECT collection_id FROM user_permission WHERE user_id = $user_id AND permission_id = 4";
+        $this->database->prepareQuery($sql);
         return $this->database->executeSelect();
     }
 
@@ -242,6 +257,7 @@ class User extends BaseProvider
        `name` FROM user ORDER BY `name`');
         return $this->database->executeSelect();
     }
+
     /**
      * @return array
      * @throws \Exception
@@ -280,10 +296,10 @@ class User extends BaseProvider
 
     /**
      * @param array $userData
-     * @return bool
+     * @return int
      * @throws \Exception
      */
-    public function insertUser(array $userData): bool
+    public function insertUser(array $userData): int
     {
         if (empty($userData)) {
             return false;
@@ -347,35 +363,5 @@ class User extends BaseProvider
 
         $this->database->prepareQuery("UPDATE user SET password = :nePasswd WHERE user_id = :userId");
         return $this->database->executeUpdate($values);
-    }
-
-    /**
-     * @param array $names
-     * @return array|int
-     * @throws \Exception
-     */
-    public function getInputList(array $names)
-    {
-        $query = 'SELECT * FROM ' . self::TABLE_NAME;
-
-        $fields = [];
-        if (isset($names)) {
-            if (count($names) == 1) {
-                $query .= ' WHERE name LIKE :name ';
-                $fields = [':name' => "%$names[0]%"];
-            } else {
-                $query .= 'WHERE (name LIKE :name1 AND name LIKE :name2) ';
-                $fields = [
-                    ':name1' => "%$names[0]%",
-                    ':name2' => "%$names[1]%"
-                ];
-            }
-        }
-        $query .= 'ORDER BY name ASC LIMIT 0,15';
-
-        $this->database->prepareQuery($query);
-        $result = $this->database->executeSelect($fields);
-
-        return $result;
     }
 }

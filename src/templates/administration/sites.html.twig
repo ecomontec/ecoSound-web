@@ -16,6 +16,15 @@
                                 </option>
                             {% endfor %}
                         </select>
+                        <label for="collectionId" class="ml-3">Collection</label>
+                        <select id="collectionId" name="collectionId" class="form-control form-control-sm ml-3">
+                            <option></option>
+                            {% for collection in collections %}
+                                <option value="{{ collection.id }}" {{ collection.id == collectionId ? 'selected' }}>
+                                    {{ collection.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
                     </form>
                 </div>
                 <button id="siteFormButton" class="btn btn-outline-primary btn-sm mt-2" type="button" data-toggle="collapse" data-target="#siteFormSection" aria-expanded="false" aria-controls="siteFormSection">
@@ -31,13 +40,17 @@
                 <th>Name</th>
                 <th>Longitude</th>
                 <th>Latitude</th>
+                <th>Topography</th>
+                <th>Freshwater Depth</th>
                 <th>GADM 0</th>
                 <th>GADM 1</th>
                 <th>GADM 2</th>
                 <th>Realm</th>
                 <th>Biome</th>
                 <th>Functional Group</th>
-                <th>Centroid</th>
+                {% if isManage %}
+                    <th></th>
+                {% endif %}
                 <th></th>
             </tr>
             </thead>
@@ -52,15 +65,27 @@
                         <input type="text" class="form-control form-control-sm" style="width:100px;" name="name" value="{{ site.name }}">
                     </td>
                     <td data-search="{{ site.longitude }}" data-order="{{ site.longitude }}">
-                        <input type="number" class="form-control form-control-sm" style="width:80px;" name="longitude" min="-180" max="180" step="0.0000000000001" pattern="##.##############" value="{{ site.longitude }}">
+                        <input type="number" class="form-control form-control-sm" style="width:120px;" name="longitude" min="-180" max="180" step="0.0000000000001" pattern="##.##############" value="{{ site.longitude }}">
                         <div class="invalid-feedback">
                             Please provide a longitude value, from -180 to 180.
                         </div>
                     </td>
                     <td data-search="{{ site.latitude }}" data-order="{{ site.latitude }}">
-                        <input type="number" class="form-control form-control-sm" style="width:80px;" name="latitude" min="-90" max="90" step="0.0000000000001" pattern="##.##############" value="{{ site.latitude }}">
+                        <input type="number" class="form-control form-control-sm" style="width:120px;" name="latitude" min="-90" max="90" step="0.0000000000001" pattern="##.##############" value="{{ site.latitude }}">
                         <div class="invalid-feedback">
                             Please provide a latitude value, from -90 to 90.
+                        </div>
+                    </td>
+                    <td data-search="{{ site.topography }}" data-order="{{ site.topography }}">
+                        <input type="number" class="form-control form-control-sm" style="width:120px;" name="topography_m" min="-15000" max="10000" step="0.1" pattern="##.##" value="{{ site.topography }}">
+                        <div class="invalid-feedback">
+                            Please provide a topography value, from -15000.0 to 10000.0.
+                        </div>
+                    </td>
+                    <td data-search="{{ site.freshwaterDepth }}" data-order="{{ site.freshwaterDepth }}">
+                        <input type="number" class="form-control form-control-sm" style="width:120px;" name="freshwater_depth_m" min="-2000" max="0" step="0.1" pattern="##.##" value="{{ site.freshwaterDepth }}">
+                        <div class="invalid-feedback">
+                            Please provide a freshwater depth value, from -2000.0 to 0.0.
                         </div>
                     </td>
                     <td data-search="{{ site.gadm0 }}" data-order="{{ site.gadm0 }}">
@@ -96,12 +121,13 @@
                             <option value="{{ site.functionalGroupId }}" selected>{{ site.functionalGroup }}</option>
                         </select>
                     </td>
-                    <td data-search="{{ site.centroId }}" data-order="{{ site.centroId }}">
-                        <select id="centro" name="centroid" class="form-control form-control-sm" required>
-                            <option value="true" {{ site.centroId == "true" ? "selected" }}>true</option>
-                            <option value="false" {{ site.centroId == "false" ? "selected" }}>false</option>
-                        </select>
-                    </td>
+                    {% if isManage %}
+                        <td>
+                            <a href="{{ baseUrl }}/admin/siteCollections/{{ site.id }}" class="js-open-modal" title="Site Assignment">
+                                <i class='fas fa-tasks'></i>
+                            </a>
+                        </td>
+                    {% endif %}
                     <td>
                         <a class="js-site-delete" href="#" data-id="{{ site.id }}" title="Delete Site">
                             <span class="fas fa-trash"></span>
@@ -130,7 +156,7 @@
                     "order": [[0, 'asc']],
                     "columnDefs": [{
                         "orderable": false,
-                        "targets": [11]
+                        "targets": [12, 13]
                     }],
                     "bAutoWidth": false,
                     "scrollX": true,
@@ -405,6 +431,39 @@
                     $('#inv4LatDiv').css({"width": "", "display": ""});
                 }
             });
+
+            $('#topography_m').on('change', function () {
+                if (this.checkValidity() === false) {
+                    if ($('#invalidFreshwaterDepthDiv').css('display') && $('#inv4FreshwaterDepthDiv').css('display')) {
+                        $('#inv4FreshwaterDepthDiv').css({"width": "", "display": ""});
+                    }
+                    $('#invalidTopographyDiv').css({"width": "50%", "display": "inline-block", "position": "relative"});
+                } else {
+                    if ($('#invalidFreshwaterDepthDiv').css('display') && (!$('#inv4FreshwaterDepthDiv').css('display') || $('#inv4FreshwaterDepthDiv').css('display') === 'none')) {
+                        $('#inv4FreshwaterDepthDiv').css({"width": "50%", "display": "inline-block"});
+                    }
+                    if ((!$('#invalidFreshwaterDepthDiv').css('display') || $('#invalidFreshwaterDepthDiv').css('display') === 'none') || !$('#inv4FreshwaterDepthDiv').css('display')) {
+                        $('#inv4FreshwaterDepthDiv').css({"width": "", "display": ""});
+                    }
+
+                    $('#invalidTopographyDiv').css({"display": "", "position": ""});
+                }
+            });
+            $('#freshwater_depth_m').on('change', function () {
+                if (this.checkValidity() === false) {
+                    $('#inv4FreshwaterDepthDiv').css({"width": "50%", "display": "inline-block"});
+                    $('#invalidFreshwaterDepthDiv').css({
+                        "width": "49%",
+                        "display": "inline-block",
+                        "position": "relative",
+                        "right": "2"
+                    });
+                } else {
+                    $('#invalidFreshwaterDepthDiv').css({"display": "", "position": ""});
+                    $('#inv4FreshwaterDepthDiv').css({"width": "", "display": ""});
+                }
+            });
+
             $('#siteForm').submit(function (e) {
                 e.preventDefault();
 
@@ -418,6 +477,9 @@
                 this.classList.add('was-validated');
             });
             $('#projectId').change(function () {
+                $("#projectForm").submit();
+            });
+            $('#collectionId').change(function () {
                 $("#projectForm").submit();
             });
 
@@ -444,9 +506,7 @@
                 if (!confirm('Are you sure you want to delete this site?')) {
                     return false;
                 }
-
                 let row = $(this).parents("tr");
-
                 deleteRequest('{{ baseUrl }}/api/admin/siteManager/delete/' + $(this).data('id'), [], false, false, row.remove());
             });
         });

@@ -28,14 +28,20 @@
                     </div>
                     <div class="row">
                         <div class="form-group col-md-6">
-                            <label for="sensor" class="col-form-label-sm">Sensor
-                            </label>
-                            <select id="sensor" name="sensor" class="form-control form-control-sm">
-                                {% for sensor in sensors %}
-                                    <option value="{{ sensor.sensor_id }}">{{ sensor.name }}</option>
+                            <label for="recorder" class="col-form-label-sm">Recorder</label>
+                            <select id="recorder" name="recorder" class="form-control form-control-sm" required>
+                                <option></option>
+                                {% for recorder in recorders %}
+                                    <option value="{{ recorder.recorder_id }}" data-microphone="{{ recorder.microphone }}">{{ recorder.modal }}{% if recorder.brand!='' or recorder.brand is not null %} | {{ recorder.brand }}{% endif %}</option>
                                 {% endfor %}
                             </select>
                         </div>
+                        <div class="form-group col-md-6">
+                            <label for="microphone" class="col-form-label-sm">Microphone</label>
+                            <select id="microphone" name="microphone" class="form-control form-control-sm" readonly required></select>
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="form-group col-md-6">
                             <label for="site" class="col-form-label-sm">Site
                             </label>
@@ -46,12 +52,12 @@
                                 {% endfor %}
                             </select>
                         </div>
-                    </div>
-                    <div class="row">
                         <div class="form-group col-md-6">
                             <label for="doi" class="col-form-label-sm">DOI (optional)</label>
                             <input id="doi" type="text" name="doi" class="form-control form-control-sm"/>
                         </div>
+                    </div>
+                    <div class="row">
                         <div class="form-group col-md-6">
                             <label for="license" class="col-form-label-sm">License
                             </label>
@@ -59,6 +65,13 @@
                                 {% for licensed in license %}
                                     <option value="{{ licensed.license_id }}">{{ licensed.name }}</option>
                                 {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="medium" class="col-form-label-sm">Medium</label>
+                            <select id="medium" name="medium" class="form-control form-control-sm">
+                                <option>Air</option>
+                                <option>Water</option>
                             </select>
                         </div>
                     </div>
@@ -70,45 +83,6 @@
                                 <option value="Focal">Focal (recording from active search for animals, e.g. with directional microphone during point counts)</option>
                                 <option value="Enclosure">Enclosure (recording from captured animals, movement constrained)</option>
                             </select>
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label for="medium" class="col-form-label-sm">Medium</label>
-                            <select id="medium" name="medium" class="form-control form-control-sm">
-                                <option>Air</option>
-                                <option>Water</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="form-control-sm">
-                            <input id="reference" name="reference" type="checkbox">
-                            <label for="reference">Reference Sound</label>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="speciesName" class="col-form-label-sm">Species</label>
-                        <input class="js-species-id" name="species" type="hidden" data-type="upload">
-                        <input id="speciesName" class="form-control form-control-sm js-reference-field js-field-required js-species-autocomplete" type="text" size="50" placeholder="Insert the species name for searching" data-type="upload" disabled>
-                    </div>
-                    <div class="row">
-                        <div class="form-group col-md-6">
-                            <label for="sound_type" class="col-form-label-sm">Sound Type
-                            </label>
-                            <select id="sound_type" name="sound-type" class="form-control form-control-sm js-reference-field js-field-required" disabled>
-                                {% for soundType in soundTypes %}
-                                    <option value="{{ soundType.soundTypeId }}">{{ soundType.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group col-md-3">
-                            <label for="subtype" class="col-form-label-sm">Subtype
-                            </label>
-                            <input id="subtype" name="subtype" class="form-control form-control-sm js-reference-field" type="text" pattern="[A-Z]{1}" placeholder="A-Z" disabled>
-                        </div>
-                        <div class="form-group col-md-3">
-                            <label for="rating" class="col-form-label-sm">Rating
-                            </label>
-                            <input id="rating" name="rating" class="form-control form-control-sm js-reference-field" type="text" pattern="[A-E]{1}" placeholder="A-E" disabled>
                         </div>
                     </div>
                 </div>

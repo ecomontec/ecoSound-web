@@ -3,6 +3,7 @@
 namespace BioSounds\Controller;
 
 use BioSounds\Controller\Administration\IndexLogController;
+use BioSounds\Controller\Administration\SiteCollectionController;
 use BioSounds\Controller\Administration\UserController;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Utils\Auth;
@@ -136,6 +137,26 @@ class AdminController extends BaseController
     public function siteManager(string $action, int $id = 0, string $str = '0')
     {
         return (new SiteController($this->twig))->$action($id, $str);
+    }
+
+    /**
+     * @param string|null $action
+     * @return false|string
+     * @throws \Exception
+     */
+    public function siteCollections(int $id = null)
+    {
+        return (new SiteCollectionController($this->twig))->show($id);
+    }
+
+    /**
+     * @param string $action
+     * @param int|null $id
+     * @return mixed
+     */
+    public function siteCollectionManager(string $action, int $id = 0)
+    {
+        return (new SiteCollectionController($this->twig))->$action($id);
     }
 
     /**

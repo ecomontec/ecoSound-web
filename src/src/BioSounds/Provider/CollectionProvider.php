@@ -30,6 +30,7 @@ class CollectionProvider extends BaseProvider
                 ->setUserId($item['user_id'])
                 ->setDoi($item['doi'])
                 ->setNote($item['note'])
+                ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
                 ->setProject($item['project_id'])
                 ->setCreationDate($item['creation_date'])
                 ->setPublic($item['public'])
@@ -56,6 +57,7 @@ class CollectionProvider extends BaseProvider
                 ->setUserId($item['user_id'])
                 ->setDoi($item['doi'])
                 ->setNote($item['note'])
+                ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
                 ->setProject($item['project_id'])
                 ->setCreationDate($item['creation_date'])
                 ->setPublic($item['public'])
@@ -86,6 +88,7 @@ class CollectionProvider extends BaseProvider
             ->setUserId($result['user_id'])
             ->setDoi($result['doi'])
             ->setNote($result['note'])
+            ->setSphere($result['sphere'] == null ? '' : $result['sphere'])
             ->setProject($result['project_id'])
             ->setCreationDate($result['creation_date'])
             ->setPublic($result['public'])
@@ -110,13 +113,37 @@ class CollectionProvider extends BaseProvider
                 ->setUserId($item['user_id'])
                 ->setDoi($item['doi'])
                 ->setNote($item['note'])
+                ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
                 ->setProject($item['project_id'])
+                ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
                 ->setCreationDate($item['creation_date'])
                 ->setPublic($item['public'])
                 ->setView($item['view'])
                 ->setPermission($item['permission_id'] == null ? 0 : $item['permission_id']);
         }
 
+        return $data;
+    }
+
+    public function getWithSite(int $project_id, int $site_id): ?array
+    {
+        $this->database->prepareQuery('SELECT c.*,MAX(IF(site_id = :site_id, 1, 0)) AS site_id FROM collection c LEFT JOIN site_collection sc ON sc.collection_id = c.collection_id WHERE c.project_id = :project_id GROUP BY c.collection_id');
+        $results = $this->database->executeSelect([':project_id' => $project_id, ':site_id' => $site_id]);
+        $data = [];
+        foreach ($results as $item) {
+            $data[] = (new Collection())
+                ->setId($item['collection_id'])
+                ->setName($item['name'])
+                ->setUserId($item['user_id'])
+                ->setDoi($item['doi'])
+                ->setNote($item['note'])
+                ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
+                ->setProject($item['project_id'])
+                ->setCreationDate($item['creation_date'])
+                ->setPublic($item['public'])
+                ->setView($item['view'])
+                ->setPermission($item['site_id']);
+        }
         return $data;
     }
 
@@ -139,6 +166,7 @@ class CollectionProvider extends BaseProvider
                 ->setUserId($item['user_id'])
                 ->setDoi($item['doi'])
                 ->setNote($item['note'])
+                ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
                 ->setProject($item['project_id'])
                 ->setCreationDate($item['creation_date'])
                 ->setPublic($item['public'])
@@ -162,6 +190,7 @@ class CollectionProvider extends BaseProvider
                 ->setUserId($item['user_id'])
                 ->setDoi($item['doi'])
                 ->setNote($item['note'])
+                ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
                 ->setProject($item['project_id'])
                 ->setCreationDate($item['creation_date'])
                 ->setPublic($item['public'])
@@ -185,6 +214,7 @@ class CollectionProvider extends BaseProvider
                 ->setUserId($item['user_id'])
                 ->setDoi($item['doi'])
                 ->setNote($item['note'])
+                ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
                 ->setProject($item['project_id'])
                 ->setCreationDate($item['creation_date'])
                 ->setPublic($item['public'])
@@ -201,6 +231,8 @@ class CollectionProvider extends BaseProvider
     public function delete(int $id): void
     {
         $this->database->prepareQuery('DELETE FROM ' . Collection::TABLE_NAME . ' WHERE collection_id = :id');
+        $this->database->executeDelete([':id' => $id]);
+        $this->database->prepareQuery('DELETE FROM site_collection WHERE collection_id = :id');
         $this->database->executeDelete([':id' => $id]);
     }
 }
