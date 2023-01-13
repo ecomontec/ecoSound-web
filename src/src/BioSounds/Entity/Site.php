@@ -388,6 +388,7 @@ class Site extends AbstractProvider
 
     public function getCollection(int $site_id, string $collections)
     {
+        $collections = $collections=="" ? "''" : $collections;
         $this->database->prepareQuery("SELECT collection_id FROM site_collection WHERE site_id = :site_id AND collection_id IN ($collections)");
         if (empty($result = $this->database->executeSelect([":site_id" => $site_id]))) {
             return null;

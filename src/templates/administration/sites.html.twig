@@ -477,6 +477,7 @@
                 this.classList.add('was-validated');
             });
             $('#projectId').change(function () {
+                $('#collectionId').val("")
                 $("#projectForm").submit();
             });
             $('#collectionId').change(function () {

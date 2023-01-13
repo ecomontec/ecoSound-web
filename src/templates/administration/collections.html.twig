@@ -177,7 +177,7 @@
                 }
                 this.classList.add('was-validated');
             });
-            $('.js-delete-modal').click(function (e) {
+            $('#collTable tbody').on('click', '.js-delete-modal', function () {
                 var id = $(this).data('id')
                 var name = $(this).data('name')
                 $.ajax({
@@ -195,7 +195,7 @@
             $('#js-delete-button').click(function () {
                 let row = $("#col" + $('#delete_id').val()).parents("tr");
                 deleteRequest('{{ baseUrl }}/api/admin/collectionMgr/delete/' + $('#delete_id').val(), [], false, false, row.remove());
-                $('#modal-div').modal('hide');
+                location.reload();
             });
             $("#confirm_input").on('input', function () {
                 if ($("#confirm_input").val() == $('#modal-collection').text()) {

@@ -12,11 +12,11 @@ class CollectionProvider extends BaseProvider
     {
         $sql = "SELECT c.* FROM collection c ";
         if (!Auth::isUserLogged()) {
-            $sql .= 'WHERE c.public = 1 AND project_id = :projectId ';
+            $sql .= 'WHERE c.public = 1 AND c.project_id = :projectId ';
         } elseif (!Auth::isUserAdmin()) {
-            $sql .= 'WHERE ( c.public = 1 OR c.collection_id IN (SELECT up.collection_id FROM user_permission up, permission p WHERE up.permission_id = p.permission_id AND (p.name = "Access" OR p.name = "View" OR p.name = "Review" OR p.name = "Manage") AND up.user_id = ' . Auth::getUserID() . ')) AND project_id = :projectId ';
+            $sql .= 'WHERE ( c.public = 1 OR c.collection_id IN (SELECT up.collection_id FROM user_permission up, permission p WHERE up.permission_id = p.permission_id AND (p.name = "Access" OR p.name = "View" OR p.name = "Review" OR p.name = "Manage") AND up.user_id = ' . Auth::getUserID() . ')) AND c.project_id = :projectId ';
         } else {
-            $sql .= 'WHERE project_id = :projectId ';
+            $sql .= 'WHERE c.project_id = :projectId ';
         }
         $sql = $sql . 'ORDER BY c.name ';
         $this->database->prepareQuery($sql);

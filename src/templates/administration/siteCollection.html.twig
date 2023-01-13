@@ -25,7 +25,9 @@
                                 <td>{{ project.id }}</td>
                                 <td>{{ project.name }}</td>
                                 <td>
-                                    <input class="js-project-checkbox" type="checkbox" name="project" data-project="{{ project.id }}">
+                                    {% if project.collections|length > 0 %}
+                                        <input class="js-project-checkbox" type="checkbox" name="project" data-project="{{ project.id }}">
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% for collection in project.collections %}
@@ -37,6 +39,7 @@
                                     <td>{{ collection.name }}</td>
                                     <td>
                                         <input class="js-collection-checkbox" type="checkbox" name="collection" data-project-id="{{ project.id }}" data-collection-id="{{ collection.id }}" {{ collection.permission ? 'checked' }}>
+                                        <input id="js-collection-hidden-{{ collection.id }}" type="hidden" value="{{ collection.permission ? 'true':'false' }}">
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -59,8 +62,12 @@
     $(document).ready(function () {
         $(".data_collection").hide()
         $('table#user-perm tbody tr .js-collection-checkbox').each(function (i) {
-            if ($('[data-project-id="' + $(this).data('project-id') + '"]').length == $('[data-project-id="' + $(this).data('project-id') + '"]:checked').length) {
-                $('[data-project="' + $(this).data('project-id') + '"]').prop('checked', true);
+            if ($('[data-project-id="' + $(this).data('project-id') + '"]').length == $('[data-project-id="' + $(this).data('project-id') + '"]:checked').length && $('[data-project-id="' + $(this).data('project-id') + '"]:checked').length > 0) {
+                $('[data-project="' + $(this).data('project-id') + '"]').prop({checked: true, indeterminate: false});
+            } else if ($('[data-project-id="' + $(this).data('project-id') + '"]').length != $('[data-project-id="' + $(this).data('project-id') + '"]:checked').length && $('[data-project-id="' + $(this).data('project-id') + '"]:checked').length > 0) {
+                $('[data-project="' + $(this).data('project-id') + '"]').prop({checked: false, indeterminate: true});
+            } else {
+                $('[data-project="' + $(this).data('project-id') + '"]').prop({checked: false, indeterminate: false});
             }
         });
     });
@@ -78,14 +85,17 @@
         })
 
         $('.js-project-checkbox').change(function (e) {
+            i = this.checked ? 1 : 0
             $('[data-project-id="' + $(this).data('project') + '"]').prop('checked', this.checked);
         });
 
         $('.js-collection-checkbox').change(function (e) {
-            if ($('[data-project-id="' + $(this).data('project-id') + '"]').length == $('[data-project-id="' + $(this).data('project-id') + '"]:checked').length) {
-                $('[data-project="' + $(this).data('project-id') + '"]').prop('checked', true);
+            if ($('[data-project-id="' + $(this).data('project-id') + '"]').length == $('[data-project-id="' + $(this).data('project-id') + '"]:checked').length && $('[data-project-id="' + $(this).data('project-id') + '"]:checked').length > 0) {
+                $('[data-project="' + $(this).data('project-id') + '"]').prop({checked: true, indeterminate: false});
+            } else if ($('[data-project-id="' + $(this).data('project-id') + '"]').length != $('[data-project-id="' + $(this).data('project-id') + '"]:checked').length && $('[data-project-id="' + $(this).data('project-id') + '"]:checked').length > 0) {
+                $('[data-project="' + $(this).data('project-id') + '"]').prop({checked: false, indeterminate: true});
             } else {
-                $('[data-project="' + $(this).data('project-id') + '"]').prop('checked', false);
+                $('[data-project="' + $(this).data('project-id') + '"]').prop({checked: false, indeterminate: false});
             }
         });
 
@@ -94,13 +104,13 @@
             let checked = 0
             $('table#user-perm tbody tr').each(function (i) {
                 let dataInput = $(this).children('td').find(".js-collection-checkbox");
-                if (dataInput.length > 0) {
+                if (dataInput.is(':checked')) {
+                    checked = 1
+                }
+                if (dataInput.length > 0 && dataInput.is(":checked").toString() != $("#js-collection-hidden-" + dataInput.data('collection-id')).val()) {
                     data.append('data[' + i + '][collection_id]', dataInput.data('collection-id'));
                     data.append('data[' + i + '][site_id]', '{{ site_id }}');
                     data.append('data[' + i + '][check]', dataInput.is(':checked'));
-                    if (dataInput.is(':checked')) {
-                        checked = 1
-                    }
                 }
             });
             if (checked) {

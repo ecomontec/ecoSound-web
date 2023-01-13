@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="{{ baseUrl }}/assets/css/timeline.css">
 
-<div id="timeline" style="width:100%;height: 900px"></div>
+<div id="timeline" style="height: 1000px"></div>
 <script src="{{ baseUrl }}/assets/js/timeline.js"></script>
 <script>
     DateArr = []
@@ -48,6 +48,19 @@
             "start_at_slide": 0,
             "scale_factor": 0.3,
             "optimal_tick_width": 1000,
+            "marker_padding": 0,
         }
     );
+
+    var t = window.setInterval(function () {
+        if ($(".tl-timenav").height() > 0) {
+            $("#timeline").height($(".tl-timenav").height() + 500)
+            $(".tl-storyslider").height(500)
+            $("#timeline").hide()
+            $("#timeline").show()
+            if (Math.abs($("#timeline").height() - $(".tl-storyslider").height() - $(".tl-timenav").height()) > 10) {
+                window.clearInterval(t)
+            }
+        }
+    }, 1000)
 </script>
