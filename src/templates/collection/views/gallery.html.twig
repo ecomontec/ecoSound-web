@@ -12,9 +12,15 @@
             <tr class="sound-list-item" style="display:inline-block;width: 33.3%;text-align: center;">
                 <td style="width: 30%"></td>
                 <td>
-                    <a href="{{ baseUrl }}/recording/show/{{ item.recording.id }}" title="BioSounds player">
-                        <img src="{{ baseUrl }}/{{ item.smallImage }}">
-                    </a>
+                    {% if item.recording.data_type=='audio data' %}
+                        <a href="{{ baseUrl }}/recording/show/{{ item.recording.id }}" title="BioSounds player">
+                            <img src="{{ baseUrl }}/{{ item.smallImage }}">
+                        </a>
+                    {% else %}
+                        <h5 style="background: #C6C6C6;height: 150px;width: 300px;">
+                            <br><br>meta-recording (no audio)<br>sampling rate: {{ item.recording.samplingRate }}
+                        </h5>
+                    {% endif %}
                     <span>{{ item.recording.name }}</span>
                     <span style="color: dodgerBlue;">{{ item.recording.labelName }}</span>
                     <span>{{ item.recording.fileDate }}</span>

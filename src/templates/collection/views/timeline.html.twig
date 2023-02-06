@@ -14,11 +14,13 @@
             "events": [
                 {% for item in list %}
                 {
+                    {% if item.recording.data_type=='audio data' %}
                     "media": {
                         "url": "{{ baseUrl }}/{{ item.playerImage }}",
                         "credit": "User:<a>{{ item.recording.getUserFullName }}</a>",
                         "link": "{{ baseUrl }}/recording/show/{{ item.recording.id }}",
                     },
+                    {% endif %}
                     "start_date": {
                         "year": "{{ item.recording.startDate }}".substring(0, 4),
                         "month": "{{ item.recording.startDate }}".substring(5, 7),
@@ -37,6 +39,9 @@
                     },
                     "text": {
                         "headline": "{{ item.recording.name }}",
+                        {% if item.recording.data_type=='meta-data' %}
+                        "text": "<h2 style='background: #C6C6C6;height: 300px;width: 600px;' class='text-center ml-auto mr-auto'><br><br><br>meta-recording (no audio)<br>sampling rate: {{ item.recording.samplingRate }}</h2>"
+                        {% endif %}
                     },
                     "group": "{{ item.recording.siteName?item.recording.siteName:'not geo-referenced' }}",
                     "display_date": "{{ item.recording.startDate }}"
@@ -54,6 +59,7 @@
 
     var t = window.setInterval(function () {
         if ($(".tl-timenav").height() > 0) {
+            $(".tl-text-headline-container").addClass('text-center')
             $("#timeline").height($(".tl-timenav").height() + 500)
             $(".tl-storyslider").height(500)
             $("#timeline").hide()

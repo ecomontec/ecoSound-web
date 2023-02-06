@@ -229,7 +229,7 @@ class Recording
     /**
      * @return int
      */
-    public function getDirectory(): int
+    public function getDirectory(): ?int
     {
         return $this->directory;
     }
@@ -238,7 +238,7 @@ class Recording
      * @param int $directory
      * @return Recording
      */
-    public function setDirectory(int $directory): Recording
+    public function setDirectory(?int $directory): Recording
     {
         $this->directory = $directory;
         return $this;
@@ -345,7 +345,7 @@ class Recording
     /**
      * @return int
      */
-    public function getUserId(): int
+    public function getUserId(): ?int
     {
         return $this->user_id;
     }
@@ -363,7 +363,7 @@ class Recording
     /**
      * @return int
      */
-    public function getFileSize(): int
+    public function getFileSize(): ?int
     {
         return $this->fileSize;
     }
@@ -372,7 +372,7 @@ class Recording
      * @param int $fileSize
      * @return Recording
      */
-    public function setFileSize(int $fileSize): Recording
+    public function setFileSize(?int $fileSize): Recording
     {
         $this->fileSize = $fileSize;
         return $this;
@@ -381,7 +381,7 @@ class Recording
     /**
      * @return string
      */
-    public function getFileName(): string
+    public function getFileName(): ?string
     {
         return $this->fileName;
     }
@@ -390,7 +390,7 @@ class Recording
      * @param string $fileName
      * @return Recording
      */
-    public function setFileName(string $fileName): Recording
+    public function setFileName(?string $fileName): Recording
     {
         $this->fileName = $fileName;
         return $this;
@@ -431,7 +431,23 @@ class Recording
         $this->startDate = $startDate;
         return $this;
     }
+    /**
+     * @return null|string
+     */
+    public function getDataType(): ?string
+    {
+        return $this->data_type;
+    }
 
+    /**
+     * @param null|string $data_type
+     * @return Recording
+     */
+    public function setDataType(?string $data_type): Recording
+    {
+        $this->data_type = $data_type;
+        return $this;
+    }
     /**
      * @return null|string
      */
@@ -581,7 +597,7 @@ class Recording
      * @param int $user_id
      * @return Recording
      */
-    public function setUserId(int $user_id): Recording
+    public function setUserId(?int $user_id): Recording
     {
         $this->user_id = $user_id;
         return $this;
@@ -616,7 +632,7 @@ class Recording
     /**
      * @return string
      */
-    public function getLicenseName(): string
+    public function getLicenseName(): ?string
     {
         return $this->license_name;
     }
@@ -874,6 +890,7 @@ class Recording
         $this->setMicrophone($values['microphone_id']);
         $this->setMicrophoneName($values['microphoneName']);
         $this->setSound($values['sound_id']);
+        $this->setDataType($values['data_type']);
         $this->setFileName($values['filename']);
         $this->setFileDate($values['file_date']);
         $this->setFileTime($values['file_time']);

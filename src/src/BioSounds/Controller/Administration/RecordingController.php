@@ -120,6 +120,9 @@ class RecordingController extends BaseController
             }
         }
         $data["site_id"] = $data["site_id"] == 0 ? null : $data["site_id"];
+        $data["recorder_id"] = $data["recorder_id"] == 0 ? null : $data["recorder_id"];
+        $data["microphone_id"] = $data["microphone_id"] == 0 ? null : $data["microphone_id"];
+        $data["license_id"] = $data["license_id"] == 0 ? null : $data["license_id"];
         if (isset($data["itemID"])) {
             (new RecordingProvider())->update($data);
 

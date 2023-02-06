@@ -122,6 +122,7 @@
                 {% endif %}
             </td>
             <td style="width: 60%;">
+                {% if item.recording.data_type=='audio data' %}
                 <div id="player-cursor" class="small-player-cursor" data-cursor-id="{{ item.recording.id }}"></div>
                 <a href="{{ baseUrl }}/recording/show/{{ item.recording.id }}" title="BioSounds player">
                     <img class="small-player-image" src="{{ baseUrl }}/{{ item.playerImage }}">
@@ -129,6 +130,11 @@
                 <audio id="player" data-id="{{ item.recording.id }}" controls preload="none">
                     <source src="{{ baseUrl }}/{{ item.playerRecording }}"/>
                 </audio>
+                {% else %}
+                    <h2 style="background: #C6C6C6;height: 240px;width: 600px;" class="text-center">
+                        <br><br>meta-recording (no audio)<br>sampling rate: {{ item.recording.samplingRate }}
+                    </h2>
+                {% endif %}
             </td>
         </tr>
     {% endfor %}
