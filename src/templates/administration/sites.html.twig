@@ -47,7 +47,7 @@
                 <th>GADM 2</th>
                 <th>Realm</th>
                 <th>Biome</th>
-                <th>Functional Group</th>
+                <th>Functional Type</th>
                 {% if isManage %}
                     <th></th>
                 {% endif %}
@@ -55,86 +55,6 @@
             </tr>
             </thead>
             <tbody class="form-control-sm js-site-list">
-            {% for site in siteList %}
-                <tr>
-                    <td>
-                        {{ site.id }}
-                        <input type="hidden" name="steId" value="{{ site.id }}">
-                    </td>
-                    <td data-search="{{ site.name }}" data-order="{{ site.name }}">
-                        <input type="text" class="form-control form-control-sm" style="width:100px;" name="name" value="{{ site.name }}">
-                    </td>
-                    <td data-search="{{ site.longitude }}" data-order="{{ site.longitude }}">
-                        <input type="number" class="form-control form-control-sm" style="width:120px;" name="longitude" min="-180" max="180" step="0.0000000000001" pattern="##.##############" value="{{ site.longitude }}">
-                        <div class="invalid-feedback">
-                            Please provide a longitude value, from -180 to 180.
-                        </div>
-                    </td>
-                    <td data-search="{{ site.latitude }}" data-order="{{ site.latitude }}">
-                        <input type="number" class="form-control form-control-sm" style="width:120px;" name="latitude" min="-90" max="90" step="0.0000000000001" pattern="##.##############" value="{{ site.latitude }}">
-                        <div class="invalid-feedback">
-                            Please provide a latitude value, from -90 to 90.
-                        </div>
-                    </td>
-                    <td data-search="{{ site.topography }}" data-order="{{ site.topography }}">
-                        <input type="number" class="form-control form-control-sm" style="width:120px;" name="topography_m" min="-15000" max="10000" step="0.1" pattern="##.##" value="{{ site.topography }}">
-                        <div class="invalid-feedback">
-                            Please provide a topography value, from -15000.0 to 10000.0.
-                        </div>
-                    </td>
-                    <td data-search="{{ site.freshwaterDepth }}" data-order="{{ site.freshwaterDepth }}">
-                        <input type="number" class="form-control form-control-sm" style="width:120px;" name="freshwater_depth_m" min="-2000" max="0" step="0.1" pattern="##.##" value="{{ site.freshwaterDepth }}">
-                        <div class="invalid-feedback">
-                            Please provide a freshwater depth value, from -2000.0 to 0.0.
-                        </div>
-                    </td>
-                    <td data-search="{{ site.gadm0 }}" data-order="{{ site.gadm0 }}">
-                        <select id="gadm0_{{ site.id }}" name="gadm0" style="width:120px;" class="form-control form-control-sm">
-                            <option value="{{ site.gadm0 }}" selected>{{ site.gadm0 }}</option>
-                        </select>
-                    </td>
-                    <td data-search="{{ site.gadm1 }}" data-order="{{ site.gadm1 }}">
-                        <select id="gadm1_{{ site.id }}" name="gadm1" style="width:120px;" class="form-control form-control-sm">
-                            <option value="{{ site.gadm1 }}" selected>{{ site.gadm1 }}</option>
-                        </select>
-                    </td>
-                    <td data-search="{{ site.gadm2 }}" data-order="{{ site.gadm2 }}">
-                        <select id="gadm2_{{ site.id }}" name="gadm2" style="width:120px;" class="form-control form-control-sm">
-                            <option value="{{ site.gadm2 }}" selected>{{ site.gadm2 }}</option>
-                        </select>
-                    </td>
-                    <td data-search="{{ site.realm }}" data-order="{{ site.realm }}">
-                        <select id="realm_{{ site.id }}" name="realm_id" style="width:120px;" class="form-control form-control-sm">
-                            <option></option>
-                            {% for realm in realms %}
-                                <option value="{{ realm.explore_id }}" {{ realm.explore_id==site.realmId?"selected" }}>{{ realm.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </td>
-                    <td data-search="{{ site.biome }}" data-order="{{ site.biome }}">
-                        <select id="biome_{{ site.id }}" name="biome_id" class="form-control form-control-sm" style="width:120px;">
-                            <option value="{{ site.biomeId }}" selected>{{ site.biome }}</option>
-                        </select>
-                    </td>
-                    <td data-search="{{ site.functionalGroup }}" data-order="{{ site.functionalGroup }}">
-                        <select id="functionalGroup_{{ site.id }}" name="functional_group_id" class="form-control form-control-sm" style="width:120px;">
-                            <option value="{{ site.functionalGroupId }}" selected>{{ site.functionalGroup }}</option>
-                        </select>
-                    </td>
-                    {% if isManage %}
-                        <td>
-                            <a href="{{ baseUrl }}/admin/siteCollections/{{ site.id }}" class="js-open-modal" title="Site Assignment">
-                                <i class='fas fa-tasks'></i>
-                            </a>
-                        </td>
-                    {% endif %}
-                    <td>
-                        <a class="js-site-delete" href="#" data-id="{{ site.id }}" title="Delete Site">
-                            <span class="fas fa-trash"></span>
-                        </a>
-                    </td>
-                </tr>
-            {% endfor %}
             </tbody>
         </table>
     </div>
@@ -145,13 +65,19 @@
 
     <script>
         $(function () {
-            var arr ={{ explores|json_encode|raw }};
+            var arr ={{ iucn_gets|json_encode|raw }};
             $(document).ready(function () {
                 $('#siteTable').show()
                 $('#siteTable').DataTable({
+                    "processing": true,
+                    "serverSide": true,
+                    "ajax": {
+                        "url": '/admin/siteManager/getListByPage/{{ projectId }}/{{ collectionId }}',
+                        "type": 'POST'
+                    },
                     "pageLength": 8,
-                    "lengthChange": false,
                     "stateSave": true,
+                    "lengthChange": false,
                     "StateDuration": -1,
                     "order": [[0, 'asc']],
                     "columnDefs": [{
@@ -161,354 +87,371 @@
                     "bAutoWidth": false,
                     "scrollX": true,
                 });
-            });
-            'use strict';
-            $("select[name='realm_id']").on('change', function () {
-                var id = $(this).attr('id').split('_')[1]
-                $("#biome_" + id).empty()
-                $("#biome_" + id).append("<option></option>");
-                $("#functionalGroup_" + id).empty()
-                $("#functionalGroup_" + id).append("<option></option>");
-                var biomes = arr['pid' + $(this).val()]
-                for (var key in biomes) {
-                    $("#biome_" + id).append("<option value=" + biomes[key][0] + ">" + biomes[key][1] + "</option>");
-                }
-            });
-            $("select[name='biome_id']").on('change', function () {
-                var id = $(this).attr('id').split('_')[1]
-                $("#functionalGroup_" + id).empty()
-                $("#functionalGroup_" + id).append("<option></option>");
-                var functionalGroups = arr['pid' + $(this).val()]
-                for (var key in functionalGroups) {
-                    $("#functionalGroup_" + id).append("<option value=" + functionalGroups[key][0] + ">" + functionalGroups[key][1] + "</option>");
-                }
-            });
-            $("select[name='biome_id']").on('mouseenter ', function () {
-                if ($(this)[0].options.length < 2) {
-                    var id = $(this).attr('id').split('_')[1]
-                    if ($('#realm_' + id).val() != 0) {
-                        if ($(this).val() > 0) {
-                            $("#biome_" + id).prepend("<option></option>")
-                        }
-                        var biomes = arr['pid' + $('#realm_' + id).val()]
-                        for (var key in biomes) {
-                            if ($(this).val() != biomes[key][0]) {
-                                $("#biome_" + id).append("<option value=" + biomes[key][0] + ">" + biomes[key][1] + "</option>");
-                            }
-                        }
-                    }
-                }
-            });
-            $("select[name='functional_group_id']").on('mouseenter ', function () {
-                if ($(this)[0].options.length < 2) {
-                    var id = $(this).attr('id').split('_')[1]
-                    if ($('#biome_' + id).val() != 0) {
-                        if ($(this).val() > 0) {
-                            $("#functionalGroup_" + id).prepend("<option></option>")
-                        }
-                        var functionalGroups = arr['pid' + $('#biome_' + id).val()]
-                        for (var key in functionalGroups) {
-                            if ($(this).val() != functionalGroups[key][0]) {
-                                $("#functionalGroup_" + id).append("<option value=" + functionalGroups[key][0] + ">" + functionalGroups[key][1] + "</option>");
-                            }
-                        }
-                    }
-                }
-            });
-            $("#realm").on('change', function () {
-                $("#biome").empty()
-                $("#biome").append("<option></option>");
-                $("#functionalGroup").empty()
-                $("#functionalGroup").empty()
-                var biomes = arr['pid' + $(this).val()]
-                for (var key in biomes) {
-                    $("#biome").append("<option value=" + biomes[key][0] + ">" + biomes[key][1] + "</option>");
-                }
-            });
-            $("#biome").on('change', function () {
-                $("#functionalGroup").empty()
-                $("#functionalGroup").append("<option></option>");
-                var functionalGroups = arr['pid' + $(this).val()]
-                for (var key in functionalGroups) {
-                    $("#functionalGroup").append("<option value=" + functionalGroups[key][0] + ">" + functionalGroups[key][1] + "</option>");
-                }
-            });
+                'use strict';
 
-            /* GADM */
-            $("select[name='gadm0']").on('change', function () {
-                var id = $(this).attr('id').split('_')[1]
-                $("#gadm1_" + id).empty()
-                $("#gadm2_" + id).empty()
-                $("#gadm1_" + id).append("<option value='' selected></option>");
-                $("#gadm2_" + id).append("<option value='' selected></option>");
-                $("#gadm1_" + id).attr('disabled', true)
-                $("#gadm2_" + id).attr('disabled', true)
-                $.ajax({
-                    url: "{{ baseUrl }}/admin/siteManager/gadm/1/" + $(this).val(),
-                    success: function (data) {
-                        if (data == '[]') {
-                            $("#gadm1_" + id).attr('disabled', true)
-                            $("#gadm2_" + id).attr('disabled', true)
-                        } else if (typeof (data) != 'undefined') {
-                            $("#gadm1_" + id).attr('disabled', false)
-                            data = JSON.parse(data)
-                            for (var key in data) {
-                                $("#gadm1_" + id).append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
-                            }
-                        }
-                    },
-                })
-            });
-            $("select[name='gadm1']").on('change', function () {
-                var id = $(this).attr('id').split('_')[1]
-                $("#gadm2_" + id).empty()
-                $("#gadm2_" + id).append("<option value='' selected></option>");
-                $("#gadm2_" + id).attr('disabled', true)
-                $.ajax({
-                    url: "{{ baseUrl }}/admin/siteManager/gadm/2/" + $(this).val(),
-                    success: function (data) {
-                        if (data == '[]') {
-                            $("#gadm2_" + id).attr('disabled', true)
-                        } else if (typeof (data) != 'undefined') {
-                            $("#gadm2_" + id).attr('disabled', false)
-                            data = JSON.parse(data)
-                            for (var key in data) {
-                                $("#gadm2_" + id).append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
-                            }
-                        }
-                    },
-                })
-            });
-            $("select[name='gadm0']").on('mouseenter ', function () {
-                if ($(this)[0].options.length < 2) {
-                    var id = $(this).attr('id').split('_')[1]
-                    if ($('#gadm0_' + id).val() != '') {
-                        $("#gadm0_" + id).prepend("<option></option>")
+                $('#realm').on('change', function () {
+                    $("#biome").empty()
+                    $("#biome").append("<option></option>");
+                    $("#functionalType").empty()
+                    $("#functionalType").empty()
+                    var biomes = arr['pid' + $(this).val()]
+                    for (var key in biomes) {
+                        $("#biome").append("<option value=" + biomes[key][0] + ">" + biomes[key][1] + "</option>");
                     }
-                    $("#gadm0_" + id).attr('disabled', true)
+                });
+                $("#biome").on('change', function () {
+                    $("#functionalType").empty()
+                    $("#functionalType").append("<option></option>");
+                    var functionalTypes = arr['pid' + $(this).val()]
+                    for (var key in functionalTypes) {
+                        $("#functionalType").append("<option value=" + functionalTypes[key][0] + ">" + functionalTypes[key][1] + "</option>");
+                    }
+                });
+                $("#gadm0").on('change', function () {
+                    $("#gadm1").empty()
+                    $("#gadm2").empty()
+                    $("#gadm1").append("<option value='' selected></option>");
+                    $("#gadm2").append("<option value='' selected></option>");
+                    $("#gadm1").attr('disabled', true)
+                    $("#gadm2").attr('disabled', true)
                     $.ajax({
-                        url: "{{ baseUrl }}/admin/siteManager/gadm/0/0",
+                        url: "{{ baseUrl }}/admin/siteManager/gadm/1/" + $(this).val(),
                         success: function (data) {
-                            if (typeof (data) != 'undefined') {
-                                $("#gadm0_" + id).attr('disabled', false)
+                            if (data == '[]') {
+                                $("#gadm1").attr('disabled', true)
+                                $("#gadm2").attr('disabled', true)
+                            } else if (typeof (data) != 'undefined') {
+                                $("#gadm1").attr('disabled', false)
                                 data = JSON.parse(data)
                                 for (var key in data) {
-                                    if ($('#gadm0_' + id).val() != data[key]['name']) {
-                                        $("#gadm0_" + id).append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
-                                    }
+                                    $("#gadm1").append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
                                 }
                             }
                         },
                     })
-                }
-            });
-            $("select[name='gadm1']").on('mouseenter ', function () {
-                if ($(this)[0].options.length < 2) {
-                    var id = $(this).attr('id').split('_')[1]
-                    if ($('#gadm0_' + id).val() != '') {
-                        if ($('#gadm1_' + id).val() != '') {
-                            $("#gadm1_" + id).prepend("<option></option>")
-                        }
-                        $("#gadm1_" + id).attr('disabled', true)
-                        $.ajax({
-                            url: "{{ baseUrl }}/admin/siteManager/gadm/1/" + $('#gadm0_' + id).val(),
-                            success: function (data) {
-                                if (data == '[]') {
-                                    $("#gadm1_" + id).attr('disabled', true)
-                                    $("#gadm2_" + id).attr('disabled', true)
-                                } else if (typeof (data) != 'undefined') {
-                                    $("#gadm1_" + id).attr('disabled', false)
-                                    data = JSON.parse(data)
-                                    for (var key in data) {
-                                        if ($('#gadm1_' + id).val() != data[key]['name']) {
-                                            $("#gadm1_" + id).append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
-                                        }
-                                    }
+                });
+                $("#gadm1").on('change', function () {
+                    $("#gadm2").empty()
+                    $("#gadm2").append("<option value='' selected></option>");
+                    $("#gadm2").attr('disabled', true)
+                    $.ajax({
+                        url: "{{ baseUrl }}/admin/siteManager/gadm/2/" + $(this).val(),
+                        success: function (data) {
+                            if (data == '[]') {
+                                $("#gadm2").attr('disabled', true)
+                            } else if (typeof (data) != 'undefined') {
+                                $("#gadm2").attr('disabled', false)
+                                data = JSON.parse(data)
+                                for (var key in data) {
+                                    $("#gadm2").append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
                                 }
-                            },
-                        })
-                    }
-                }
-            });
-            $("select[name='gadm2']").on('mouseenter ', function () {
-                if ($(this)[0].options.length < 2) {
-                    var id = $(this).attr('id').split('_')[1]
-                    if ($('#gadm1_' + id).val() != '') {
-                        if ($('#gadm2_' + id).val() != '') {
-                            $("#gadm2_" + id).prepend("<option></option>")
-                        }
-                        $("#gadm2_" + id).attr('disabled', true)
-                        $.ajax({
-                            url: "{{ baseUrl }}/admin/siteManager/gadm/2/" + $('#gadm1_' + id).val(),
-                            success: function (data) {
-                                if (data == '[]') {
-                                    $("#gadm2_" + id).attr('disabled', true)
-                                } else if (typeof (data) != 'undefined') {
-                                    $("#gadm2_" + id).attr('disabled', false)
-                                    data = JSON.parse(data)
-                                    for (var key in data) {
-                                        if ($('#gadm2_' + id).val() != data[key]['name']) {
-                                            $("#gadm2_" + id).append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
-                                        }
-                                    }
-                                }
-                            },
-                        })
-                    }
-                }
-            });
-            $("#gadm0").on('change', function () {
-                $("#gadm1").empty()
-                $("#gadm2").empty()
-                $("#gadm1").append("<option value='' selected></option>");
-                $("#gadm2").append("<option value='' selected></option>");
-                $("#gadm1").attr('disabled', true)
-                $("#gadm2").attr('disabled', true)
-                $.ajax({
-                    url: "{{ baseUrl }}/admin/siteManager/gadm/1/" + $(this).val(),
-                    success: function (data) {
-                        if (data == '[]') {
-                            $("#gadm1").attr('disabled', true)
-                            $("#gadm2").attr('disabled', true)
-                        } else if (typeof (data) != 'undefined') {
-                            $("#gadm1").attr('disabled', false)
-                            data = JSON.parse(data)
-                            for (var key in data) {
-                                $("#gadm1").append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
                             }
+                        },
+                    })
+                });
+                $('#longitude').on('change', function () {
+                    if (this.checkValidity() === false) {
+                        if ($('#invalidLatDiv').css('display') && $('#inv4LatDiv').css('display')) {
+                            $('#inv4LatDiv').css({"width": "", "display": ""});
                         }
-                    },
-                })
-            });
-            $("#gadm1").on('change', function () {
-                $("#gadm2").empty()
-                $("#gadm2").append("<option value='' selected></option>");
-                $("#gadm2").attr('disabled', true)
-                $.ajax({
-                    url: "{{ baseUrl }}/admin/siteManager/gadm/2/" + $(this).val(),
-                    success: function (data) {
-                        if (data == '[]') {
-                            $("#gadm2").attr('disabled', true)
-                        } else if (typeof (data) != 'undefined') {
-                            $("#gadm2").attr('disabled', false)
-                            data = JSON.parse(data)
-                            for (var key in data) {
-                                $("#gadm2").append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
-                            }
+                        $('#invalidLongDiv').css({"width": "50%", "display": "inline-block", "position": "relative"});
+                    } else {
+                        if ($('#invalidLatDiv').css('display') && (!$('#inv4LatDiv').css('display') || $('#inv4LatDiv').css('display') === 'none')) {
+                            $('#inv4LatDiv').css({"width": "50%", "display": "inline-block"});
                         }
-                    },
-                })
-            });
+                        if ((!$('#invalidLatDiv').css('display') || $('#invalidLatDiv').css('display') === 'none') || !$('#inv4LatDiv').css('display')) {
+                            $('#inv4LatDiv').css({"width": "", "display": ""});
+                        }
 
-            $('#longitude').on('change', function () {
-                if (this.checkValidity() === false) {
-                    if ($('#invalidLatDiv').css('display') && $('#inv4LatDiv').css('display')) {
-                        $('#inv4LatDiv').css({"width": "", "display": ""});
+                        $('#invalidLongDiv').css({"display": "", "position": ""});
                     }
-                    $('#invalidLongDiv').css({"width": "50%", "display": "inline-block", "position": "relative"});
-                } else {
-                    if ($('#invalidLatDiv').css('display') && (!$('#inv4LatDiv').css('display') || $('#inv4LatDiv').css('display') === 'none')) {
+                });
+                $('#latitude').on('change', function () {
+                    if (this.checkValidity() === false) {
                         $('#inv4LatDiv').css({"width": "50%", "display": "inline-block"});
-                    }
-                    if ((!$('#invalidLatDiv').css('display') || $('#invalidLatDiv').css('display') === 'none') || !$('#inv4LatDiv').css('display')) {
+                        $('#invalidLatDiv').css({
+                            "width": "49%",
+                            "display": "inline-block",
+                            "position": "relative",
+                            "right": "2"
+                        });
+                    } else {
+                        $('#invalidLatDiv').css({"display": "", "position": ""});
                         $('#inv4LatDiv').css({"width": "", "display": ""});
                     }
+                });
+                $('#topography_m').on('change', function () {
+                    if (this.checkValidity() === false) {
+                        if ($('#invalidFreshwaterDepthDiv').css('display') && $('#inv4FreshwaterDepthDiv').css('display')) {
+                            $('#inv4FreshwaterDepthDiv').css({"width": "", "display": ""});
+                        }
+                        $('#invalidTopographyDiv').css({"width": "50%", "display": "inline-block", "position": "relative"});
+                    } else {
+                        if ($('#invalidFreshwaterDepthDiv').css('display') && (!$('#inv4FreshwaterDepthDiv').css('display') || $('#inv4FreshwaterDepthDiv').css('display') === 'none')) {
+                            $('#inv4FreshwaterDepthDiv').css({"width": "50%", "display": "inline-block"});
+                        }
+                        if ((!$('#invalidFreshwaterDepthDiv').css('display') || $('#invalidFreshwaterDepthDiv').css('display') === 'none') || !$('#inv4FreshwaterDepthDiv').css('display')) {
+                            $('#inv4FreshwaterDepthDiv').css({"width": "", "display": ""});
+                        }
 
-                    $('#invalidLongDiv').css({"display": "", "position": ""});
-                }
-            });
-            $('#latitude').on('change', function () {
-                if (this.checkValidity() === false) {
-                    $('#inv4LatDiv').css({"width": "50%", "display": "inline-block"});
-                    $('#invalidLatDiv').css({
-                        "width": "49%",
-                        "display": "inline-block",
-                        "position": "relative",
-                        "right": "2"
-                    });
-                } else {
-                    $('#invalidLatDiv').css({"display": "", "position": ""});
-                    $('#inv4LatDiv').css({"width": "", "display": ""});
-                }
-            });
-
-            $('#topography_m').on('change', function () {
-                if (this.checkValidity() === false) {
-                    if ($('#invalidFreshwaterDepthDiv').css('display') && $('#inv4FreshwaterDepthDiv').css('display')) {
-                        $('#inv4FreshwaterDepthDiv').css({"width": "", "display": ""});
+                        $('#invalidTopographyDiv').css({"display": "", "position": ""});
                     }
-                    $('#invalidTopographyDiv').css({"width": "50%", "display": "inline-block", "position": "relative"});
-                } else {
-                    if ($('#invalidFreshwaterDepthDiv').css('display') && (!$('#inv4FreshwaterDepthDiv').css('display') || $('#inv4FreshwaterDepthDiv').css('display') === 'none')) {
+                });
+                $('#freshwater_depth_m').on('change', function () {
+                    if (this.checkValidity() === false) {
                         $('#inv4FreshwaterDepthDiv').css({"width": "50%", "display": "inline-block"});
-                    }
-                    if ((!$('#invalidFreshwaterDepthDiv').css('display') || $('#invalidFreshwaterDepthDiv').css('display') === 'none') || !$('#inv4FreshwaterDepthDiv').css('display')) {
+                        $('#invalidFreshwaterDepthDiv').css({
+                            "width": "49%",
+                            "display": "inline-block",
+                            "position": "relative",
+                            "right": "2"
+                        });
+                    } else {
+                        $('#invalidFreshwaterDepthDiv').css({"display": "", "position": ""});
                         $('#inv4FreshwaterDepthDiv').css({"width": "", "display": ""});
                     }
-
-                    $('#invalidTopographyDiv').css({"display": "", "position": ""});
-                }
-            });
-            $('#freshwater_depth_m').on('change', function () {
-                if (this.checkValidity() === false) {
-                    $('#inv4FreshwaterDepthDiv').css({"width": "50%", "display": "inline-block"});
-                    $('#invalidFreshwaterDepthDiv').css({
-                        "width": "49%",
-                        "display": "inline-block",
-                        "position": "relative",
-                        "right": "2"
-                    });
-                } else {
-                    $('#invalidFreshwaterDepthDiv').css({"display": "", "position": ""});
-                    $('#inv4FreshwaterDepthDiv').css({"width": "", "display": ""});
-                }
-            });
-
-            $('#siteForm').submit(function (e) {
-                e.preventDefault();
-
-                if (this.checkValidity() === false) {
-                    e.stopPropagation();
-                } else {
-                    postRequest('{{ baseUrl }}/api/admin/siteManager/save', new FormData($(this)[0]), false, false, function () {
+                });
+                //datatable
+                $('#siteTable tbody').on('mouseenter', "select[name='realm_id']", function () {
+                    if ($(this)[0].options.length < 2) {
+                        var id = $(this).attr('id').split('_')[1]
+                        if ($(this).val() > 0) {
+                            $("#realm_" + id).prepend("<option></option>")
+                        }
+                        var realms = arr['pid0']
+                        for (var key in realms) {
+                            if ($(this).val() != realms[key][0]) {
+                                $("#realm_" + id).append("<option value=" + realms[key][0] + ">" + realms[key][1] + "</option>");
+                            }
+                        }
+                    }
+                });
+                $('#siteTable tbody').on('change',"select[name='realm_id']", function () {
+                    var id = $(this).attr('id').split('_')[1]
+                    $("#biome_" + id).empty()
+                    $("#biome_" + id).append("<option></option>");
+                    $("#functionalType_" + id).empty()
+                    $("#functionalType_" + id).append("<option></option>");
+                    var biomes = arr['pid' + $(this).val()]
+                    for (var key in biomes) {
+                        $("#biome_" + id).append("<option value=" + biomes[key][0] + ">" + biomes[key][1] + "</option>");
+                    }
+                });
+                $('#siteTable tbody').on('change',"select[name='biome_id']", function () {
+                    var id = $(this).attr('id').split('_')[1]
+                    $("#functionalType_" + id).empty()
+                    $("#functionalType_" + id).append("<option></option>");
+                    var functionalTypes = arr['pid' + $(this).val()]
+                    for (var key in functionalTypes) {
+                        $("#functionalType_" + id).append("<option value=" + functionalTypes[key][0] + ">" + functionalTypes[key][1] + "</option>");
+                    }
+                });
+                $('#siteTable tbody').on('mouseenter ',"select[name='biome_id']", function () {
+                    if ($(this)[0].options.length < 2) {
+                        var id = $(this).attr('id').split('_')[1]
+                        if ($('#realm_' + id).val() != 0) {
+                            if ($(this).val() > 0) {
+                                $("#biome_" + id).prepend("<option></option>")
+                            }
+                            var biomes = arr['pid' + $('#realm_' + id).val()]
+                            for (var key in biomes) {
+                                if ($(this).val() != biomes[key][0]) {
+                                    $("#biome_" + id).append("<option value=" + biomes[key][0] + ">" + biomes[key][1] + "</option>");
+                                }
+                            }
+                        }
+                    }
+                });
+                $('#siteTable tbody').on('mouseenter ',"select[name='functional_type_id']", function () {
+                    if ($(this)[0].options.length < 2) {
+                        var id = $(this).attr('id').split('_')[1]
+                        if ($('#biome_' + id).val() != 0) {
+                            if ($(this).val() > 0) {
+                                $("#functionalType_" + id).prepend("<option></option>")
+                            }
+                            var functionalTypes = arr['pid' + $('#biome_' + id).val()]
+                            for (var key in functionalTypes) {
+                                if ($(this).val() != functionalTypes[key][0]) {
+                                    $("#functionalType_" + id).append("<option value=" + functionalTypes[key][0] + ">" + functionalTypes[key][1] + "</option>");
+                                }
+                            }
+                        }
+                    }
+                });
+                /* GADM */
+                $('#siteTable tbody').on('change',"select[name='gadm0']", function () {
+                    var id = $(this).attr('id').split('_')[1]
+                    $("#gadm1_" + id).empty()
+                    $("#gadm2_" + id).empty()
+                    $("#gadm1_" + id).append("<option value='' selected></option>");
+                    $("#gadm2_" + id).append("<option value='' selected></option>");
+                    $("#gadm1_" + id).attr('disabled', true)
+                    $("#gadm2_" + id).attr('disabled', true)
+                    $.ajax({
+                        url: "{{ baseUrl }}/admin/siteManager/gadm/1/" + $(this).val(),
+                        success: function (data) {
+                            if (data == '[]') {
+                                $("#gadm1_" + id).attr('disabled', true)
+                                $("#gadm2_" + id).attr('disabled', true)
+                            } else if (typeof (data) != 'undefined') {
+                                $("#gadm1_" + id).attr('disabled', false)
+                                data = JSON.parse(data)
+                                for (var key in data) {
+                                    $("#gadm1_" + id).append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
+                                }
+                            }
+                        },
+                    })
+                });
+                $('#siteTable tbody').on('change',"select[name='gadm1']", function () {
+                    var id = $(this).attr('id').split('_')[1]
+                    $("#gadm2_" + id).empty()
+                    $("#gadm2_" + id).append("<option value='' selected></option>");
+                    $("#gadm2_" + id).attr('disabled', true)
+                    $.ajax({
+                        url: "{{ baseUrl }}/admin/siteManager/gadm/2/" + $(this).val(),
+                        success: function (data) {
+                            if (data == '[]') {
+                                $("#gadm2_" + id).attr('disabled', true)
+                            } else if (typeof (data) != 'undefined') {
+                                $("#gadm2_" + id).attr('disabled', false)
+                                data = JSON.parse(data)
+                                for (var key in data) {
+                                    $("#gadm2_" + id).append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
+                                }
+                            }
+                        },
+                    })
+                });
+                $('#siteTable tbody').on('mouseenter ',"select[name='gadm0']", function () {
+                    if ($(this)[0].options.length < 2) {
+                        var id = $(this).attr('id').split('_')[1]
+                        if ($('#gadm0_' + id).val() != '') {
+                            $("#gadm0_" + id).prepend("<option></option>")
+                        }
+                        $("#gadm0_" + id).attr('disabled', true)
+                        $.ajax({
+                            url: "{{ baseUrl }}/admin/siteManager/gadm/0/0",
+                            success: function (data) {
+                                if (typeof (data) != 'undefined') {
+                                    $("#gadm0_" + id).attr('disabled', false)
+                                    data = JSON.parse(data)
+                                    for (var key in data) {
+                                        if ($('#gadm0_' + id).val() != data[key]['name']) {
+                                            $("#gadm0_" + id).append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
+                                        }
+                                    }
+                                }
+                            },
+                        })
+                    }
+                });
+                $('#siteTable tbody').on('mouseenter ',"select[name='gadm1']", function () {
+                    if ($(this)[0].options.length < 2) {
+                        var id = $(this).attr('id').split('_')[1]
+                        if ($('#gadm0_' + id).val() != '') {
+                            if ($('#gadm1_' + id).val() != '') {
+                                $("#gadm1_" + id).prepend("<option></option>")
+                            }
+                            $("#gadm1_" + id).attr('disabled', true)
+                            $.ajax({
+                                url: "{{ baseUrl }}/admin/siteManager/gadm/1/" + $('#gadm0_' + id).val(),
+                                success: function (data) {
+                                    if (data == '[]') {
+                                        $("#gadm1_" + id).attr('disabled', true)
+                                        $("#gadm2_" + id).attr('disabled', true)
+                                    } else if (typeof (data) != 'undefined') {
+                                        $("#gadm1_" + id).attr('disabled', false)
+                                        data = JSON.parse(data)
+                                        for (var key in data) {
+                                            if ($('#gadm1_' + id).val() != data[key]['name']) {
+                                                $("#gadm1_" + id).append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
+                                            }
+                                        }
+                                    }
+                                },
+                            })
+                        }
+                    }
+                });
+                $('#siteTable tbody').on('mouseenter ',"select[name='gadm2']", function () {
+                    if ($(this)[0].options.length < 2) {
+                        var id = $(this).attr('id').split('_')[1]
+                        if ($('#gadm1_' + id).val() != '') {
+                            if ($('#gadm2_' + id).val() != '') {
+                                $("#gadm2_" + id).prepend("<option></option>")
+                            }
+                            $("#gadm2_" + id).attr('disabled', true)
+                            $.ajax({
+                                url: "{{ baseUrl }}/admin/siteManager/gadm/2/" + $('#gadm1_' + id).val(),
+                                success: function (data) {
+                                    if (data == '[]') {
+                                        $("#gadm2_" + id).attr('disabled', true)
+                                    } else if (typeof (data) != 'undefined') {
+                                        $("#gadm2_" + id).attr('disabled', false)
+                                        data = JSON.parse(data)
+                                        for (var key in data) {
+                                            if ($('#gadm2_' + id).val() != data[key]['name']) {
+                                                $("#gadm2_" + id).append("<option value=" + data[key]['name'] + ">" + data[key]['name'] + "</option>");
+                                            }
+                                        }
+                                    }
+                                },
+                            })
+                        }
+                    }
+                });
+                $('#siteTable tbody').on('click','.js-site-delete',function (e) {
+                    if (!confirm('Are you sure you want to delete this site?')) {
+                        return false;
+                    }
+                    deleteRequest('{{ baseUrl }}/api/admin/siteManager/delete/' + $(this).data('id'), [], false, false,function () {
                         location.reload();
                     });
-                }
-                this.classList.add('was-validated');
-            });
-            $('#projectId').change(function () {
-                $('#collectionId').val("")
-                $("#projectForm").submit();
-            });
-            $('#collectionId').change(function () {
-                $("#projectForm").submit();
-            });
+                });
+                $('#siteTable tbody').on('click',".js-open-modal",function (e) {
+                    let data = [];
+                    if (this.dataset.id) {
+                        data = {'id': this.dataset.id};
+                    }
+                    requestModal(this.href, data);
+                    e.preventDefault();
+                });
 
-            /* Save site list */
-            $('.js-site-list').on('change', 'input, select, textarea', function () {
-                if (this.checkValidity() === false) { // this.style.border = "1px solid red";
-                    let tdLongDiv = $(this).parent().children("div");
-                    tdLongDiv.addClass("d-block");
-                } else {
-                    let tdLongDiv = $(this).parent().children("div");
-                    tdLongDiv.removeClass("d-block");
-                    saveFormList($(this), 'api/admin/siteManager/save');
-                    var table = $('#siteTable').DataTable()
-                    var tr = $(this).closest("tr")
-                    table.rows(tr).invalidate()
-                }
-            });
+                $('#siteForm').submit(function (e) {
+                    e.preventDefault();
+                    if (this.checkValidity() === false) {
+                        e.stopPropagation();
+                    } else {
+                        postRequest('{{ baseUrl }}/api/admin/siteManager/save', new FormData($(this)[0]), false, false, function () {
+                            location.reload();
+                        });
+                    }
+                    this.classList.add('was-validated');
+                });
+                $('#projectId').change(function () {
+                    $('#collectionId').val("")
+                    $("#projectForm").submit();
+                });
+                $('#collectionId').change(function () {
+                    $("#projectForm").submit();
+                });
 
-            $(document).on('click', '#saveButton', function () {
-                $('#siteEdit').submit();
-            });
+                /* Save site list */
+                $('.js-site-list').on('change', 'input, select, textarea', function () {
+                    if (this.checkValidity() === false) { // this.style.border = "1px solid red";
+                        let tdLongDiv = $(this).parent().children("div");
+                        tdLongDiv.addClass("d-block");
+                    } else {
+                        let tdLongDiv = $(this).parent().children("div");
+                        tdLongDiv.removeClass("d-block");
+                        saveFormList($(this), 'api/admin/siteManager/save');
+                    }
+                });
 
-            $('.js-site-delete').click(function (e) {
-                if (!confirm('Are you sure you want to delete this site?')) {
-                    return false;
-                }
-                let row = $(this).parents("tr");
-                deleteRequest('{{ baseUrl }}/api/admin/siteManager/delete/' + $(this).data('id'), [], false, false, row.remove());
+                $(document).on('click', '#saveButton', function () {
+                    $('#siteEdit').submit();
+                });
             });
         });
     </script>

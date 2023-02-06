@@ -64,11 +64,14 @@ class UserPermissionController extends BaseController
     public function save(): string
     {
         $userProvider = new UserPermission();
-        foreach ($_POST['data'] as $row) {
-            if (isset($row['collection_id'])) {
-                $userProvider->delete($row['user_id'], $row['collection_id']);
+        foreach ($_POST['d'] as $row) {
+            if (isset($row['c'])) {
+                $userProvider->delete($_POST['user_id'], $row['c']);
                 if ($row['permission_id'] > 0) {
-                    $userProvider->insert($row);
+                    $arr['collection_id'] = $row['c'];
+                    $arr['permission_id'] = $row['p'];
+                    $arr['user_id'] = $_POST['user_id'];
+                    $userProvider->insert($arr);
                 }
             }
         }

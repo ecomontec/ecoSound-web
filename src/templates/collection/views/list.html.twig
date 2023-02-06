@@ -114,10 +114,10 @@
                         <small>{{ item.recording.biomeName }}</small>
                     </h6>
                 {% endif %}
-                {% if item.recording.FunctionalGroupName is not empty %}
+                {% if item.recording.FunctionalTypeName is not empty %}
                     <h6>
                         Functional Group:
-                        <small>{{ item.recording.FunctionalGroupName }}</small>
+                        <small>{{ item.recording.FunctionalTypeName }}</small>
                     </h6>
                 {% endif %}
             </td>
@@ -139,11 +139,10 @@
         var table = $('#recordingTable').DataTable({
             "pageLength": 9,
             "lengthChange": false,
-            "stateSave": true,
             "StateDuration": -1,
-            "order": [[0, 'asc']],
             "destroy": true,
             "info": false,
+            "ordering": false,
         });
         $('#recordingTable').show()
     });

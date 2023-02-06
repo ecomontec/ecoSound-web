@@ -20,14 +20,16 @@ class TagProvider extends BaseProvider
      */
     public function get(int $tagId): Tag
     {
-        $query = 'SELECT tag.*,sound.phony,sound.sound_type, species.taxon_order, species.class, ' . User::FULL_NAME;
-        $query .= ', ' . Species::BINOMIAL . ' as species_name ';
+        $query = 'SELECT tag.*,sound.phony,sound.sound_type, species.taxon_order, species.class, user.name ';
+        $query .= ', ' . Species::BINOMIAL . ' as species_name , c.public_tags ';
         $query .= 'FROM ' . self::TABLE_NAME . ' ';
         $query .= 'LEFT JOIN ' . Species::TABLE_NAME . ' ON ';
         $query .= self::TABLE_NAME . '.' . Tag::SPECIES_ID . ' = ' . Species::TABLE_NAME . '.' . Species::ID . ' ';
         $query .= 'LEFT JOIN user ON ' . self::TABLE_NAME . '.' . Tag::USER_ID . ' = ';
         $query .= User::TABLE_NAME . '.' . User::ID . ' ';
         $query .= 'LEFT JOIN sound ON sound.sound_id = tag.sound_id ';
+        $query .= 'LEFT JOIN recording r ON r.recording_id = tag.recording_id ';
+        $query .= 'LEFT JOIN collection c ON c.collection_id = r.col_id ';
         $query .= 'WHERE ' . self::TABLE_NAME . '.' . Tag::ID . ' = :tagId';
 
         $this->database->prepareQuery($query);
@@ -54,15 +56,17 @@ class TagProvider extends BaseProvider
         $query .= '(( tag.max_time - tag.min_time ) + (tag.max_freq - tag.min_time )) AS time ';
         $query .= 'FROM tag LEFT JOIN species ON tag.species_id = species.species_id ';
         $query .= 'LEFT JOIN sound ON tag.sound_id = sound.sound_id ';
-        $query .= 'WHERE recording_id = :recordingId';
+        $query .= 'LEFT JOIN recording r ON r.recording_id = tag.recording_id ';
+        $query .= 'LEFT JOIN collection c ON c.collection_id = r.col_id ';
+        $query .= 'WHERE tag.recording_id = :recordingId';
 
         $values[':recordingId'] = $recordingId;
 
         if (!empty($userId)) {
-            $query .= ' AND tag.user_id = :userId';
+            $query .= ' AND (tag.user_id = :userId OR c.public_tags = 1) ';
             $values[':userId'] = $userId;
         }
-        $query .= ' ORDER BY time';
+        $query .= ' ORDER BY tag.min_time,tag.max_time,tag.tag_id';
 
         $this->database->prepareQuery($query);
         foreach ($this->database->executeSelect($values) as $tag) {
@@ -152,7 +156,7 @@ class TagProvider extends BaseProvider
             LEFT JOIN sound ON sound.sound_id = t.sound_id
             LEFT JOIN sound_type st ON st.sound_type_id = t.animal_sound_type WHERE c.collection_id = :colId ";
         if (!Auth::isManage()) {
-            $sql .= " AND t.user_id = " . Auth::getUserID();
+            $sql .= " AND t.user_id = " . Auth::getUserID() ;
         }
         $sql .= " ORDER BY t.tag_id";
         $this->database->prepareQuery($sql);

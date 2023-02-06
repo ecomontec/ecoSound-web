@@ -12,9 +12,9 @@ class CollectionProvider extends BaseProvider
     {
         $sql = "SELECT c.* FROM collection c ";
         if (!Auth::isUserLogged()) {
-            $sql .= 'WHERE c.public = 1 AND c.project_id = :projectId ';
+            $sql .= 'WHERE c.public_access = 1 AND c.project_id = :projectId ';
         } elseif (!Auth::isUserAdmin()) {
-            $sql .= 'WHERE ( c.public = 1 OR c.collection_id IN (SELECT up.collection_id FROM user_permission up, permission p WHERE up.permission_id = p.permission_id AND (p.name = "Access" OR p.name = "View" OR p.name = "Review" OR p.name = "Manage") AND up.user_id = ' . Auth::getUserID() . ')) AND c.project_id = :projectId ';
+            $sql .= 'WHERE ( c.public_access = 1 OR c.collection_id IN (SELECT up.collection_id FROM user_permission up, permission p WHERE up.permission_id = p.permission_id AND (p.name = "Access" OR p.name = "View" OR p.name = "Review" OR p.name = "Manage") AND up.user_id = ' . Auth::getUserID() . ')) AND c.project_id = :projectId ';
         } else {
             $sql .= 'WHERE c.project_id = :projectId ';
         }
@@ -33,7 +33,8 @@ class CollectionProvider extends BaseProvider
                 ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
                 ->setProject($item['project_id'])
                 ->setCreationDate($item['creation_date'])
-                ->setPublic($item['public'])
+                ->setPublicAccess($item['public_access'])
+                ->setPublicTags($item['public_tags'])
                 ->setView($item['view']);
         }
         return $data;
@@ -60,7 +61,8 @@ class CollectionProvider extends BaseProvider
                 ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
                 ->setProject($item['project_id'])
                 ->setCreationDate($item['creation_date'])
-                ->setPublic($item['public'])
+                ->setPublicAccess($item['public_access'])
+                ->setPublicTags($item['public_tags'])
                 ->setView($item['view']);
         }
 
@@ -91,7 +93,8 @@ class CollectionProvider extends BaseProvider
             ->setSphere($result['sphere'] == null ? '' : $result['sphere'])
             ->setProject($result['project_id'])
             ->setCreationDate($result['creation_date'])
-            ->setPublic($result['public'])
+            ->setPublicAccess($result['public_access'])
+            ->setPublicTags($result['public_tags'])
             ->setView($result['view'])
             ->setProject($result['project_id']);
     }
@@ -117,7 +120,8 @@ class CollectionProvider extends BaseProvider
                 ->setProject($item['project_id'])
                 ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
                 ->setCreationDate($item['creation_date'])
-                ->setPublic($item['public'])
+                ->setPublicAccess($item['public_access'])
+                ->setPublicTags($item['public_tags'])
                 ->setView($item['view'])
                 ->setPermission($item['permission_id'] == null ? 0 : $item['permission_id']);
         }
@@ -140,7 +144,8 @@ class CollectionProvider extends BaseProvider
                 ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
                 ->setProject($item['project_id'])
                 ->setCreationDate($item['creation_date'])
-                ->setPublic($item['public'])
+                ->setPublicAccess($item['public_access'])
+                ->setPublicTags($item['public_tags'])
                 ->setView($item['view'])
                 ->setPermission($item['site_id']);
         }
@@ -169,7 +174,8 @@ class CollectionProvider extends BaseProvider
                 ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
                 ->setProject($item['project_id'])
                 ->setCreationDate($item['creation_date'])
-                ->setPublic($item['public'])
+                ->setPublicAccess($item['public_access'])
+                ->setPublicTags($item['public_tags'])
                 ->setView($item['view']);
         }
 
@@ -193,7 +199,8 @@ class CollectionProvider extends BaseProvider
                 ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
                 ->setProject($item['project_id'])
                 ->setCreationDate($item['creation_date'])
-                ->setPublic($item['public'])
+                ->setPublicAccess($item['public_access'])
+                ->setPublicTags($item['public_tags'])
                 ->setView($item['view']);
         }
 
@@ -203,7 +210,7 @@ class CollectionProvider extends BaseProvider
     public function getPublicList(int $userId): array
     {
         $data = [];
-        $this->database->prepareQuery('SELECT * FROM collection WHERE collection_id IN ( SELECT up.collection_id FROM user_permission up, permission p WHERE up.permission_id = p.permission_id AND ( p.name= "Manage" OR p.name= "View" OR p.name= "Review") AND up.user_id = :userId) OR public = 1 ORDER BY name');
+        $this->database->prepareQuery('SELECT * FROM collection WHERE collection_id IN ( SELECT up.collection_id FROM user_permission up, permission p WHERE up.permission_id = p.permission_id AND ( p.name= "Manage" OR p.name= "View" OR p.name= "Review") AND up.user_id = :userId) OR public_access = 1 ORDER BY name');
 
         $result = $this->database->executeSelect([':userId' => $userId]);
 
@@ -217,7 +224,8 @@ class CollectionProvider extends BaseProvider
                 ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
                 ->setProject($item['project_id'])
                 ->setCreationDate($item['creation_date'])
-                ->setPublic($item['public'])
+                ->setPublicAccess($item['public_access'])
+                ->setPublicTags($item['public_tags'])
                 ->setView($item['view']);
         }
 

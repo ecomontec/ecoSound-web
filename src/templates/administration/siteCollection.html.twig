@@ -1,9 +1,11 @@
 <div class="modal fade" id="modal-div" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document" style="max-width: 50% !important;">
+    <div class="modal-dialog" role="document" style="max-width: 60% !important;">
         <div class="modal-content">
             <form id="siteCollectionForm">
                 <div class="modal-header">
-                    <h5 class="modal-title">Site Assignment</h5>
+                    <h5 class="modal-title">Site
+                        <strong>{{ site.name }}</strong>
+                        Assignment</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times</span>
                     </button>
@@ -102,15 +104,15 @@
         $('#siteCollectionForm').submit(function (e) {
             let data = new FormData();
             let checked = 0
+            data.append('site_id', '{{ site_id }}')
             $('table#user-perm tbody tr').each(function (i) {
                 let dataInput = $(this).children('td').find(".js-collection-checkbox");
                 if (dataInput.is(':checked')) {
                     checked = 1
                 }
                 if (dataInput.length > 0 && dataInput.is(":checked").toString() != $("#js-collection-hidden-" + dataInput.data('collection-id')).val()) {
-                    data.append('data[' + i + '][collection_id]', dataInput.data('collection-id'));
-                    data.append('data[' + i + '][site_id]', '{{ site_id }}');
-                    data.append('data[' + i + '][check]', dataInput.is(':checked'));
+                    data.append('d[' + i + '][c]', dataInput.data('collection-id'));
+                    data.append('d[' + i + '][b]', dataInput.is(':checked'));
                 }
             });
             if (checked) {

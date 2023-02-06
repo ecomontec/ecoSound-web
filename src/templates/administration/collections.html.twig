@@ -40,7 +40,8 @@
                 <th>Description</th>
                 <th>Creation Date (UTC)</th>
                 <th>View</th>
-                <th>Public</th>
+                <th>Public Access</th>
+                <th>Public Tags</th>
                 <th></th>
             </tr>
             </thead>
@@ -84,8 +85,11 @@
                             <option value="timeline" {{ collection.view == 'timeline' ? 'selected' }}>timeline</option>
                         </select>
                     </td>
-                    <td class="text-center" data-search="{{ collection.public }}" data-order="{{ collection.public }}">
-                        <input name="public" type="checkbox" {{ collection.public ? 'checked' }}>
+                    <td class="text-center" data-search="{{ collection.publicAccess }}" data-order="{{ collection.publicAccess }}">
+                        <input name="public_access" type="checkbox" {{ collection.publicAccess ? 'checked' }}>
+                    </td>
+                    <td class="text-center" data-search="{{ collection.publicTags }}" data-order="{{ collection.publicTags }}">
+                        <input name="public_tags" type="checkbox" {{ collection.publicTags ? 'checked' }}>
                     </td>
                     <td>
                         <a class="js-delete-modal" href="#" data-id="{{ collection.id }}" data-name="{{ collection.name }}" title="Delete collection">

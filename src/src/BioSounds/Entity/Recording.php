@@ -161,7 +161,7 @@ class Recording
     private $labelName;
     private $realmName;
     private $biomeName;
-    private $functionalGroupName;
+    private $functionalTypeName;
     private $longitude;
     private $latitude;
     private $type;
@@ -735,18 +735,18 @@ class Recording
     /**
      * @return string
      */
-    public function getFunctionalGroupName(): ?string
+    public function getFunctionalTypeName(): ?string
     {
-        return $this->functionalGroupName;
+        return $this->functionalTypeName;
     }
 
     /**
-     * @param null|string $functionalGroupName
+     * @param null|string $functionalTypeName
      * @return Recording
      */
-    public function setFunctionalGroupName(?string $functionalGroupName): Recording
+    public function setFunctionalTypeName(?string $functionalTypeName): Recording
     {
-        $this->functionalGroupName = $functionalGroupName;
+        $this->functionalTypeName = $functionalTypeName;
         return $this;
     }
     /**
@@ -892,7 +892,7 @@ class Recording
         $this->setLabelName($values['label_name']);
         $this->setRealmName($values['realm']);
         $this->setBiomeName($values['biome']);
-        $this->setFunctionalGroupName($values['functionalGroup']);
+        $this->setFunctionalTypeName($values['functionalType']);
         $this->setLongitude($values['longitude']);
         $this->setLatitude($values['latitude']);
         $this->setType($values['type']);

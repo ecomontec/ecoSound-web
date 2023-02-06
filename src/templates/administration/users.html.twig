@@ -16,6 +16,7 @@
                 <th>#</th>
                 <th>Name</th>
                 <th>Username</th>
+                <th>ORCID</th>
                 <th>Email</th>
                 {% if is_admin %}
                     <th>Role</th>
@@ -37,6 +38,9 @@
                         <input type="text" class="form-control form-control-sm" name="name" value="{{ user.name }}" {{ not is_admin and user.role_id == 1 ? 'disabled' }}>
                     </td>
                     <td>{{ user.username }}</td>
+                    <td data-search="{{ user.orcid }}" data-order="{{ user.orcid }}">
+                        <input type="text" class="form-control form-control-sm" name="orcid" value="{{ user.orcid }}" {{ not is_admin and user.role_id == 1 ? 'disabled' }}>
+                    </td>
                     <td data-search="{{ user.email }}" data-order="{{ user.email }}">
                         <input type="email" class="form-control form-control-sm" name="email" value="{{ user.email }}" {{ not is_admin and user.role_id == 1 ? 'disabled' }}>
                     </td>

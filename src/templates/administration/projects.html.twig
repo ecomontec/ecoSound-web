@@ -47,7 +47,7 @@
                         <td class="text-center" data-search="{{ project.active }}" data-order="{{ project.active }}">
                             <input name="active" type="checkbox" {{ project.active ? 'checked' }}>
                         </td>
-                        <td data-search="{{ project.description }}" data-order="{{ project.description }}">
+                        <td data-search="{{ project.description }}{{ project.descriptionShort }}" data-order="{{ project.description }}{{ project.descriptionShort }}">
                             <a href="{{ baseUrl }}/admin/projectMgr/description/{{ project.id }}" class="js-open-modal" title="Edit description" $privhidden>
                                 <span class="fas fa-edit"></span>
                             </a>
@@ -96,10 +96,25 @@
                 },
                 theme: 'snow',
             });
-
             quill.on('text-change', function () {
                 $("#description").val($(".ql-editor")[0].innerHTML)
             });
+            var quill1 = new Quill('.editor1', {
+                modules: {
+                    'toolbar': [
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{'color': []}, {'background': []}],
+                        [{'script': 'super'}, {'script': 'sub'}],
+                        ['link', 'image', 'video'],
+                        ['clean']
+                    ],
+                },
+                theme: 'snow',
+            });
+            quill1.on('text-change', function () {
+                $("#description_short").val($(".ql-editor")[1].innerHTML)
+            });
+
 
             $('.js-project-list').on('change', 'input, select, textarea', function () {
                 saveFormList($(this), 'api/admin/projectMgr/save');

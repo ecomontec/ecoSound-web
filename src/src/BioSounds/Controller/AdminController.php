@@ -163,9 +163,9 @@ class AdminController extends BaseController
      * @return false|string
      * @throws \Exception
      */
-    public function getExplore(int $id = 0)
+    public function getIucnGet(int $id = 0)
     {
-        return (new SiteController($this->twig))->getExplore($id);
+        return (new SiteController($this->twig))->getIucnGet($id);
     }
 
     /**

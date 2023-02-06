@@ -124,6 +124,20 @@ class User extends BaseProvider
      * @return string|null
      * @throws \Exception
      */
+    public function getOrcid(int $userId): ?string
+    {
+        $this->database->prepareQuery('SELECT orcid FROM user WHERE user_id = :userId');
+        if (empty($result = $this->database->executeSelect([":userId" => $userId]))) {
+            return null;
+        }
+        return $result[0]['orcid'];
+    }
+
+    /**
+     * @param int $userId
+     * @return string|null
+     * @throws \Exception
+     */
     public function getFullName(int $userId): ?string
     {
         $this->database->prepareQuery('SELECT name FROM user WHERE user_id = :userId');

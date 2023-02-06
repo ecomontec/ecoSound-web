@@ -3,12 +3,125 @@
 {% block admin_content %}
 
     {% include 'administration/upload.html.twig' with {'sensor': sensor, 'site': site, 'colId': colId} %}
+    <form id="uploadForm" method="POST" class="collapse">
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mt-4">
+                        <div id="file-uploader" class="file-uploader">You browser doesn't support native upload.</div>
+                        <input type="hidden" name="colId" value="{{ colId }}">
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="form-group col-md-6">
+                                <label class="col-form-label-sm" for="date">Date
+                                </label>
+                                <input id="date" class="form-control form-control-sm  js-file-field" name="date" type="date" required>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label class="col-form-label-sm" for="time">Time
+                                </label>
+                                <input id="time" class="form-control form-control-sm js-file-field" name="time" type="time" min="00:00:00" max="23:59:59" step="1" required>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <div class="form-check form-control-sm pt-5">
+                                    <input id="from-file" class="form-check-input" name="dateFromFile" type="checkbox">
+                                    <label class="form-check-label" for="from-file">File</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group col-md-6">
+                                <label for="recorder" class="col-form-label-sm">Recorder</label>
+                                <select id="recorder" name="recorder" class="form-control form-control-sm" required>
+                                    <option></option>
+                                    {% for recorder in recorders %}
+                                        <option value="{{ recorder.recorder_id }}" data-microphone="{{ recorder.microphone }}">{{ recorder.modal }}{% if recorder.brand!='' or recorder.brand is not null %} | {{ recorder.brand }}{% endif %}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="microphone" class="col-form-label-sm">Microphone</label>
+                                <select id="microphone" name="microphone" class="form-control form-control-sm" readonly required></select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group col-md-6">
+                                <label for="site" class="col-form-label-sm">Site
+                                </label>
+                                <select id="site" name="site" class="form-control form-control-sm">
+                                    <option value='null'></option>
+                                    {% for site in sites %}
+                                        <option value="{{ site.id }}">{{ site.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="doi" class="col-form-label-sm">DOI (optional)</label>
+                                <input id="doi" type="text" name="doi" class="form-control form-control-sm"/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group col-md-6">
+                                <label for="license" class="col-form-label-sm">License
+                                </label>
+                                <select id="license" name="license" class="form-control form-control-sm">
+                                    {% for licensed in license %}
+                                        <option value="{{ licensed.license_id }}">{{ licensed.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="medium" class="col-form-label-sm">Medium</label>
+                                <select id="medium" name="medium" class="form-control form-control-sm">
+                                    <option>Air</option>
+                                    <option>Water</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group col-md-6">
+                                <label for="type" class="col-form-label-sm">Recording Type</label>
+                                <select id="type" name="type" class="form-control form-control-sm">
+                                    <option value="Passive">Passive (recording from automated sound recorder, no influence on animals, typically omnidirectional microphone)</option>
+                                    <option value="Focal">Focal (recording from active search for animals, e.g. with directional microphone during point counts)</option>
+                                    <option value="Enclosure">Enclosure (recording from captured animals, movement constrained)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <div class="form-group text-right mt-2">
+                    <button id="closeButton" type="button" class="btn btn-outline-secondary" data-toggle="collapse" data-target="#uploadForm">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
+                    <button id="save_button" type="submit" class="btn btn-outline-primary ml-2" disabled>
+                        <i class="fas fa-save"></i>
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+
     <div class="card mb-3" id="recordingsList">
         <div class="card-header border-light bg-white text-right">
             <div class="row">
                 <div class="col-auto mr-auto mt-2">
-                    <form id="collectionForm" class="form-inline" action="{{ baseUrl }}/admin/recordings">
-                        <label for="colId">Collection</label>
+                    <form id="projectForm" class="form-inline" action="{{ baseUrl }}/admin/recordings">
+                        <label for="projectId">Project</label>
+                        <select id="projectId" name="projectId" class="form-control form-control-sm ml-3">
+                            {% for project in projects %}
+                                <option value="{{ project.id }}" {{ project.id == projectId ? 'selected' }}>
+                                    {{ project.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <label for="collId" class="ml-3">Collection</label>
                         <select id="colId" name="colId" class="form-control form-control-sm ml-3">
                             {% for collection in collections %}
                                 <option value="{{ collection.id }}" {{ collection.id == colId ? 'selected' }}>
@@ -220,10 +333,6 @@
                     $('#modal-div').modal('hide');
                 });
 
-                $('#colId').change(function () {
-                    $("#collectionForm").submit();
-                });
-
                 /* Save recordings list */
                 $(".js-recording-list").on('change', 'input, select, textarea', function () {
                     saveFormList($(this), 'api/admin/recordingManager/save');
@@ -287,6 +396,13 @@
                             }
                         }
                     }
+                });
+                $('#projectId').change(function () {
+                    $('#colId').val("")
+                    $("#projectForm").submit();
+                });
+                $('#colId').change(function () {
+                    $("#projectForm").submit();
                 });
             });
         </script>

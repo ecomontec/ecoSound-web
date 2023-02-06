@@ -137,6 +137,14 @@
                 </div>
             </div>
             <div class="modal-footer">
+                {% if edit %}
+                    <a href="{{ baseUrl }}/api/tag/edit/{{ previous }}" class='btn btn-outline-primary js-tag-btn'>
+                        <i class="fas fa-arrow-left" aria-hidden="true"></i> Previous
+                    </a>
+                    <a href="{{ baseUrl }}/api/tag/edit/{{ next }}" class='btn btn-outline-primary js-tag-btn'>
+                        <i class="fas fa-arrow-right" aria-hidden="true"></i> Next
+                    </a>
+                {% endif %}
                 <button type="button" class="btn btn-outline-primary" {{ displaySaveButton }} id="saveButton">
                     <i class="fas fa-save" aria-hidden="true"></i> Save
                 </button>
@@ -203,4 +211,10 @@
             $('#callDistance').val($('#old_call_distance').val())
         }
     });
+    $('.js-tag-btn').on('click', function (e) {
+        $('#modal-div').hide();
+        $('.modal-backdrop').remove();
+        e.preventDefault();
+        requestModal(this.href, {'recording_name': document.getElementsByName('recording_name')[0].value});
+    })
 </script>

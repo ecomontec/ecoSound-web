@@ -3,12 +3,10 @@
 namespace BioSounds\Controller\Administration;
 
 use BioSounds\Controller\BaseController;
-use BioSounds\Entity\Explore;
-use BioSounds\Entity\Sensor;
+use BioSounds\Entity\IucnGet;
 use BioSounds\Entity\Site;
 use BioSounds\Entity\SiteCollection;
 use BioSounds\Exception\ForbiddenException;
-use BioSounds\Provider\BaseProvider;
 use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\SiteProvider;
@@ -20,6 +18,8 @@ class SiteController extends BaseController
     const SECTION_TITLE = 'Site';
 
     /**
+     * @param int|null $projectId
+     * @param int|null $collectionId
      * @return false|string
      * @throws \Exception
      */
@@ -44,20 +44,41 @@ class SiteController extends BaseController
         $collections = (new CollectionProvider())->getByProject($projectId, Auth::getUserID());
         $arr = [];
         $siteProvider = new SiteProvider();
-        $explores = (new Explore())->getAllExplores();
-        foreach ($explores as $explore) {
-            $arr['pid' . $explore['pid']]['id' . $explore['explore_id']] = [$explore['explore_id'], $explore['name']];
+        $iucn_gets = (new IucnGet())->getAllIucnGets();
+        foreach ($iucn_gets as $iucn_get) {
+            $arr['pid' . $iucn_get['pid']]['id' . $iucn_get['iucn_get_id']] = [$iucn_get['iucn_get_id'], $iucn_get['name']];
         }
         return $this->twig->render('administration/sites.html.twig', [
             'projects' => $projects,
             'collections' => $collections,
             'projectId' => $projectId,
             'collectionId' => $collectionId,
-            'explores' => $arr,
-            'realms' => (new Explore())->getExplores(),
+            'iucn_gets' => $arr,
+            'realms' => (new IucnGet())->getIucnGets(),
             'siteList' => $siteProvider->getList($projectId, $collectionId),
             'gadm0' => json_decode($this->gadm()),
         ]);
+    }
+
+    public function getListByPage($projectId = null, $collectionId = null)
+    {
+        $total = (new SiteProvider())->getCount($projectId, $collectionId);
+        $start = $_POST['start'];
+        $length = $_POST['length'];
+        $search = $_POST['search']['value'];
+        $column = $_POST['order'][0]['column'];
+        $dir = $_POST['order'][0]['dir'];
+        $data = (new SiteProvider())->getListByPage($projectId, $collectionId, $start, $length, $search, $column, $dir);
+        if(count($data)==0){
+            $data=[];
+        }
+        $result = [
+            'draw' => $_POST['draw'],
+            'recordsTotal' => $total,
+            'recordsFiltered' => (new SiteProvider())->getFilterCount($projectId, $collectionId, $search),
+            'data' => $data,
+        ];
+        return json_encode($result);
     }
 
     /**
@@ -95,8 +116,8 @@ class SiteController extends BaseController
                 case 'biome_id':
                     $data['biome_id'] = $sitePdoValue == '' ? 0 : $sitePdoValue;
                     break;
-                case 'functional_group_id':
-                    $data['functional_group_id'] = $sitePdoValue == '' ? 0 : $sitePdoValue;
+                case 'functional_type_id':
+                    $data['functional_type_id'] = $sitePdoValue == '' ? 0 : $sitePdoValue;
                     break;
                 case 'longitude':
                     $data['longitude_WGS84_dd_dddd'] = $sitePdoValue == '' ? null : $sitePdoValue;
@@ -162,10 +183,10 @@ class SiteController extends BaseController
         ]);
     }
 
-    public function getExplore(int $pid = 0)
+    public function getIucnGet(int $pid = 0)
     {
-        $explores = (new Explore())->getExplores($pid);
-        return json_encode($explores);
+        $iucn_gets = (new IucnGet())->getIucnGets($pid);
+        return json_encode($iucn_gets);
     }
 
     public function gadm(int $level = 0, string $pid = '0')

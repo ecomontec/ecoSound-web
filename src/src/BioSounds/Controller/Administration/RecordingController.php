@@ -13,6 +13,7 @@ use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\IndexLogProvider;
 use BioSounds\Provider\LabelAssociationProvider;
+use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\SpectrogramProvider;
 use BioSounds\Provider\SiteProvider;
@@ -26,30 +27,37 @@ class RecordingController extends BaseController
 
     /**
      * @param int|null $cId
+     * @param int|null $pId
      * @param int $page
      * @return mixed
      * @throws \Exception
      */
-    public function show(int $cId = null)
+    public function show(int $pId = null, int $cId = null)
     {
         if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
-
-        // colId proceesing
+        if (isset($_GET['projectId'])) {
+            $projectId = $_GET['projectId'];
+        }
         if (isset($_GET['colId'])) {
             $colId = $_GET['colId'];
+        }
+        if (!empty($pId)) {
+            $projectId = $pId;
         }
         if (!empty($cId)) {
             $colId = $cId;
         }
-
-        $collections = Auth::isUserAdmin() ? (new CollectionProvider())->getList() : (new CollectionProvider())->getManageList(Auth::getUserID());
+        $projects = (new ProjectProvider())->getWithPermission(Auth::getUserID());
+        if (empty($projectId)) {
+            $projectId = $projects[0]->getId();
+        }
+        $collections = (new CollectionProvider())->getByProject($projectId, Auth::getUserID());
         if (empty($colId)) {
             $colId = $collections[0]->getId();
         }
 
-        $collection = (new CollectionProvider())->get($colId);
         $recordingProvider = new RecordingProvider();
         $userProducer = new User();
 
@@ -58,11 +66,12 @@ class RecordingController extends BaseController
             (Auth::getUserID() == null) ? 0 : Auth::getUserID()
         );
 
-        $projectId = $collection->getProject();
-        $userSites = (new SiteProvider())->getBasicList($projectId,$colId);
-
+        $userSites = (new SiteProvider())->getBasicList($projectId, $colId);
         return $this->twig->render('administration/recordings.html.twig', [
+            'projectId' => $projectId,
+            'projects' => $projects,
             'colId' => $colId,
+            'collections' => $collections,
             'recordings' => $recordings,
             'sites' => $userSites,
             'users' => $userProducer->getList(),
@@ -138,7 +147,7 @@ class RecordingController extends BaseController
 
         $recordingProvider = new RecordingProvider();
         $indexLogProvider = new indexLogProvider();
-        $labelAssociationProvider= new LabelAssociationProvider();
+        $labelAssociationProvider = new LabelAssociationProvider();
         $recording = $recordingProvider->get($id);
 
         $fileName = $recording[Recording::FILENAME];

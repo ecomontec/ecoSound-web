@@ -63,7 +63,7 @@ class CollectionController extends BaseController
             (Auth::getUserID() == null) ? 0 : Auth::getUserID()
         );
         $this->leaflet = $this->getLeaflet($this->recordings);
-        if ($isAccessed || $this->collection->getPublic()) {
+        if ($isAccessed || $this->collection->getPublicAccess()) {
             return $this->twig->render('collection/collection.html.twig', [
                 'project' => (new ProjectProvider())->get($this->collection->getProject()),
                 'collection' => $this->collection,
@@ -100,7 +100,7 @@ class CollectionController extends BaseController
             (Auth::getUserID() == null) ? 0 : Auth::getUserID()
         );
         $this->leaflet = $this->getLeaflet($this->recordings);
-        if ($isAccessed || $this->collection->getPublic()) {
+        if ($isAccessed || $this->collection->getPublicAccess()) {
             return $this->twig->render('collection/collectionjs.html.twig', [
                 'project' => (new ProjectProvider())->get($this->collection->getProject()),
                 'old' => $old,

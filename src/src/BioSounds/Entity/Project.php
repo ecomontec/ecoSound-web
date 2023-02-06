@@ -27,6 +27,11 @@ class Project extends BaseProvider
     private $description;
 
     /**
+     * @var string
+     */
+    private $description_short;
+
+    /**
      * @var int
      */
     private $creator_id;
@@ -117,6 +122,24 @@ class Project extends BaseProvider
     public function setDescription(string $description): Project
     {
         $this->description = $description;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDescriptionShort(): string
+    {
+        return $this->description_short;
+    }
+
+    /**
+     * @param string $description_short
+     * @return Project
+     */
+    public function setDescriptionShort(string $description_short): Project
+    {
+        $this->description_short = $description_short;
         return $this;
     }
 
