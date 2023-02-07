@@ -386,14 +386,15 @@ class Site extends AbstractProvider
         return $this;
     }
 
-    public function getCollection(int $site_id, string $collections)
+    public function getCollection(): ?string
     {
-        $collections = $collections=="" ? "''" : $collections;
-        $this->database->prepareQuery("SELECT collection_id FROM site_collection WHERE site_id = :site_id AND collection_id IN ($collections)");
-        if (empty($result = $this->database->executeSelect([":site_id" => $site_id]))) {
-            return null;
-        }
-        return $result;
+        return $this->collection;
+    }
+
+    public function setCollection($collection = NULL): Site
+    {
+        $this->collection = $collection;
+        return $this;
     }
 
     /**

@@ -28,16 +28,12 @@ class SiteProvider extends BaseProvider
     public function getList(int $projectId, int $collectionId = null, string $order = 'name'): array
     {
         $data = [];
-        $sql = "SELECT s.*, e1.`name` AS realm,e2.`name` AS biome,e3.`name` AS functional_type FROM site s 
+        $str = ($collectionId == null) ? "" : " AND sc.collection_id = $collectionId ";
+        $sql = "SELECT s.*, e1.`name` AS realm,e2.`name` AS biome,e3.`name` AS functional_type,sc.collection FROM site s 
                     LEFT JOIN iucn_get e1 ON e1.iucn_get_id = s.realm_id 
                     LEFT JOIN iucn_get e2 ON e2.iucn_get_id = s.biome_id 
                     LEFT JOIN iucn_get e3 ON e3.iucn_get_id = s.functional_type_id 
-                    LEFT JOIN site_collection sc ON sc.site_id = s.site_id
-                    LEFT JOIN collection c ON c.collection_id = sc.collection_id
-                    WHERE c.project_id = $projectId ";
-        if ($collectionId != null) {
-            $sql .= " AND c.collection_id = $collectionId ";
-        }
+                    LEFT JOIN  (SELECT sc.site_id, GROUP_CONCAT(sc.collection_id) AS collection FROM site_collection sc LEFT JOIN collection c ON c.collection_id = sc.collection_id WHERE c.project_id = $projectId $str GROUP BY sc.site_id) sc ON sc.site_id = s.site_id";
         $sql .= " GROUP BY s.site_id ORDER BY $order";
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
@@ -59,7 +55,8 @@ class SiteProvider extends BaseProvider
                 ->setFunctionalTypeId($item['functional_type_id'])
                 ->setRealm($item['realm'])
                 ->setBiome($item['biome'])
-                ->setFunctionalType($item['functional_type']);
+                ->setFunctionalType($item['functional_type'])
+                ->setCollection($item['collection']);
         }
         return $data;
     }
@@ -102,7 +99,7 @@ class SiteProvider extends BaseProvider
 
     public function getListByPage(string $projectId, string $collectionId, string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
     {
-        $arr=[];
+        $arr = [];
         $sql = "SELECT s.*, e1.`name` AS realm,e2.`name` AS biome,e3.`name` AS functional_type FROM site s 
                     LEFT JOIN iucn_get e1 ON e1.iucn_get_id = s.realm_id 
                     LEFT JOIN iucn_get e2 ON e2.iucn_get_id = s.biome_id 
@@ -121,7 +118,7 @@ class SiteProvider extends BaseProvider
         $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
-        if(count($result)){
+        if (count($result)) {
             foreach ($result as $key => $value) {
                 $arr[$key][0] = "$value[site_id]<input type='hidden' name='steId' value='$value[site_id]'>";
                 $arr[$key][1] = "<input type='text' class='form-control form-control-sm' style='width:100px;' name='name' value='$value[name]'>";

@@ -252,12 +252,12 @@ class CollectionController extends BaseController
             if (strlen($site->getLongitude()) > 0 && strlen($site->getLatitude()) > 0) {
                 $latitude[] = $site->getLatitude();
                 $longitude[] = $site->getLongitude();
-                $array[] = [$site->getId(), $site->getName(), $site->getLatitude(), $site->getLongitude(), $site->getCollection($site->getId(), $collections)];
+                $array[] = [$site->getId(), $site->getName(), $site->getLatitude(), $site->getLongitude(), $site->getCollection()];
             } else {
                 if ($result = $this->gadm($site)) {
                     $latitude[] = $result[1];
                     $longitude[] = $result[0];
-                    $array[] = [$site->getId(), $site->getName(), $result[1], $result[0], $site->getCollection($site->getId(), $collections)];
+                    $array[] = [$site->getId(), $site->getName(), $result[1], $result[0], $site->getCollection()];
                 }
             }
         }
