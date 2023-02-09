@@ -12,12 +12,23 @@ use Cassandra\Varint;
 class SiteProvider extends BaseProvider
 {
     /**
+     * @param string $order
      * @return Site[]
      * @throws \Exception
      */
-    public function getBasicList($project_id, $collection_id): array
+    public function getList(int $projectId, int $collectionId = null, string $order = 'name'): array
     {
-        return $this->getList($project_id, $collection_id);
+        $sql = "SELECT s.site_id,s.name FROM site s 
+                    LEFT JOIN site_collection sc ON sc.site_id = s.site_id
+                    LEFT JOIN collection c ON c.collection_id = sc.collection_id
+                    WHERE c.project_id = $projectId ";
+        if ($collectionId != null) {
+            $sql .= " AND c.collection_id = $collectionId ";
+        }
+        $sql .= " GROUP BY s.site_id ORDER BY $order";
+        $this->database->prepareQuery($sql);
+        $result = $this->database->executeSelect();
+        return $result;
     }
 
     /**
@@ -25,40 +36,14 @@ class SiteProvider extends BaseProvider
      * @return Site[]
      * @throws \Exception
      */
-    public function getList(int $projectId, int $collectionId = null, string $order = 'name'): array
+    public function getListWithCollection(int $projectId, int $collectionId = null, string $order = 'name'): array
     {
-        $data = [];
         $str = ($collectionId == null) ? "" : " AND sc.collection_id = $collectionId ";
-        $sql = "SELECT s.*, e1.`name` AS realm,e2.`name` AS biome,e3.`name` AS functional_type,sc.collection FROM site s 
-                    LEFT JOIN iucn_get e1 ON e1.iucn_get_id = s.realm_id 
-                    LEFT JOIN iucn_get e2 ON e2.iucn_get_id = s.biome_id 
-                    LEFT JOIN iucn_get e3 ON e3.iucn_get_id = s.functional_type_id 
-                    LEFT JOIN  (SELECT sc.site_id, GROUP_CONCAT(sc.collection_id) AS collection FROM site_collection sc LEFT JOIN collection c ON c.collection_id = sc.collection_id WHERE c.project_id = $projectId $str GROUP BY sc.site_id) sc ON sc.site_id = s.site_id";
-        $sql .= " GROUP BY s.site_id ORDER BY $order";
+        $sql = "SELECT s.site_id,s.name,sc.collection, IF(longitude_WGS84_dd_dddd IS NOT NULL AND latitude_WGS84_dd_dddd IS NOT NULL,s.longitude_WGS84_dd_dddd,IF(gadm2 IS NOT NULL,a2.x,IF(gadm1 IS NOT NULL,a1.x,IF( gadm0 IS NOT NULL, a0.x, NULL )))) AS x,IF(longitude_WGS84_dd_dddd IS NOT NULL AND latitude_WGS84_dd_dddd IS NOT NULL,s.latitude_WGS84_dd_dddd,IF(gadm2 IS NOT NULL,a2.y,IF(gadm1 IS NOT NULL,a1.y,IF( gadm0 IS NOT NULL, a0.y, NULL )))) AS y FROM site s LEFT JOIN adm_2 a2 ON a2.NAME = s.gadm2 LEFT JOIN adm_1 a1 ON a1.NAME = s.gadm1 LEFT JOIN adm_0 a0 ON a0.NAME = s.gadm0 LEFT JOIN (SELECT sc.site_id,GROUP_CONCAT( sc.collection_id )AS collection FROM site_collection sc LEFT JOIN collection c ON c.collection_id = sc.collection_id WHERE c.project_id = $projectId $str GROUP BY sc.site_id) sc ON sc.site_id = s.site_id";
+        $sql .= " GROUP BY s.site_id,a0.x,a1.x,a2.x,a0.y,a1.y,a2.y ORDER BY $order";
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
-        foreach ($result as $item) {
-            $data[] = (new Site())
-                ->setId($item['site_id'])
-                ->setName($item['name'])
-                ->setUserId($item['user_id'])
-                ->setCreationDateTime($item['creation_date_time'])
-                ->setLongitude($item['longitude_WGS84_dd_dddd'])
-                ->setLatitude($item['latitude_WGS84_dd_dddd'])
-                ->setTopography($item['topography_m'])
-                ->setFreshwaterDepth($item['freshwater_depth_m'])
-                ->setGadm0($item['gadm0'])
-                ->setGadm1($item['gadm1'])
-                ->setGadm2($item['gadm2'])
-                ->setRealmId($item['realm_id'])
-                ->setBiomeId($item['biome_id'])
-                ->setFunctionalTypeId($item['functional_type_id'])
-                ->setRealm($item['realm'])
-                ->setBiome($item['biome'])
-                ->setFunctionalType($item['functional_type'])
-                ->setCollection($item['collection']);
-        }
-        return $data;
+        return $result;
     }
 
     public function getCount(string $projectId, string $collectionId): int

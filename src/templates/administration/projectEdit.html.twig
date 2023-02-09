@@ -10,15 +10,15 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label class="col-form-albel-sm">Description</label>
+                        <label class="col-form-albel-sm">Short Description <small>(for projects overview)</small></label>
+                        <div class="projectEdit1" style="height: 150px">{% autoescape false %}{{ project.descriptionShort }}{% endautoescape %}</div>
+                        <input id="description_short{{ project.id }}" type="hidden" name="description_short_text" value="{{ project.descriptionShort }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-albel-sm">Extended Description <small>(for project page)</small></label>
                         <div class="projectEdit" style="height: 150px">{% autoescape false %}{{ project.description }}{% endautoescape %}</div>
                         <input id="description{{ project.id }}" type="hidden" name="description_text" value="{{ project.description }}">
                         <input id="project{{ project.id }}" type="hidden" name="projectId" value="{{ project.id }}">
-                    </div>
-                    <div class="form-group">
-                        <label class="col-form-albel-sm">Description Short</label>
-                        <div class="projectEdit1" style="height: 150px">{% autoescape false %}{{ project.descriptionShort }}{% endautoescape %}</div>
-                        <input id="description_short{{ project.id }}" type="hidden" name="description_short_text" value="{{ project.descriptionShort }}">
                     </div>
                 </div>
                 <div class="modal-footer">

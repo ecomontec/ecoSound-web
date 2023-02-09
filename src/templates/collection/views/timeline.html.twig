@@ -17,7 +17,6 @@
                     {% if item.recording.data_type=='audio data' %}
                     "media": {
                         "url": "{{ baseUrl }}/{{ item.playerImage }}",
-                        "credit": "User:<a>{{ item.recording.getUserFullName }}</a>",
                         "link": "{{ baseUrl }}/recording/show/{{ item.recording.id }}",
                     },
                     {% endif %}
@@ -40,7 +39,7 @@
                     "text": {
                         "headline": "{{ item.recording.name }}",
                         {% if item.recording.data_type=='meta-data' %}
-                        "text": "<h2 style='background: #C6C6C6;height: 300px;width: 600px;' class='text-center ml-auto mr-auto'><br><br><br>meta-recording (no audio)<br>sampling rate: {{ item.recording.samplingRate }}</h2>"
+                        "text": "<h2 style='background: #C6C6C6;height: 300px;width: 100%;' class='text-center ml-auto mr-auto'><br><br><br>meta-recording (no audio)<br>sampling rate: {{ item.recording.samplingRate }}</h2>"
                         {% endif %}
                     },
                     "group": "{{ item.recording.siteName?item.recording.siteName:'not geo-referenced' }}",

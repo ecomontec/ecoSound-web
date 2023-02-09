@@ -43,7 +43,6 @@ class SiteController extends BaseController
         }
         $collections = (new CollectionProvider())->getByProject($projectId, Auth::getUserID());
         $arr = [];
-        $siteProvider = new SiteProvider();
         $iucn_gets = (new IucnGet())->getAllIucnGets();
         foreach ($iucn_gets as $iucn_get) {
             $arr['pid' . $iucn_get['pid']]['id' . $iucn_get['iucn_get_id']] = [$iucn_get['iucn_get_id'], $iucn_get['name']];
@@ -55,7 +54,6 @@ class SiteController extends BaseController
             'collectionId' => $collectionId,
             'iucn_gets' => $arr,
             'realms' => (new IucnGet())->getIucnGets(),
-            'siteList' => $siteProvider->getList($projectId, $collectionId),
             'gadm0' => json_decode($this->gadm()),
         ]);
     }

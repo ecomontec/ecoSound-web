@@ -1,9 +1,7 @@
 <div class="row">
     <div id="player_box" class="col-9">
         <div id="myCanvas" class="canvas">
-            {% if isUserLogged %}
-                {% include 'recording/player/tagBoxes.html.twig' with {'tags': player.tags, 'show_tags': player.isShowTags} %}
-            {% endif %}
+            {% include 'recording/player/tagBoxes.html.twig' with {'tags': player.tags, 'show_tags': player.isShowTags} %}
             <div id="playerCursor" class="player-line"></div>
             <img class="player_img" src="{{ player.imageFilePath }}" id="cropbox"/>
         </div>
@@ -41,6 +39,7 @@
                     <input type="hidden" name="maxTimeView" value="{{ player.maxTime }}">
                     <input type="hidden" name="minFreqView" value="{{ player.minFrequency }}">
                     <input type="hidden" name="maxFreqView" value="{{ player.maxFrequency }}">
+                    <input type="hidden" name="open" id="open" value="{{ open }}">
                     {% include 'recording/player/timeBoxes.html.twig' with {
                         'minTime': player.minTime,
                         'maxTime': player.maxTime,
@@ -172,6 +171,12 @@
                 requestModal(this.href, data, true);
                 e.preventDefault();
             });
+            {% if open!=0 %}
+            $(document).ready(function () {
+                $("#tag_{{ open }}").click()
+                $('#open').val(0)
+            })
+            {% endif %}
         </script>
     {% endif %}
     {# {% include 'recording/player/frequencyScale.html.twig' %} #}

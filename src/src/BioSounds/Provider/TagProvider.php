@@ -67,7 +67,6 @@ class TagProvider extends BaseProvider
             $values[':userId'] = $userId;
         }
         $query .= ' ORDER BY tag.min_time,tag.max_time,tag.tag_id';
-
         $this->database->prepareQuery($query);
         foreach ($this->database->executeSelect($values) as $tag) {
             $result[] = (new Tag())->createFromValues($tag);

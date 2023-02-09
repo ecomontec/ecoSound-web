@@ -35,12 +35,11 @@ class CollectionController extends BaseController
         foreach ($collections as $collection) {
             $str .= $collection->getId() . ',';
         }
-        $sites = (new SiteProvider())->getList($projectId);
+        $sites = (new SiteProvider())->getListWithCollection($projectId);
         $this->leaflet = $this->getProjectLeaflet($sites, substr($str, 0, strlen($str) - 1));
         return $this->twig->render('collection/collections.html.twig', [
             'project' => (new ProjectProvider())->get($projectId),
             'collections' => $collections,
-            'sites' => $sites,
             'leaflet' => $this->leaflet
         ]);
     }
@@ -242,23 +241,17 @@ class CollectionController extends BaseController
         return $arr;
     }
 
-    public function getProjectLeaflet(array $allSites, string $collections): array
+    public function getProjectLeaflet(array $allSites): array
     {
         $array = array();
         $arr = array();
         $j = 0;
 
         foreach ($allSites as $site) {
-            if (strlen($site->getLongitude()) > 0 && strlen($site->getLatitude()) > 0) {
-                $latitude[] = $site->getLatitude();
-                $longitude[] = $site->getLongitude();
-                $array[] = [$site->getId(), $site->getName(), $site->getLatitude(), $site->getLongitude(), $site->getCollection()];
-            } else {
-                if ($result = $this->gadm($site)) {
-                    $latitude[] = $result[1];
-                    $longitude[] = $result[0];
-                    $array[] = [$site->getId(), $site->getName(), $result[1], $result[0], $site->getCollection()];
-                }
+            if (strlen($site['x']) > 0 && strlen($site['y']) > 0) {
+                $latitude[] = $site['y'];
+                $longitude[] = $site['x'];
+                $array[] = [$site['site_id'], $site['name'], $site['y'], $site['x'], $site['collection']];
             }
         }
         $max = 0;
@@ -299,15 +292,15 @@ class CollectionController extends BaseController
 
     public function gadm($site)
     {
-        if ($site->getGadm2() != null) {
+        if ($site['gadm2'] != null) {
             $level = 2;
-            $name = $site->getGadm2();
-        } elseif ($site->getGadm1() != null) {
+            $name = $site['gadm2'];
+        } elseif ($site['gadm1'] != null) {
             $level = 1;
-            $name = $site->getGadm1();
-        } elseif ($site->getGadm0() != null) {
+            $name = $site['gadm1'];
+        } elseif ($site['gadm0'] != null) {
             $level = 0;
-            $name = $site->getGadm0();
+            $name = $site['gadm0'];
         } else {
             return false;
         }

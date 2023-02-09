@@ -31,11 +31,15 @@
                         <input type="file" name="metaDataFile" id="metaDataFile" accept="text/csv" style="display: none">
                         <input type="hidden" name="colId" value="{{ colId }}">
                     </form>
-                    <button type="button" id="metaDataButton" data-toggle="collapse" data-target="#metaDataForm" class="btn btn-outline-primary btn-sm mt-2"
-                            title="Recording temporal meta-data can be uploaded with a CSV containing the following columns:&#10;&#10;recording_start (format: YYYY-MM-DD HH:MM:SS, local time)&#10;duration_s (duration of recording in seconds)&#10;sampling_rate (numeric value in Hz)&#10;name (optional,limited to 40 characters)&#10;bit_rate (optional, integer)&#10;hannel_number (optional, integer)">
-                        <span class="fa-solid fa-arrow-up-from-bracket"></span>
-                        Upload Meta-data
+                    <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" id="metaData" type="button" data-toggle="dropdown" aria-expanded="false">
+                        <i class="fa-brands fa-meta"></i> Meta-data
                     </button>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" type="button" id="metaDataButton"
+                           title="Recording meta-data can be uploaded with a CSV containing the following columns:&#10;&#10;recording_start (format: YYYY-MM-DD HH:MM:SS, local time)&#10;duration_s (duration of recording in seconds)&#10;sampling_rate (numeric value in Hz)&#10;name (optional, limited to 40 characters)&#10;bit_rate (optional, integer)&#10;channel_number (optional, integer)">
+                            <i class="fa-solid fa-file-arrow-up"></i> Upload Meta-data</a>
+                        <a class="dropdown-item" type="button" id="metaDemo"><i class="fa-solid fa-file-arrow-down"></i> Download Demo</a>
+                    </div>
                     <button type="button" id="uploadButton" data-toggle="collapse" data-target="#uploadForm" class="btn btn-outline-primary btn-sm mt-2">
                         <span class="fas fa-upload"></span>
                         Upload Files
@@ -55,7 +59,7 @@
                 <th>Recorder</th>
                 <th>Microphone</th>
                 <th>License</th>
-                <th>Collection Type</th>
+                <th>Recording Type</th>
                 <th>Medium</th>
                 <th>Note</th>
                 <th>Date</th>
@@ -315,6 +319,9 @@
                 });
                 $('#colId').change(function () {
                     $("#projectForm").submit();
+                });
+                $('#metaDemo').on('click', function () {
+                    window.location.href = '{{ baseUrl }}/api/admin/recordingManager/download';
                 });
             });
         </script>

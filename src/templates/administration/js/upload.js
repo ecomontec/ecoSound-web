@@ -84,6 +84,16 @@ $(function () {
         return false;
     });
 
+    $("#metaData").on("dragover", function () {
+        return false;
+    });
+
+    $("#metaData").on("drop", function (ev) {
+        var fs = ev.originalEvent.dataTransfer.files;
+        analysisList(fs);
+        return false;
+    });
+
     $("#metaDataButton").on("click", function () {
         $("#metaDataFile").click();
     })
@@ -93,15 +103,14 @@ $(function () {
     })
 
 
-    //解析列表函数
     function analysisList(obj) {
         if (obj.length < 1) {
             return false;
         }
-        var fileObj = obj[0];		//单个文件
-        var name = fileObj.name;	//文件名
-        var size = fileObj.size;	//文件大小
-        var type = fileType(name);	//文件类型，获取的是文件的后缀
+        var fileObj = obj[0];
+        var name = fileObj.name;
+        var size = fileObj.size;
+        var type = fileType(name);
         if (("csv").indexOf(type) == -1) {
             showAlert(name + ' file type error.');
             return
@@ -112,16 +121,17 @@ $(function () {
         }
         toggleLoading();
         $.ajax({
-            url: baseUrl + '/api/file/metadata/',
+            url: baseUrl + '/api/file/metadata',
             type: "POST",
             data: new FormData($("#metaDataForm")[0]),
             processData: false,  // 不处理数据
             contentType: false,   // 不设置内容类型
             success: function (result) {
-                if (result == 'upload success.') {
+                if (result.message == 'Upload success.') {
                     location.reload();
                 }
-                showAlert(result)
+                showAlert(result.message)
+                $('#metaDataFile').val('')
             },
             error: function () {
                 showAlert("Failed to upload file.")

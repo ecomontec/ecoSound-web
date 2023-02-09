@@ -74,9 +74,6 @@ class TagController extends BaseController
      */
     public function edit(int $tagId)
     {
-        if (!Auth::isUserLogged()) {
-            throw new NotAuthenticatedException();
-        }
         $tag = (new TagProvider())->get($tagId);
         if (empty($tagId)) {
             throw new \Exception(ERROR_EMPTY_ID);
@@ -113,14 +110,14 @@ class TagController extends BaseController
             $max = count($tags) - 1;
             if ($t->getId() == $tag->getId()) {
                 if ($k == 0) {
-                    $previous = $tags[$max]->getId();
-                    $next = $tags[$k + 1]->getId();
+                    $previous = 0;
+                    $next = $tags[$k + 1];
                 } elseif ($k == $max) {
-                    $previous = $tags[$k - 1]->getId();
-                    $next = $tags[0]->getId();
+                    $previous = $tags[$k - 1];
+                    $next = 0;
                 } else {
-                    $previous = $tags[$k - 1]->getId();
-                    $next = $tags[$k + 1]->getId();
+                    $previous = $tags[$k - 1];
+                    $next = $tags[$k + 1];
                 }
             }
         }

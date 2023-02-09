@@ -43,10 +43,17 @@
                     Time:
                     <small>{{ item.recording.fileTime }}</small>
                 </h6>
-                <h6>
-                    User:
-                    <small>{{ item.recording.getUserFullName }}</small>
-                </h6>
+                <div class="form-inline">
+                    <h6>
+                        User:
+                        <small>{{ item.recording.getUserFullName }}</small>
+                    </h6>
+                    {% if collection.orcid %}
+                        <a href="https://orcid.org/{{ collection.orcid }}" target="_blank">
+                            <i class="fa-brands fa-orcid ml-1 mb-2"></i>
+                        </a>
+                    {% endif %}
+                </div>
                 <h6>
                     DOI:
                     <small>{{ item.recording.Doi }}</small>
@@ -86,10 +93,12 @@
                 {% endif %}
             </td>
             <td style="width: 25%;">
-                <h6>
-                    My Label:
-                    <small>{{ item.recording.labelName }}</small>
-                </h6>
+                {% if isUserLogged %}
+                    <h6>
+                        My Label:
+                        <small>{{ item.recording.labelName }}</small>
+                    </h6>
+                {% endif %}
                 {% if item.recording.type is not empty %}
                     <h6>
                         Recording Type:
@@ -123,13 +132,13 @@
             </td>
             <td style="width: 60%;">
                 {% if item.recording.data_type=='audio data' %}
-                <div id="player-cursor" class="small-player-cursor" data-cursor-id="{{ item.recording.id }}"></div>
-                <a href="{{ baseUrl }}/recording/show/{{ item.recording.id }}" title="BioSounds player">
-                    <img class="small-player-image" src="{{ baseUrl }}/{{ item.playerImage }}">
-                </a>
-                <audio id="player" data-id="{{ item.recording.id }}" controls preload="none">
-                    <source src="{{ baseUrl }}/{{ item.playerRecording }}"/>
-                </audio>
+                    <div id="player-cursor" class="small-player-cursor" data-cursor-id="{{ item.recording.id }}"></div>
+                    <a href="{{ baseUrl }}/recording/show/{{ item.recording.id }}" title="BioSounds player">
+                        <img class="small-player-image" src="{{ baseUrl }}/{{ item.playerImage }}">
+                    </a>
+                    <audio id="player" data-id="{{ item.recording.id }}" controls preload="none">
+                        <source src="{{ baseUrl }}/{{ item.playerRecording }}"/>
+                    </audio>
                 {% else %}
                     <h2 style="background: #C6C6C6;height: 240px;width: 600px;" class="text-center">
                         <br><br>meta-recording (no audio)<br>sampling rate: {{ item.recording.samplingRate }}

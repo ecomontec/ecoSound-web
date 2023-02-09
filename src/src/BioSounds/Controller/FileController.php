@@ -40,27 +40,44 @@ class FileController
         $i = 1;
         while (!feof($handle)) {
             $d = fgetcsv($handle);
-            if ($d) {
+            if ($d && $d[0] != 'recording_start') {
                 $data[] = $d;
                 if (!strlen($d[0]) || !preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $d[0])) {
-                    return 'Row ' . $i . ' Column 1 data format error.';
+                    return json_encode([
+                        'error_code' => 0,
+                        'message' => 'Row ' . $i . ' column 1 data format error.',
+                    ]);
                 }
                 if (!strlen($d[1]) || !filter_var($d[1], FILTER_SANITIZE_NUMBER_FLOAT)) {
-                    return 'Row ' . $i . ' Column 2 data format error.';
+                    return json_encode([
+                        'error_code' => 0,
+                        'message' => 'Row ' . $i . ' column 2 data format error.',
+                    ]);
                 }
                 if (!strlen($d[2]) || !filter_var($d[2], FILTER_SANITIZE_NUMBER_FLOAT)) {
-                    return 'Row ' . $i . ' Column 3 data format error.';
+                    return json_encode([
+                        'error_code' => 0,
+                        'message' => 'Row ' . $i . ' column 3 data format error.',
+                    ]);
                 }
                 if (strlen($d[3]) && !filter_var($d[3], FILTER_SANITIZE_STRING)) {
-                    return 'Row ' . $i . ' Column 4 data format error.';
+                    return json_encode([
+                        'error_code' => 0,
+                        'message' => 'Row ' . $i . ' column 4 data format error.',
+                    ]);
                 }
                 if (strlen($d[4]) && !filter_var($d[4], FILTER_SANITIZE_NUMBER_INT)) {
-                    return 'Row ' . $i . ' Column 5 data format error.';
+                    return json_encode([
+                        'error_code' => 0,
+                        'message' => 'Row ' . $i . ' column 5 data format error.',
+                    ]);
                 }
                 if (strlen($d[5]) && !filter_var($d[5], FILTER_SANITIZE_NUMBER_INT)) {
-                    return 'Row ' . $i . ' Column 6 data format error.';
+                    return json_encode([
+                        'error_code' => 0,
+                        'message' => 'Row ' . $i . ' column 6 data format error.',
+                    ]);
                 }
-
             }
             $i++;
         }
@@ -79,6 +96,9 @@ class FileController
             $arr['creation_date'] = date('Y-m-d H:i:s', time());
             (new RecordingProvider())->insert($arr);
         }
-        return 'upload success.';
+        return json_encode([
+            'error_code' => 0,
+            'message' => 'Upload success.',
+        ]);
     }
 }

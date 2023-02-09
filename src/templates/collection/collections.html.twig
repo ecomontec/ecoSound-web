@@ -9,11 +9,11 @@
                 <li class="breadcrumb-item active" aria-current="page">{{ project.name }}</li>
             </ul>
             <div>
-                {% autoescape false %}{{ project.descriptionShort }}{% endautoescape %}
+                {% autoescape false %}{{ project.description }}{% endautoescape %}
             </div>
             {% if collections|length > 0 %}
                 {% if leaflet.arr %}
-                    <div class="form-inline">
+                    <div class="form-inline mt-3">
                         <h3>Map of project sites</h3>
                         <button id="btn_map" class="btn btn-outline-primary btn-sm view ml-2 mb-1">Hide Map</button>
                         <input id="sites" value="{{ leaflet.sites }}" type="hidden">
@@ -47,7 +47,6 @@
                             </div>
                             <h6>DOI: <small>{{ collection.doi }}</small></h6>
                             <h6>Creation Date (UTC): <small>{{ collection.creationDate }}</small></h6>
-
                         </td>
                         <td style="width: 55%;border-top: 1px solid #dddddd;">
                             {% if collection.sphere is not empty %}

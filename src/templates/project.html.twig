@@ -28,7 +28,7 @@
                                 </div>
                             {% endif %}
                             <div class="col-{{ not project.pictureId and not project.url?'12':'9' }}" style="margin-bottom: auto;">
-                                {% autoescape false %}{{ project.description }}{% endautoescape %}
+                                {% autoescape false %}{{ project.descriptionShort }}{% endautoescape %}
                             </div>
                         </div>
                     </td>

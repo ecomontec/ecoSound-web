@@ -65,8 +65,7 @@ class RecordingController extends BaseController
             $colId,
             (Auth::getUserID() == null) ? 0 : Auth::getUserID()
         );
-
-        $userSites = (new SiteProvider())->getBasicList($projectId, $colId);
+        $userSites = (new SiteProvider())->getList($projectId, $colId);
         return $this->twig->render('administration/recordings.html.twig', [
             'projectId' => $projectId,
             'projects' => $projects,
@@ -191,5 +190,22 @@ class RecordingController extends BaseController
     {
         $count = count((new tagProvider())->getList($id));
         return $count;
+    }
+
+    public function download()
+    {
+        $file_name = "meta-data demo.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+
+        $tagAls[] = array('recording_start', 'duration_s', 'sampling_rate', 'name', 'bit_rate', 'channel_number');
+
+        foreach ($tagAls as $line) {
+            fputcsv($fp, $line);
+        }
+        fclose($fp);
+        exit();
     }
 }

@@ -22,7 +22,9 @@
                         </h5>
                     {% endif %}
                     <span>{{ item.recording.name }}</span>
-                    <span style="color: dodgerBlue;">{{ item.recording.labelName }}</span>
+                    {% if isUserLogged %}
+                        <span style="color: dodgerBlue;">{{ item.recording.labelName }}</span>
+                    {% endif %}
                     <span>{{ item.recording.fileDate }}</span>
                 </td>
                 <td style="width: 30%"></td>
