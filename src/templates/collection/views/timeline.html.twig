@@ -56,16 +56,13 @@
         }
     );
 
-    var t = window.setInterval(function () {
-        if ($(".tl-timenav").height() > 0) {
-            $(".tl-text-headline-container").addClass('text-center')
-            $("#timeline").height($(".tl-timenav").height() + 500)
-            $(".tl-storyslider").height(500)
+    tt = window.setInterval(function () {
+        if ($("#timeline").is(':visible')) {
             $("#timeline").hide()
+        } else {
             $("#timeline").show()
-            if (Math.abs($("#timeline").height() - $(".tl-storyslider").height() - $(".tl-timenav").height()) > 10) {
-                window.clearInterval(t)
-            }
+            $(".tl-text-headline-container").addClass('text-center')
+            window.clearInterval(tt)
         }
     }, 1000)
 </script>

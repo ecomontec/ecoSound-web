@@ -74,25 +74,6 @@ $("#from-file").change(function (e) {
 
 
 $(function () {
-    $("#metaDataButton").on("dragover", function () {
-        return false;
-    });
-
-    $("#metaDataButton").on("drop", function (ev) {
-        var fs = ev.originalEvent.dataTransfer.files;
-        analysisList(fs);
-        return false;
-    });
-
-    $("#metaData").on("dragover", function () {
-        return false;
-    });
-
-    $("#metaData").on("drop", function (ev) {
-        var fs = ev.originalEvent.dataTransfer.files;
-        analysisList(fs);
-        return false;
-    });
 
     $("#metaDataButton").on("click", function () {
         $("#metaDataFile").click();
@@ -101,7 +82,6 @@ $(function () {
     $("#metaDataFile").on("change", function () {
         analysisList(this.files);
     })
-
 
     function analysisList(obj) {
         if (obj.length < 1) {

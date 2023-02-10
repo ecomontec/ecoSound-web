@@ -35,10 +35,11 @@
                         <i class="fa-brands fa-meta"></i> Meta-data
                     </button>
                     <div class="dropdown-menu">
-                        <a class="dropdown-item" type="button" id="metaDataButton"
-                           title="Recording meta-data can be uploaded with a CSV containing the following columns:&#10;&#10;recording_start (format: YYYY-MM-DD HH:MM:SS, local time)&#10;duration_s (duration of recording in seconds)&#10;sampling_rate (numeric value in Hz)&#10;name (optional, limited to 40 characters)&#10;bit_rate (optional, integer)&#10;channel_number (optional, integer)">
-                            <i class="fa-solid fa-file-arrow-up"></i> Upload Meta-data</a>
-                        <a class="dropdown-item" type="button" id="metaDemo"><i class="fa-solid fa-file-arrow-down"></i> Download Demo</a>
+                        <a class="dropdown-item" type="button" id="metaDataButton"><i class="fa-solid fa-file-arrow-up"></i> Upload Meta-data</a>
+                        <a class="dropdown-item" type="button" id="metaDemo"><i class="fa-solid fa-file-arrow-down"></i> Download Template</a>
+                        <a class="dropdown-item" type="button" id="viewInstructions"
+                           title="Recording meta-data can be uploaded with a CSV containing the following columns:&#10;&#10;recording_start (format: YYYY-MM-DD HH:MM:SS, local time)&#10;duration_s (duration of recording in seconds)&#10;sampling_rate (numeric value in Hz)&#10;name (optional, limited to 40 characters)&#10;bit_rate (optional, integer)&#10;channel_number (optional, integer)"><i
+                                    class="fa-solid fa-circle-info"></i> View Instructions</a>
                     </div>
                     <button type="button" id="uploadButton" data-toggle="collapse" data-target="#uploadForm" class="btn btn-outline-primary btn-sm mt-2">
                         <span class="fas fa-upload"></span>
@@ -93,10 +94,10 @@
                         </select>
                     </td>
                     <td data-search="{{ recording.siteName }}" data-order="{{ recording.siteName }}">
-                        <select name="site_id" style="width:120px;" class="form-control form-control-sm">
+                        <select id="site_id{{ recording.id }}" name="site_id" style="width:120px;" class="form-control form-control-sm">
                             <option value="0"></option>
                             {% for st in sites %}
-                                <option value="{{ st.id }}" {{ st.id == recording.site ? 'selected' }}>
+                                <option value="{{ st.site_id }}" {{ st.site_id == recording.site ? 'selected' }}>
                                     {{ st.name }}
                                 </option>
                             {% endfor %}
@@ -189,6 +190,37 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="modal-info" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">View Instructions</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body ml-3">
+                    <div>
+                        <div class="form-group">
+                            <label>Recording meta-data can be uploaded with a CSV containing the following columns:<br><br>
+                                recording_start (format: YYYY-MM-DD HH:MM:SS, local time)<br>
+                                duration_s (duration of recording in seconds)<br>
+                                sampling_rate (numeric value in Hz)<br>
+                                name (optional, limited to 40 characters)<br>
+                                bit_rate (optional, integer)<br>
+                                channel_number (optional, integer)</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="js-close-button" type="button" class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 {% endblock %}
 
@@ -241,6 +273,10 @@
                         $('#delete_id').val(id)
                         $("#modal-div").modal('show');
                     })
+                })
+
+                $('#viewInstructions').click(function () {
+                    $("#modal-info").modal('show');
                 })
 
                 $('#js-delete-button').click(function () {

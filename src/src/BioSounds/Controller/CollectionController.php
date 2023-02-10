@@ -155,7 +155,6 @@ class CollectionController extends BaseController
         $sites = '';
         $i = 0;
         $j = 0;
-
         foreach ($allRecordings as $recording) {
             $r = $recording->getRecording();
             $site = $r->getSite();
@@ -292,15 +291,15 @@ class CollectionController extends BaseController
 
     public function gadm($site)
     {
-        if ($site['gadm2'] != null) {
+        if ($site->getGadm2() != null) {
             $level = 2;
-            $name = $site['gadm2'];
-        } elseif ($site['gadm1'] != null) {
+            $name = $site->getGadm2();
+        } elseif ($site->getGadm1() != null) {
             $level = 1;
-            $name = $site['gadm1'];
-        } elseif ($site['gadm0'] != null) {
+            $name = $site->getGadm1();
+        } elseif ($site->getGadm0() != null) {
             $level = 0;
-            $name = $site['gadm0'];
+            $name = $site->getGadm0();
         } else {
             return false;
         }
