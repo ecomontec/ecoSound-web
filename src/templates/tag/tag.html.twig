@@ -219,7 +219,11 @@
         e.preventDefault();
         requestModal(this.href, {'recording_name': document.getElementsByName('recording_name')[0].value});
     })
-    $("#modal-div").draggable();
+    $("#modal-div").draggable({
+        drag: function () {
+            $('.modal-backdrop').remove();
+        }
+    });
     {% if next!=0 %}
     $('#btn-next').on('click', function (e) {
         $("#x").val('{{ next.minTime }}');
