@@ -35,12 +35,11 @@ class CollectionController extends BaseController
         foreach ($collections as $collection) {
             $str .= $collection->getId() . ',';
         }
-        $sites = (new SiteProvider())->getList($projectId);
+        $sites = (new SiteProvider())->getListWithCollection($projectId);
         $this->leaflet = $this->getProjectLeaflet($sites, substr($str, 0, strlen($str) - 1));
         return $this->twig->render('collection/collections.html.twig', [
             'project' => (new ProjectProvider())->get($projectId),
             'collections' => $collections,
-            'sites' => $sites,
             'leaflet' => $this->leaflet
         ]);
     }
@@ -63,12 +62,11 @@ class CollectionController extends BaseController
             (Auth::getUserID() == null) ? 0 : Auth::getUserID()
         );
         $this->leaflet = $this->getLeaflet($this->recordings);
-        if ($isAccessed || $this->collection->getPublic()) {
+        if ($isAccessed || $this->collection->getPublicAccess()) {
             return $this->twig->render('collection/collection.html.twig', [
                 'project' => (new ProjectProvider())->get($this->collection->getProject()),
                 'collection' => $this->collection,
                 'list' => $this->recordings,
-                'template' => $display == Collection::LIST_VIEW ? self::LIST_TEMPLATE : self::GALLERY_TEMPLATE,
                 'display' => $display,
                 'leaflet' => $this->leaflet,
                 'none_count' => (new RecordingProvider())->getNullCount($id),
@@ -101,13 +99,12 @@ class CollectionController extends BaseController
             (Auth::getUserID() == null) ? 0 : Auth::getUserID()
         );
         $this->leaflet = $this->getLeaflet($this->recordings);
-        if ($isAccessed || $this->collection->getPublic()) {
+        if ($isAccessed || $this->collection->getPublicAccess()) {
             return $this->twig->render('collection/collectionjs.html.twig', [
                 'project' => (new ProjectProvider())->get($this->collection->getProject()),
                 'old' => $old,
                 'collection' => $this->collection,
                 'list' => $this->recordings,
-                'template' => $display == Collection::LIST_VIEW ? self::LIST_TEMPLATE : self::GALLERY_TEMPLATE,
                 'display' => $display,
                 'leaflet' => $this->leaflet,
                 'none_count' => (new RecordingProvider())->getNullCount($id),
@@ -158,7 +155,6 @@ class CollectionController extends BaseController
         $sites = '';
         $i = 0;
         $j = 0;
-
         foreach ($allRecordings as $recording) {
             $r = $recording->getRecording();
             $site = $r->getSite();
@@ -244,23 +240,17 @@ class CollectionController extends BaseController
         return $arr;
     }
 
-    public function getProjectLeaflet(array $allSites, string $collections): array
+    public function getProjectLeaflet(array $allSites): array
     {
         $array = array();
         $arr = array();
         $j = 0;
 
         foreach ($allSites as $site) {
-            if (strlen($site->getLongitude()) > 0 && strlen($site->getLatitude()) > 0) {
-                $latitude[] = $site->getLatitude();
-                $longitude[] = $site->getLongitude();
-                $array[] = [$site->getId(), $site->getName(), $site->getLatitude(), $site->getLongitude(), $site->getCollection($site->getId(), $collections)];
-            } else {
-                if ($result = $this->gadm($site)) {
-                    $latitude[] = $result[1];
-                    $longitude[] = $result[0];
-                    $array[] = [$site->getId(), $site->getName(), $result[1], $result[0], $site->getCollection($site->getId(), $collections)];
-                }
+            if (strlen($site['x']) > 0 && strlen($site['y']) > 0) {
+                $latitude[] = $site['y'];
+                $longitude[] = $site['x'];
+                $array[] = [$site['site_id'], $site['name'], $site['y'], $site['x'], $site['collection']];
             }
         }
         $max = 0;

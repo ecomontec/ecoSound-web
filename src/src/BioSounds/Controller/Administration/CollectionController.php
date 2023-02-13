@@ -101,10 +101,10 @@ class CollectionController extends BaseController
         header('Content-Disposition: attachment; filename=' . $file_name);
 
         $collList = (new CollectionProvider())->getByProject($project_id, Auth::getUserID());
-        $colAls[] = array('#', 'Name', 'User', 'DOI', 'Sphere', 'Description', 'Creation Date(UTC)', 'View', 'Public');
+        $colAls[] = array('#', 'Name', 'User', 'DOI', 'Sphere', 'Description', 'Creation Date(UTC)', 'View', 'Public Access','Public Tags');
 
         foreach ($collList as $collItem) {
-            $colArray = array($collItem->getId(), $collItem->getName(), $collItem->getAuthor(), $collItem->getDoi(), $collItem->getSphere(), $collItem->getNote(), $collItem->getCreationDate(), $collItem->getView(), $collItem->getPublic());
+            $colArray = array($collItem->getId(), $collItem->getName(), $collItem->getAuthor(), $collItem->getDoi(), $collItem->getSphere(), $collItem->getNote(), $collItem->getCreationDate(), $collItem->getView(), $collItem->getPublicAccess(),$collItem->getPublicTags());
             $colAls[] = $colArray;
         }
 

@@ -13,7 +13,10 @@
                 <li class="breadcrumb-item active" aria-current="page">{{ collection.name }}</li>
             </ul>
             {% if leaflet.arr %}
-                <button id="btn_map" class="btn btn-outline-primary btn-sm view mb-3">Hide Map</button>
+                <div class="form-inline">
+                    <h3>Map of recording sites</h3>
+                    <button id="btn_map" class="btn btn-outline-primary btn-sm view ml-2 mb-1">Hide Map</button>
+                </div>
             {% else %}
                 <button class="btn btn-outline-secondary btn-sm view mb-3" disabled>No geo-referenced recordings</button>
             {% endif %}

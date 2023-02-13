@@ -10,8 +10,14 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <div class="projectEdit">{% autoescape false %}{{ project.description }}{% endautoescape %}</div>
-                        <input id="description{{ project.id }}" type="hidden" name="description" value="{{ project.description }}">
+                        <label class="col-form-albel-sm">Short Description <small>(for projects overview)</small></label>
+                        <div class="projectEdit1" style="height: 150px">{% autoescape false %}{{ project.descriptionShort }}{% endautoescape %}</div>
+                        <input id="description_short{{ project.id }}" type="hidden" name="description_short_text" value="{{ project.descriptionShort }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-albel-sm">Extended Description <small>(for project page)</small></label>
+                        <div class="projectEdit" style="height: 150px">{% autoescape false %}{{ project.description }}{% endautoescape %}</div>
+                        <input id="description{{ project.id }}" type="hidden" name="description_text" value="{{ project.description }}">
                         <input id="project{{ project.id }}" type="hidden" name="projectId" value="{{ project.id }}">
                     </div>
                 </div>
@@ -40,7 +46,24 @@
     });
 
     quillEdit.on('text-change', function () {
-        $("#description{{ project.id }}").val($(".ql-editor")[1].innerHTML)
+        $("#description{{ project.id }}").val($(".ql-editor")[3].innerHTML)
+    });
+
+    var quillEdit1 = new Quill('.projectEdit1', {
+        modules: {
+            'toolbar': [
+                ['bold', 'italic', 'underline', 'strike'],
+                [{'color': []}, {'background': []}],
+                [{'script': 'super'}, {'script': 'sub'}],
+                ['link', 'image', 'video'],
+                ['clean']
+            ],
+        },
+        theme: 'snow',
+    });
+
+    quillEdit1.on('text-change', function () {
+        $("#description_short{{ project.id }}").val($(".ql-editor")[2].innerHTML)
     });
 
     $('#projectEditForm').submit(function (e) {

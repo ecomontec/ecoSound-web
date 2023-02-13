@@ -551,7 +551,7 @@
   -o-user-select: none;
   user-select: none;
 }
-/* MenuBar 
+/* MenuBar
 ================================================== */
 .tl-menubar {
   position: absolute;
@@ -593,7 +593,7 @@
 	//.translucent-background(rgb(0,0,0), .5);
 	border-top: 2px solid #000;
 	animation: invertToBlack 1s;
-	-webkit-animation:invertToBlack 1s; 
+	-webkit-animation:invertToBlack 1s;
 }
 */
 @keyframes invertToBlack {
@@ -698,7 +698,7 @@
     background: #FFF;
   }
 }
-/* MESSAGE 
+/* MESSAGE
 ================================================== */
 .tl-message,
 .tl-message-full {

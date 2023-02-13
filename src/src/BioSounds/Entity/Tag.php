@@ -612,7 +612,7 @@ class Tag extends BaseProvider
      */
     public function getPhony(): ?string
     {
-        return $this->phony ;
+        return $this->phony;
     }
 
     /**
@@ -630,7 +630,7 @@ class Tag extends BaseProvider
      */
     public function getSoundType(): ?string
     {
-        return $this->sound_type ;
+        return $this->sound_type;
     }
 
     /**
@@ -640,6 +640,24 @@ class Tag extends BaseProvider
     public function setSoundType(?string $sound_type): Tag
     {
         $this->sound_type = $sound_type;
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getPublicTags(): ?int
+    {
+        return $this->public_tags;
+    }
+
+    /**
+     * @param int|null $public_tags
+     * @return Tag
+     */
+    public function setPublicTags(?int $public_tags): Tag
+    {
+        $this->public_tags = $public_tags;
         return $this;
     }
 
@@ -673,6 +691,7 @@ class Tag extends BaseProvider
         $this->setSoundId(isset($values['sound_id']) ? $values['sound_id'] : null);
         $this->setPhony(isset($values['phony']) ? $values['phony'] : null);
         $this->setSoundType(isset($values['sound_type']) ? $values['sound_type'] : null);
+        $this->setPublicTags($values['public_tags']);
         return $this;
     }
 }

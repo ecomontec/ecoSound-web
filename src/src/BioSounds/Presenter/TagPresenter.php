@@ -25,6 +25,8 @@ class TagPresenter
 
     private $color;
 
+    private $public;
+
     /**
      * @return mixed
      */
@@ -220,6 +222,24 @@ class TagPresenter
     public function setColor($color)
     {
         $this->color = $color;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPublic()
+    {
+        return $this->public;
+    }
+
+    /**
+     * @param mixed $public
+     * @return TagPresenter
+     */
+    public function setPublic($public)
+    {
+        $this->public = $public;
         return $this;
     }
 }

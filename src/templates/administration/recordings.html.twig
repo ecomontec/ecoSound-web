@@ -7,8 +7,16 @@
         <div class="card-header border-light bg-white text-right">
             <div class="row">
                 <div class="col-auto mr-auto mt-2">
-                    <form id="collectionForm" class="form-inline" action="{{ baseUrl }}/admin/recordings">
-                        <label for="colId">Collection</label>
+                    <form id="projectForm" class="form-inline" action="{{ baseUrl }}/admin/recordings">
+                        <label for="projectId">Project</label>
+                        <select id="projectId" name="projectId" class="form-control form-control-sm ml-3">
+                            {% for project in projects %}
+                                <option value="{{ project.id }}" {{ project.id == projectId ? 'selected' }}>
+                                    {{ project.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <label for="collId" class="ml-3">Collection</label>
                         <select id="colId" name="colId" class="form-control form-control-sm ml-3">
                             {% for collection in collections %}
                                 <option value="{{ collection.id }}" {{ collection.id == colId ? 'selected' }}>
@@ -19,6 +27,18 @@
                     </form>
                 </div>
                 <div class="col-auto ml-auto">
+                    <form id="metaDataForm" method="POST" class="collapse">
+                        <input type="file" name="metaDataFile" id="metaDataFile" accept="text/csv" style="display: none">
+                        <input type="hidden" name="colId" value="{{ colId }}">
+                    </form>
+                    <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" id="metaData" type="button" data-toggle="dropdown" aria-expanded="false">
+                        <i class="fa-brands fa-meta"></i> Meta-data
+                    </button>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" type="button" id="metaDataButton"><i class="fa-solid fa-file-arrow-up"></i> Upload Meta-data</a>
+                        <a class="dropdown-item" type="button" id="metaDemo"><i class="fa-solid fa-file-arrow-down"></i> Download Template</a>
+                        <a class="dropdown-item" type="button" id="viewInstructions"><i class="fa-solid fa-circle-info"></i> View Instructions</a>
+                    </div>
                     <button type="button" id="uploadButton" data-toggle="collapse" data-target="#uploadForm" class="btn btn-outline-primary btn-sm mt-2">
                         <span class="fas fa-upload"></span>
                         Upload Files
@@ -38,7 +58,7 @@
                 <th>Recorder</th>
                 <th>Microphone</th>
                 <th>License</th>
-                <th>Collection Type</th>
+                <th>Recording Type</th>
                 <th>Medium</th>
                 <th>Note</th>
                 <th>Date</th>
@@ -50,7 +70,11 @@
             {% for recording in recordings %}
                 <tr>
                     <td>
-                        <a href="{{ baseUrl }}/recording/show/{{ recording.id }}" target="_blank"><i class="fa fa-eye"></i></a>
+                        {% if recording.data_type=='audio data' %}
+                            <a href="{{ baseUrl }}/recording/show/{{ recording.id }}" target="_blank"><i class="fa fa-eye"></i></a>
+                        {% else %}
+                            <i class="fa fa-eye-slash"></i>
+                        {% endif %}
                     </td>
                     <td>
                         {{ recording.id }}
@@ -68,10 +92,10 @@
                         </select>
                     </td>
                     <td data-search="{{ recording.siteName }}" data-order="{{ recording.siteName }}">
-                        <select name="site_id" style="width:120px;" class="form-control form-control-sm">
+                        <select id="site_id{{ recording.id }}" name="site_id" style="width:120px;" class="form-control form-control-sm">
                             <option value="0"></option>
                             {% for st in sites %}
-                                <option value="{{ st.id }}" {{ st.id == recording.site ? 'selected' }}>
+                                <option value="{{ st.site_id }}" {{ st.site_id == recording.site ? 'selected' }}>
                                     {{ st.name }}
                                 </option>
                             {% endfor %}
@@ -94,6 +118,7 @@
                     </td>
                     <td data-search="{{ recording.licenseName }}" data-order="{{ recording.licenseName }}">
                         <select name="license_id" style="width:140px;" class="form-control form-control-sm">
+                            <option value="0"></option>
                             {% for licensed in license %}
                                 <option value="{{ licensed.license_id }}" {{ licensed.license_id == recording.license ? 'selected' }}>{{ licensed.name }}</option>
                             {% endfor %}
@@ -101,6 +126,7 @@
                     </td>
                     <td data-search="{{ recording.type }}" data-order="{{ recording.type }}">
                         <select name="type" style="width:100px;" class="form-control form-control-sm">
+                            <option value="0"></option>
                             <option {{ recording.type == 'Passive' ? 'selected' }}>Passive</option>
                             <option {{ recording.type == 'Focal' ? 'selected' }}>Focal</option>
                             <option {{ recording.type == 'Enclosure' ? 'selected' }}>Enclosure</option>
@@ -108,6 +134,7 @@
                     </td>
                     <td data-search="{{ recording.medium }}" data-order="{{ recording.medium }}">
                         <select name="medium" style="width:80px;" class="form-control form-control-sm">
+                            <option value="0"></option>
                             <option {{ recording.medium == 'Air' ? 'selected' }}>Air</option>
                             <option {{ recording.medium == 'Water' ? 'selected' }}>Water</option>
                         </select>
@@ -161,6 +188,38 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="modal-info" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">View Instructions</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body ml-3">
+                    <div>
+                        <div class="form-group">
+                            <label>Recording meta-data can be uploaded with a CSV containing the following columns:<br><br>
+                                recording_start (format: YYYY-MM-DD HH:MM:SS, local time)<br>
+                                duration_s (duration of recording in seconds)<br>
+                                sampling_rate (numeric value in Hz)<br>
+                                name (optional, limited to 40 characters)<br>
+                                bit_rate (optional, integer)<br>
+                                channel_number (optional, integer)<br><br>
+                                You can download a template CSV file to fill in your data.</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="js-close-button" type="button" class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 {% endblock %}
 
@@ -200,7 +259,8 @@
             document.addEventListener("DOMContentLoaded", function (event) {
 
                 $("#uploadButton").click(function (e) {
-                    $(this).toggle();
+                    $("#uploadButton").toggle();
+                    $("#metaDataButton").toggle();
                     document.getElementById('uploadForm').hidden = false;
                 });
                 $('.js-delete-modal').click(function (e) {
@@ -214,14 +274,14 @@
                     })
                 })
 
+                $('#viewInstructions').click(function () {
+                    $("#modal-info").modal('show');
+                })
+
                 $('#js-delete-button').click(function () {
                     let row = $("#user_id" + $('#delete_id').val()).parents("tr");
                     deleteRequest('{{ baseUrl }}/api/admin/recordingManager/delete/' + $('#delete_id').val(), [], false, false, row.remove());
                     $('#modal-div').modal('hide');
-                });
-
-                $('#colId').change(function () {
-                    $("#collectionForm").submit();
                 });
 
                 /* Save recordings list */
@@ -287,6 +347,16 @@
                             }
                         }
                     }
+                });
+                $('#projectId').change(function () {
+                    $('#colId').val("")
+                    $("#projectForm").submit();
+                });
+                $('#colId').change(function () {
+                    $("#projectForm").submit();
+                });
+                $('#metaDemo').on('click', function () {
+                    window.location.href = '{{ baseUrl }}/api/admin/recordingManager/download';
                 });
             });
         </script>

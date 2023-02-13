@@ -8,10 +8,16 @@
                 </li>
                 <li class="breadcrumb-item active" aria-current="page">{{ project.name }}</li>
             </ul>
+            <div>
+                {% autoescape false %}{{ project.description }}{% endautoescape %}
+            </div>
             {% if collections|length > 0 %}
                 {% if leaflet.arr %}
-                    <button id="btn_map" class="btn btn-outline-primary btn-sm view mb-3">Hide Map</button>
-                    <input id="sites" value="{{ leaflet.sites }}" type="hidden">
+                    <div class="form-inline mt-3">
+                        <h3>Map of project sites</h3>
+                        <button id="btn_map" class="btn btn-outline-primary btn-sm view ml-2 mb-1">Hide Map</button>
+                        <input id="sites" value="{{ leaflet.sites }}" type="hidden">
+                    </div>
                 {% endif %}
             {% endif %}
         </nav>
@@ -27,14 +33,20 @@
             </thead>
             <tbody class="js-collection-list">
             {% for collection in collections %}
-                {% if isUserLogged or collection.public %}
+                {% if isUserLogged or collection.publicAccess %}
                     <tr style="vertical-align:top;">
                         <td style="width: 45%;border-top: 1px solid #dddddd;">
                             <h4><a href="{{ baseUrl }}/collection/show/{{ collection.id }}">{{ collection.name }}</a></h4>
-                            <h6>Author: <small>{{ collection.author }}</small></h6>
+                            <div class="form-inline">
+                                <h6>Author: <small>{{ collection.author }}</small></h6>
+                                {% if collection.orcid %}
+                                    <a href="https://orcid.org/{{ collection.orcid }}" target="_blank">
+                                        <i class="fa-brands fa-orcid ml-1 mb-2"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
                             <h6>DOI: <small>{{ collection.doi }}</small></h6>
                             <h6>Creation Date (UTC): <small>{{ collection.creationDate }}</small></h6>
-
                         </td>
                         <td style="width: 55%;border-top: 1px solid #dddddd;">
                             {% if collection.sphere is not empty %}
@@ -99,14 +111,15 @@
         mcg.addTo(map)
         {% for a in leaflet.arr %}
         {% if a[4] is not null %}
-        {% for value in a[4] %}
+        {% set v= a[4]|split(',') %}
+        {% for value in v %}
         marker = L.marker([{{ a[2] }}, {{ a[3] }}], {id: '{{ a[0] }}', alt: "1"});
         marker.bindPopup('<input type="hidden" value="{{ a[0] }}site_id"><b>{{ a[1] }}</b>'.replaceAll('!br!', '<br>'), {
             closeOnClick: false,
             maxHeight: 140,
             maxWidth: 99999,
         });
-        marker.addTo(group{{ value['collection_id'] }})
+        marker.addTo(group{{ value }})
         {% endfor %}
         marker.addTo(groupAll)
         {% endif %}
@@ -118,11 +131,31 @@
 
         $("#btn_map").click(function () {
             $("#map").toggle()
+            $.cookie('map', $("#btn_map").text(), {expires: 7});
             if ($("#btn_map").text() == 'Hide Map') {
                 $("#btn_map").text('Show Map')
             } else {
                 $("#btn_map").text('Hide Map')
+
             }
+        });
+        $(document).ready(function () {
+            if ($.cookie('map') == 'Hide Map') {
+                $("#btn_map").text('Show Map')
+                $("#map").hide()
+            } else {
+                $("#btn_map").text('Hide Map')
+                $("#map").show()
+            }
+        })
+
+        $(".leaflet-control-layers-selector").change(function () {
+            var str = $(".leaflet-control-layers-selector:checked").next().text().replace(' ', '');
+            $.each(control._layers, function (i, l) {
+                if (l.name == str) {
+                    map.fitBounds(l.layer.getBounds());
+                }
+            });
         });
     </script>
 {% endblock %}

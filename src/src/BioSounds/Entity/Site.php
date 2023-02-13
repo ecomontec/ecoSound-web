@@ -317,18 +317,18 @@ class Site extends AbstractProvider
     /**
      * @return int
      */
-    public function getFunctionalGroupId(): ?int
+    public function getFunctionalTypeId(): ?int
     {
-        return $this->functional_group_id;
+        return $this->functional_type_id;
     }
 
     /**
-     * @param int $functional_group_id
+     * @param int $functional_type_id
      * @return site
      */
-    public function setFunctionalGroupId($functional_group_id = NULL): Site
+    public function setFunctionalTypeId($functional_type_id = NULL): Site
     {
-        $this->functional_group_id = $functional_group_id;
+        $this->functional_type_id = $functional_type_id;
         return $this;
     }
 
@@ -371,28 +371,30 @@ class Site extends AbstractProvider
     /**
      * @return string
      */
-    public function getFunctionalGroup(): ?string
+    public function getFunctionalType(): ?string
     {
-        return $this->functional_group;
+        return $this->functional_type;
     }
 
     /**
-     * @param string $functional_group
+     * @param string $functional_type
      * @return site
      */
-    public function setFunctionalGroup($functional_group = NULL): Site
+    public function setFunctionalType($functional_type = NULL): Site
     {
-        $this->functional_group = $functional_group;
+        $this->functional_type = $functional_type;
         return $this;
     }
 
-    public function getCollection(int $site_id, string $collections)
+    public function getCollection(): ?string
     {
-        $this->database->prepareQuery("SELECT collection_id FROM site_collection WHERE site_id = :site_id AND collection_id IN ($collections)");
-        if (empty($result = $this->database->executeSelect([":site_id" => $site_id]))) {
-            return null;
-        }
-        return $result;
+        return $this->collection;
+    }
+
+    public function setCollection($collection = NULL): Site
+    {
+        $this->collection = $collection;
+        return $this;
     }
 
     /**

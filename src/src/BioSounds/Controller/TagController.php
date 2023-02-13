@@ -62,6 +62,7 @@ class TagController extends BaseController
                 'recordingName' => isset($_POST['recording_name']) ? $_POST['recording_name'] : null,
                 'phonys' => (new SoundProvider())->get(),
                 'soundTypes' => (new SoundProvider())->getAll(),
+                'edit' => 0,
             ]),
         ]);
     }
@@ -73,20 +74,13 @@ class TagController extends BaseController
      */
     public function edit(int $tagId)
     {
-        if (!Auth::isUserLogged()) {
-            throw new NotAuthenticatedException();
-        }
-
+        $tag = (new TagProvider())->get($tagId);
         if (empty($tagId)) {
             throw new \Exception(ERROR_EMPTY_ID);
         }
-
-        if (!Auth::isManage() && (!isset($_SESSION["user_col_permission"]) || empty($_SESSION["user_col_permission"]))) {
+        if (!Auth::isManage() && !$tag->getPublicTags() && (!isset($_SESSION["user_col_permission"]) || empty($_SESSION["user_col_permission"]))) {
             throw new ForbiddenException();
         }
-
-        $tag = (new TagProvider())->get($tagId);
-
         /* TAG USER CONTROL */
 
         $isUserTagOwner = $tag->getUser() == Auth::getUserLoggedID();
@@ -99,13 +93,34 @@ class TagController extends BaseController
             $isViewGranted = $permissionProvider->isViewPermission($_SESSION["user_col_permission"]);
             $isManageGranted = $permissionProvider->isManagePermission($_SESSION["user_col_permission"]);
 
-            if (!$isReviewGranted && !$isViewGranted && !$isManageGranted) {
+            if (!$isReviewGranted && !$isViewGranted && !$isManageGranted && !$tag->getPublicTags()) {
                 throw new ForbiddenException();
             }
 
             $displaySaveButton = $isReviewGranted || $isManageGranted ? '' : 'hidden';
         }
         /**********************/
+        $tagProvider = new TagProvider();
+        if (Auth::isUserAdmin() || $isReviewGranted || $isViewGranted || $isManageGranted) {
+            $tags = $tagProvider->getList($tag->getRecording());
+        } else {
+            $tags = $tagProvider->getList($tag->getRecording(), Auth::getUserLoggedID());
+        }
+        foreach ($tags as $k => $t) {
+            $max = count($tags) - 1;
+            if ($t->getId() == $tag->getId()) {
+                if ($k == 0) {
+                    $previous = 0;
+                    $next = $tags[$k + 1];
+                } elseif ($k == $max) {
+                    $previous = $tags[$k - 1];
+                    $next = 0;
+                } else {
+                    $previous = $tags[$k - 1];
+                    $next = $tags[$k + 1];
+                }
+            }
+        }
         return json_encode([
             'errorCode' => 0,
             'data' => $this->twig->render('tag/tag.html.twig', [
@@ -118,6 +133,9 @@ class TagController extends BaseController
                 'animalSoundTypes' => (new SoundTypeProvider())->getList($tag->getTaxonClass(), $tag->getTaxonOrder()),
                 'phonys' => (new SoundProvider())->get(),
                 'soundTypes' => (new SoundProvider())->getAll(),
+                'edit' => 1,
+                'previous' => $previous,
+                'next' => $next,
             ]),
         ]);
     }

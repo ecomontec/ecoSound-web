@@ -2,10 +2,10 @@
 
 namespace BioSounds\Entity;
 
-class Explore extends AbstractProvider
+class IucnGet extends AbstractProvider
 {
-    const TABLE_NAME = "explore";
-    const PRIMARY_KEY = "explore_id";
+    const TABLE_NAME = "iucn_get";
+    const PRIMARY_KEY = "iucn_get_id";
     const NAME = "name";
     const PID = "pid";
     const LEVEL = "level";
@@ -40,9 +40,9 @@ class Explore extends AbstractProvider
 
     /**
      * @param int $id
-     * @return Explore
+     * @return IucnGet
      */
-    public function setId(int $id): Explore
+    public function setId(int $id): IucnGet
     {
         $this->id = $id;
         return $this;
@@ -58,9 +58,9 @@ class Explore extends AbstractProvider
 
     /**
      * @param string $name
-     * @return Explore
+     * @return IucnGet
      */
-    public function setName(string $name): Explore
+    public function setName(string $name): IucnGet
     {
         $this->name = $name;
         return $this;
@@ -78,7 +78,7 @@ class Explore extends AbstractProvider
      * @param int $pid
      * @return site
      */
-    public function setPid(int $pid): Explore
+    public function setPid(int $pid): IucnGet
     {
         $this->pid = $pid;
         return $this;
@@ -94,22 +94,22 @@ class Explore extends AbstractProvider
 
     /**
      * @param int $level
-     * @return Explore
+     * @return IucnGet
      */
-    public function setLevel(string $level): Explore
+    public function setLevel(string $level): IucnGet
     {
         $this->level = $level;
         return $this;
     }
 
-    public function getExplores(int $pid = 0):array
+    public function getIucnGets(int $pid = 0):array
     {
-        $this->database->prepareQuery("SELECT * FROM explore WHERE pid = $pid ORDER BY `name`");
+        $this->database->prepareQuery("SELECT * FROM iucn_get WHERE pid = $pid ORDER BY `name`");
         return $this->database->executeSelect();
     }
-    public function getAllExplores():array
+    public function getAllIucnGets():array
     {
-        $this->database->prepareQuery("SELECT * FROM explore ORDER BY `name`");
+        $this->database->prepareQuery("SELECT * FROM iucn_get ORDER BY `name`");
         return $this->database->executeSelect();
     }
 }

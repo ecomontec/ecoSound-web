@@ -3,7 +3,7 @@
 namespace BioSounds\Controller\Administration;
 
 use BioSounds\Controller\BaseController;
-use BioSounds\Entity\Explore;
+use BioSounds\Entity\IucnGet;
 use BioSounds\Entity\SoundType;
 use BioSounds\Entity\Tag;
 use BioSounds\Exception\ForbiddenException;

@@ -21,6 +21,7 @@ class ProjectProvider extends BaseProvider
                 ->setId($item['project_id'])
                 ->setName($item['name'])
                 ->setDescription($item['description'])
+                ->setDescriptionShort($item['description_short'])
                 ->setCreatorId($item['creator_id'])
                 ->setCreationDate($item['creation_date'])
                 ->setUrl($item['url'])
@@ -45,6 +46,7 @@ class ProjectProvider extends BaseProvider
             ->setId($result['project_id'])
             ->setName($result['name'])
             ->setDescription($result['description'])
+            ->setDescriptionShort($result['description_short'])
             ->setCreatorId($result['creator_id'])
             ->setCreationDate($result['creation_date'])
             ->setUrl($result['url'])
@@ -69,6 +71,7 @@ class ProjectProvider extends BaseProvider
                 ->setId($item['project_id'])
                 ->setName($item['name'])
                 ->setDescription($item['description'])
+                ->setDescriptionShort($item['description_short'])
                 ->setCreatorId($item['creator_id'])
                 ->setCreationDate($item['creation_date'])
                 ->setUrl($item['url'])
@@ -98,6 +101,7 @@ class ProjectProvider extends BaseProvider
                 ->setId($item['project_id'])
                 ->setName($item['name'])
                 ->setDescription($item['description'])
+                ->setDescriptionShort($item['description_short'])
                 ->setCreatorId($item['creator_id'])
                 ->setCreationDate($item['creation_date'])
                 ->setUrl($item['url'])
@@ -134,7 +138,6 @@ class ProjectProvider extends BaseProvider
         }
         $fields = substr($fields, 0, strlen($fields) - 1) . ' )';
         $valuesNames = substr($valuesNames, 0, strlen($valuesNames) - 1) . ' )';
-
         $this->database->prepareQuery("INSERT INTO project $fields VALUES $valuesNames");
         return $this->database->executeInsert($values);
     }

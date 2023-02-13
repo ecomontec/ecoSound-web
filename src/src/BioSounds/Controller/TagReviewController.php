@@ -16,10 +16,6 @@ class TagReviewController extends BaseController
      */
     public function show(int $tagId, bool $isReviewGranted)
     {
-        if (!Auth::isUserLogged()) {
-            throw new NotAuthenticatedException();
-        }
-
         if (empty($tagId)) {
             throw new \Exception(ERROR_EMPTY_ID);
         }

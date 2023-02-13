@@ -13,6 +13,7 @@ use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\IndexLogProvider;
 use BioSounds\Provider\LabelAssociationProvider;
+use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\SpectrogramProvider;
 use BioSounds\Provider\SiteProvider;
@@ -26,30 +27,37 @@ class RecordingController extends BaseController
 
     /**
      * @param int|null $cId
+     * @param int|null $pId
      * @param int $page
      * @return mixed
      * @throws \Exception
      */
-    public function show(int $cId = null)
+    public function show(int $pId = null, int $cId = null)
     {
         if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
-
-        // colId proceesing
+        if (isset($_GET['projectId'])) {
+            $projectId = $_GET['projectId'];
+        }
         if (isset($_GET['colId'])) {
             $colId = $_GET['colId'];
+        }
+        if (!empty($pId)) {
+            $projectId = $pId;
         }
         if (!empty($cId)) {
             $colId = $cId;
         }
-
-        $collections = Auth::isUserAdmin() ? (new CollectionProvider())->getList() : (new CollectionProvider())->getManageList(Auth::getUserID());
+        $projects = (new ProjectProvider())->getWithPermission(Auth::getUserID());
+        if (empty($projectId)) {
+            $projectId = $projects[0]->getId();
+        }
+        $collections = (new CollectionProvider())->getByProject($projectId, Auth::getUserID());
         if (empty($colId)) {
             $colId = $collections[0]->getId();
         }
 
-        $collection = (new CollectionProvider())->get($colId);
         $recordingProvider = new RecordingProvider();
         $userProducer = new User();
 
@@ -57,12 +65,12 @@ class RecordingController extends BaseController
             $colId,
             (Auth::getUserID() == null) ? 0 : Auth::getUserID()
         );
-
-        $projectId = $collection->getProject();
-        $userSites = (new SiteProvider())->getBasicList($projectId,$colId);
-
+        $userSites = (new SiteProvider())->getList($projectId, $colId);
         return $this->twig->render('administration/recordings.html.twig', [
+            'projectId' => $projectId,
+            'projects' => $projects,
             'colId' => $colId,
+            'collections' => $collections,
             'recordings' => $recordings,
             'sites' => $userSites,
             'users' => $userProducer->getList(),
@@ -111,6 +119,9 @@ class RecordingController extends BaseController
             }
         }
         $data["site_id"] = $data["site_id"] == 0 ? null : $data["site_id"];
+        $data["recorder_id"] = $data["recorder_id"] == 0 ? null : $data["recorder_id"];
+        $data["microphone_id"] = $data["microphone_id"] == 0 ? null : $data["microphone_id"];
+        $data["license_id"] = $data["license_id"] == 0 ? null : $data["license_id"];
         if (isset($data["itemID"])) {
             (new RecordingProvider())->update($data);
 
@@ -138,7 +149,7 @@ class RecordingController extends BaseController
 
         $recordingProvider = new RecordingProvider();
         $indexLogProvider = new indexLogProvider();
-        $labelAssociationProvider= new LabelAssociationProvider();
+        $labelAssociationProvider = new LabelAssociationProvider();
         $recording = $recordingProvider->get($id);
 
         $fileName = $recording[Recording::FILENAME];
@@ -179,5 +190,22 @@ class RecordingController extends BaseController
     {
         $count = count((new tagProvider())->getList($id));
         return $count;
+    }
+
+    public function download()
+    {
+        $file_name = "meta-data demo.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+
+        $tagAls[] = array('recording_start', 'duration_s', 'sampling_rate', 'name', 'bit_rate', 'channel_number');
+
+        foreach ($tagAls as $line) {
+            fputcsv($fp, $line);
+        }
+        fclose($fp);
+        exit();
     }
 }

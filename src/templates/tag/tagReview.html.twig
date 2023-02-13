@@ -31,7 +31,9 @@
         <table class="table table-sm">
             <thead>
             <tr>
-                <th scope="col" class="col-form-label-sm">Reviewer</th>
+                {% if isUserLogged %}
+                    <th scope="col" class="col-form-label-sm">Reviewer</th>
+                {% endif %}
                 <th scope="col" class="col-form-label-sm">Status</th>
                 <th scope="col" class="col-form-label-sm">Species</th>
                 <th scope="col" class="col-form-label-sm">Date</th>
@@ -40,7 +42,9 @@
             <tbody>
             {% for review in reviews %}
                 <tr>
-                    <td class="form-control-sm">{{ review.reviewer }}</td>
+                    {% if isUserLogged %}
+                        <td class="form-control-sm">{{ review.reviewer }}</td>
+                    {% endif %}
                     <td class="form-control-sm">{{ review.status }}</td>
                     <td class="form-control-sm">{{ review.binomial }}</td>
                     <td class="form-control-sm">{{ review.creation_date|date("d/m/Y") }}</td>

@@ -40,7 +40,8 @@
                 <th>Description</th>
                 <th>Creation Date (UTC)</th>
                 <th>View</th>
-                <th>Public</th>
+                <th>Public Access</th>
+                <th>Public Tags</th>
                 <th></th>
             </tr>
             </thead>
@@ -84,8 +85,11 @@
                             <option value="timeline" {{ collection.view == 'timeline' ? 'selected' }}>timeline</option>
                         </select>
                     </td>
-                    <td class="text-center" data-search="{{ collection.public }}" data-order="{{ collection.public }}">
-                        <input name="public" type="checkbox" {{ collection.public ? 'checked' }}>
+                    <td class="text-center" data-search="{{ collection.publicAccess }}" data-order="{{ collection.publicAccess }}">
+                        <input name="public_access" type="checkbox" {{ collection.publicAccess ? 'checked' }}>
+                    </td>
+                    <td class="text-center" data-search="{{ collection.publicTags }}" data-order="{{ collection.publicTags }}">
+                        <input name="public_tags" type="checkbox" {{ collection.publicTags ? 'checked' }}>
                     </td>
                     <td>
                         <a class="js-delete-modal" href="#" data-id="{{ collection.id }}" data-name="{{ collection.name }}" title="Delete collection">
@@ -177,7 +181,7 @@
                 }
                 this.classList.add('was-validated');
             });
-            $('.js-delete-modal').click(function (e) {
+            $('#collTable tbody').on('click', '.js-delete-modal', function () {
                 var id = $(this).data('id')
                 var name = $(this).data('name')
                 $.ajax({
@@ -195,7 +199,7 @@
             $('#js-delete-button').click(function () {
                 let row = $("#col" + $('#delete_id').val()).parents("tr");
                 deleteRequest('{{ baseUrl }}/api/admin/collectionMgr/delete/' + $('#delete_id').val(), [], false, false, row.remove());
-                $('#modal-div').modal('hide');
+                location.reload();
             });
             $("#confirm_input").on('input', function () {
                 if ($("#confirm_input").val() == $('#modal-collection').text()) {

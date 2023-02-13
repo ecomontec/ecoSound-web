@@ -74,7 +74,8 @@ CREATE TABLE `collection`
     `note`          text COLLATE utf8_unicode_ci                  DEFAULT NULL,
     `view`          enum('gallery','list','timeline') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'gallery',
     `sphere`        varchar(100) COLLATE utf8_unicode_ci          DEFAULT NULL,
-    `public`        tinyint(1) NOT NULL DEFAULT 0,
+    `public_access` tinyint(1) NOT NULL DEFAULT 0,
+    `public_tags`   tinyint(1) NOT NULL DEFAULT 0,
     `creation_date` timestamp                            NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -156,15 +157,16 @@ CREATE TABLE `play_log`
 --
 CREATE TABLE `project`
 (
-    `project_id`    int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `name`          varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-    `description`   longblob,
-    `creator_id`    int(11) NOT NULL,
-    `creation_date` timestamp                            NOT NULL DEFAULT current_timestamp(),
-    `url`           varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-    `picture_id`    varchar(255) COLLATE utf8_unicode_ci,
-    `public`        tinyint(1) NOT NULL DEFAULT 1,
-    `active`        tinyint(1) NOT NULL DEFAULT 1
+    `project_id`        int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `name`              varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+    `description`       longblob,
+    `description_short` longblob,
+    `creator_id`        int(11) NOT NULL,
+    `creation_date`     timestamp                            NOT NULL DEFAULT current_timestamp(),
+    `url`               varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+    `picture_id`        varchar(255) COLLATE utf8_unicode_ci,
+    `public`            tinyint(1) NOT NULL DEFAULT 1,
+    `active`            tinyint(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
@@ -174,24 +176,25 @@ CREATE TABLE `recording`
 (
     `recording_id`  int(11) NOT NULL,
     `col_id`        int(11) NOT NULL,
-    `directory`     int(11) NOT NULL,
+    `directory`     int(11) DEFAULT NULL,
     `sensor_id`     int(11) DEFAULT NULL,
     `recorder_id`   int(11) DEFAULT NULL,
     `microphone_id` int(11) DEFAULT NULL,
     `site_id`       int(11) DEFAULT NULL,
     `sound_id`      int(11) DEFAULT NULL,
     `user_id`       int(11) DEFAULT NULL,
-    `name`          varchar(160) COLLATE utf8_unicode_ci NOT NULL,
-    `filename`      varchar(150) COLLATE utf8_unicode_ci NOT NULL,
+    `name`          varchar(160) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `data_type`     enum('meta-data','audio data') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'audio data',
+    `filename`      varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL,
     `file_size`     int(11) DEFAULT NULL,
     `md5_hash`      char(32) COLLATE utf8_unicode_ci              DEFAULT NULL COMMENT 'MD5 hash of the file, to verify that the file has not been changed.',
     `file_date`     date                                          DEFAULT NULL,
     `file_time`     time                                          DEFAULT NULL,
-    `license_id`    int(11) NOT NULL DEFAULT 1,
+    `license_id`    int(11) DEFAULT NULL,
     `DOI`           varchar(255) COLLATE utf8_unicode_ci          DEFAULT NULL,
     `sampling_rate` int(11) NOT NULL DEFAULT 44100,
-    `bitrate`       int(11) NOT NULL DEFAULT 16,
-    `channel_num`   int(1) NOT NULL DEFAULT 1,
+    `bitrate`       int(11) DEFAULT NULL DEFAULT 16,
+    `channel_num`   int(1) DEFAULT NULL DEFAULT 1,
     `duration`      float                                NOT NULL,
     `note`          varchar(250) COLLATE utf8_unicode_ci          DEFAULT NULL,
     `type`          varchar(50) COLLATE utf8_unicode_ci           DEFAULT NULL,
@@ -248,7 +251,7 @@ CREATE TABLE `site`
     `gadm2`                   varchar(100),
     `realm_id`                int(11),
     `biome_id`                int(11),
-    `functional_group_id`     int(11)
+    `functional_type_id`      int(11)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
@@ -382,6 +385,7 @@ CREATE TABLE `user`
     `username`   varchar(20) COLLATE utf8_unicode_ci  NOT NULL,
     `password`   varchar(150) COLLATE utf8_unicode_ci NOT NULL,
     `name`       varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+    `orcid`      varchar(100) COLLATE utf8_unicode_ci          DEFAULT NULL,
     `email`      varchar(100) COLLATE utf8_unicode_ci NOT NULL,
     `color`      varchar(7) COLLATE utf8_unicode_ci   NOT NULL DEFAULT '#FFFFFF',
     `active`     tinyint(1) NOT NULL DEFAULT 1,
@@ -445,14 +449,14 @@ CREATE TABLE `label_association`
 ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
--- Table structure for table `explore`
+-- Table structure for table `iucn_get`
 --
-CREATE TABLE `explore`
+CREATE TABLE `iucn_get`
 (
-    `explore_id` int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `pid`        int(11) NOT NULL,
-    `name`       varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-    `level`      int(1) NOT NULL
+    `iucn_get_id` int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `pid`         int(11) NOT NULL,
+    `name`        varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+    `level`       int(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --

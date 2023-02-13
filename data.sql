@@ -47,8 +47,8 @@ VALUES ('1', 'acoustic_complexity_index', '', 'Compute the Acoustic Complexity I
 --
 -- Dumping data for table `collection`
 --
-INSERT INTO `collection` (`collection_id`, `project_id`, `name`, `user_id`, `doi`, `note`, `view`, `public`)
-VALUES (1, 101, 'Demo collection', 100, '', 'open access', 'gallery', '1');
+INSERT INTO `collection` (`collection_id`, `project_id`, `name`, `user_id`, `doi`, `note`, `view`, `public_access`, `public_tags`)
+VALUES (1, 101, 'Demo collection', 100, '', 'open access', 'gallery', '1', '1');
 
 --
 -- Dumping data for table `license`
@@ -165,8 +165,8 @@ VALUES (1, 'Accepted'),
 --
 -- Dumping data for table `project`
 --
-INSERT INTO `project` (`project_id`, `name`, `description`, `creator_id`, `url`, `picture_id`, `active`)
-VALUES (101, 'Testing Project', 'This is a test project, You can set this up via the administration page.', '100', 'https://github.com/ecomontec/ecoSound-web', null, 1);
+INSERT INTO `project` (`project_id`, `name`, `description`, `description_short`, `creator_id`, `url`, `picture_id`, `active`)
+VALUES (101, 'Testing Project', 'This is a test project, You can set this up via the administration page.', 'testing description', '100', 'https://github.com/ecomontec/ecoSound-web', null, 1);
 --
 -- Dumping data for table `role`
 --
@@ -197,9 +197,9 @@ VALUES (1, 'View'),
        (3, 'Access'),
        (4, 'Manage');
 --
--- Dumping data for table `explore`
+-- Dumping data for table `iucn_get`
 --
-INSERT INTO `explore` (`explore_id`, `pid`, `name`, `level`)
+INSERT INTO `iucn_get` (`iucn_get_id`, `pid`, `name`, `level`)
 VALUES ('1', '0', 'Terrestrial', '1'),
        ('2', '0', 'Freshwater', '1'),
        ('3', '0', 'Subterranean', '1'),
@@ -347,7 +347,7 @@ VALUES ('1', '0', 'Terrestrial', '1'),
 --
 -- Dumping data for table `site`
 --
-INSERT INTO `site` (`site_id`, `name`, `user_id`, `creation_date_time`, `longitude_WGS84_dd_dddd`, `latitude_WGS84_dd_dddd`, `topography_m`, `freshwater_depth_m`, `GADM0`, `GADM1`, `GADM2`, `realm_id`, `biome_id`, `functional_group_id`)
+INSERT INTO `site` (`site_id`, `name`, `user_id`, `creation_date_time`, `longitude_WGS84_dd_dddd`, `latitude_WGS84_dd_dddd`, `topography_m`, `freshwater_depth_m`, `GADM0`, `GADM1`, `GADM2`, `realm_id`, `biome_id`, `functional_type_id`)
 VALUES (1, 'Demo site', 100, now(), 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL);
 
 --
@@ -378,84 +378,158 @@ VALUES ('biophony', 'fish chorus'),
 --
 -- Dumping data for table `recorder`
 --
-INSERT INTO `recorder` VALUES (1, 'µRUDAR-mk2', NULL, 'Cetacean Research Technology', '22');
-INSERT INTO `recorder` VALUES (2, 'AAD Moored Acoustic Recorder', NULL, NULL, '13');
-INSERT INTO `recorder` VALUES (3, 'Audiomoth 1.0.0', NULL, 'Open Acoustic Devices', '4');
-INSERT INTO `recorder` VALUES (4, 'AudioMoth 1.1.0', NULL, 'Open Acoustic Devices', '5');
-INSERT INTO `recorder` VALUES (5, 'Audiomoth 1.2.0', NULL, 'Open Acoustic Devices', '6');
-INSERT INTO `recorder` VALUES (6, 'BAR-LT', NULL, 'Frontier Labs', '12');
-INSERT INTO `recorder` VALUES (7, 'COLMEIA', NULL, 'Laboratoire Géosciences Océan', '13');
-INSERT INTO `recorder` VALUES (8, 'Curtin Underwater Sound Recorder', NULL, NULL, '15');
-INSERT INTO `recorder` VALUES (9, 'DR-05', NULL, 'Tascam', '7,17');
-INSERT INTO `recorder` VALUES (10, 'DR-07', NULL, 'Tascam', '8');
-INSERT INTO `recorder` VALUES (11, 'DR-44WL', NULL, 'Tascam', '1');
-INSERT INTO `recorder` VALUES (12, 'DS-850', NULL, 'Olympus', '2');
-INSERT INTO `recorder` VALUES (13, 'DSG-ST', NULL, 'Loggerhead', '15');
-INSERT INTO `recorder` VALUES (14, 'F6', NULL, 'Zoom', '3');
-INSERT INTO `recorder` VALUES (15, 'H4n', NULL, 'Zoom', '10');
-INSERT INTO `recorder` VALUES (16, 'H5', NULL, 'Zoom', '3');
-INSERT INTO `recorder` VALUES (17, 'HYDROMOMAR', NULL, 'Laboratoire Géosciences Océan', '13');
-INSERT INTO `recorder` VALUES (18, 'LG L70', NULL, 'LG', '18');
-INSERT INTO `recorder` VALUES (19, 'LS-P4', NULL, 'Olympus', '14');
-INSERT INTO `recorder` VALUES (20, 'Nomad Jukebox', NULL, 'Creative', '15');
-INSERT INTO `recorder` VALUES (21, 'PMD 661', NULL, 'Marantz Professional', '21');
-INSERT INTO `recorder` VALUES (22, 'PMEL AUH/Haruphone', NULL, NULL, '16');
-INSERT INTO `recorder` VALUES (23, 'Recoti recorder', NULL, NULL, '20');
-INSERT INTO `recorder` VALUES (24, 'SOLO recorder', NULL, 'Self-built', '9');
-INSERT INTO `recorder` VALUES (25, 'Song Meter Mini', NULL, 'Wildlife Acoustics', '33');
-INSERT INTO `recorder` VALUES (26, 'Song Meter SM1', NULL, 'Wildlife Acoustics', '23');
-INSERT INTO `recorder` VALUES (27, 'Song Meter SM2', NULL, 'Wildlife Acoustics', '15,30,31');
-INSERT INTO `recorder` VALUES (28, 'Song Meter SM2+', NULL, 'Wildlife Acoustics', '30,31');
-INSERT INTO `recorder` VALUES (29, 'Song Meter SM2Bat+', NULL, 'Wildlife Acoustics', '19,29,30,31');
-INSERT INTO `recorder` VALUES (30, 'Song Meter SM3', NULL, 'Wildlife Acoustics', '24,26');
-INSERT INTO `recorder` VALUES (31, 'Song Meter SM3 Bat', NULL, 'Wildlife Acoustics', '26');
-INSERT INTO `recorder` VALUES (32, 'Song Meter SM4', NULL, 'Wildlife Acoustics', '25');
-INSERT INTO `recorder` VALUES (33, 'Song Meter SM4 Bat FS', NULL, 'Wildlife Acoustics', '15,27,28,32');
-INSERT INTO `recorder` VALUES (34, 'Soundscape Explorer', NULL, 'Lunilettronik', '11');
-INSERT INTO `recorder` VALUES (35, 'SoundTrap ST300 HF', NULL, 'OceanInstruments ', '34');
-INSERT INTO `recorder` VALUES (36, 'SoundTrap ST300 STD', NULL, 'OceanInstruments ', '34');
-INSERT INTO `recorder` VALUES (37, 'SoundTrap ST600 STD', NULL, 'OceanInstruments ', '34');
-INSERT INTO `recorder` VALUES (38, 'SWIFT', NULL, 'The Cornell lab of Ornithology', '35');
-INSERT INTO `recorder` VALUES (39, 'SwiftOne', NULL, 'The Cornell lab of Ornithology', '35');
+INSERT INTO `recorder`
+VALUES (1, 'µRUDAR-mk2', NULL, 'Cetacean Research Technology', '22');
+INSERT INTO `recorder`
+VALUES (2, 'AAD Moored Acoustic Recorder', NULL, NULL, '13');
+INSERT INTO `recorder`
+VALUES (3, 'Audiomoth 1.0.0', NULL, 'Open Acoustic Devices', '4');
+INSERT INTO `recorder`
+VALUES (4, 'AudioMoth 1.1.0', NULL, 'Open Acoustic Devices', '5');
+INSERT INTO `recorder`
+VALUES (5, 'Audiomoth 1.2.0', NULL, 'Open Acoustic Devices', '6');
+INSERT INTO `recorder`
+VALUES (6, 'BAR-LT', NULL, 'Frontier Labs', '12');
+INSERT INTO `recorder`
+VALUES (7, 'COLMEIA', NULL, 'Laboratoire Géosciences Océan', '13');
+INSERT INTO `recorder`
+VALUES (8, 'Curtin Underwater Sound Recorder', NULL, NULL, '15');
+INSERT INTO `recorder`
+VALUES (9, 'DR-05', NULL, 'Tascam', '7,17');
+INSERT INTO `recorder`
+VALUES (10, 'DR-07', NULL, 'Tascam', '8');
+INSERT INTO `recorder`
+VALUES (11, 'DR-44WL', NULL, 'Tascam', '1');
+INSERT INTO `recorder`
+VALUES (12, 'DS-850', NULL, 'Olympus', '2');
+INSERT INTO `recorder`
+VALUES (13, 'DSG-ST', NULL, 'Loggerhead', '15');
+INSERT INTO `recorder`
+VALUES (14, 'F6', NULL, 'Zoom', '3');
+INSERT INTO `recorder`
+VALUES (15, 'H4n', NULL, 'Zoom', '10');
+INSERT INTO `recorder`
+VALUES (16, 'H5', NULL, 'Zoom', '3');
+INSERT INTO `recorder`
+VALUES (17, 'HYDROMOMAR', NULL, 'Laboratoire Géosciences Océan', '13');
+INSERT INTO `recorder`
+VALUES (18, 'LG L70', NULL, 'LG', '18');
+INSERT INTO `recorder`
+VALUES (19, 'LS-P4', NULL, 'Olympus', '14');
+INSERT INTO `recorder`
+VALUES (20, 'Nomad Jukebox', NULL, 'Creative', '15');
+INSERT INTO `recorder`
+VALUES (21, 'PMD 661', NULL, 'Marantz Professional', '21');
+INSERT INTO `recorder`
+VALUES (22, 'PMEL AUH/Haruphone', NULL, NULL, '16');
+INSERT INTO `recorder`
+VALUES (23, 'Recoti recorder', NULL, NULL, '20');
+INSERT INTO `recorder`
+VALUES (24, 'SOLO recorder', NULL, 'Self-built', '9');
+INSERT INTO `recorder`
+VALUES (25, 'Song Meter Mini', NULL, 'Wildlife Acoustics', '33');
+INSERT INTO `recorder`
+VALUES (26, 'Song Meter SM1', NULL, 'Wildlife Acoustics', '23');
+INSERT INTO `recorder`
+VALUES (27, 'Song Meter SM2', NULL, 'Wildlife Acoustics', '15,30,31');
+INSERT INTO `recorder`
+VALUES (28, 'Song Meter SM2+', NULL, 'Wildlife Acoustics', '30,31');
+INSERT INTO `recorder`
+VALUES (29, 'Song Meter SM2Bat+', NULL, 'Wildlife Acoustics', '19,29,30,31');
+INSERT INTO `recorder`
+VALUES (30, 'Song Meter SM3', NULL, 'Wildlife Acoustics', '24,26');
+INSERT INTO `recorder`
+VALUES (31, 'Song Meter SM3 Bat', NULL, 'Wildlife Acoustics', '26');
+INSERT INTO `recorder`
+VALUES (32, 'Song Meter SM4', NULL, 'Wildlife Acoustics', '25');
+INSERT INTO `recorder`
+VALUES (33, 'Song Meter SM4 Bat FS', NULL, 'Wildlife Acoustics', '15,27,28,32');
+INSERT INTO `recorder`
+VALUES (34, 'Soundscape Explorer', NULL, 'Lunilettronik', '11');
+INSERT INTO `recorder`
+VALUES (35, 'SoundTrap ST300 HF', NULL, 'OceanInstruments ', '34');
+INSERT INTO `recorder`
+VALUES (36, 'SoundTrap ST300 STD', NULL, 'OceanInstruments ', '34');
+INSERT INTO `recorder`
+VALUES (37, 'SoundTrap ST600 STD', NULL, 'OceanInstruments ', '34');
+INSERT INTO `recorder`
+VALUES (38, 'SWIFT', NULL, 'The Cornell lab of Ornithology', '35');
+INSERT INTO `recorder`
+VALUES (39, 'SwiftOne', NULL, 'The Cornell lab of Ornithology', '35');
 
 --
 -- Dumping data for table `microphone`
 --
-INSERT INTO `microphone` VALUES (1, 'AED-2010', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (2, 'AquaSound AQH-020D', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (3, 'Audio H2a', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (4, 'Audiomoth 1.0.0 built-in', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (5, 'Audiomoth 1.1.0 built-in', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (6, 'Audiomoth 1.2.0 built-in', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (7, 'DR-05', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (8, 'DR-07 MKII', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (9, 'EM172', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (10, 'EM-2800A', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (11, 'EMY-63M/P', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (12, 'FrontierLabs Standard Black Microphone', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (13, 'HTI-90-U', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (14, 'HTI-94-SSQ', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (15, 'HTI-96-MIN', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (16, 'ITC-1032', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (17, 'JRF', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (18, 'Model 600200', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (19, 'Pavo', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (20, 'Recoti Microphone', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (21, 'Sennheiser ME62', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (22, 'Sensor Technology SQ26-08', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (23, 'SM1 standard microphone', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (24, 'SM3 stub microphone (built-in)', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (25, 'SM4 stub microphone (built-in)', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (26, 'SMM-A1', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (27, 'SMM-U1', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (28, 'SMM-U2', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (29, 'SMO', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (30, 'SMX-II (after 2014)', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (31, 'SMX-II (before 2014)', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (32, 'SMX-U1', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (33, 'Song Meter Mini built-in', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (34, 'SoundTrap', NULL, NULL, NULL);
-INSERT INTO `microphone` VALUES (35, 'SWIFT', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (1, 'AED-2010', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (2, 'AquaSound AQH-020D', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (3, 'Audio H2a', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (4, 'Audiomoth 1.0.0 built-in', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (5, 'Audiomoth 1.1.0 built-in', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (6, 'Audiomoth 1.2.0 built-in', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (7, 'DR-05', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (8, 'DR-07 MKII', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (9, 'EM172', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (10, 'EM-2800A', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (11, 'EMY-63M/P', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (12, 'FrontierLabs Standard Black Microphone', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (13, 'HTI-90-U', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (14, 'HTI-94-SSQ', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (15, 'HTI-96-MIN', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (16, 'ITC-1032', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (17, 'JRF', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (18, 'Model 600200', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (19, 'Pavo', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (20, 'Recoti Microphone', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (21, 'Sennheiser ME62', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (22, 'Sensor Technology SQ26-08', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (23, 'SM1 standard microphone', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (24, 'SM3 stub microphone (built-in)', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (25, 'SM4 stub microphone (built-in)', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (26, 'SMM-A1', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (27, 'SMM-U1', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (28, 'SMM-U2', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (29, 'SMO', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (30, 'SMX-II (after 2014)', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (31, 'SMX-II (before 2014)', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (32, 'SMX-U1', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (33, 'Song Meter Mini built-in', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (34, 'SoundTrap', NULL, NULL, NULL);
+INSERT INTO `microphone`
+VALUES (35, 'SWIFT', NULL, NULL, NULL);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

@@ -103,6 +103,15 @@ class Collection extends BaseProvider
     }
 
     /**
+     * @return null|string
+     */
+    public function getOrcid(): ?string
+    {
+        $orcid = (new User())->getOrcid($this->user_id);
+        return $orcid;
+    }
+
+    /**
      * @param int $user_id
      * @return Collection
      */
@@ -241,18 +250,36 @@ class Collection extends BaseProvider
     /**
      * @return bool
      */
-    public function getPublic(): bool
+    public function getPublicAccess(): bool
     {
-        return $this->public;
+        return $this->public_access;
     }
 
     /**
-     * @param bool $public
+     * @param bool $public_access
      * @return Collection
      */
-    public function setPublic(bool $public): Collection
+    public function setPublicAccess(bool $public_access): Collection
     {
-        $this->public = $public;
+        $this->public_access = $public_access;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getPublicTags(): bool
+    {
+        return $this->public_tags;
+    }
+
+    /**
+     * @param bool $public_tags
+     * @return Collection
+     */
+    public function setPublicTags(bool $public_tags): Collection
+    {
+        $this->public_tags = $public_tags;
         return $this;
     }
 

@@ -20,14 +20,19 @@
                     </div>
                 </div>
                 <div class="form-group">
+                    <label class="col-form-albel-sm">Short Description <small>(for projects overview)</small></label>
+                    <div class="editor1" style="height: 150px"></div>
+                    <input id="description_short" type="hidden" name="description_short_text">
+                </div>
+                <div class="form-group">
+                    <label class="col-form-albel-sm">Extended Description <small>(for project page)</small></label>
+                    <div class="editor" style="height: 150px"></div>
+                    <input id="description" type="hidden" name="description_text">
+                </div>
+                <div class="form-group">
                     <button type="button" id="picture" class="btn btn-sm btn-outline-primary">Picture</button>
                     <input type="file" name="picture_id_file" id="picture_id_file" accept="image/*" hidden>
                     <img src="#" id="img" STYLE="display:none;width:200px;padding:5px;border: 1px solid #ddd;margin-top: 15px;"/>
-                </div>
-                <div class="form-group">
-                    <label class="col-form-albel-sm">Description</label>
-                    <div class="editor"></div>
-                    <input id="description" type="hidden" name="description">
                 </div>
                 <div class="form-group text-right">
                     <button type="submit" class="btn btn-outline-primary">

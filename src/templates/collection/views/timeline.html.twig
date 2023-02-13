@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="{{ baseUrl }}/assets/css/timeline.css">
 
-<div id="timeline" style="width:100%;height: 900px"></div>
+<div id="timeline" style="height: 1000px"></div>
 <script src="{{ baseUrl }}/assets/js/timeline.js"></script>
 <script>
     DateArr = []
@@ -14,11 +14,12 @@
             "events": [
                 {% for item in list %}
                 {
+                    {% if item.recording.data_type=='audio data' %}
                     "media": {
                         "url": "{{ baseUrl }}/{{ item.playerImage }}",
-                        "credit": "User:<a>{{ item.recording.getUserFullName }}</a>",
                         "link": "{{ baseUrl }}/recording/show/{{ item.recording.id }}",
                     },
+                    {% endif %}
                     "start_date": {
                         "year": "{{ item.recording.startDate }}".substring(0, 4),
                         "month": "{{ item.recording.startDate }}".substring(5, 7),
@@ -37,6 +38,9 @@
                     },
                     "text": {
                         "headline": "{{ item.recording.name }}",
+                        {% if item.recording.data_type=='meta-data' %}
+                        "text": "<h2 style='background: #C6C6C6;height: 300px;width: 100%;' class='text-center ml-auto mr-auto'><br><br><br>meta-recording (no audio)<br>sampling rate: {{ item.recording.samplingRate }}</h2>"
+                        {% endif %}
                     },
                     "group": "{{ item.recording.siteName?item.recording.siteName:'not geo-referenced' }}",
                     "display_date": "{{ item.recording.startDate }}"
@@ -48,6 +52,17 @@
             "start_at_slide": 0,
             "scale_factor": 0.3,
             "optimal_tick_width": 1000,
+            "marker_padding": 0,
         }
     );
+
+    tt = window.setInterval(function () {
+        if ($("#timeline").is(':visible')) {
+            $("#timeline").hide()
+        } else {
+            $("#timeline").show()
+            $(".tl-text-headline-container").addClass('text-center')
+            window.clearInterval(tt)
+        }
+    }, 1000)
 </script>

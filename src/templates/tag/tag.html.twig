@@ -118,11 +118,13 @@
                             </div>
 
                             <div class="form-group">
-                                {% if reviewPanel !='' %}
-                                    <div class="col-form-label-sm inline">Created by {{ tag.userName }} on {{ tag.creationDate }} (UTC)</div>
-                                {% else %}
-                                    <label class="col-form-label-sm" for="user_full_name">Creation User: </label>
-                                    <span id="user_full_name"><small>{{ tag.userName }} </small></span>
+                                {% if isUserLogged %}
+                                    {% if reviewPanel !='' %}
+                                        <div class="col-form-label-sm inline">Created by {{ tag.userName }} on {{ tag.creationDate }} (UTC)</div>
+                                    {% else %}
+                                        <label class="col-form-label-sm" for="user_full_name">Creation User: </label>
+                                        <span id="user_full_name"><small>{{ tag.userName }} </small></span>
+                                    {% endif %}
                                 {% endif %}
                                 <a href="#" id="exportTagUrl" class="btn btn-link inline" title="Export URL to clipboard">
                                     <i class="fa fa-share-alt"></i>
@@ -137,6 +139,14 @@
                 </div>
             </div>
             <div class="modal-footer">
+                {% if edit %}
+                    <a class='btn {{ previous==0?'btn-secondary':'btn-outline-primary' }}' id="btn-previous">
+                        <i class="fas fa-arrow-left" aria-hidden="true"></i> Previous
+                    </a>
+                    <a class='btn {{ next==0?'btn-secondary':'btn-outline-primary' }}' id="btn-next">
+                        <i class="fas fa-arrow-right" aria-hidden="true"></i> Next
+                    </a>
+                {% endif %}
                 <button type="button" class="btn btn-outline-primary" {{ displaySaveButton }} id="saveButton">
                     <i class="fas fa-save" aria-hidden="true"></i> Save
                 </button>
@@ -203,4 +213,37 @@
             $('#callDistance').val($('#old_call_distance').val())
         }
     });
+    $('.js-tag-btn').on('click', function (e) {
+        $('#modal-div').hide();
+        $('.modal-backdrop').remove();
+        e.preventDefault();
+        requestModal(this.href, {'recording_name': document.getElementsByName('recording_name')[0].value});
+    })
+    $("#modal-div").draggable({
+        drag: function () {
+            $('.modal-backdrop').remove();
+        }
+    });
+    {% if next!=0 %}
+    $('#btn-next').on('click', function (e) {
+        $("#x").val('{{ next.minTime }}');
+        $("#w").val('{{ next.maxTime }}');
+        $("#y").val('{{ next.minFrequency }}');
+        $("#h").val('{{ next.maxFrequency }}');
+        $("#open").val('{{ next.id }}');
+        $("#recordingForm").submit();
+        e.preventDefault();
+    })
+    {% endif %}
+    {% if previous!=0 %}
+    $('#btn-previous').on('click', function (e) {
+        $("#x").val('{{ previous.minTime }}');
+        $("#w").val('{{ previous.maxTime }}');
+        $("#y").val('{{ previous.minFrequency }}');
+        $("#h").val('{{ previous.maxFrequency }}');
+        $("#open").val('{{ previous.id }}');
+        $("#recordingForm").submit();
+        e.preventDefault();
+    })
+    {% endif %}
 </script>

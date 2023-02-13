@@ -75,6 +75,7 @@ class RecordingController extends BaseController
         if ($recording->getUserRecordingFft(Auth::getUserID(), $id)) {
             $this->fftSize = $recording->getUserRecordingFft(Auth::getUserID(), $id);
         }
+        $open = isset($_POST['open']) ? $_POST['open'] : 0;
         $this->recordingId = $id;
         $recordingData = (new RecordingProvider())->get($this->recordingId);
 
@@ -107,6 +108,7 @@ class RecordingController extends BaseController
             'indexs' => Auth::isUserLogged() ? (new IndexTypeProvider())->getList() : '',
             'ffts' => [4096, 2048, 1024, 512, 256, 128,],
             'fftsize' => $this->fftSize,
+            'open' => $open,
         ]);
     }
 
@@ -397,11 +399,12 @@ class RecordingController extends BaseController
             $viewPermission = $permission->isViewPermission($perm);
             $managePermission = $permission->isManagePermission($perm);
         }
-
         if (Auth::isUserAdmin() || $reviewPermission || $viewPermission || $managePermission) {
             $tags = $tagProvider->getList($this->recordingId);
+            $public = 1;
         } else {
             $tags = $tagProvider->getList($this->recordingId, Auth::getUserLoggedID());
+            $public = 0;
         }
 
         if (!empty($tags)) {
@@ -463,7 +466,8 @@ class RecordingController extends BaseController
                         ->setStyle($tagStyle)
                         ->setColor($userTagColor)
                         ->setSoundType($tagSoundType)
-                        ->setPhony($tagPhony);
+                        ->setPhony($tagPhony)
+                        ->setPublic($public);
                     $i--;
                 }
             }
