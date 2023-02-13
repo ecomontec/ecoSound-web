@@ -46,7 +46,7 @@
     });
 
     quillEdit.on('text-change', function () {
-        $("#description{{ project.id }}").val($(".ql-editor")[2].innerHTML)
+        $("#description{{ project.id }}").val($(".ql-editor")[3].innerHTML)
     });
 
     var quillEdit1 = new Quill('.projectEdit1', {
@@ -63,7 +63,7 @@
     });
 
     quillEdit1.on('text-change', function () {
-        $("#description_short{{ project.id }}").val($(".ql-editor")[3].innerHTML)
+        $("#description_short{{ project.id }}").val($(".ql-editor")[2].innerHTML)
     });
 
     $('#projectEditForm').submit(function (e) {

@@ -97,7 +97,7 @@
                 theme: 'snow',
             });
             quill.on('text-change', function () {
-                $("#description").val($(".ql-editor")[0].innerHTML)
+                $("#description").val($(".ql-editor")[1].innerHTML)
             });
             var quill1 = new Quill('.editor1', {
                 modules: {
@@ -112,7 +112,7 @@
                 theme: 'snow',
             });
             quill1.on('text-change', function () {
-                $("#description_short").val($(".ql-editor")[1].innerHTML)
+                $("#description_short").val($(".ql-editor")[0].innerHTML)
             });
 
 

@@ -67,7 +67,7 @@ class UserPermissionController extends BaseController
         foreach ($_POST['d'] as $row) {
             if (isset($row['c'])) {
                 $userProvider->delete($_POST['user_id'], $row['c']);
-                if ($row['permission_id'] > 0) {
+                if ($row['p'] > 0) {
                     $arr['collection_id'] = $row['c'];
                     $arr['permission_id'] = $row['p'];
                     $arr['user_id'] = $_POST['user_id'];

@@ -171,13 +171,15 @@
                 requestModal(this.href, data, true);
                 e.preventDefault();
             });
-            {% if open!=0 %}
-            $(document).ready(function () {
-                $("#tag_{{ open }}").click()
-                $('#open').val(0)
-            })
-            {% endif %}
         </script>
     {% endif %}
+    <script>
+        {% if open!=0 %}
+        $(document).ready(function () {
+            $("#tag_{{ open }}").click()
+            $('#open').val(0)
+        })
+        {% endif %}
+    </script>
     {# {% include 'recording/player/frequencyScale.html.twig' %} #}
 </div>

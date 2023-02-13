@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     updateTag(tagId);
 
                     if (closeModalTagForm === true) {
-                        $('#modal-div').modal('hide');
+                        showAlert("Saved successfully.")
                     }
                 });
             }
@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 if (!closeModalTagForm && readyToClose) {
-                    $('#modal-div').modal('hide');
+                    showAlert("Saved successfully.")
                 }
             }
 
