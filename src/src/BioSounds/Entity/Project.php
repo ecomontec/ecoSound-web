@@ -70,6 +70,7 @@ class Project extends BaseProvider
      * @var int
      */
     private $permission;
+    private $collection_id;
 
     /**
      * @return int
@@ -273,6 +274,24 @@ class Project extends BaseProvider
     public function setCollections(array $collections): Project
     {
         $this->collections = $collections;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getCollection(): ?int
+    {
+        return $this->collection_id;
+    }
+
+    /**
+     * @param int $collection_id
+     * @return Project
+     */
+    public function setCollection(?int $collection_id): Project
+    {
+        $this->collection_id = $collection_id;
         return $this;
     }
 
