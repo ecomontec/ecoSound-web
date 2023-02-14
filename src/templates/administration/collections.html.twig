@@ -198,8 +198,8 @@
             })
             $('#js-delete-button').click(function () {
                 let row = $("#col" + $('#delete_id').val()).parents("tr");
-                deleteRequest('{{ baseUrl }}/api/admin/collectionMgr/delete/' + $('#delete_id').val(), [], false, false, row.remove());
-                location.reload();
+                toggleLoading();
+                deleteRequest('{{ baseUrl }}/api/admin/collectionMgr/delete/' + $('#delete_id').val(), [], false, false, location.reload());
             });
             $("#confirm_input").on('input', function () {
                 if ($("#confirm_input").val() == $('#modal-collection').text()) {

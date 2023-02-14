@@ -52,11 +52,11 @@ $('#uploadForm')
     })
     .on('show.bs.collapse', function () {
         $("#uploadButton").hide();
-        $("#metaDataButton").hide();
+        $("#metaData").hide();
     })
     .on('hide.bs.collapse', function () {
         $("#uploadButton").show();
-        $("#metaDataButton").show();
+        $("#metaData").show();
     });
 
 $("#reference").change(function (e) {
