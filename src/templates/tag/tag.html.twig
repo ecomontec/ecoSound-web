@@ -1,5 +1,5 @@
 <link rel="stylesheet" href="{{ baseUrl }}/assets/css/bootstrap-select.css">
-<div class="modal fade" id="modal-div" role="dialog">
+<div class="modal fade" id="modal-div" role="dialog" style="overflow:visible">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -161,6 +161,12 @@
 <script src="{{ baseUrl }}/assets/js/bootstrap-select.js" defer></script>
 <script>
     var soundTypes ={{ soundTypes|json_encode|raw }};
+    if ($('#modalX').val() && $('#modalX').val()) {
+        $("#modal-div").offset({
+            left: $('#modalX').val(),
+            top: $('#modalY').val(),
+        })
+    }
     $(document).ready(function () {
         {% if tag.soundId %}
         $("#phony").change()
@@ -174,6 +180,9 @@
         $(".btn").css("text-align", "left");
     });
     $("#modal-div").on('shown.bs.modal', function () {
+        if ($('#backdrop').val() == '1') {
+            $('.modal-backdrop').remove();
+        }
         if ($("#animal_sound_type")[0].options.length == 1) {
             $("#animal_sound_type").attr('disabled', true)
         }
@@ -222,7 +231,9 @@
     })
     $("#modal-div").draggable({
         drag: function () {
+            $('#backdrop').val('1')
             $('.modal-backdrop').remove();
+            console.log($('.modal-content').offset().left, $('.modal-content').offset().top, parseFloat($('.modal-content').css('left')), parseFloat($('.modal-content').css('top')))
         }
     });
     {% if next!=0 %}
@@ -232,6 +243,8 @@
         $("#y").val('{{ next.minFrequency }}');
         $("#h").val('{{ next.maxFrequency }}');
         $("#open").val('{{ next.id }}');
+        $("#modalX").val($('#modal-div').offset().left)
+        $("#modalY").val($('#modal-div').offset().top)
         $("#recordingForm").submit();
         e.preventDefault();
     })
@@ -243,6 +256,8 @@
         $("#y").val('{{ previous.minFrequency }}');
         $("#h").val('{{ previous.maxFrequency }}');
         $("#open").val('{{ previous.id }}');
+        $("#modalX").val($('#modal-div').offset().left)
+        $("#modalY").val($('#modal-div').offset().top)
         $("#recordingForm").submit();
         e.preventDefault();
     })

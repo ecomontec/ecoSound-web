@@ -75,7 +75,6 @@ class RecordingController extends BaseController
         if ($recording->getUserRecordingFft(Auth::getUserID(), $id)) {
             $this->fftSize = $recording->getUserRecordingFft(Auth::getUserID(), $id);
         }
-        $open = isset($_POST['open']) ? $_POST['open'] : 0;
         $this->recordingId = $id;
         $recordingData = (new RecordingProvider())->get($this->recordingId);
 
@@ -108,7 +107,10 @@ class RecordingController extends BaseController
             'indexs' => Auth::isUserLogged() ? (new IndexTypeProvider())->getList() : '',
             'ffts' => [4096, 2048, 1024, 512, 256, 128,],
             'fftsize' => $this->fftSize,
-            'open' => $open,
+            'open' => $_POST['open'] ,
+            'modalX' => $_POST['modalX'],
+            'modalY' => $_POST['modalY'],
+            'backdrop' => $_POST['backdrop'],
         ]);
     }
 

@@ -92,11 +92,6 @@ class TagController extends BaseController
             $isReviewGranted = $permissionProvider->isReviewPermission($_SESSION["user_col_permission"]);
             $isViewGranted = $permissionProvider->isViewPermission($_SESSION["user_col_permission"]);
             $isManageGranted = $permissionProvider->isManagePermission($_SESSION["user_col_permission"]);
-
-            if (!$isReviewGranted && !$isViewGranted && !$isManageGranted && !$tag->getPublicTags()) {
-                throw new ForbiddenException();
-            }
-
             $displaySaveButton = $isReviewGranted || $isManageGranted ? '' : 'hidden';
         }
         /**********************/

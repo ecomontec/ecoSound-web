@@ -40,6 +40,9 @@
                     <input type="hidden" name="minFreqView" value="{{ player.minFrequency }}">
                     <input type="hidden" name="maxFreqView" value="{{ player.maxFrequency }}">
                     <input type="hidden" name="open" id="open" value="{{ open }}">
+                    <input type="hidden" name="modalX" id="modalX" value="{{ modalX }}">
+                    <input type="hidden" name="modalY" id="modalY" value="{{ modalY }}">
+                    <input type="hidden" name="backdrop" id="backdrop" value="{{ backdrop }}">
                     {% include 'recording/player/timeBoxes.html.twig' with {
                         'minTime': player.minTime,
                         'maxTime': player.maxTime,
@@ -171,15 +174,14 @@
                 requestModal(this.href, data, true);
                 e.preventDefault();
             });
+            {% if open!=0 %}
+            $().ready(function () {
+                $("#tag_{{ open }}").click()
+                $('#open').val(0)
+                toggleLoading();
+            })
+            {% endif %}
         </script>
     {% endif %}
-    <script>
-        {% if open!=0 %}
-        $(document).ready(function () {
-            $("#tag_{{ open }}").click()
-            $('#open').val(0)
-        })
-        {% endif %}
-    </script>
     {# {% include 'recording/player/frequencyScale.html.twig' %} #}
 </div>
