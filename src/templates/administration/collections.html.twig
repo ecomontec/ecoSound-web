@@ -199,7 +199,9 @@
             $('#js-delete-button').click(function () {
                 let row = $("#col" + $('#delete_id').val()).parents("tr");
                 toggleLoading();
-                deleteRequest('{{ baseUrl }}/api/admin/collectionMgr/delete/' + $('#delete_id').val(), [], false, false, location.reload());
+                deleteRequest('{{ baseUrl }}/api/admin/collectionMgr/delete/' + $('#delete_id').val(), [], true, false, function () {
+                    location.reload();
+                });
             });
             $("#confirm_input").on('input', function () {
                 if ($("#confirm_input").val() == $('#modal-collection').text()) {
