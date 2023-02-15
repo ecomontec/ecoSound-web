@@ -67,7 +67,11 @@ $('.canvas')
     .on('click', '.js-tag', function (e) {
         $('.js-panel-tag').hide();
         e.preventDefault();
-        requestModal(this.href, {'recording_name': document.getElementsByName('recording_name')[0].value});
+        if ($("#open").val()) {
+            requestModal(this.href, {'recording_name': document.getElementsByName('recording_name')[0].value}, false, false);
+        } else {
+            requestModal(this.href, {'recording_name': document.getElementsByName('recording_name')[0].value});
+        }
     })
     .on('click', '.estimate-distance', function (e) {
         let tagElement = $(this).parent().parent().parent().prev()[0].getBoundingClientRect();

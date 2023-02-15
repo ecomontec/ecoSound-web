@@ -180,9 +180,6 @@
         $(".btn").css("text-align", "left");
     });
     $("#modal-div").on('shown.bs.modal', function () {
-        if ($('#backdrop').val() == '1') {
-            $('.modal-backdrop').remove();
-        }
         if ($("#animal_sound_type")[0].options.length == 1) {
             $("#animal_sound_type").attr('disabled', true)
         }
@@ -231,9 +228,7 @@
     })
     $("#modal-div").draggable({
         drag: function () {
-            $('#backdrop').val('1')
             $('.modal-backdrop').remove();
-            console.log($('.modal-content').offset().left, $('.modal-content').offset().top, parseFloat($('.modal-content').css('left')), parseFloat($('.modal-content').css('top')))
         }
     });
     {% if next!=0 %}

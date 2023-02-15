@@ -110,7 +110,6 @@ class RecordingController extends BaseController
             'open' => $_POST['open'] ,
             'modalX' => $_POST['modalX'],
             'modalY' => $_POST['modalY'],
-            'backdrop' => $_POST['backdrop'],
         ]);
     }
 

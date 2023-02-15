@@ -42,7 +42,6 @@
                     <input type="hidden" name="open" id="open" value="{{ open }}">
                     <input type="hidden" name="modalX" id="modalX" value="{{ modalX }}">
                     <input type="hidden" name="modalY" id="modalY" value="{{ modalY }}">
-                    <input type="hidden" name="backdrop" id="backdrop" value="{{ backdrop }}">
                     {% include 'recording/player/timeBoxes.html.twig' with {
                         'minTime': player.minTime,
                         'maxTime': player.maxTime,
@@ -175,6 +174,7 @@
                 e.preventDefault();
             });
             {% if open!=0 %}
+            $('#modal-div').prop('data-backdrop', false)
             $().ready(function () {
                 $("#tag_{{ open }}").click()
                 $('#open').val(0)
