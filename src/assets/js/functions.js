@@ -276,6 +276,8 @@ function jsToFormData(config) {
 
 $(document).keydown(function (event) {
     if (event.keyCode == 27) {
-        $('#modal-div').modal('hide')
+        $('.modal-backdrop').remove();
+        $('#modal-div').hide()
+
     }
 });
