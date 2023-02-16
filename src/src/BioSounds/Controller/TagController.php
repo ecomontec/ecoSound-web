@@ -196,7 +196,7 @@ class TagController extends BaseController
      */
     public function delete(int $tagId)
     {
-        if (!Auth::isUserAdmin() && (new TagProvider())->get($tagId)->getUser() != Auth::getUserLoggedID()) {
+        if (!Auth::isManage() && (new TagProvider())->get($tagId)->getUser() != Auth::getUserLoggedID()) {
             throw new \Exception('The user doesn\'t have permissions to delete this tag.');
         }
 

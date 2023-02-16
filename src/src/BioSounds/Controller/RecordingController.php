@@ -513,9 +513,6 @@ class RecordingController extends BaseController
 
     public function maad()
     {
-        if (!Auth::isUserLogged()) {
-            throw new NotAuthenticatedException();
-        }
         foreach ($_POST as $key => $value) {
             $data[$key] = $value;
         }
