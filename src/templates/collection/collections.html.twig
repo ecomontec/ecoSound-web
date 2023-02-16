@@ -113,7 +113,7 @@
         {% if a[4] is not null %}
         {% set v= a[4]|split(',') %}
         {% for value in v %}
-        if (group{{ value }} != undefined) {
+        if (typeof group{{ value }} !== 'undefined') {
             marker = L.marker([{{ a[2] }}, {{ a[3] }}], {id: '{{ a[0] }}', alt: "1"});
             marker.bindPopup('<input type="hidden" value="{{ a[0] }}site_id"><b>{{ a[1] }}</b>'.replaceAll('!br!', '<br>'), {
                 closeOnClick: false,
