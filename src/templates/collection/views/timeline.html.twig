@@ -32,7 +32,10 @@
         })
     }
     {% endfor %}
-    var tl_options = {};
+    var tl_options = {
+        stack: true,
+        maxHeight: 600,
+    };
     var timeline = new vis.Timeline(tl_container, tl_items, tl_groups, tl_options);
 </script>
 
