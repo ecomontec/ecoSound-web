@@ -9,6 +9,7 @@
 </style>
 <div id="visualization"></div>
 <script>
+
     var tl_container = document.getElementById("visualization");
     var tl_groups = []
     var tl_arr = []
@@ -16,10 +17,11 @@
         {% for item in list %}
         {
             id: {{ item.recording.id }},
-            content: " <a href='{{ baseUrl }}/recording/show/{{ item.recording.id }}'>{{ item.recording.name }}</a>",
+            content: " <a href='{{ baseUrl }}/recording/show/{{ item.recording.id }}' target='_blank'>{{ item.recording.name }}</a>",
             start: "{{ item.recording.startDate }}",
             end: "{{ item.recording.endDate }}",
-            group: {{ item.recording.site?item.recording.site:0 }}
+            group: {{ item.recording.site?item.recording.site:0 }},
+            order: "{{ item.recording.name }}"
         },
         {% endfor %}
     ]);
@@ -28,13 +30,22 @@
         tl_arr.push({{ item.recording.site?item.recording.site:0 }})
         tl_groups.push({
             id: {{ item.recording.site?item.recording.site:0 }},
-            content: "{{ item.recording.siteName?item.recording.siteName:'not geo-referenced' }}"
+            content: "{{ item.recording.siteName?item.recording.siteName:'not geo-referenced' }}",
         })
     }
     {% endfor %}
+
     var tl_options = {
         stack: true,
         maxHeight: 600,
+        min: "{{ min }}",
+        max: "{{ max }}",
+        order: function (a, b) {
+            if (b.start - a.start == 0) {
+                return b.order.localeCompare(a.order)
+            }
+            return b.start - a.start
+        },
     };
     var timeline = new vis.Timeline(tl_container, tl_items, tl_groups, tl_options);
 </script>

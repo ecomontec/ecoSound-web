@@ -35,8 +35,8 @@ class CollectionController extends BaseController
         foreach ($collections as $collection) {
             $str .= $collection->getId() . ',';
         }
-        $sites = (new SiteProvider())->getListWithCollection($projectId);
-        $this->leaflet = $this->getProjectLeaflet($sites, substr($str, 0, strlen($str) - 1));
+        $sites = (new SiteProvider())->getListWithCollection($projectId, substr($str, 0, strlen($str) - 1));
+        $this->leaflet = $this->getProjectLeaflet($sites);
         return $this->twig->render('collection/collections.html.twig', [
             'project' => (new ProjectProvider())->get($projectId),
             'collections' => $collections,
@@ -62,6 +62,14 @@ class CollectionController extends BaseController
             (Auth::getUserID() == null) ? 0 : Auth::getUserID()
         );
         $this->leaflet = $this->getLeaflet($this->recordings);
+        $max = [];
+        $min = [];
+        if ($display == 'timeline') {
+            foreach ($this->recordings as $date) {
+                $min[] = $date->getRecording()->getStartDate();
+                $max[] = $date->getRecording()->getEndDate();
+            }
+        }
         if ($isAccessed || $this->collection->getPublicAccess()) {
             return $this->twig->render('collection/collection.html.twig', [
                 'project' => (new ProjectProvider())->get($this->collection->getProject()),
@@ -70,6 +78,8 @@ class CollectionController extends BaseController
                 'display' => $display,
                 'leaflet' => $this->leaflet,
                 'none_count' => (new RecordingProvider())->getNullCount($id),
+                'min'=>date('Y-m-d H:i:s',strtotime('-1 Day',strtotime(min($min)))),
+                'max'=>date('Y-m-d H:i:s',strtotime('+1 Day',strtotime(max($max)))),
             ]);
         } else {
             return $this->twig->render('collection/noaccess.html.twig');
@@ -99,6 +109,14 @@ class CollectionController extends BaseController
             (Auth::getUserID() == null) ? 0 : Auth::getUserID()
         );
         $this->leaflet = $this->getLeaflet($this->recordings);
+        $max = [];
+        $min = [];
+        if ($display == 'timeline') {
+            foreach ($this->recordings as $date) {
+                $min[] = $date->getRecording()->getStartDate();
+                $max[] = $date->getRecording()->getEndDate();
+            }
+        }
         if ($isAccessed || $this->collection->getPublicAccess()) {
             return $this->twig->render('collection/collectionjs.html.twig', [
                 'project' => (new ProjectProvider())->get($this->collection->getProject()),
@@ -108,6 +126,8 @@ class CollectionController extends BaseController
                 'display' => $display,
                 'leaflet' => $this->leaflet,
                 'none_count' => (new RecordingProvider())->getNullCount($id),
+                'min'=>date('Y-m-d H:i:s',strtotime('-1 Day',strtotime(min($min)))),
+                'max'=>date('Y-m-d H:i:s',strtotime('+1 Day',strtotime(max($max)))),
             ]);
         } else {
             return "No results";
