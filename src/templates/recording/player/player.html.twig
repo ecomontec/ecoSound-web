@@ -171,14 +171,16 @@
                 requestModal(this.href, data, true);
                 e.preventDefault();
             });
-            {% if open!=0 %}
+        </script>
+    {% endif %}
+    {% if open!=0 %}
+        <script>
             $('#modal-div').prop('data-backdrop', false)
             $().ready(function () {
                 $("#tag_{{ open }}").click()
                 $('#open').val(0)
                 toggleLoading();
             })
-            {% endif %}
         </script>
     {% endif %}
     {# {% include 'recording/player/frequencyScale.html.twig' %} #}

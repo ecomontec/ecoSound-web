@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (reviewForm.length) {
                 reviewForm.submit();
             }
-            if ($("#edit").val() == 0) {
+            if ($("#edit").length == 0 || $("#edit").val() == 0) {
                 $('#modal-div').modal('hide');
             }
         });
