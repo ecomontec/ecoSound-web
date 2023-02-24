@@ -3,9 +3,7 @@
 <script src="{{ baseUrl }}/assets/js/vis-timeline-graph2d.min.js"></script>
 <link rel="stylesheet" href="{{ baseUrl }}/assets/css/vis-timeline-graph2d.min.css">
 <style>
-    .vis-item .vis-item-overflow {
-        overflow: visible;
-    }
+
 </style>
 <div id="visualization"></div>
 <script>
@@ -17,7 +15,11 @@
         {% for item in list %}
         {
             id: {{ item.recording.id }},
-            content: " <a href='{{ baseUrl }}/recording/show/{{ item.recording.id }}' target='_blank'>{{ item.recording.name }}</a>",
+            {% if item.recording.data_type=='meta-data' %}
+            content: "meta-recording (no audio) sampling rate: {{ item.recording.samplingRate }}",
+            {% else %}
+            content: "<a href='{{ baseUrl }}/recording/show/{{ item.recording.id }}' target='_blank'>{{ item.recording.name }}</a>",
+            {% endif %}
             start: "{{ item.recording.startDate }}",
             end: "{{ item.recording.endDate }}",
             group: {{ item.recording.site?item.recording.site:0 }},
@@ -37,7 +39,7 @@
 
     var tl_options = {
         stack: true,
-        maxHeight: 600,
+        maxHeight: 800,
         min: "{{ min }}",
         max: "{{ max }}",
         order: function (a, b) {
