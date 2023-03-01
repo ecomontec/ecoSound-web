@@ -73,7 +73,39 @@ class TagProvider extends BaseProvider
         }
         return $result;
     }
+    /**
+     * @param int $recordingId
+     * @param int|null $userId
+     * @return Tag[]
+     * @throws \Exception
+     */
+    public function getListByTime(int $recordingId, int $userId = null): array
+    {
+        $result = [];
 
+        $query = 'SELECT tag.tag_id, tag.recording_id, tag.min_time, tag.max_time, tag.min_freq, tag.max_freq, tag.user_id, tag.uncertain,sound.phony,sound.sound_type, ';
+        $query .= 'species.binomial as species_name, tag.sound_distance_m, tag.distance_not_estimable, ';
+        $query .= '(SELECT COUNT(*) FROM tag_review WHERE tag_id = tag.tag_id) AS review_number, ';
+        $query .= '(( tag.max_time - tag.min_time ) + (tag.max_freq - tag.min_time )) AS time ';
+        $query .= 'FROM tag LEFT JOIN species ON tag.species_id = species.species_id ';
+        $query .= 'LEFT JOIN sound ON tag.sound_id = sound.sound_id ';
+        $query .= 'LEFT JOIN recording r ON r.recording_id = tag.recording_id ';
+        $query .= 'LEFT JOIN collection c ON c.collection_id = r.col_id ';
+        $query .= 'WHERE tag.recording_id = :recordingId';
+
+        $values[':recordingId'] = $recordingId;
+
+        if (!empty($userId)) {
+            $query .= ' AND (tag.user_id = :userId OR c.public_tags = 1) ';
+            $values[':userId'] = $userId;
+        }
+        $query .= ' ORDER BY time';
+        $this->database->prepareQuery($query);
+        foreach ($this->database->executeSelect($values) as $tag) {
+            $result[] = (new Tag())->createFromValues($tag);
+        }
+        return $result;
+    }
     /**
      * @param $data
      * @return int

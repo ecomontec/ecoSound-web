@@ -401,10 +401,10 @@ class RecordingController extends BaseController
             $managePermission = $permission->isManagePermission($perm);
         }
         if (Auth::isUserAdmin() || $reviewPermission || $viewPermission || $managePermission) {
-            $tags = $tagProvider->getList($this->recordingId);
+            $tags = $tagProvider->getListByTime($this->recordingId);
             $public = 1;
         } else {
-            $tags = $tagProvider->getList($this->recordingId, Auth::getUserLoggedID());
+            $tags = $tagProvider->getListByTime($this->recordingId, Auth::getUserLoggedID());
             $public = 0;
         }
 

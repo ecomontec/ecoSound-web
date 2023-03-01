@@ -154,10 +154,22 @@
         $(".leaflet-control-layers-selector").change(function () {
             var str = $(".leaflet-control-layers-selector:checked").next().text().replace(' ', '');
             $.each(control._layers, function (i, l) {
-                if (l.name == str) {
+                if (decodeHtml(l.name) == str) {
                     map.fitBounds(l.layer.getBounds());
                 }
             });
         });
+        function decodeHtml(str) {
+            var map =
+                {
+                    '&amp;': '&',
+                    '&lt;': '<',
+                    '&gt;': '>',
+                    '&quot;': '"',
+                    '&#039;': "'"
+                };
+            return str.replace(/&amp;|&lt;|&gt;|&quot;|&#039;/g, function (m) { return map[m];
+
+            });}
     </script>
 {% endblock %}
