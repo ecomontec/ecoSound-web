@@ -5,6 +5,7 @@ namespace BioSounds\Controller;
 use BioSounds\Entity\IndexLog;
 use BioSounds\Entity\Recording;
 use BioSounds\Entity\RecordingFft;
+use BioSounds\Entity\Species;
 use BioSounds\Entity\UserPermission;
 use BioSounds\Entity\Permission;
 use BioSounds\Entity\User;
@@ -107,7 +108,7 @@ class RecordingController extends BaseController
             'indexs' => Auth::isUserLogged() ? (new IndexTypeProvider())->getList() : '',
             'ffts' => [4096, 2048, 1024, 512, 256, 128,],
             'fftsize' => $this->fftSize,
-            'open' => $_POST['open'] ,
+            'open' => $_POST['open'],
             'modalX' => $_POST['modalX'],
             'modalY' => $_POST['modalY'],
         ]);
@@ -610,6 +611,84 @@ class RecordingController extends BaseController
         return json_encode([
             'errorCode' => 0,
             'message' => 'Index saved successfully.'
+        ]);
+    }
+
+    public function tf()
+    {
+        foreach ($_POST as $key => $value) {
+            $data[$key] = $value;
+        }
+        $str = 'python3 ' . ABSOLUTE_DIR . 'BirdNET-Analyzer/analyze.py' .
+            ' --i ' . ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['filename'] .
+            ' --o ' . ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . Auth::getUserLoggedID() . ".csv" .
+            ' --rtype "csv"';
+        if ($data['lat'] != '') {
+            $str = $str . ' --lat ' . $data['lat'];
+        }
+        if ($data['lon'] != '') {
+            $str = $str . ' --lon ' . $data['lon'];
+        }
+        if ($data['file_date'] != '') {
+            $str = $str . ' --week ' . date('W', $data['file_date']);
+        }
+        if ($data['sensitivity'] != '') {
+            $str = $str . ' --sensitivity ' . $data['sensitivity'];
+        }
+        if ($data['min_conf'] != '') {
+            $str = $str . ' --min_conf ' . $data['min_conf'];
+        }
+        if ($data['overlap'] != '') {
+            $str = $str . ' --overlap ' . $data['overlap'];
+        }
+        if ($data['sf_thresh'] != '') {
+            $str = $str . ' --sf_thresh ' . $data['sf_thresh'];
+        }
+        exec($str . " 2>&1", $out, $status);
+        if ($status == 0) {
+            $handle = fopen(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . Auth::getUserLoggedID() . ".csv", "rb");
+            $result = [];
+            $i = 1;
+            while (!feof($handle)) {
+                $d = fgetcsv($handle);
+                $result[] = $d;
+                $i++;
+            }
+            fclose($handle);
+            $species = (new Species())->get();
+            $species_id = (new Species())->getByName('Unknown');
+            $arr_specie = [];
+            $arr_specie_id = [];
+            foreach ($species as $specie) {
+                $arr_specie[] = $specie['binomial'];
+                $arr_specie_id[$specie['binomial']] = $specie['species_id'];
+            }
+            foreach ($result as $r) {
+                if ($r[0] != 'Start (s)' && $r[0] != null) {
+                    if (in_array($r[3], $arr_specie)) {
+                        $arr['species_id'] = $arr_specie_id[$r[3]];
+                    } else {
+                        $arr['species_id'] = $species_id[0]['species_id'];
+                        $arr['comments'] = $r[3];
+                    }
+                    $arr['sound_id'] = '4';
+                    $arr['recording_id'] = $data['recording_id'];
+                    $arr['user_id'] = Auth::getUserID();
+                    $arr['creator_type'] = $data['creator_type'];
+                    $arr['min_time'] = $r[0];
+                    $arr['max_time'] = $r[1];
+                    $arr['min_freq'] = 150;
+                    $arr['max_freq'] = 12000;
+                    $arr['confidence'] = $r[4];
+                    $arr['individuals'] = 1;
+                    $arr['reference_call'] = 0;
+                    (new TagProvider())->insert($arr);
+                }
+            }
+        }
+        return json_encode([
+            'errorCode' => 0,
+            'message' => 'success.'
         ]);
     }
 }

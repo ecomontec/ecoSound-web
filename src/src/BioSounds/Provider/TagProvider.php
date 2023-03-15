@@ -73,6 +73,7 @@ class TagProvider extends BaseProvider
         }
         return $result;
     }
+
     /**
      * @param int $recordingId
      * @param int|null $userId
@@ -106,6 +107,7 @@ class TagProvider extends BaseProvider
         }
         return $result;
     }
+
     /**
      * @param $data
      * @return int
@@ -136,7 +138,6 @@ class TagProvider extends BaseProvider
             }
             $i++;
         }
-
         $this->database->prepareQuery(sprintf($query, $fields, $valuesNames));
         return $this->database->executeInsert($values);
     }
@@ -187,7 +188,7 @@ class TagProvider extends BaseProvider
             LEFT JOIN sound ON sound.sound_id = t.sound_id
             LEFT JOIN sound_type st ON st.sound_type_id = t.animal_sound_type WHERE c.collection_id = :colId ";
         if (!Auth::isManage()) {
-            $sql .= " AND t.user_id = " . Auth::getUserID() ;
+            $sql .= " AND t.user_id = " . Auth::getUserID();
         }
         $sql .= " ORDER BY t.tag_id";
         $this->database->prepareQuery($sql);
@@ -220,7 +221,9 @@ class TagProvider extends BaseProvider
                 ->setTaxonClass($item['TaxonClass'])
                 ->setPhony($item['phony'])
                 ->setSoundId($item['sound_id'])
-                ->setSoundType($item['sound_type']);
+                ->setSoundType($item['sound_type'])
+                ->setCreatorType(isset($item['creator_type']) ? $item['creator_type'] : null)
+                ->setConfidence(isset($item['confidence']) ? $item['confidence'] : null);
         }
         return $data;
     }
@@ -262,9 +265,10 @@ class TagProvider extends BaseProvider
                 ->setType($item['typeName'])
                 ->setReferenceCall($item['reference_call'])
                 ->setComments($item['comments'])
-                ->setCreationDate($item['creation_date']);
+                ->setCreationDate($item['creation_date'])
+                ->setCreatorType(isset($item['creator_type']) ? $item['creator_type'] : null)
+                ->setConfidence(isset($item['confidence']) ? $item['confidence'] : null);
         }
-
         return $data;
     }
 }

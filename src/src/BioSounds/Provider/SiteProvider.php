@@ -18,7 +18,7 @@ class SiteProvider extends BaseProvider
      */
     public function getList(int $projectId, int $collectionId = null, string $order = 'name'): array
     {
-        $sql = "SELECT s.site_id,s.name FROM site s 
+        $sql = "SELECT s.* FROM site s 
                     LEFT JOIN site_collection sc ON sc.site_id = s.site_id
                     LEFT JOIN collection c ON c.collection_id = sc.collection_id
                     WHERE c.project_id = $projectId ";

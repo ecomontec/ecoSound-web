@@ -2,6 +2,7 @@
 
 # Install BioSounds
 
+git clone https://github.com/kahst/BirdNET-Analyzer.git ./src/BirdNET-Analyzer
 docker-compose up -d
 docker-compose exec apache composer install
 docker-compose exec apache bash -c '

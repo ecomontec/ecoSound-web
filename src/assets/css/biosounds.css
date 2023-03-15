@@ -350,6 +350,11 @@ div .active a {
     content: url('../images/sites_icon.png');
 }
 
-.red-border {
-    border: 1px solid red;
+.progress {
+    height: 20px;
+    margin-top: 50px;
+}
+
+.progress-bar {
+    transition: width 0.3s ease-in-out;
 }
