@@ -78,8 +78,8 @@ class CollectionController extends BaseController
                 'display' => $display,
                 'leaflet' => $this->leaflet,
                 'none_count' => (new RecordingProvider())->getNullCount($id),
-                'min'=>date('Y-m-d H:i:s',strtotime('-1 Day',strtotime(min($min)))),
-                'max'=>date('Y-m-d H:i:s',strtotime('+1 Day',strtotime(max($max)))),
+                'min'=>count($min)>0?date('Y-m-d H:i:s',strtotime('-1 Day',strtotime(min($min)))):0,
+                'max'=>count($max)>0?date('Y-m-d H:i:s',strtotime('+1 Day',strtotime(max($max)))):0,
             ]);
         } else {
             return $this->twig->render('collection/noaccess.html.twig');
@@ -126,8 +126,8 @@ class CollectionController extends BaseController
                 'display' => $display,
                 'leaflet' => $this->leaflet,
                 'none_count' => (new RecordingProvider())->getNullCount($id),
-                'min'=>date('Y-m-d H:i:s',strtotime('-1 Day',strtotime(min($min)))),
-                'max'=>date('Y-m-d H:i:s',strtotime('+1 Day',strtotime(max($max)))),
+                'min'=>count($min)>0?date('Y-m-d H:i:s',strtotime('-1 Day',strtotime(min($min)))):0,
+                'max'=>count($max)>0?date('Y-m-d H:i:s',strtotime('+1 Day',strtotime(max($max)))):0,
             ]);
         } else {
             return "No results";

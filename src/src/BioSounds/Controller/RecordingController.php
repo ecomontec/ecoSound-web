@@ -665,11 +665,12 @@ class RecordingController extends BaseController
             }
             foreach ($result as $r) {
                 if ($r[0] != 'Start (s)' && $r[0] != null) {
-                    if (in_array($r[3], $arr_specie)) {
-                        $arr['species_id'] = $arr_specie_id[$r[3]];
+                    if (in_array($r[2], $arr_specie)) {
+                        $arr['species_id'] = $arr_specie_id[$r[2]];
+                        $arr['comments'] = '';
                     } else {
                         $arr['species_id'] = $species_id[0]['species_id'];
-                        $arr['comments'] = $r[3];
+                        $arr['comments'] = $r[2];
                     }
                     $arr['sound_id'] = '4';
                     $arr['recording_id'] = $data['recording_id'];

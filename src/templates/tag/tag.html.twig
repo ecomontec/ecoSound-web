@@ -120,7 +120,7 @@
 
                             <div class="form-group">
                                 {% if edit %}
-                                    <div class="col-form-label-sm">Creator Type:{{ tag.creatorType }} {% if tag.confidence %} Confidence: {{ tag.confidence }} {% endif %}</div>
+                                    <div class="col-form-label-sm">Creator Type:{{ tag.creatorType }}{% if tag.confidence %}, Confidence: {{ tag.confidence }} {% endif %}</div>
                                 {% endif %}
                                 {% if isUserLogged %}
                                     {% if reviewPanel !='' %}
@@ -229,6 +229,7 @@
         requestModal(this.href, {'recording_name': document.getElementsByName('recording_name')[0].value});
     })
     $("#modal-div").draggable({
+        handle:".modal-header",
         drag: function () {
             $('.modal-backdrop').remove();
         }

@@ -7,6 +7,7 @@ RUN a2enmod rewrite
 COPY . /var/www/html/
 
 ADD https://getcomposer.org/download/1.7.3/composer.phar /usr/local/bin/composer
+RUN chmod -R 777 /var/www
 RUN chmod a+rx /usr/local/bin/composer
 
 RUN apt-get update
