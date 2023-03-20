@@ -678,8 +678,9 @@ class RecordingController extends BaseController
                     $arr['creator_type'] = $data['creator_type'];
                     $arr['min_time'] = $r[0];
                     $arr['max_time'] = $r[1];
-                    $arr['min_freq'] = 150;
-                    $arr['max_freq'] = 12000;
+                    $arr['min_freq'] = 1;
+                    $arr['max_freq'] = $data['max_freq'];
+                    $arr['distance_not_estimable'] = 1;
                     $arr['confidence'] = $r[4];
                     $arr['individuals'] = 1;
                     $arr['reference_call'] = 0;

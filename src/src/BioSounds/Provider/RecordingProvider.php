@@ -67,7 +67,7 @@ class RecordingProvider extends BaseProvider
         $query .= 'lba.label_id, lba.name as label_name,e1.`name` as realm,e2.`name` as biome,e3.`name` as functionalType,site.longitude_WGS84_dd_dddd AS longitude,site.latitude_WGS84_dd_dddd AS latitude,';
         $query .= "CONCAT(file_date,' ', file_time) AS start_date,DATE_ADD(STR_TO_DATE(CONCAT(file_date ,' ',file_time),'%Y-%m-%d %H:%i:%S'),INTERVAL duration second) AS end_date,";
         $query .= 'DATE_FORMAT(file_date, \'%Y-%m-%d\') AS file_date, ';
-        $query .= 'DATE_FORMAT(file_time, \'%H:%i:%s\') AS file_time, sampling_rate, recording.doi, file_upload.path FROM recording ';
+        $query .= 'DATE_FORMAT(file_time, \'%H:%i:%s\') AS file_time, recording.doi, file_upload.path FROM recording ';
         $query .= 'LEFT JOIN 
                 ( SELECT up.collection_id 
                   FROM user_permission up, permission p 
