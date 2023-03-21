@@ -11,8 +11,8 @@
                         <label for="projectId">Project</label>
                         <select id="projectId" name="projectId" class="form-control form-control-sm ml-3">
                             {% for project in projects %}
-                                <option value="{{ project.id }}" {{ project.id == projectId ? 'selected' }}>
-                                    {{ project.name }}
+                                <option value="{{ project.id }}" {{ project.id == projectId ? 'selected' }} {{ project.collection is null ?"disabled" }}>
+                                    {{ project.name }}{{ project.collection_id }}{{ project.collection is null ?" (No Data)" }}
                                 </option>
                             {% endfor %}
                         </select>
@@ -32,11 +32,10 @@
                         <input type="hidden" name="colId" value="{{ colId }}">
                     </form>
                     <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" id="metaData" type="button" data-toggle="dropdown" aria-expanded="false">
-                        <i class="fa-brands fa-meta"></i> Meta-data
+                        <i class="fa-solid fa-file-csv"></i> Meta-data
                     </button>
                     <div class="dropdown-menu">
                         <a class="dropdown-item" type="button" id="metaDataButton"><i class="fa-solid fa-file-arrow-up"></i> Upload Meta-data</a>
-                        <a class="dropdown-item" type="button" id="metaDemo"><i class="fa-solid fa-file-arrow-down"></i> Download Template</a>
                         <a class="dropdown-item" type="button" id="viewInstructions"><i class="fa-solid fa-circle-info"></i> View Instructions</a>
                     </div>
                     <button type="button" id="uploadButton" data-toggle="collapse" data-target="#uploadForm" class="btn btn-outline-primary btn-sm mt-2">
@@ -64,6 +63,7 @@
                 <th>Date</th>
                 <th>Time</th>
                 <th></th>
+                <th></th>
             </tr>
             </thead>
             <tbody class="form-control-sm js-recording-list">
@@ -81,10 +81,13 @@
                         <input type="hidden" name="itemID" value="{{ recording.id }}"/>
                         <input id="old_id{{ recording.id }}" type="hidden" value="{{ recording.user_id }}">
                         <input id="old_name{{ recording.id }}" type="hidden" value="{{ recording.username }}">
+                        <input id="directory{{ recording.id }}" type="hidden" value="{{ recording.directory }}">
+                        <input id="path{{ recording.id }}" type="hidden" value="{{ recording.path }}">
+                        <input id="max_freq{{ recording.id }}" type="hidden" value="{{ recording.samplingRate/2 }}">
                     </td>
                     <td>{{ recording.filename }}</td>
                     <td data-search="{{ recording.name }}" data-order="{{ recording.name }}">
-                        <input type='text' class="form-control form-control-sm" style="width:200px;" title="Name" name="name" value="{{ recording.name }}">
+                        <input type='text' id="name_{{ recording.id }}" class="form-control form-control-sm" style="width:200px;" title="Name" name="name" value="{{ recording.name }}">
                     </td>
                     <td data-search="{{ recording.username }}" data-order="{{ recording.username }}">
                         <select id="user_id{{ recording.id }}" name="user_id" style="width:120px;" class="form-control form-control-sm show-menu-arrow" data-live-search="true">
@@ -95,7 +98,7 @@
                         <select id="site_id{{ recording.id }}" name="site_id" style="width:120px;" class="form-control form-control-sm">
                             <option value="0"></option>
                             {% for st in sites %}
-                                <option value="{{ st.site_id }}" {{ st.site_id == recording.site ? 'selected' }}>
+                                <option value="{{ st.site_id }}" {{ st.site_id == recording.site ? 'selected' }} data-lat="{{ st.latitude_WGS84_dd_dddd }}" data-lon="{{ st.longitude_WGS84_dd_dddd }}">
                                     {{ st.name }}
                                 </option>
                             {% endfor %}
@@ -143,10 +146,17 @@
                         <input type='text' class="form-control form-control-sm" style="width:200px;" title="Note" name="note" value="{{ recording.note }}">
                     </td>
                     <td data-search="{{ recording.fileDate }}" data-order="{{ recording.fileDate }}">
-                        <input type='date' class="form-control form-control-sm" title="Date" name="file_date" value="{{ recording.fileDate }}">
+                        <input type='date' id="file_date{{ recording.id }}" class="form-control form-control-sm" title="Date" name="file_date" value="{{ recording.fileDate }}">
                     </td>
                     <td data-search="{{ recording.fileTime }}" data-order="{{ recording.fileTime }}">
                         <input type='time' class="form-control form-control-sm" title="Time" name="file_time" min="00:00:00" max="23:59:59" step="1" value="{{ recording.fileTime }}">
+                    </td>
+                    <td>
+                        {% if recording.data_type=='audio data' %}
+                            <a href="#" class="js-open-tf-modal" data-id="{{ recording.id }}">
+                                <span class="fa-solid fa-gears"></span>
+                            </a>
+                        {% endif %}
                     </td>
                     <td>
                         <a class="js-delete-modal" href="#" data-id="{{ recording.id }}" title="Delete recording">
@@ -207,7 +217,7 @@
                                 name (optional, limited to 40 characters)<br>
                                 bit_rate (optional, integer)<br>
                                 channel_number (optional, integer)<br><br>
-                                You can download a template CSV file to fill in your data.</label>
+                                You can download a <a class="text-info" id="metaDemo">template CSV file</a> to fill in your data.</label>
                         </div>
                     </div>
                 </div>
@@ -220,7 +230,71 @@
             </div>
         </div>
     </div>
-
+    <div class="modal fade" id="modal-tf" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title maad-title">TensorFlow Models</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body ml-3">
+                    <div>
+                        <div class="form-group">
+                            <input type="hidden" id="tf_id">
+                            <select id="tf" name="tf_id" autocomplete="off" class="form-control form-control-sm col-6 mb-3" required>
+                                <option value="0">BirdNET-Analyzer</option>
+                            </select>
+                            <div class="col-form-label">
+                                <strong>Description:</strong>
+                                <a class="col-form-label" href="https://github.com/kahst/BirdNET-Analyzer" target="_blank" title="Documentation"> <i class="fa fa-book"></i></a>
+                                <div class="col-form-label-sm">Automated scientific audio data processing and bird ID.</div>
+                            </div>
+                            <div class="form-inline">
+                                <label class="ml-1 col-form-label-sm" for="sensitivity">sensitivity</label>
+                            </div>
+                            <div class="form-group form-inline">
+                                <input id="sensitivity" name="sensitivity" class="form-control form-control-sm" type="text">
+                                <label class="ml-2 col-form-label-sm">Values in [0.5, 1.5]. Defaults to 1.0.</label>
+                            </div>
+                            <div class="form-inline">
+                                <label class="ml-1 col-form-label-sm" for="min_conf">min_conf</label>
+                            </div>
+                            <div class="form-group form-inline">
+                                <input id="min_conf" name="min_conf" class="form-control form-control-sm" type="text">
+                                <label class="ml-2 col-form-label-sm">Values in [0.01, 0.99]. Defaults to 0.1.</label>
+                            </div>
+                            <div class="form-inline">
+                                <label class="ml-1 col-form-label-sm" for="overlap">overlap</label>
+                            </div>
+                            <div class="form-group form-inline">
+                                <input id="overlap" name="overlap" class="form-control form-control-sm" type="text">
+                                <label class="ml-2 col-form-label-sm">Values in [0.0, 2.9]. Defaults to 0.0.</label>
+                            </div>
+                            <div class="form-inline">
+                                <label class="ml-1 col-form-label-sm" for="sf_thresh">sf_thresh</label>
+                            </div>
+                            <div class="form-group form-inline">
+                                <input id="sf_thresh" name="sf_thresh" class="form-control form-control-sm" type="text">
+                                <label class="ml-2 col-form-label-sm">values in [0.01, 0.99]. Defaults to 0.03.</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="js-close-button" type="button" class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
+                    <a href="{{ baseUrl }}/recording/tf" class="js-tf-modal btn btn-outline-primary">
+                        <i class="fa-solid fa-check"></i>
+                        Submit
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
     {% block header %}
@@ -250,17 +324,16 @@
                     "order": [[1, 'asc']],
                     "columnDefs": [{
                         "orderable": false,
-                        "targets": [0, 12]
+                        "targets": [0, 14, 15]
                     }],
                     "bAutoWidth": false,
                     "scrollX": true,
                 });
             });
             document.addEventListener("DOMContentLoaded", function (event) {
-
                 $("#uploadButton").click(function (e) {
                     $("#uploadButton").toggle();
-                    $("#metaDataButton").toggle();
+                    $("#metaData").toggle();
                     document.getElementById('uploadForm').hidden = false;
                 });
                 $('.js-delete-modal').click(function (e) {
@@ -357,6 +430,69 @@
                 });
                 $('#metaDemo').on('click', function () {
                     window.location.href = '{{ baseUrl }}/api/admin/recordingManager/download';
+                });
+                $('.js-open-tf-modal').click(function () {
+                    $('#tf_id').val($(this).attr('data-id'))
+                    $('#modal-tf').modal('show');
+                })
+
+
+                $(".js-tf-modal").click(function (e) {
+
+                    let data = []
+                    let id = $('#tf_id').val()
+                    let lat, lon
+                    if ($('#site_id' + id).find('option:selected').attr('data-lon') == undefined || $('#site_id' + id).find('option:selected').attr('data-lat') == undefined || $('#file_date' + id).val() == "") {
+                        if (!confirm("Your recordings have not been assigned to geographic locations and date-times. BirdNET will produce unreliable results!")) {
+                            e.preventDefault();
+                            return
+                        }
+                        lat = ''
+                        lon = ''
+                    } else {
+                        lat = $('#site_id' + id).find('option:selected').attr('data-lat')
+                        lon = $('#site_id' + id).find('option:selected').attr('data-lon')
+                    }
+                    toggleLoading();
+                    data = {
+                        'temp': $("#path" + id).val(),
+                        'recording_directory': $('#directory' + id).val(),
+                        'filename': $('#name_' + id).val(),
+                        'collection_id': $('#colId').val(),
+                        'recording_id': id,
+                        'lat': lat,
+                        'lon': lon,
+                        'file_date': $('#file_date' + id).val(),
+                        'creator_type': $('#tf').text().replace(/\ +/g, ""),
+                        'sensitivity': $("#sensitivity").val(),
+                        'min_conf': $("#min_conf").val(),
+                        'overlap': $("#overlap").val(),
+                        'sf_thresh': $("#sf_thresh").val(),
+                        'max_freq': $("#max_freq" + id).val(),
+                    };
+                    data = jsToFormData(data)
+                    $.ajax({
+                        type: 'POST',
+                        url: this.href,
+                        data: data,
+                        dataType: 'json',
+                        processData: false,
+                        contentType: false,
+                    })
+                        .done(function (result) {
+                            $('#modal-tf').modal('hide')
+                            toggleLoading();
+                            showAlert(result.message);
+                        })
+                        .fail(function (response) {
+                            toggleLoading();
+                            if (!response.responseJSON) {
+                                showAlert('Error ' + response.message);
+                                return;
+                            }
+                            showAlert(response.responseJSON.message);
+                        })
+                    e.preventDefault();
                 });
             });
         </script>

@@ -113,13 +113,15 @@
         {% if a[4] is not null %}
         {% set v= a[4]|split(',') %}
         {% for value in v %}
-        marker = L.marker([{{ a[2] }}, {{ a[3] }}], {id: '{{ a[0] }}', alt: "1"});
-        marker.bindPopup('<input type="hidden" value="{{ a[0] }}site_id"><b>{{ a[1] }}</b>'.replaceAll('!br!', '<br>'), {
-            closeOnClick: false,
-            maxHeight: 140,
-            maxWidth: 99999,
-        });
-        marker.addTo(group{{ value }})
+        if (typeof group{{ value }} != 'undefined') {
+            marker = L.marker([{{ a[2] }}, {{ a[3] }}], {id: '{{ a[0] }}', alt: "1"});
+            marker.bindPopup('<input type="hidden" value="{{ a[0] }}site_id"><b>{{ a[1] }}</b>'.replaceAll('!br!', '<br>'), {
+                closeOnClick: false,
+                maxHeight: 140,
+                maxWidth: 99999,
+            });
+            marker.addTo(group{{ value }})
+        }
         {% endfor %}
         marker.addTo(groupAll)
         {% endif %}
@@ -152,10 +154,22 @@
         $(".leaflet-control-layers-selector").change(function () {
             var str = $(".leaflet-control-layers-selector:checked").next().text().replace(' ', '');
             $.each(control._layers, function (i, l) {
-                if (l.name == str) {
+                if (decodeHtml(l.name) == str) {
                     map.fitBounds(l.layer.getBounds());
                 }
             });
         });
+        function decodeHtml(str) {
+            var map =
+                {
+                    '&amp;': '&',
+                    '&lt;': '<',
+                    '&gt;': '>',
+                    '&quot;': '"',
+                    '&#039;': "'"
+                };
+            return str.replace(/&amp;|&lt;|&gt;|&quot;|&#039;/g, function (m) { return map[m];
+
+            });}
     </script>
 {% endblock %}

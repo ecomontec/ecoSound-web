@@ -75,6 +75,40 @@ class TagProvider extends BaseProvider
     }
 
     /**
+     * @param int $recordingId
+     * @param int|null $userId
+     * @return Tag[]
+     * @throws \Exception
+     */
+    public function getListByTime(int $recordingId, int $userId = null): array
+    {
+        $result = [];
+
+        $query = 'SELECT tag.tag_id, tag.recording_id, tag.min_time, tag.max_time, tag.min_freq, tag.max_freq, tag.user_id, tag.uncertain,sound.phony,sound.sound_type, ';
+        $query .= 'species.binomial as species_name, tag.sound_distance_m, tag.distance_not_estimable, ';
+        $query .= '(SELECT COUNT(*) FROM tag_review WHERE tag_id = tag.tag_id) AS review_number, ';
+        $query .= '(( tag.max_time - tag.min_time ) + (tag.max_freq - tag.min_time )) AS time ';
+        $query .= 'FROM tag LEFT JOIN species ON tag.species_id = species.species_id ';
+        $query .= 'LEFT JOIN sound ON tag.sound_id = sound.sound_id ';
+        $query .= 'LEFT JOIN recording r ON r.recording_id = tag.recording_id ';
+        $query .= 'LEFT JOIN collection c ON c.collection_id = r.col_id ';
+        $query .= 'WHERE tag.recording_id = :recordingId';
+
+        $values[':recordingId'] = $recordingId;
+
+        if (!empty($userId)) {
+            $query .= ' AND (tag.user_id = :userId OR c.public_tags = 1) ';
+            $values[':userId'] = $userId;
+        }
+        $query .= ' ORDER BY time';
+        $this->database->prepareQuery($query);
+        foreach ($this->database->executeSelect($values) as $tag) {
+            $result[] = (new Tag())->createFromValues($tag);
+        }
+        return $result;
+    }
+
+    /**
      * @param $data
      * @return int
      * @throws \Exception
@@ -104,7 +138,6 @@ class TagProvider extends BaseProvider
             }
             $i++;
         }
-
         $this->database->prepareQuery(sprintf($query, $fields, $valuesNames));
         return $this->database->executeInsert($values);
     }
@@ -155,7 +188,7 @@ class TagProvider extends BaseProvider
             LEFT JOIN sound ON sound.sound_id = t.sound_id
             LEFT JOIN sound_type st ON st.sound_type_id = t.animal_sound_type WHERE c.collection_id = :colId ";
         if (!Auth::isManage()) {
-            $sql .= " AND t.user_id = " . Auth::getUserID() ;
+            $sql .= " AND t.user_id = " . Auth::getUserID();
         }
         $sql .= " ORDER BY t.tag_id";
         $this->database->prepareQuery($sql);
@@ -188,7 +221,9 @@ class TagProvider extends BaseProvider
                 ->setTaxonClass($item['TaxonClass'])
                 ->setPhony($item['phony'])
                 ->setSoundId($item['sound_id'])
-                ->setSoundType($item['sound_type']);
+                ->setSoundType($item['sound_type'])
+                ->setCreatorType(isset($item['creator_type']) ? $item['creator_type'] : null)
+                ->setConfidence(isset($item['confidence']) ? $item['confidence'] : null);
         }
         return $data;
     }
@@ -230,9 +265,10 @@ class TagProvider extends BaseProvider
                 ->setType($item['typeName'])
                 ->setReferenceCall($item['reference_call'])
                 ->setComments($item['comments'])
-                ->setCreationDate($item['creation_date']);
+                ->setCreationDate($item['creation_date'])
+                ->setCreatorType(isset($item['creator_type']) ? $item['creator_type'] : null)
+                ->setConfidence(isset($item['confidence']) ? $item['confidence'] : null);
         }
-
         return $data;
     }
 }

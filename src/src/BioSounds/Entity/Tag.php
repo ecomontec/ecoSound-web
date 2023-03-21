@@ -120,6 +120,19 @@ class Tag extends BaseProvider
      * //TODO: Remove variable when user entity is added
      */
     private $userName;
+    private $creator_type;
+    private $public_tags;
+    private $confidence;
+    private $type_id;
+    private $species_id;
+    private $recordingName;
+    private $time;
+    private $frequency;
+    private $creationDate;
+    private $taxon_class;
+    private $taxon_order;
+    private $phony;
+    private $sound_type;
 
     /**
      * @return int|null
@@ -644,6 +657,24 @@ class Tag extends BaseProvider
     }
 
     /**
+     * @return string|null
+     */
+    public function getCreatorType(): ?string
+    {
+        return $this->creator_type;
+    }
+
+    /**
+     * @param string|null $creator_type
+     * @return Tag
+     */
+    public function setCreatorType(?string $creator_type): Tag
+    {
+        $this->creator_type = $creator_type;
+        return $this;
+    }
+
+    /**
      * @return int|null
      */
     public function getPublicTags(): ?int
@@ -658,6 +689,24 @@ class Tag extends BaseProvider
     public function setPublicTags(?int $public_tags): Tag
     {
         $this->public_tags = $public_tags;
+        return $this;
+    }
+
+    /**
+     * @return float
+     */
+    public function getConfidence(): ?float
+    {
+        return $this->confidence;
+    }
+
+    /**
+     * @param float $confidence
+     * @return Tag
+     */
+    public function setConfidence(?float $confidence): Tag
+    {
+        $this->confidence = $confidence;
         return $this;
     }
 
@@ -692,6 +741,8 @@ class Tag extends BaseProvider
         $this->setPhony(isset($values['phony']) ? $values['phony'] : null);
         $this->setSoundType(isset($values['sound_type']) ? $values['sound_type'] : null);
         $this->setPublicTags($values['public_tags']);
+        $this->setCreatorType(isset($values['creator_type']) ? $values['creator_type'] : null);
+        $this->setConfidence(isset($values['confidence']) ? $values['confidence'] : null);
         return $this;
     }
 }

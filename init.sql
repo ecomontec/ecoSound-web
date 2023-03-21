@@ -17,8 +17,7 @@ time_zone = "+00:00";
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
-DROP
-DATABASE `biosounds`;
+DROP DATABASE `biosounds`;
 --
 -- Database: `biosounds`
 --
@@ -47,6 +46,18 @@ CREATE TABLE `index_log`
     `value`         varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
     `param`         varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
     `creation_date` timestamp NOT NULL                   DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Table structure for table `models`
+--
+CREATE TABLE `models`
+(
+    `tf_model_id`   int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `name`          varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `tf_model_path` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `labels_path`   varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `source_URL`    varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
@@ -187,19 +198,19 @@ CREATE TABLE `recording`
     `data_type`     enum('meta-data','audio data') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'audio data',
     `filename`      varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL,
     `file_size`     int(11) DEFAULT NULL,
-    `md5_hash`      char(32) COLLATE utf8_unicode_ci              DEFAULT NULL COMMENT 'MD5 hash of the file, to verify that the file has not been changed.',
-    `file_date`     date                                          DEFAULT NULL,
-    `file_time`     time                                          DEFAULT NULL,
+    `md5_hash`      char(32) COLLATE utf8_unicode_ci     DEFAULT NULL COMMENT 'MD5 hash of the file, to verify that the file has not been changed.',
+    `file_date`     date                                 DEFAULT NULL,
+    `file_time`     time                                 DEFAULT NULL,
     `license_id`    int(11) DEFAULT NULL,
-    `DOI`           varchar(255) COLLATE utf8_unicode_ci          DEFAULT NULL,
+    `DOI`           varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
     `sampling_rate` int(11) NOT NULL DEFAULT 44100,
     `bitrate`       int(11) DEFAULT NULL DEFAULT 16,
     `channel_num`   int(1) DEFAULT NULL DEFAULT 1,
-    `duration`      float                                NOT NULL,
-    `note`          varchar(250) COLLATE utf8_unicode_ci          DEFAULT NULL,
-    `type`          varchar(50) COLLATE utf8_unicode_ci           DEFAULT NULL,
-    `medium`        varchar(50) COLLATE utf8_unicode_ci           DEFAULT NULL,
-    `creation_date` timestamp                            NOT NULL DEFAULT current_timestamp()
+    `duration`      float     NOT NULL,
+    `note`          varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `type`          varchar(50) COLLATE utf8_unicode_ci  DEFAULT NULL,
+    `medium`        varchar(50) COLLATE utf8_unicode_ci  DEFAULT NULL,
+    `creation_date` timestamp NOT NULL                   DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
@@ -338,7 +349,7 @@ CREATE TABLE `tag`
     `recording_id`           int(11) NOT NULL,
     `user_id`                int(11) NOT NULL,
     `min_time`               float                               NOT NULL,
-    `max_time`               varchar(10) COLLATE utf8_unicode_ci NOT NULL,
+    `max_time`               float                               NOT NULL,
     `min_freq`               varchar(10) COLLATE utf8_unicode_ci NOT NULL,
     `max_freq`               varchar(10) COLLATE utf8_unicode_ci NOT NULL,
     `uncertain`              tinyint(1) DEFAULT NULL COMMENT 'data lost before 18.10.2015',
@@ -348,6 +359,8 @@ CREATE TABLE `tag`
     `animal_sound_type`      varchar(128) COLLATE utf8_unicode_ci         DEFAULT NULL,
     `sound_id`               int(11) NOT NULL,
     `reference_call`         tinyint(1) NOT NULL,
+    `creator_type`           varchar(128) COLLATE utf8_unicode_ci         DEFAULT 'user',
+    `confidence`             float                                        DEFAULT NULL,
     `creation_date`          timestamp                           NOT NULL DEFAULT current_timestamp(),
     `comments`               varchar(500) COLLATE utf8_unicode_ci         DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;

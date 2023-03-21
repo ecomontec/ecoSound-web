@@ -1,68 +1,57 @@
-<link rel="stylesheet" href="{{ baseUrl }}/assets/css/timeline.css">
+<script src="{{ baseUrl }}/assets/js/moment.js"></script>
+<script src="{{ baseUrl }}/assets/js/vis-data.min.js"></script>
+<script src="{{ baseUrl }}/assets/js/vis-timeline-graph2d.min.js"></script>
+<link rel="stylesheet" href="{{ baseUrl }}/assets/css/vis-timeline-graph2d.min.css">
+<style>
 
-<div id="timeline" style="height: 1000px"></div>
-<script src="{{ baseUrl }}/assets/js/timeline.js"></script>
+</style>
+<div id="visualization"></div>
 <script>
-    DateArr = []
-    {% for item in list %}
-    DateArr.push(parseInt("{{ item.recording.startDate }}".substring(0, 4)))
-    {% endfor %}
-    minYear = Math.min.apply(null, DateArr)
-    maxYear = Math.max.apply(null, DateArr)
-    timeline = new TL.Timeline('timeline',
-        {
-            "events": [
-                {% for item in list %}
-                {
-                    {% if item.recording.data_type=='audio data' %}
-                    "media": {
-                        "url": "{{ baseUrl }}/{{ item.playerImage }}",
-                        "link": "{{ baseUrl }}/recording/show/{{ item.recording.id }}",
-                    },
-                    {% endif %}
-                    "start_date": {
-                        "year": "{{ item.recording.startDate }}".substring(0, 4),
-                        "month": "{{ item.recording.startDate }}".substring(5, 7),
-                        "day": "{{ item.recording.startDate }}".substring(8, 10),
-                        "hour": "{{ item.recording.startDate }}".substring(11, 13),
-                        "minute": "{{ item.recording.startDate }}".substring(14, 16),
-                        "second": "{{ item.recording.startDate }}".substring(17, 19),
-                    },
-                    "end_date": {
-                        "year": "{{ item.recording.endDate }}".substring(0, 4),
-                        "month": "{{ item.recording.endDate }}".substring(5, 7),
-                        "day": "{{ item.recording.endDate }}".substring(8, 10),
-                        "hour": "{{ item.recording.endDate }}".substring(11, 13),
-                        "minute": "{{ item.recording.endDate }}".substring(14, 16),
-                        "second": "{{ item.recording.endDate }}".substring(17, 19),
-                    },
-                    "text": {
-                        "headline": "{{ item.recording.name }}",
-                        {% if item.recording.data_type=='meta-data' %}
-                        "text": "<h2 style='background: #C6C6C6;height: 300px;width: 100%;' class='text-center ml-auto mr-auto'><br><br><br>meta-recording (no audio)<br>sampling rate: {{ item.recording.samplingRate }}</h2>"
-                        {% endif %}
-                    },
-                    "group": "{{ item.recording.siteName?item.recording.siteName:'not geo-referenced' }}",
-                    "display_date": "{{ item.recording.startDate }}"
-                },
-                {% endfor %}
-            ],
-        },
-        {
-            "start_at_slide": 0,
-            "scale_factor": 0.3,
-            "optimal_tick_width": 1000,
-            "marker_padding": 0,
-        }
-    );
 
-    tt = window.setInterval(function () {
-        if ($("#timeline").is(':visible')) {
-            $("#timeline").hide()
-        } else {
-            $("#timeline").show()
-            $(".tl-text-headline-container").addClass('text-center')
-            window.clearInterval(tt)
-        }
-    }, 1000)
+    var tl_container = document.getElementById("visualization");
+    var tl_groups = []
+    var tl_arr = []
+    var tl_items = new vis.DataSet([
+        {% for item in list %}
+        {
+            id: {{ item.recording.id }},
+            {% if item.recording.data_type=='meta-data' %}
+            content: "meta-recording (no audio) sampling rate: {{ item.recording.samplingRate }}",
+            {% else %}
+            content: "<a href='{{ baseUrl }}/recording/show/{{ item.recording.id }}' target='_blank'>{{ item.recording.name }}</a>",
+            {% endif %}
+            start: "{{ item.recording.startDate }}",
+            end: "{{ item.recording.endDate }}",
+            group: {{ item.recording.site?item.recording.site:0 }},
+            order: "{{ item.recording.name }}"
+        },
+        {% endfor %}
+    ]);
+    {% for item in list %}
+    if ($.inArray({{ item.recording.site?item.recording.site:0 }}, tl_arr) == -1) {
+        tl_arr.push({{ item.recording.site?item.recording.site:0 }})
+        tl_groups.push({
+            id: {{ item.recording.site?item.recording.site:0 }},
+            content: "{{ item.recording.siteName?item.recording.siteName:'not geo-referenced' }}",
+        })
+    }
+    {% endfor %}
+
+    var tl_options = {
+        stack: true,
+        maxHeight: 800,
+        min: "{{ min }}",
+        max: "{{ max }}",
+        order: function (a, b) {
+            if (b.start - a.start == 0) {
+                return b.order.localeCompare(a.order)
+            }
+            return b.start - a.start
+        },
+    };
+    var timeline = new vis.Timeline(tl_container, tl_items, tl_groups, tl_options);
 </script>
+
+
+
+

@@ -151,9 +151,10 @@ VALUES (1, '(Bird) Call - unspecific', 'AVES', ''),
 -- Dumping data for table `species`
 --
 INSERT INTO `species` (`species_id`, `binomial`, `genus`, `family`, `taxon_order`, `class`, `common_name`, `level`, `region`)
-VALUES (1, 'Test bird', 'Test Genus', 'Test Family', '', 'AVES', 'common bird name', 1, 'Test region'),
-       (2, 'Test amphibian', 'Test Genus', 'Test Family', '', 'AMPHIBIA', 'common amphibian name', 1, 'Test region'),
-       (3, 'Test primate', 'Test Genus', 'Test Family', 'PRIMATA', 'MAMMALIA', 'common primate name', 1, 'Test region');
+VALUES (1, 'Unknown', '', '', '', '', '', 1, ''),
+       (2, 'Test bird', 'Test Genus', 'Test Family', '', 'AVES', 'common bird name', 1, 'Test region'),
+       (3, 'Test amphibian', 'Test Genus', 'Test Family', '', 'AMPHIBIA', 'common amphibian name', 1, 'Test region'),
+       (4, 'Test primate', 'Test Genus', 'Test Family', 'PRIMATA', 'MAMMALIA', 'common primate name', 1, 'Test region');
 --
 -- Dumping data for table `tag_review_status`
 --
@@ -162,6 +163,11 @@ VALUES (1, 'Accepted'),
        (2, 'Corrected'),
        (3, 'Deleted'),
        (4, 'Uncertain');
+--
+-- Dumping data for table `models`
+--
+INSERT INTO `models` (`name`, `tf_model_path`, `labels_path`, `source_URL`)
+VALUES ('BirdNET-Analyzer', '/BirdNET-Analyzer', '/BirdNET-Analyzer', 'https://github.com/kahst/BirdNET-Analyzer');
 --
 -- Dumping data for table `project`
 --

@@ -1,5 +1,5 @@
 <link rel="stylesheet" href="{{ baseUrl }}/assets/css/bootstrap-select.css">
-<div class="modal fade" id="modal-div" role="dialog">
+<div class="modal fade" id="modal-div" role="dialog" style="overflow:visible">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -14,6 +14,7 @@
                             <input name="recording_id" type="hidden" value="{{ tag.recording }}">
                             <input class='js-species-id' data-type="edit" name='species_id' type='hidden' value="{{ tag.species }}">
                             <input id="old_call_distance" type="hidden" value="{{ tag.callDistance }}">
+                            <input id="edit" type="hidden" value="{{ edit }}">
                             <div class="form-row align-items-center">
                                 <div class="form-group col-auto">
                                     <label class="col-form-label-sm" for="phony">Phony</label>
@@ -118,19 +119,21 @@
                             </div>
 
                             <div class="form-group">
+                                {% if edit %}
+                                    <div class="col-form-label-sm">Creator Type:{{ tag.creatorType }}{% if tag.confidence %}, Confidence: {{ tag.confidence }} {% endif %}</div>
+                                {% endif %}
                                 {% if isUserLogged %}
                                     {% if reviewPanel !='' %}
                                         <div class="col-form-label-sm inline">Created by {{ tag.userName }} on {{ tag.creationDate }} (UTC)</div>
                                     {% else %}
                                         <label class="col-form-label-sm" for="user_full_name">Creation User: </label>
-                                        <span id="user_full_name"><small>{{ tag.userName }} </small></span>
+                                        <span id="user_full_name"><small>{{ tag.userName }}</small></span>
                                     {% endif %}
                                 {% endif %}
                                 <a href="#" id="exportTagUrl" class="btn btn-link inline" title="Export URL to clipboard">
                                     <i class="fa fa-share-alt"></i>
                                 </a>
                             </div>
-
                         </form>
                     </div>
                     <div id="review-panel">
@@ -160,6 +163,12 @@
 <script src="{{ baseUrl }}/assets/js/bootstrap-select.js" defer></script>
 <script>
     var soundTypes ={{ soundTypes|json_encode|raw }};
+    if ($('#modalX').val() && $('#modalX').val()) {
+        $("#modal-div").offset({
+            left: $('#modalX').val(),
+            top: $('#modalY').val(),
+        })
+    }
     $(document).ready(function () {
         {% if tag.soundId %}
         $("#phony").change()
@@ -220,6 +229,7 @@
         requestModal(this.href, {'recording_name': document.getElementsByName('recording_name')[0].value});
     })
     $("#modal-div").draggable({
+        handle:".modal-header",
         drag: function () {
             $('.modal-backdrop').remove();
         }
@@ -231,6 +241,8 @@
         $("#y").val('{{ next.minFrequency }}');
         $("#h").val('{{ next.maxFrequency }}');
         $("#open").val('{{ next.id }}');
+        $("#modalX").val($('#modal-div').offset().left)
+        $("#modalY").val($('#modal-div').offset().top)
         $("#recordingForm").submit();
         e.preventDefault();
     })
@@ -242,6 +254,8 @@
         $("#y").val('{{ previous.minFrequency }}');
         $("#h").val('{{ previous.maxFrequency }}');
         $("#open").val('{{ previous.id }}');
+        $("#modalX").val($('#modal-div').offset().left)
+        $("#modalY").val($('#modal-div').offset().top)
         $("#recordingForm").submit();
         e.preventDefault();
     })

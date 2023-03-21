@@ -18,7 +18,7 @@ class SiteProvider extends BaseProvider
      */
     public function getList(int $projectId, int $collectionId = null, string $order = 'name'): array
     {
-        $sql = "SELECT s.site_id,s.name FROM site s 
+        $sql = "SELECT s.* FROM site s 
                     LEFT JOIN site_collection sc ON sc.site_id = s.site_id
                     LEFT JOIN collection c ON c.collection_id = sc.collection_id
                     WHERE c.project_id = $projectId ";
@@ -36,11 +36,11 @@ class SiteProvider extends BaseProvider
      * @return Site[]
      * @throws \Exception
      */
-    public function getListWithCollection(int $projectId, int $collectionId = null, string $order = 'name'): array
+    public function getListWithCollection(int $projectId, string $collectionId = null, string $order = 'name'): array
     {
-        $str = ($collectionId == null) ? "" : " AND sc.collection_id = $collectionId ";
-        $sql = "SELECT s.site_id,s.name,sc.collection, IF(longitude_WGS84_dd_dddd IS NOT NULL AND latitude_WGS84_dd_dddd IS NOT NULL,s.longitude_WGS84_dd_dddd,IF(gadm2 IS NOT NULL,a2.x,IF(gadm1 IS NOT NULL,a1.x,IF( gadm0 IS NOT NULL, a0.x, NULL )))) AS x,IF(longitude_WGS84_dd_dddd IS NOT NULL AND latitude_WGS84_dd_dddd IS NOT NULL,s.latitude_WGS84_dd_dddd,IF(gadm2 IS NOT NULL,a2.y,IF(gadm1 IS NOT NULL,a1.y,IF( gadm0 IS NOT NULL, a0.y, NULL )))) AS y FROM site s LEFT JOIN adm_2 a2 ON a2.NAME = s.gadm2 LEFT JOIN adm_1 a1 ON a1.NAME = s.gadm1 LEFT JOIN adm_0 a0 ON a0.NAME = s.gadm0 LEFT JOIN (SELECT sc.site_id,GROUP_CONCAT( sc.collection_id )AS collection FROM site_collection sc LEFT JOIN collection c ON c.collection_id = sc.collection_id WHERE c.project_id = $projectId $str GROUP BY sc.site_id) sc ON sc.site_id = s.site_id";
-        $sql .= " GROUP BY s.site_id,a0.x,a1.x,a2.x,a0.y,a1.y,a2.y ORDER BY $order";
+        $str = ($collectionId == null) ? "" : " AND sc.collection_id IN ($collectionId) ";
+        $sql = "SELECT s.site_id,s.name,sc.collection, IF(longitude_WGS84_dd_dddd IS NOT NULL AND latitude_WGS84_dd_dddd IS NOT NULL,s.longitude_WGS84_dd_dddd,IF(gadm2 IS NOT NULL,a2.x,IF(gadm1 IS NOT NULL,a1.x,IF( gadm0 IS NOT NULL, a0.x, NULL )))) AS x,IF(longitude_WGS84_dd_dddd IS NOT NULL AND latitude_WGS84_dd_dddd IS NOT NULL,s.latitude_WGS84_dd_dddd,IF(gadm2 IS NOT NULL,a2.y,IF(gadm1 IS NOT NULL,a1.y,IF( gadm0 IS NOT NULL, a0.y, NULL )))) AS y FROM (SELECT sc.site_id,GROUP_CONCAT( sc.collection_id )AS collection FROM site_collection sc LEFT JOIN collection c ON c.collection_id = sc.collection_id WHERE c.project_id = $projectId $str GROUP BY sc.site_id) sc LEFT JOIN site s ON sc.site_id = s.site_id LEFT JOIN adm_2 a2 ON a2.NAME = s.gadm2 LEFT JOIN adm_1 a1 ON a1.NAME = s.gadm1 LEFT JOIN adm_0 a0 ON a0.NAME = s.gadm0";
+        $sql .= " GROUP BY sc.site_id,a0.x,a1.x,a2.x,a0.y,a1.y,a2.y ORDER BY $order";
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
         return $result;
@@ -117,7 +117,7 @@ class SiteProvider extends BaseProvider
                 $arr[$key][9] = "<select id='realm_$value[site_id]' name='realm_id' style='width:120px;' class='form-control form-control-sm'><option value='$value[realm_id]'>$value[realm]</option></select>";
                 $arr[$key][10] = "<select id='biome_$value[site_id]' name='biome_id' class='form-control form-control-sm' style='width:120px;'><option value='$value[biome_id]' selected>$value[biome]</option></select>";
                 $arr[$key][11] = "<select id='functionalType_$value[site_id]' name='functional_type_id' class='form-control form-control-sm' style='width:120px;'><option value='$value[functional_type_id]' selected>$value[functional_type]</option></select>";
-                $arr[$key][12] = "<a href='" . $this->config['APP_URL'] . "/admin/siteCollections/$value[site_id]' class='js-open-modal' title='Site Assignment'><i class='fas fa-tasks'></i></a>";
+                $arr[$key][12] = "<a href='" . APP_URL . "/admin/siteCollections/$value[site_id]' class='js-open-modal' title='Site Assignment'><i class='fas fa-tasks'></i></a>";
                 $arr[$key][13] = "<a class='js-site-delete' href='#' data-id='$value[site_id]' title='Delete Site'><span class='fas fa-trash'></span></a>";
             }
         }

@@ -1,7 +1,7 @@
-<a class="col-form-label" href="{{ index.URL }}" target="_blank" title="Documentation"> <i class="fa fa-book"></i></a>
 <div>
     <label class="col-form-label">
         <strong>Description:</strong>
+        <a class="col-form-label" href="{{ index.URL }}" target="_blank" title="Documentation"> <i class="fa fa-book"></i></a>
         <div class="col-form-label-sm">{{ index.description }}</div>
     </label>
 </div>
@@ -11,39 +11,8 @@
             <label class="ml-1 col-form-label-sm" for="{{ p|split('|')[0] }}">{{ p|split('|')[0] }}</label>
         </div>
         <div class="form-group form-inline">
-            <input id="{{ p|split('|')[0] }}" name="{{ p|split('|')[0] }}" class="form-control form-control-sm" size="4" type="text">
+            <input id="{{ p|split('|')[0] }}" name="{{ p|split('|')[0] }}" class="form-control form-control-sm param" type="text">
             <label class="ml-2 col-form-label-sm">default: {{ p|split('|')[1] }}</label>
         </div>
     {% endfor %}
 {% endif %}
-<a href="{{ baseUrl }}/recording/maad" class="js-maad-modal btn btn-outline-primary">Submit</a>
-<script>
-    $(".js-maad-modal").click(function (e) {
-        let data = []
-        let param = ''
-        {% if index.param is not null and index.param != '' %}
-        {% for p in index.param|split('!') %}
-        if ($('#{{ p|split('|')[0] }}').val() != '') {
-            param = param + '{{ p|split('|')[0] }}' + '?' + $('#{{ p|split('|')[0] }}').val() + '@'
-        }
-        {% endfor %}
-        {% endif %}
-        data = {
-            'minTime': $('input[name=minTimeView]').val(),
-            'maxTime': $('input[name=maxTimeView]').val(),
-            'minFrequency': $('input[name=minFreqView]').val(),
-            'maxFrequency': $('input[name=maxFreqView]').val(),
-            'collection_id': $('input[name=collection_id]').val(),
-            'recording_id': $('input[name=recording_id]').val(),
-            'filename': soundFilePath,
-            'recording_directory': $('input[name=recording_directory]').val(),
-            'index_id': $('#maad').val(),
-            'index': $('#maad').find("option:selected").text(),
-            'channel_num': $('input[name=channel_num]').val(),
-            'channel': $('input[name=channel]').val(),
-            'param': param,
-        };
-        requestModal(this.href, data, true);
-        e.preventDefault();
-    });
-</script>

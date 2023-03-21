@@ -154,10 +154,15 @@ function toggleLoading() {
     $('.loading').toggle();
 }
 
-function requestModal(href, data = [], showLoading = false) {
+function requestModal(href, data = [], showLoading = false, backdrop = true) {
     postRequest(href, data, false, showLoading, function (response) {
         $('#modalWindows').html(response.data);
-        $("#modal-div").modal('show');
+        if (backdrop) {
+            $("#modal-div").modal('show');
+        } else {
+            $('#modal-div').modal({backdrop: false});
+        }
+
     });
 }
 
@@ -276,6 +281,8 @@ function jsToFormData(config) {
 
 $(document).keydown(function (event) {
     if (event.keyCode == 27) {
-        $('#modal-div').modal('hide')
+        $('.modal-backdrop').remove();
+        $('#modal-div').hide()
+
     }
 });

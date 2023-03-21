@@ -39,6 +39,11 @@
                     <input type="hidden" name="minFreqView" value="{{ player.minFrequency }}">
                     <input type="hidden" name="maxFreqView" value="{{ player.maxFrequency }}">
                     <input type="hidden" name="open" id="open" value="{{ open }}">
+                    <input type="hidden" name="modalX" id="modalX" value="{{ modalX }}">
+                    <input type="hidden" name="modalY" id="modalY" value="{{ modalY }}">
+                    <input type="hidden" name="lat" id="lat" value="{{ player.recording.latitude_WGS84_dd_dddd }}">
+                    <input type="hidden" name="lon" id="lon" value="{{ player.recording.longitude_WGS84_dd_dddd }}">
+                    <input type="hidden" name="file_date" id="file_date" value="{{ player.recording.file_date }}">
                     {% include 'recording/player/timeBoxes.html.twig' with {
                         'minTime': player.minTime,
                         'maxTime': player.maxTime,
@@ -50,11 +55,9 @@
                         <a href="#" id="exportCoordinates" class="btn btn-link" title="Export coordinates to clipboard">
                             <i class="fas fa-clipboard"></i>
                         </a>
-                        {% if isManage %}
-                            <a href="{{ baseUrl }}/recording/maad" id="exportMaxF" class="btn btn-link" title="Export frequency of maximum energy to clipboard">
-                                <i class="arrow-peak"></i>
-                            </a>
-                        {% endif %}
+                        <a href="{{ baseUrl }}/recording/maad" id="exportMaxF" class="btn btn-link" title="Export frequency of maximum energy to clipboard">
+                            <i class="arrow-peak"></i>
+                        </a>
                         <button id="zoom-submit" class="btn btn-link" type="button" title="Zoom" disabled>
                             <i class="fas fa-search-plus"></i>
                         </button>
@@ -80,7 +83,7 @@
                     <strong>My Label:</strong>
                 </label>
             </div>
-            <div>
+            <div class="mb-2">
                 <form id="reclabelform" novalidate>
                     <input type="hidden" name="recording_id" value="{{ player.recording.recording_id }}"/>
                     <input type="hidden" name="user_id" value="{{ user_id }}"/>
@@ -95,63 +98,157 @@
                 </form>
             </div>
             <div>
-                <label class="col-form-label">
-                    <strong>Acoustic Index Analysis:</strong>
-                </label>
+                <a href="#" class="js-open-maad-modal">
+                    <i class="sum mt-3"></i>
+                    <strong>Acoustic Index Analysis </strong>
+                </a>
             </div>
             <div>
-                <select id="maad" name="maad_id" autocomplete="off" required>
-                    {% for index in indexs %}
-                        <option value="{{ index.indexId }}">{{ index.name }}</option>
-                    {% endfor %}
-                </select>
-                <a class="col-form-label" href="{{ indexs[0].URL }}" target="_blank" title="Documentation"> <i class="fa fa-book"></i></a>
-                <div class="col-form-label">
-                    <strong>Description:</strong>
-                    <div class="col-form-label-sm">{{ indexs[0].description }}</div>
+                <a href="#" class="js-open-tf-modal">
+                    <i class="fa-solid fa-gears mt-3"></i>
+                    <strong>Tensorflow Models</strong>
+                </a>
+            </div>
+        </div>
+        <div class="modal fade" id="modal-maad" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title maad-title">Acoustic Index Analysis</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body ml-3">
+                        <div>
+                            <div class="form-group">
+                                <select id="maad" name="maad_id" autocomplete="off" class="form-control form-control-sm col-6 mb-3" required>
+                                    {% for index in indexs %}
+                                        <option value="{{ index.indexId }}">{{ index.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="col-form-label">
+                                    <strong>Description:</strong>
+                                    <a class="col-form-label" href="{{ indexs[0].URL }}" target="_blank" title="Documentation"> <i class="fa fa-book"></i></a>
+                                    <div class="col-form-label-sm">{{ indexs[0].description }}</div>
+                                </div>
+                                {% if indexs[0].param is not null and indexs[0].param != '' %}
+                                    {% for p in indexs[0].param|split('!') %}
+                                        <div class="form-inline">
+                                            <label class="ml-1 col-form-label-sm" for="{{ p|split('|')[0] }}">{{ p|split('|')[0] }}</label>
+                                        </div>
+                                        <div class="form-group form-inline">
+                                            <input id="{{ p|split('|')[0] }}" name="{{ p|split('|')[0] }}" class="form-control form-control-sm param" type="text">
+                                            <label class="ml-2 col-form-label-sm">default: {{ p|split('|')[1] }}</label>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="js-close-button" type="button" class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                            <i class="fas fa-times"></i>
+                            Close
+                        </button>
+                        <a href="{{ baseUrl }}/recording/maad" class="js-maad-modal btn btn-outline-primary">
+                            <i class="fa-solid fa-check"></i>
+                            Submit
+                        </a>
+                    </div>
                 </div>
-                {% if indexs[0].param is not null and indexs[0].param != '' %}
-                    {% for p in indexs[0].param|split('!') %}
-                        <div class="form-inline">
-                            <label class="ml-1 col-form-label-sm" for="{{ p|split('|')[0] }}">{{ p|split('|')[0] }}</label>
+            </div>
+        </div>
+        <div class="modal fade" id="modal-tf" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title maad-title">TensorFlow Models</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body ml-3">
+                        <div>
+                            <div class="form-group">
+                                <select id="tf" name="tf_id" autocomplete="off" class="form-control form-control-sm col-6 mb-3" required>
+                                    <option value="0">BirdNET-Analyzer</option>
+                                </select>
+                                <div class="col-form-label">
+                                    <strong>Description:</strong>
+                                    <a class="col-form-label" href="https://github.com/kahst/BirdNET-Analyzer" target="_blank" title="Documentation"> <i class="fa fa-book"></i></a>
+                                    <div class="col-form-label-sm">Automated scientific audio data processing and bird ID.</div>
+                                </div>
+                                <div class="form-inline">
+                                    <label class="ml-1 col-form-label-sm" for="sensitivity">sensitivity</label>
+                                </div>
+                                <div class="form-group form-inline">
+                                    <input id="sensitivity" name="sensitivity" class="form-control form-control-sm" type="text">
+                                    <label class="ml-2 col-form-label-sm">Values in [0.5, 1.5]. Defaults to 1.0.</label>
+                                </div>
+                                <div class="form-inline">
+                                    <label class="ml-1 col-form-label-sm" for="min_conf">min_conf</label>
+                                </div>
+                                <div class="form-group form-inline">
+                                    <input id="min_conf" name="min_conf" class="form-control form-control-sm" type="text">
+                                    <label class="ml-2 col-form-label-sm">Values in [0.01, 0.99]. Defaults to 0.1.</label>
+                                </div>
+                                <div class="form-inline">
+                                    <label class="ml-1 col-form-label-sm" for="overlap">overlap</label>
+                                </div>
+                                <div class="form-group form-inline">
+                                    <input id="overlap" name="overlap" class="form-control form-control-sm" type="text">
+                                    <label class="ml-2 col-form-label-sm">Values in [0.0, 2.9]. Defaults to 0.0.</label>
+                                </div>
+                                <div class="form-inline">
+                                    <label class="ml-1 col-form-label-sm" for="sf_thresh">sf_thresh</label>
+                                </div>
+                                <div class="form-group form-inline">
+                                    <input id="sf_thresh" name="sf_thresh" class="form-control form-control-sm" type="text">
+                                    <label class="ml-2 col-form-label-sm">values in [0.01, 0.99]. Defaults to 0.03.</label>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group form-inline">
-                            <input id="{{ p|split('|')[0] }}" name="{{ p|split('|')[0] }}" class="form-control form-control-sm" size="4" type="text">
-                            <label class="ml-2 col-form-label-sm">default: {{ p|split('|')[1] }}</label>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-                <a href="{{ baseUrl }}/recording/maad" class="js-maad-modal btn btn-outline-primary">Submit</a>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="js-close-button" type="button" class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                            <i class="fas fa-times"></i>
+                            Close
+                        </button>
+                        <a href="{{ baseUrl }}/recording/tf" class="js-tf-modal btn btn-outline-primary">
+                            <i class="fa-solid fa-check"></i>
+                            Submit
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
         <script>
             $("#maad").change(function () {
-                {% for index in indexs %}
-                if ($("#maad").val() =={{ index.indexId }}) {
-                    $(".maad-laber").attr('href', "{{ index.URL }}")
-                    $(".maad-laber").text("{{ index.description }}")
-                    $.ajax({
-                        url: "{{ baseUrl }}/recording/getMaadlabel/" + {{ index.indexId }},
-                        success: function (data) {
-                            $("#maad").nextAll().remove()
-                            if (data) {
-                                $("#maad").after(data)
-                            }
-                        },
-                    })
-                }
-                {% endfor %}
+                $.ajax({
+                    url: "{{ baseUrl }}/recording/getMaadlabel/" + $("#maad").val(),
+                    success: function (data) {
+                        $("#maad").nextAll().remove()
+                        if (data) {
+                            $("#maad").after(data)
+                        }
+                    },
+                })
+            })
+            $('.js-open-maad-modal').click(function () {
+                $('#modal-maad').modal('show');
+            })
+            $('.js-open-tf-modal').click(function () {
+                $('#modal-tf').modal('show');
             })
             $(".js-maad-modal").click(function (e) {
                 let data = []
                 let param = ''
-                {% if indexs[0].param is not null and indexs[0].param != '' %}
-                {% for p in indexs[0].param|split('!') %}
-                if ($('#{{ p|split('|')[0] }}').val() != '') {
-                    param = param + '{{ p|split('|')[0] }}' + '?' + $('#{{ p|split('|')[0] }}').val() + '@'
-                }
-                {% endfor %}
-                {% endif %}
+                $('.param').each(function () {
+                    if ($(this).val() != '') {
+                        param = param + $(this).attr('id') + '?' + $(this).val() + '@'
+                    }
+                })
                 data = {
                     'minTime': $('input[name=minTimeView]').val(),
                     'maxTime': $('input[name=maxTimeView]').val(),
@@ -160,25 +257,75 @@
                     'collection_id': $('input[name=collection_id]').val(),
                     'recording_id': $('input[name=recording_id]').val(),
                     'filename': soundFilePath,
-                    'recording_directory': $('input[name=recording_directory]').val(),
                     'index_id': $('#maad').val(),
                     'index': $('#maad').find("option:selected").text(),
                     'channel_num': $('input[name=channel_num]').val(),
                     'channel': $('input[name=channel]').val(),
                     'param': param,
                 };
+                $('#modal-maad').modal('hide');
                 requestModal(this.href, data, true);
+                e.preventDefault();
+            });
+            $(".js-tf-modal").click(function (e) {
+                let data = []
+                if ($('#lat').val() == "" || $('#lon').val() == "" || $('#file_date').val() == "") {
+                    if (!confirm("Your recordings have not been assigned to geographic locations and date-times. BirdNET will produce unreliable results!")) {
+                        e.preventDefault();
+                        return
+                    }
+                }
+                toggleLoading();
+                data = {
+                    'collection_id': $('input[name=collection_id]').val(),
+                    'recording_id': $('input[name=recording_id]').val(),
+                    'filename': $('input[name=filename]').val(),
+                    'creator_type': $('#tf').text().replace(/\ +/g, ""),
+                    'recording_directory': $('input[name=recording_directory]').val(),
+                    'lat': $("#lat").val(),
+                    'lon': $("#lon").val(),
+                    'file_date': $("#file_date").val(),
+                    'sensitivity': $("#sensitivity").val(),
+                    'min_conf': $("#min_conf").val(),
+                    'overlap': $("#overlap").val(),
+                    'sf_thresh': $("#sf_thresh").val(),
+                    'temp': soundFilePath,
+                    'max_freq':fileFreqMax,
+                };
+                data = jsToFormData(data)
+                $.ajax({
+                    type: 'POST',
+                    url: this.href,
+                    data: data,
+                    dataType: 'json',
+                    processData: false,
+                    contentType: false,
+                })
+                    .done(function (result) {
+                        alert(result.message)
+                        location.reload()
+                    })
+                    .fail(function (response) {
+                        toggleLoading();
+                        if (!response.responseJSON) {
+                            showAlert('Error ' + response.message);
+                            return;
+                        }
+                        showAlert(response.responseJSON.message);
+                    })
                 e.preventDefault();
             });
         </script>
     {% endif %}
-    <script>
-        {% if open!=0 %}
-        $(document).ready(function () {
-            $("#tag_{{ open }}").click()
-            $('#open').val(0)
-        })
-        {% endif %}
-    </script>
+    {% if open!=0 %}
+        <script>
+            $('#modal-div').prop('data-backdrop', false)
+            $().ready(function () {
+                $("#tag_{{ open }}").click()
+                $('#open').val(0)
+                toggleLoading();
+            })
+        </script>
+    {% endif %}
     {# {% include 'recording/player/frequencyScale.html.twig' %} #}
 </div>

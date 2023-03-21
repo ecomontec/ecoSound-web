@@ -77,7 +77,7 @@ class CollectionController extends BaseController
         } else {
             $id = $collProvider->insertColl($data);
             (new UserPermission())->updatePermission($id);
-            (new SiteCollection())->insertByCollection($data['project_id'],$id);
+            (new SiteCollection())->insertByCollection($data['project_id'], $id);
             return json_encode([
                 'errorCode' => 0,
                 'message' => 'Collection created successfully.',
@@ -101,10 +101,10 @@ class CollectionController extends BaseController
         header('Content-Disposition: attachment; filename=' . $file_name);
 
         $collList = (new CollectionProvider())->getByProject($project_id, Auth::getUserID());
-        $colAls[] = array('#', 'Name', 'User', 'DOI', 'Sphere', 'Description', 'Creation Date(UTC)', 'View', 'Public Access','Public Tags');
+        $colAls[] = array('#', 'Name', 'User', 'DOI', 'Sphere', 'Description', 'Creation Date(UTC)', 'View', 'Public Access', 'Public Tags');
 
         foreach ($collList as $collItem) {
-            $colArray = array($collItem->getId(), $collItem->getName(), $collItem->getAuthor(), $collItem->getDoi(), $collItem->getSphere(), $collItem->getNote(), $collItem->getCreationDate(), $collItem->getView(), $collItem->getPublicAccess(),$collItem->getPublicTags());
+            $colArray = array($collItem->getId(), $collItem->getName(), $collItem->getAuthor(), $collItem->getDoi(), $collItem->getSphere(), $collItem->getNote(), $collItem->getCreationDate(), $collItem->getView(), $collItem->getPublicAccess(), $collItem->getPublicTags());
             $colAls[] = $colArray;
         }
 
@@ -146,12 +146,17 @@ class CollectionController extends BaseController
                 $soundsDir = "sounds/sounds/$colId/$dirID/";
                 $imagesDir = "sounds/images/$colId/$dirID/";
 
-                unlink($soundsDir . $fileName);
+                if (is_file($soundsDir . $fileName)) {
+                    unlink($soundsDir . $fileName);
+                }
+
                 //Check if there are images
                 $images = (new SpectrogramProvider())->getListInRecording($recording[Recording::ID]);
 
                 foreach ($images as $image) {
-                    unlink($imagesDir . $image->getFilename());
+                    if (is_file($imagesDir . $image->getFilename())) {
+                        unlink($imagesDir . $image->getFilename());
+                    }
                 }
 
                 $wavFileName = substr($fileName, 0, strrpos($fileName, '.')) . '.wav';

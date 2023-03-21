@@ -171,6 +171,7 @@ class Recording
     private $recorderName;
     private $microphoneName;
     private $startDate;
+    private $path;
 
     /**
      * @return int
@@ -431,6 +432,7 @@ class Recording
         $this->startDate = $startDate;
         return $this;
     }
+
     /**
      * @return null|string
      */
@@ -448,6 +450,7 @@ class Recording
         $this->data_type = $data_type;
         return $this;
     }
+
     /**
      * @return null|string
      */
@@ -638,7 +641,6 @@ class Recording
     }
 
 
-
     /**
      * @param null|int $license
      * @return Recording
@@ -714,6 +716,7 @@ class Recording
         $this->labelName = $labelName;
         return $this;
     }
+
     /**
      * @return string
      */
@@ -731,6 +734,7 @@ class Recording
         $this->realmName = $realmName;
         return $this;
     }
+
     /**
      * @return string
      */
@@ -748,6 +752,7 @@ class Recording
         $this->biomeName = $biomeName;
         return $this;
     }
+
     /**
      * @return string
      */
@@ -765,6 +770,7 @@ class Recording
         $this->functionalTypeName = $functionalTypeName;
         return $this;
     }
+
     /**
      * @return float
      */
@@ -782,6 +788,7 @@ class Recording
         $this->longitude = $longitude;
         return $this;
     }
+
     /**
      * @return float
      */
@@ -799,6 +806,7 @@ class Recording
         $this->latitude = $latitude;
         return $this;
     }
+
     /**
      * @return null|string
      */
@@ -836,6 +844,7 @@ class Recording
         $this->medium = $medium;
         return $this;
     }
+
     /**
      * @return null|string
      */
@@ -854,6 +863,7 @@ class Recording
         $this->note = $note;
         return $this;
     }
+
     /**
      * @return null|string
      */
@@ -872,6 +882,26 @@ class Recording
         $this->username = $username;
         return $this;
     }
+
+    /**
+     * @return null|string
+     */
+    public function getPath(): ?string
+    {
+        return $this->path;
+    }
+
+
+    /**
+     * @param null|string $path
+     * @return Recording
+     */
+    public function setPath(?string $path): Recording
+    {
+        $this->path = $path;
+        return $this;
+    }
+
     /**
      * @param array $values
      * @return $this
@@ -917,6 +947,7 @@ class Recording
         $this->setNote($values['note']);
         $this->setStartDate($values['start_date']);
         $this->setEndDate($values['end_date']);
+        $this->setPath($values['path']);
         return $this;
     }
 }

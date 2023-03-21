@@ -34,6 +34,8 @@
                 <th>Sound Type</th>
                 <th>Recording</th>
                 <th>User</th>
+                <th>Creator Type</th>
+                <th>Confidence</th>
                 <th>Time Start</th>
                 <th>Time End</th>
                 <th>Min Freq</th>
@@ -83,6 +85,8 @@
                     </td>
                     <td>{{ tag.recordingName }}</td>
                     <td>{{ tag.userName }}</td>
+                    <td>{{ tag.creatorType }}</td>
+                    <td>{{ tag.confidence }}</td>
                     <td data-search="{{ tag.minTime }}" data-order="{{ tag.minTime }}">
                         <input type="number" class="form-control form-control-sm" style="width:60px;" name="min_time" maxlength="100" value="{{ tag.minTime }}">
                     </td>

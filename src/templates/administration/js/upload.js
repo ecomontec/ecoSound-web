@@ -52,11 +52,11 @@ $('#uploadForm')
     })
     .on('show.bs.collapse', function () {
         $("#uploadButton").hide();
-        $("#metaDataButton").hide();
+        $("#metaData").hide();
     })
     .on('hide.bs.collapse', function () {
         $("#uploadButton").show();
-        $("#metaDataButton").show();
+        $("#metaData").show();
     });
 
 $("#reference").change(function (e) {
@@ -104,20 +104,23 @@ $(function () {
             url: baseUrl + '/api/file/metadata',
             type: "POST",
             data: new FormData($("#metaDataForm")[0]),
-            processData: false,  // 不处理数据
-            contentType: false,   // 不设置内容类型
+            processData: false,
+            contentType: false,
             success: function (result) {
                 if (result.message == 'Upload success.') {
                     location.reload();
                 }
-                showAlert(result.message)
-                $('#metaDataFile').val('')
+                else{
+                    showAlert(result.message)
+                    $('#metaDataFile').val('')
+                    toggleLoading();
+                }
             },
             error: function () {
                 showAlert("Failed to upload file.")
+                toggleLoading();
             }
         });
-        toggleLoading();
     }
 
     function fileType(name) {

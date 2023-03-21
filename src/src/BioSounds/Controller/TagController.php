@@ -92,11 +92,6 @@ class TagController extends BaseController
             $isReviewGranted = $permissionProvider->isReviewPermission($_SESSION["user_col_permission"]);
             $isViewGranted = $permissionProvider->isViewPermission($_SESSION["user_col_permission"]);
             $isManageGranted = $permissionProvider->isManagePermission($_SESSION["user_col_permission"]);
-
-            if (!$isReviewGranted && !$isViewGranted && !$isManageGranted && !$tag->getPublicTags()) {
-                throw new ForbiddenException();
-            }
-
             $displaySaveButton = $isReviewGranted || $isManageGranted ? '' : 'hidden';
         }
         /**********************/
@@ -201,7 +196,7 @@ class TagController extends BaseController
      */
     public function delete(int $tagId)
     {
-        if (!Auth::isUserAdmin() && (new TagProvider())->get($tagId)->getUser() != Auth::getUserLoggedID()) {
+        if (!Auth::isManage() && (new TagProvider())->get($tagId)->getUser() != Auth::getUserLoggedID()) {
             throw new \Exception('The user doesn\'t have permissions to delete this tag.');
         }
 

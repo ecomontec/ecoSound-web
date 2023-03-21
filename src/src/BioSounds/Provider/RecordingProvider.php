@@ -62,12 +62,12 @@ class RecordingProvider extends BaseProvider
             ':userId' => $userId,
         ];
 
-        $query = 'SELECT recording.recording_id,recording.data_type, recording.name,recording.sampling_rate, filename, col_id, directory, sensor_id, recording.site_id, recording.user_id,recorder.modal AS recorderName,recorder.brand AS brand,recorder.recorder_id,microphone.name AS microphoneName,microphone.microphone_id,';
+        $query = 'SELECT recording.recording_id,recording.data_type, recording.name,recording.sampling_rate, recording.filename, col_id, recording.directory, recording.sensor_id, recording.site_id, recording.user_id,recorder.modal AS recorderName,recorder.brand AS brand,recorder.recorder_id,microphone.name AS microphoneName,microphone.microphone_id,';
         $query .= 'recording.type, recording.medium, recording.note, user.name AS user_name,  file_size, bitrate, channel_num, duration, site.name as site_name, license.license_id, license.name as license_name, ';
         $query .= 'lba.label_id, lba.name as label_name,e1.`name` as realm,e2.`name` as biome,e3.`name` as functionalType,site.longitude_WGS84_dd_dddd AS longitude,site.latitude_WGS84_dd_dddd AS latitude,';
         $query .= "CONCAT(file_date,' ', file_time) AS start_date,DATE_ADD(STR_TO_DATE(CONCAT(file_date ,' ',file_time),'%Y-%m-%d %H:%i:%S'),INTERVAL duration second) AS end_date,";
         $query .= 'DATE_FORMAT(file_date, \'%Y-%m-%d\') AS file_date, ';
-        $query .= 'DATE_FORMAT(file_time, \'%H:%i:%s\') AS file_time, sampling_rate, recording.doi FROM recording ';
+        $query .= 'DATE_FORMAT(file_time, \'%H:%i:%s\') AS file_time, recording.doi, file_upload.path FROM recording ';
         $query .= 'LEFT JOIN 
                 ( SELECT up.collection_id 
                   FROM user_permission up, permission p 
@@ -77,6 +77,7 @@ class RecordingProvider extends BaseProvider
 
         //default view for site and license
         $query .= 'LEFT JOIN site ON ( recording.site_id) = ( site.site_id) ';
+        $query .= 'LEFT JOIN file_upload ON file_upload.recording_id = recording.recording_id ';
         $query .= 'LEFT JOIN user ON ( recording.user_id) = ( user.user_id) ';
         $query .= 'LEFT JOIN license ON recording.license_id = license.license_id ';
         $query .= 'LEFT JOIN 
@@ -119,17 +120,17 @@ class RecordingProvider extends BaseProvider
      */
     public function get(int $id): array
     {
-        $query = 'SELECT *, (SELECT filename FROM spectrogram ';
-        $query .= 'WHERE ' . Recording::TABLE_NAME . '.' . Recording::ID . ' = spectrogram.recording_id ';
-        $query .= 'AND type = \'spectrogram-player\') AS ImageFile ';
-        $query .= 'FROM ' . Recording::TABLE_NAME . ' ';
-        $query .= 'WHERE ' . Recording::TABLE_NAME . '.' . Recording::ID . ' = :id';
+        $query = 'SELECT r.*,s.longitude_WGS84_dd_dddd,s.latitude_WGS84_dd_dddd, (SELECT spectrogram.filename FROM spectrogram ';
+        $query .= 'WHERE r.recording_id = spectrogram.recording_id ';
+        $query .= 'AND spectrogram.type = \'spectrogram-player\') AS ImageFile ';
+        $query .= 'FROM recording r ';
+        $query .= 'LEFT JOIN site s ON s.site_id = r.site_id ';
+        $query .= 'WHERE r.recording_id = :id';
 
         $this->database->prepareQuery($query);
         if (empty($result = $this->database->executeSelect([':id' => $id]))) {
             throw new NotFoundException($id);
         }
-
         return $result[0];
     }
 
