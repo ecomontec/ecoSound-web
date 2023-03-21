@@ -302,7 +302,8 @@
                     processData: false,
                     contentType: false,
                 })
-                    .done(function () {
+                    .done(function (result) {
+                        alert(result.message)
                         location.reload()
                     })
                     .fail(function (response) {

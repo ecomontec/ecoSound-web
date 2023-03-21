@@ -442,7 +442,7 @@
                     let data = []
                     let id = $('#tf_id').val()
                     let lat, lon
-                    if ($('#site_id' + id).find('option:selected').attr('data-lon') == undefined || $('#site_id'+id).find('option:selected').attr('data-lat') == undefined || $('#file_date' + id).val() == "") {
+                    if ($('#site_id' + id).find('option:selected').attr('data-lon') == undefined || $('#site_id' + id).find('option:selected').attr('data-lat') == undefined || $('#file_date' + id).val() == "") {
                         if (!confirm("Your recordings have not been assigned to geographic locations and date-times. BirdNET will produce unreliable results!")) {
                             e.preventDefault();
                             return
@@ -468,7 +468,7 @@
                         'min_conf': $("#min_conf").val(),
                         'overlap': $("#overlap").val(),
                         'sf_thresh': $("#sf_thresh").val(),
-                        'max_freq':$("#max_freq"+id).val(),
+                        'max_freq': $("#max_freq" + id).val(),
                     };
                     data = jsToFormData(data)
                     $.ajax({
@@ -479,8 +479,10 @@
                         processData: false,
                         contentType: false,
                     })
-                        .done(function () {
-                            location.reload()
+                        .done(function (result) {
+                            $('#modal-tf').modal('hide')
+                            toggleLoading();
+                            showAlert(result.message);
                         })
                         .fail(function (response) {
                             toggleLoading();

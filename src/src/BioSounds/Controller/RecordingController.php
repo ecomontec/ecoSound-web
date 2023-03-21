@@ -663,6 +663,7 @@ class RecordingController extends BaseController
                 $arr_specie[] = $specie['binomial'];
                 $arr_specie_id[$specie['binomial']] = $specie['species_id'];
             }
+            $i = 0;
             foreach ($result as $r) {
                 if ($r[0] != 'Start (s)' && $r[0] != null) {
                     if (in_array($r[2], $arr_specie)) {
@@ -685,12 +686,13 @@ class RecordingController extends BaseController
                     $arr['individuals'] = 1;
                     $arr['reference_call'] = 0;
                     (new TagProvider())->insert($arr);
+                    $i = $i + 1;
                 }
             }
         }
         return json_encode([
             'errorCode' => 0,
-            'message' => 'success.'
+            'message' => "Execution succeeded, " . $i . " new tags were added."
         ]);
     }
 }
