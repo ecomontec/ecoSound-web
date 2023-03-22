@@ -14,7 +14,7 @@ use \Twig\Extension\DebugExtension;
 class BaseClass
 {
     const CONFIG_FILENAME = 'config/config.ini';
-    const GUIDE_URL = 'https://github.com/nperezg/biosounds/blob/master/docs/user_guide.md';
+    const GUIDE_URL = 'https://github.com/ecomontec/ecoSound-web/wiki/User-guide';
 
     /*
      * @var \Twig_Environment
