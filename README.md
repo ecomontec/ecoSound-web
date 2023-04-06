@@ -4,7 +4,7 @@
 
 ## Description
 
-Web application for ecoacoustics to store and manage, navigate, visualise, annotate, and analyse soundscape recordings.
+Web application for ecoacoustics to manage, navigate, visualise, annotate, and analyse soundscape recordings.
 
 ## Credits and license
 
