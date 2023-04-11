@@ -30,23 +30,23 @@
             <tbody class="form-control-sm js-user-list">
             {% for user in users %}
                 <tr>
-                    <td>
+                    <td style="width:200px;">
                         {{ user.user_id }}
                         <input type="hidden" class="form-control form-control-sm" name="itemID" value="{{ user.user_id }}">
                     </td>
-                    <td data-search="{{ user.name }}" data-order="{{ user.name }}">
-                        <input type="text" class="form-control form-control-sm" name="name" value="{{ user.name }}" {{ not is_admin and user.role_id == 1 ? 'disabled' }}>
+                    <td data-search="{{ user.name }}" data-order="{{ user.name11 }}">
+                        <input type="text" class="form-control form-control-sm" name="name" style="width:200px;" value="{{ user.name }}" {{ not is_admin and user.role_id == 1 ? 'disabled' }}>
                     </td>
-                    <td>{{ user.username }}</td>
+                    <td style="width:200px;" style="width:200px;">{{ user.username }}</td>
                     <td data-search="{{ user.orcid }}" data-order="{{ user.orcid }}">
-                        <input type="text" class="form-control form-control-sm" name="orcid" value="{{ user.orcid }}" {{ not is_admin and user.role_id == 1 ? 'disabled' }}>
+                        <input type="text" class="form-control form-control-sm" name="orcid" style="width:250px;" value="{{ user.orcid }}" {{ not is_admin and user.role_id == 1 ? 'disabled' }}>
                     </td>
                     <td data-search="{{ user.email }}" data-order="{{ user.email }}">
-                        <input type="email" class="form-control form-control-sm" name="email" value="{{ user.email }}" {{ not is_admin and user.role_id == 1 ? 'disabled' }}>
+                        <input type="email" class="form-control form-control-sm" name="email" style="width:300px;" value="{{ user.email }}" {{ not is_admin and user.role_id == 1 ? 'disabled' }}>
                     </td>
                     {% if is_admin %}
                         <td {% for role in roles %}{% if role.role_id == user.role_id %}data-search="{{ role.name }}" data-order="{{ role.name }}"{% endif %}{% endfor %}>
-                            <select name="role_id" class="form-control form-control-sm">
+                            <select name="role_id" class="form-control form-control-sm" style="width:200px;">
                                 {% for role in roles %}
                                     <option value="{{ role.role_id }}" {{ role.role_id == user.role_id ? "selected" }}>{{ role.name }}</option>
                                 {% endfor %}
@@ -93,7 +93,7 @@
                 "order": [[0, 'asc']],
                 "columnDefs": [{
                     "orderable": false,
-                    "targets": [{% if is_admin %}6, 7, 8{% else %}4, 5, 6{% endif %}]
+                    "targets": [{% if is_admin %}7, 8, 9{% else %}5, 6, 7{% endif %}]
                 }],
                 "bAutoWidth": false,
                 "scrollX": true,
@@ -135,7 +135,7 @@
                 if (this.checkValidity() === false) {
                     e.stopPropagation();
                 } else {
-                    $.ajax({type: 'POST', url: '{{ baseUrl }}/api/admin/userMgr/save', data: new FormData($(this)[0])}).done(function (response) {
+                    $.ajax({type: 'POST', url: '{{ baseUrl }}/api/admin/userMgr/save',  processData: false, contentType: false,data: new FormData($(this)[0])}).done(function (response) {
                         showAlert(response.message);
                         $('#modal-div').modal('hide');
                     }).fail(function (response) {

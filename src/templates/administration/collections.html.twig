@@ -56,14 +56,14 @@
                         <input id="col{{ collection.id }}" type="hidden" name="collId" value="{{ collection.id }}">
                     </td>
                     <td data-search="{{ collection.name }}" data-order="{{ collection.name }}">
-                        <input type="text" class="form-control form-control-sm" name="name" value="{{ collection.name }}">
+                        <input type="text" class="form-control form-control-sm" name="name" style="width:200px;" value="{{ collection.name }}">
                     </td>
-                    <td>{{ collection.author }}</td>
+                    <td style="width:200px;">{{ collection.author }}</td>
                     <td data-search="{{ collection.doi }}" data-order="{{ collection.doi }}">
-                        <input type="text" class="form-control form-control-sm" name="doi" value="{{ collection.doi }}">
+                        <input type="text" class="form-control form-control-sm" name="doi" style="width:200px;" value="{{ collection.doi }}">
                     </td>
                     <td data-search="{{ collection.sphere }}" data-order="{{ collection.sphere }}">
-                        <select id="sphere" name="sphere" class="form-control form-control-sm">
+                        <select id="sphere" name="sphere" style="width:150px;" class="form-control form-control-sm">
                             <option></option>
                             <option value="hydrosphere" {{ collection.sphere == 'hydrosphere' ? 'selected' }}>hydrosphere</option>
                             <option value="cryosphere" {{ collection.sphere == 'cryosphere' ? 'selected' }}>cryosphere</option>
@@ -75,11 +75,11 @@
                         </select>
                     </td>
                     <td data-search="{{ collection.note }}" data-order="{{ collection.note }}">
-                        <input type="text" class="form-control form-control-sm" name="note" value="{{ collection.note }}">
+                        <input type="text" class="form-control form-control-sm" name="note" style="width:200px;" value="{{ collection.note }}">
                     </td>
                     <td>{{ collection.creationDate }}</td>
                     <td data-search="{{ collection.view }}" data-order="{{ collection.view }}">
-                        <select id="view" name="view" class="form-control form-control-sm" required>
+                        <select id="view" name="view" style="width:150px;" class="form-control form-control-sm" required>
                             <option value="gallery" {{ collection.view == 'gallery' ? 'selected' }}>gallery</option>
                             <option value="list" {{ collection.view == 'list' ? 'selected' }}>list</option>
                             <option value="timeline" {{ collection.view == 'timeline' ? 'selected' }}>timeline</option>
@@ -147,7 +147,7 @@
                 "order": [[1, 'asc']],
                 "columnDefs": [{
                     "orderable": false,
-                    "targets": [0, 9]
+                    "targets": [0, 11]
                 }],
                 "bAutoWidth": false,
                 "scrollX": true,
