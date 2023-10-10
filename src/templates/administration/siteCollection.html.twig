@@ -30,6 +30,7 @@
                                     {% if project.collections|length > 0 %}
                                         <input class="js-project-checkbox" type="checkbox" name="project" data-project="{{ project.id }}">
                                     {% endif %}
+                                    <small id="projectValid{{ project.id }}" class="text-danger projectValid"></small>
                                 </td>
                             </tr>
                             {% for collection in project.collections %}
@@ -104,6 +105,7 @@
         $('#siteCollectionForm').submit(function (e) {
             let data = new FormData();
             let checked = 0
+            data.append('site', '{{ site.name }}')
             data.append('site_id', '{{ site_id }}')
             $('table#user-perm tbody tr').each(function (i) {
                 let dataInput = $(this).children('td').find(".js-collection-checkbox");
@@ -112,11 +114,20 @@
                 }
                 if (dataInput.length > 0 && dataInput.is(":checked").toString() != $("#js-collection-hidden-" + dataInput.data('collection-id')).val()) {
                     data.append('d[' + i + '][c]', dataInput.data('collection-id'));
+                    data.append('d[' + i + '][p]', dataInput.data('project-id'));
                     data.append('d[' + i + '][b]', dataInput.is(':checked'));
                 }
             });
             if (checked) {
-                postRequest('{{ baseUrl }}/admin/siteCollectionManager/save', data, true, false, function () {
+                $(".projectValid").text('')
+                postRequest('{{ baseUrl }}/admin/siteCollectionManager/save', data, true, false, function (response) {
+                    if (response.isValid) {
+                        let project = response.result
+                        for (var i = 0; i < project.length; i++) {
+                            $('#projectValid' + project[i]).text('(existed)')
+                        }
+                        return
+                    }
                     $('#modal-div').modal('hide');
                 });
             } else {

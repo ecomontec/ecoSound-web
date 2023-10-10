@@ -145,17 +145,19 @@
                         }
                     });
                 }
-
                 this.classList.add('was-validated');
             });
 
             $('#userForm').submit(function (e) {
                 e.preventDefault();
-
                 if (this.checkValidity() === false) {
                     e.stopPropagation();
                 } else {
-                    postRequest('{{ baseUrl }}/api/admin/userMgr/save', new FormData($(this)[0]), false, false, function () {
+                    postRequest('{{ baseUrl }}/api/admin/userMgr/save', new FormData($(this)[0]), false, false, function (response) {
+                        if (response.isValid) {
+                            $('#userValid').text(response.message)
+                            return
+                        }
                         location.reload();
                     });
                 }

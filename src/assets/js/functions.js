@@ -233,7 +233,7 @@ function getCookie(cname) {
 /*
  * Function for saving the fields of a list with forms.
  */
-function saveFormList(element, url) {
+function saveFormList(element, url, callback) {
     let row = element.closest("tr");
     let columns = row.find("input, select, textarea");
     let formData = new FormData()
@@ -264,7 +264,7 @@ function saveFormList(element, url) {
             formData.append(item.name + "_" + item.type, value);
         }
     });
-    postRequest(baseUrl + '/' + url, formData, false);
+    postRequest(baseUrl + '/' + url, formData, false, false, callback);
 }
 
 function jsToFormData(config) {

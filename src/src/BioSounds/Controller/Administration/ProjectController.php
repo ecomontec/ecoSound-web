@@ -36,6 +36,7 @@ class ProjectController extends BaseController
         if (!Auth::isUserAdmin()) {
             throw new ForbiddenException();
         }
+
         if (!is_dir(ABSOLUTE_DIR . 'sounds/projects/')) {
             mkdir(ABSOLUTE_DIR . 'sounds/projects/');
             chmod(ABSOLUTE_DIR . 'sounds/projects/', 0777);
@@ -47,6 +48,12 @@ class ProjectController extends BaseController
                 $key = substr($key, 0, strrpos($key, '_'));
             }
             $data[$key] = $value;
+        }
+        if($projectProvider->isValid($data['name'],$data['projectId'])){
+            return json_encode([
+                'isValid' => 1,
+                'message' => 'Project name already exists.',
+            ]);
         }
         if (isset($data['projectId'])) {
             if ($_FILES["picture_id_file"]) {

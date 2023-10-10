@@ -67,6 +67,12 @@ class CollectionController extends BaseController
             }
             $data[$key] = $value;
         }
+        if ($collProvider->isValid($data['project_id'], $data['name'], $data['collId'])) {
+            return json_encode([
+                'isValid' => 1,
+                'message' => 'Collection name already exists.',
+            ]);
+        }
         $data['user_id'] = $_SESSION['user_id'];
         if (isset($data['collId'])) {
             $collProvider->updateColl($data);

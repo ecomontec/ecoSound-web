@@ -11,6 +11,7 @@ use BioSounds\Exception\File\FileInvalidException;
 use BioSounds\Exception\File\FileNotFoundException;
 use BioSounds\Exception\File\FileQueueNotFoundException;
 use BioSounds\Exception\File\FolderCreationException;
+use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\FileProvider;
 use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\SoundProvider;
@@ -53,6 +54,7 @@ class FileService
     public function __construct()
     {
         $this->recordingProvider = new RecordingProvider();
+        $this->collectionProvider = new CollectionProvider();
         $this->fileProvider = new FileProvider();
         $this->queueService = new RabbitQueueService();
     }
@@ -63,9 +65,9 @@ class FileService
      * @return array
      * @throws \Exception
      */
-    public function upload(array $request, string $uploadPath): array
+    public function upload(array $request, string $uploadPath): string
     {
-        $message = $this::SUCCESS_MESSAGE;
+        $message = '';
         $colID = $request['colId'];
         $site = isset($request['site']) ? $request['site'] : null;
         $site = $site == 0 ? null : $site;
@@ -82,7 +84,7 @@ class FileService
         if (!is_dir($uploadPath) || !$handle = opendir($uploadPath)) {
             throw new FileNotFoundException($uploadPath);
         }
-
+        $collection = $this->collectionProvider->get($colID);
         try {
             while ($fileName = readdir($handle)) {
                 $fileDate = $date;
@@ -92,8 +94,10 @@ class FileService
                     continue;
                 }
 
-                if (!empty($this->recordingProvider->getByHash(hash_file('md5', $uploadPath . $fileName)))) {
-                    $message = sprintf($message . ' ' . $this::FILE_EXISTS_MESSAGE, $fileName);
+                if (!empty($result = $this->recordingProvider->getByHash(hash_file('md5', $uploadPath . $fileName), $colID))) {
+                    $names[] = $fileName;
+                    $ids[] = $result['recording_id'];
+                    $message = sprintf("Recording " . implode(", ", $names) . " cannot be uploaded because collection " . $collection->getName() . " already contains that recording (ID: " . implode(", ", $ids) . ").");
                     continue;
                 }
 
@@ -130,7 +134,7 @@ class FileService
             closedir($handle);
             $this->queueService->closeConnection();
         }
-        return ['message' => $message];
+        return $message;
     }
 
     /**
@@ -158,7 +162,7 @@ class FileService
             }
 
             $fileHash = hash_file('md5', $file->getPath());
-            if (!empty($this->recordingProvider->getByHash($fileHash))) {
+            if (!empty($this->recordingProvider->getByHash($fileHash, $file->getCollection()))) {
                 throw new FileExistsException($file->getName());
             }
 

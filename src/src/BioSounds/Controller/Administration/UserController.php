@@ -78,7 +78,12 @@ class UserController extends BaseController
                 $data[$key] = $value;
             }
         }
-
+        if($userProvider->isValid($data['username'])){
+            return json_encode([
+                'isValid' => 1,
+                'message' => 'Username already exists.',
+            ]);
+        }
         if (isset($data['itemID'])) {
             $userProvider->updateUser($data);
             return json_encode([

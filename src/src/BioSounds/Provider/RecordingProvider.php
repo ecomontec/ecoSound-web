@@ -191,9 +191,9 @@ class RecordingProvider extends BaseProvider
      * @return array|null
      * @throws \Exception
      */
-    public function getByHash(string $fileHash): ?array
+    public function getByHash(string $fileHash, $collection_id): ?array
     {
-        $this->database->prepareQuery('SELECT * FROM ' . Recording::TABLE_NAME . ' WHERE ' . Recording::MD5_HASH . ' = :md5Hash');
+        $this->database->prepareQuery('SELECT * FROM ' . Recording::TABLE_NAME . ' WHERE ' . Recording::MD5_HASH . ' = :md5Hash AND col_id = ' . $collection_id);
         if (empty($result = $this->database->executeSelect([':md5Hash' => $fileHash]))) {
             return null;
         }

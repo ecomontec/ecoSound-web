@@ -383,7 +383,7 @@
 
                 $("#recorder").on('change', function () {
                     $('#microphone').empty()
-                    $('#microphone').removeAttr('readonly')
+                    $('#microphone').removeAttr('disabled')
                     var microphone = $(this).find('option:selected').attr('data-microphone').split(',')
                     $('#microphone').append("<option></option>")
                     for (var key in microphones) {

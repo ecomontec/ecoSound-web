@@ -31,7 +31,8 @@
                             <input id="project{{ project.id }}" type="hidden" name="projectId" value="{{ project.id }}">
                         </td>
                         <td data-search="{{ project.name }}" data-order="{{ project.name }}">
-                            <input type="text" class="form-control form-control-sm" name="name" style="width:200px;" value="{{ project.name }}">
+                            <input type="text" class="form-control form-control-sm" id="{{ project.id }}" name="name" style="width:200px;" value="{{ project.name }}">
+                            <small id="projectValid{{ project.id }}" class="text-danger"></small>
                         </td>
                         <td>{{ project.creator }}</td>
                         <td data-search="{{ project.url }}" data-order="{{ project.url }}">
@@ -71,10 +72,10 @@
                 "lengthChange": false,
                 "stateSave": true,
                 "StateDuration": -1,
-                "order": [[1, 'asc']],
+                "order": [[0, 'asc']],
                 "columnDefs": [{
                     "orderable": false,
-                    "targets": [0, 4, 7]
+                    "targets": [4, 7]
                 }],
                 "bAutoWidth": false,
                 "scrollX": true,
@@ -117,7 +118,14 @@
 
 
             $('.js-project-list').on('change', 'input, select, textarea', function () {
-                saveFormList($(this), 'api/admin/projectMgr/save');
+                var id = $(this).attr('id')
+                $('#projectValid' + id).text('')
+                saveFormList($(this), 'api/admin/projectMgr/save', function (response) {
+                    if (response.isValid) {
+                        $('#projectValid' + id).text(response.message)
+                        return
+                    }
+                });
                 var table = $('#projectTable').DataTable()
                 var tr = $(this).closest("tr")
                 table.rows(tr).invalidate()
@@ -125,12 +133,16 @@
 
             $('#projectForm').submit(function (e) {
                 e.preventDefault();
-
+                $('#projectValid').text('')
                 if (this.checkValidity() === false) {
                     e.stopPropagation();
                 } else {
                     var data = new FormData($("#projectForm")[0])
-                    postRequest('{{ baseUrl }}/api/admin/projectMgr/save', data, false, false, function () {
+                    postRequest('{{ baseUrl }}/api/admin/projectMgr/save', data, false, false, function (response) {
+                        if (response.isValid) {
+                            $('#projectValid').text(response.message)
+                            return
+                        }
                         location.reload();
                     });
                 }

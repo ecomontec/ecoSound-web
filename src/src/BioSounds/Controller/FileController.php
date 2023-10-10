@@ -25,11 +25,11 @@ class FileController
             throw new ForbiddenException();
         }
 
-        (new FileService())->upload($_POST, 'tmp/' . $uploadDirectory . '/');
+        $message = (new FileService())->upload($_POST, 'tmp/' . $uploadDirectory . '/');
 
         return json_encode([
             'error_code' => 0,
-            'message' => 'Files sent to the upload queue successfully.',
+            'message' => $message ? $message : 'Files sent to the upload queue successfully.',
         ]);
     }
 

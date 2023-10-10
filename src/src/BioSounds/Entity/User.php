@@ -127,7 +127,7 @@ class User extends BaseProvider
     public function getOrcid(int $userId): ?string
     {
         $this->database->prepareQuery('SELECT orcid FROM user WHERE user_id = :userId');
-        if (empty($result = $this->database->executeSelect([":userId" => $userId]))) {
+            if (empty($result = $this->database->executeSelect([":userId" => $userId]))) {
             return null;
         }
         return $result[0]['orcid'];
@@ -377,5 +377,16 @@ class User extends BaseProvider
 
         $this->database->prepareQuery("UPDATE user SET password = :nePasswd WHERE user_id = :userId");
         return $this->database->executeUpdate($values);
+    }
+
+    public function isValid($str)
+    {
+        $sql = "SELECT * FROM user WHERE `username` = '$str'";
+        $this->database->prepareQuery($sql);
+        $result = $this->database->executeSelect();
+        if (count($result) > 0) {
+            return true;
+        }
+        return false;
     }
 }

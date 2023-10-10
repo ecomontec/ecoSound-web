@@ -344,4 +344,18 @@ class Collection extends BaseProvider
         $this->database->prepareQuery("UPDATE collection SET $fields WHERE collection_id = :collectionId");
         return $this->database->executeUpdate($values);
     }
+
+    public function isValid($project_id, $str, $collection_id)
+    {
+        $sql = "SELECT * FROM collection WHERE project_id= $project_id and name = '$str'";
+        if (isset($collection_id)) {
+            $sql = $sql . " and collection_id != $collection_id";
+        }
+        $this->database->prepareQuery($sql);
+        $result = $this->database->executeSelect();
+        if (count($result) > 0) {
+            return true;
+        }
+        return false;
+    }
 }

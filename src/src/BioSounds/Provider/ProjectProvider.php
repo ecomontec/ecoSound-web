@@ -172,4 +172,18 @@ class ProjectProvider extends BaseProvider
         $this->database->prepareQuery("UPDATE project SET $fields WHERE project_id = :projectId");
         return $this->database->executeUpdate($values);
     }
+
+    public function isValid($str, $project_id)
+    {
+        $sql = "SELECT * FROM project WHERE `name` = '$str'";
+        if (isset($project_id)) {
+            $sql = $sql . " and project_id != $project_id";
+        }
+        $this->database->prepareQuery($sql);
+        $result = $this->database->executeSelect();
+        if (count($result) > 0) {
+            return true;
+        }
+        return false;
+    }
 }

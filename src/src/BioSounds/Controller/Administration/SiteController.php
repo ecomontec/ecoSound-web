@@ -67,8 +67,8 @@ class SiteController extends BaseController
         $column = $_POST['order'][0]['column'];
         $dir = $_POST['order'][0]['dir'];
         $data = (new SiteProvider())->getListByPage($projectId, $collectionId, $start, $length, $search, $column, $dir);
-        if(count($data)==0){
-            $data=[];
+        if (count($data) == 0) {
+            $data = [];
         }
         $result = [
             'draw' => $_POST['draw'],
@@ -86,7 +86,7 @@ class SiteController extends BaseController
     public function save()
     {
         $siteEnt = new Site();
-
+        $siteProvider = new SiteProvider();
         if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
@@ -94,7 +94,6 @@ class SiteController extends BaseController
         $data = [];
         foreach ($_POST as $key => $value) {
             if (strrpos($key, '_')) {
-                $type = substr($key, strrpos($key, '_') + 1, strlen($key));
                 $key = substr($key, 0, strrpos($key, '_'));
             }
             $sitePdoValue = $value;
@@ -133,7 +132,12 @@ class SiteController extends BaseController
                     $data[$key] = $sitePdoValue;
             }
         }
-
+        if($siteProvider->isValid($data['name'],$project_id,$data['steId'])){
+            return json_encode([
+                'isValid' => 1,
+                'message' => 'Site name already exists in this project.',
+            ]);
+        }
         if (isset($data['steId'])) {
             $siteEnt->update($data);
             return json_encode([

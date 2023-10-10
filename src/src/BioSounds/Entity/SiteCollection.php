@@ -61,4 +61,12 @@ class SiteCollection extends BaseProvider
         $this->database->prepareQuery('DELETE FROM site_collection WHERE site_id = :siteId AND collection_id =:colId');
         return $this->database->executeDelete([':siteId' => $site_id, ':colId' => $collection_id]);
     }
+
+    public function isValid($str, $site_id)
+    {
+        $sql = "SELECT GROUP_CONCAT(collection_id) AS collection FROM (SELECT c.collection_id FROM site s LEFT JOIN site_collection sc ON s.site_id = sc.site_id LEFT JOIN collection c ON c.collection_id = sc.collection_id WHERE s.`name`='$str' AND s.site_id != '$site_id' GROUP BY c.collection_id ORDER BY c.collection_id) a";
+        $this->database->prepareQuery($sql);
+        $result = $this->database->executeSelect();
+        return $result[0]['collection'];
+    }
 }

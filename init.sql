@@ -81,7 +81,7 @@ CREATE TABLE `collection`
     `project_id`    int(11) NOT NULL DEFAULT 101,
     `name`          varchar(100) COLLATE utf8_unicode_ci NOT NULL,
     `user_id`       int(11) NOT NULL,
-    `doi`           varchar(255) COLLATE utf8_unicode_ci          DEFAULT NULL COMMENT 'Citation in cientific format or full URL',
+    `doi`           varchar(255) COLLATE utf8_unicode_ci          DEFAULT NULL COMMENT 'Citation in scientific format or full URL',
     `note`          text COLLATE utf8_unicode_ci                  DEFAULT NULL,
     `view`          enum('gallery','list','timeline') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'gallery',
     `sphere`        varchar(100) COLLATE utf8_unicode_ci          DEFAULT NULL,
@@ -445,7 +445,7 @@ CREATE TABLE `label`
     `type`          enum('private', 'public') NOT NULL DEFAULT 'private',
     `creation_date` datetime                            NOT NULL,
     PRIMARY KEY (`label_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Table structure for table `label_association`
@@ -459,7 +459,7 @@ CREATE TABLE `label_association`
     KEY            `user_id_idx` (`user_id`) USING BTREE,
     KEY            `label_id_idx` (`label_id`) USING BTREE,
     UNIQUE `label_association_uniq`(`recording_id`, `user_id`)
-) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Table structure for table `iucn_get`
@@ -716,12 +716,6 @@ UPDATE CASCADE;
 ALTER TABLE `recording`
     ADD CONSTRAINT `col_id_fk` FOREIGN KEY (`col_id`) REFERENCES `collection` (`collection_id`) ON UPDATE CASCADE,
   ADD CONSTRAINT `sensor_id_fk` FOREIGN KEY (`sensor_id`) REFERENCES `sensor` (`sensor_id`) ON
-UPDATE CASCADE,
-    ADD CONSTRAINT `site_id_fk` FOREIGN KEY (`site_id`) REFERENCES `site` (`site_id`)
-ON
-UPDATE CASCADE,
-    ADD CONSTRAINT `sound_id_fk` FOREIGN KEY (`sound_id`) REFERENCES `sound` (`sound_id`)
-ON
 UPDATE CASCADE;
 
 --
