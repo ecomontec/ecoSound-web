@@ -5,7 +5,6 @@ namespace BioSounds\Controller;
 use BioSounds\Controller\Administration\IndexLogController;
 use BioSounds\Controller\Administration\SiteCollectionController;
 use BioSounds\Controller\Administration\UserController;
-use BioSounds\Exception\ForbiddenException;
 use BioSounds\Utils\Auth;
 use BioSounds\Controller\Administration\CollectionController as CollectionController;
 use BioSounds\Controller\Administration\SettingController as SettingController;
@@ -13,6 +12,7 @@ use BioSounds\Controller\Administration\RecordingController as RecordingControll
 use BioSounds\Controller\Administration\SiteController as SiteController;
 use BioSounds\Controller\Administration\TagController as TagController;
 use BioSounds\Controller\Administration\ProjectController as ProjectController;
+use BioSounds\Controller\TagReviewController as TagReviewController;
 
 class AdminController extends BaseController
 {
@@ -114,9 +114,9 @@ class AdminController extends BaseController
      * @param int|null $id
      * @return mixed
      */
-    public function recordingManager(string $action, int $id = null)
+    public function recordingManager(string $action, int $id = null, string $str = null)
     {
-        return (new RecordingController($this->twig))->$action($id);
+        return (new RecordingController($this->twig))->$action($id, $str);
     }
 
     /**
@@ -183,9 +183,29 @@ class AdminController extends BaseController
      * @param int|null $id
      * @return mixed
      */
-    public function tagMgr(string $action, int $id = null)
+    public function tagMgr(string $action, int $id = null, string $str = '0')
     {
-        return (new TagController($this->twig))->$action($id);
+        return (new TagController($this->twig))->$action($id, $str);
+    }
+
+    /**
+     * @param string|null $action
+     * @return false|string
+     * @throws \Exception
+     */
+    public function tagReviews()
+    {
+        return (new TagReviewController($this->twig))->show();
+    }
+
+    /**
+     * @param string $action
+     * @param int|null $id
+     * @return mixed
+     */
+    public function tagReviewMgr(string $action, int $id = null, string $str = '0')
+    {
+        return (new TagReviewController($this->twig))->$action($id, $str);
     }
 
     /**

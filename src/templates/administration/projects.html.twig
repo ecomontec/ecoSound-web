@@ -4,14 +4,29 @@
     {% include 'administration/projectCreate.html.twig' %}
     <div class="card mb-3" id="projectsList">
         <div class="card-header border-light bg-white text-right">
+            <button id="viewing" name="table-btn" class="btn btn-outline-secondary btn-sm mt-2" type="button" data-target="#viewing" disabled>
+                <i class="fas fa-eye"></i>
+                Viewing
+            </button>
+            <button id="editDescription" name="table-btn" class="btn btn-outline-secondary btn-sm mt-2" type="button" data-target="#editDescription" disabled>
+                <i class="fas fa-edit"></i>
+                Edit Description
+            </button>
             <button id="projectFormButton" class="btn btn-outline-primary btn-sm mt-2" type="button" data-toggle="collapse" data-target="#projectFormSection" aria-expanded="false" aria-controls="projectFormSection">
                 <i class="fas fa-plus"></i>
                 Add Project
+            </button>
+            <button id="projectsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#projectsExport" aria-expanded="false" aria-controls="projectsExport">
+                <i class="fa fa-download"></i>
+                Project Export
             </button>
         </div>
         <table id="projectTable" style="display:none; white-space: nowrap;">
             <thead class="table-borderless">
             <tr style="font-size: .875rem;">
+                <th>
+                    <input type="checkbox" class="js-all-checkbox" name="check-all" id="check-all">
+                </th>
                 <th>#</th>
                 <th>Name</th>
                 <th>User</th>
@@ -19,44 +34,9 @@
                 <th>Picture</th>
                 <th>Creation Date (UTC)</th>
                 <th>Active</th>
-                <th>Description</th>
             </tr>
             </thead>
-            <tbody class="form-control-sm js-project-list">
-            {% for project in projects %}
-                <form enctype="multipart/form-data">
-                    <tr>
-                        <td>
-                            {{ project.id }}
-                            <input id="project{{ project.id }}" type="hidden" name="projectId" value="{{ project.id }}">
-                        </td>
-                        <td data-search="{{ project.name }}" data-order="{{ project.name }}">
-                            <input type="text" class="form-control form-control-sm" id="{{ project.id }}" name="name" style="width:200px;" value="{{ project.name }}">
-                            <small id="projectValid{{ project.id }}" class="text-danger"></small>
-                        </td>
-                        <td>{{ project.creator }}</td>
-                        <td data-search="{{ project.url }}" data-order="{{ project.url }}">
-                            <input type="text" class="form-control form-control-sm" name="url" style="width:400px;" value="{{ project.url }}">
-                        </td>
-                        <td>
-                            <input type="file" name="picture_id_file" id="picture_id_file{{ project.id }}" class="picture_id_file file_upload" accept="image/*" data-project-id="{{ project.id }}" hidden>
-                            <a href="#" class="project-picture" data-project-id="{{ project.id }}">
-                                <img id="pic{{ project.id }}" src="{{ baseUrl }}/sounds/projects/{{ project.pictureId }}" alt="Upload Picture" style="height:55px;">
-                            </a>
-                        </td>
-                        <td>{{ project.creationDate }}</td>
-                        <td class="text-center" data-search="{{ project.active }}" data-order="{{ project.active }}">
-                            <input name="active" type="checkbox" {{ project.active ? 'checked' }}>
-                        </td>
-                        <td data-search="{{ project.description }}{{ project.descriptionShort }}" data-order="{{ project.description }}{{ project.descriptionShort }}">
-                            <a href="{{ baseUrl }}/admin/projectMgr/description/{{ project.id }}" class="js-open-modal" title="Edit description" $privhidden>
-                                <span class="fas fa-edit"></span>
-                            </a>
-                        </td>
-                    </tr>
-                </form>
-            {% endfor %}
-            </tbody>
+            <tbody class="form-control-sm js-project-list"></tbody>
         </table>
     </div>
 {% endblock %}
@@ -65,25 +45,40 @@
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <script>
-        $(document).ready(function () {
-            $('#projectTable').show()
-            $('#projectTable').DataTable({
-                "pageLength": 8,
-                "lengthChange": false,
-                "stateSave": true,
-                "StateDuration": -1,
-                "order": [[0, 'asc']],
-                "columnDefs": [{
-                    "orderable": false,
-                    "targets": [4, 7]
-                }],
-                "bAutoWidth": false,
-                "scrollX": true,
-            });
-        });
-
         $(function () {
+            $(document).ready(function () {
+                $('#projectTable').show()
+                $('#projectTable').DataTable({
+                    "processing": true,
+                    "serverSide": true,
+                    "ajax": {
+                        "url": '{{ baseUrl }}/admin/projectMgr/getListByPage',
+                        "type": 'POST'
+                    },
+                    "stateSave": true,
+                    "StateDuration": -1,
+                    "order": [[1, 'asc']],
+                    "columnDefs": [
+                        {
+                            "orderable": false,
+                            "targets": [0, 5]
+                        },
+                        {
+                            "className": "dt-center",
+                            "targets": [0, 7],
+                        }],
+                    "bAutoWidth": false,
+                    "scrollX": true,
+                });
+            });
+
             'use strict';
+
+            $("#projectFormSection").on('shown.bs.collapse', function () {
+                $("#projectsList").hide();
+            }).on('hidden.bs.collapse', function () {
+                $("#projectsList").show();
+            });
 
             var quill = new Quill('.editor', {
                 modules: {
@@ -116,19 +111,21 @@
                 $("#description_short").val($(".ql-editor")[0].innerHTML)
             });
 
+            $(document).on('click', '#projectsExport', function () {
+                window.location.href = '{{ baseUrl }}/api/admin/projectMgr/export';
+            });
 
             $('.js-project-list').on('change', 'input, select, textarea', function () {
+                if ($(this)[0].className == 'js-checkbox') {
+                    return
+                }
                 var id = $(this).attr('id')
                 $('#projectValid' + id).text('')
                 saveFormList($(this), 'api/admin/projectMgr/save', function (response) {
                     if (response.isValid) {
                         $('#projectValid' + id).text(response.message)
-                        return
                     }
                 });
-                var table = $('#projectTable').DataTable()
-                var tr = $(this).closest("tr")
-                table.rows(tr).invalidate()
             });
 
             $('#projectForm').submit(function (e) {
@@ -164,6 +161,22 @@
                         document.getElementById('pic' + id).src = this.result;
                     };
                 }
+            })
+            $('button[name="table-btn"][data-target="#viewing"]').click(function (e) {
+                $('.js-checkbox:checked').each(function () {
+                    window.open('/collection/index/' + $(this).data('id'), '_blank');
+                });
+                e.preventDefault();
+            })
+
+            $('button[name="table-btn"][data-target="#editDescription"]').click(function (e) {
+                let id = '';
+                $('.js-checkbox:checked').each(function () {
+                    id = $(this).data('id');
+                });
+                let data = {'id': id};
+                requestModal("{{ baseUrl }}/admin/projectMgr/description/" + id, data);
+                e.preventDefault();
             })
         });
     </script>

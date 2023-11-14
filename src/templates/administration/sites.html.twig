@@ -1,41 +1,53 @@
 {% extends 'administration/admin.html.twig' %}
 
 {% block admin_content %}
-
     {% include 'administration/siteCreate.html.twig' %}
     <div class="card mb-3" id="siteList">
         <div class="card-header border-light bg-white text-right">
-            <div class="row">
-                <div class="col-auto mr-auto mt-2">
-                    <form id="projectForm" class="form-inline" action="{{ baseUrl }}/admin/sites">
-                        <label for="projectId">Project</label>
-                        <select id="projectId" name="projectId" class="form-control form-control-sm ml-3">
-                            {% for project in projects %}
-                                <option value="{{ project.id }}" {{ project.id == projectId ? 'selected' }}>
-                                    {{ project.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                        <label for="collectionId" class="ml-3">Collection</label>
-                        <select id="collectionId" name="collectionId" class="form-control form-control-sm ml-3">
-                            <option></option>
-                            {% for collection in collections %}
-                                <option value="{{ collection.id }}" {{ collection.id == collectionId ? 'selected' }}>
-                                    {{ collection.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </form>
-                </div>
-                <button id="siteFormButton" class="btn btn-outline-primary btn-sm mt-2" type="button" data-toggle="collapse" data-target="#siteFormSection" aria-expanded="false" aria-controls="siteFormSection">
-                    <i class="fas fa-plus"></i>
-                    Add Site
-                </button>
+            <div class="col-auto mr-auto mt-2">
+                <form id="projectForm" class="form-inline" action="{{ baseUrl }}/admin/sites">
+                    <label for="projectId">Project</label>
+                    <select id="projectId" name="projectId" class="form-control form-control-sm ml-3">
+                        {% for project in projects %}
+                            <option value="{{ project.id }}" {{ project.id == projectId ? 'selected' }}>
+                                {{ project.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <label for="collectionId" class="ml-3">Collection</label>
+                    <select id="collectionId" name="collectionId" class="form-control form-control-sm ml-3">
+                        <option></option>
+                        {% for collection in collections %}
+                            <option value="{{ collection.id }}" {{ collection.id == collectionId ? 'selected' }}>
+                                {{ collection.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </form>
             </div>
+            <button id="assignments" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#assignments" disabled>
+                <i class="fas fa-tasks"></i>
+                Assignments
+            </button>
+            <button id="deletion" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#deletion" disabled>
+                <i class="fas fa-trash"></i>
+                Deletion
+            </button>
+            <button id="siteFormButton" class="btn btn-outline-primary btn-sm mt-2" type="button" data-toggle="collapse" data-target="#siteFormSection" aria-expanded="false" aria-controls="siteFormSection">
+                <i class="fas fa-plus"></i>
+                Add Site
+            </button>
+            <button id="sitesExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#sitesExport" aria-expanded="false" aria-controls="sitesExport">
+                <i class="fa fa-download"></i>
+                Site Export
+            </button>
         </div>
         <table id="siteTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
             <tr>
+                <th>
+                    <input type="checkbox" class="js-all-checkbox" name="check-all" id="check-all">
+                </th>
                 <th>#</th>
                 <th>Name</th>
                 <th>Longitude</th>
@@ -48,14 +60,9 @@
                 <th>Realm</th>
                 <th>Biome</th>
                 <th>Functional Type</th>
-                {% if isManage %}
-                    <th></th>
-                {% endif %}
-                <th></th>
             </tr>
             </thead>
-            <tbody class="form-control-sm js-site-list">
-            </tbody>
+            <tbody class="form-control-sm js-site-list"></tbody>
         </table>
     </div>
 {% endblock %}
@@ -75,20 +82,29 @@
                         "url": '{{ baseUrl }}/admin/siteManager/getListByPage/{{ projectId }}/{{ collectionId }}',
                         "type": 'POST'
                     },
-                    "pageLength": 8,
                     "stateSave": true,
-                    "lengthChange": false,
                     "StateDuration": -1,
-                    "order": [[0, 'asc']],
-                    "columnDefs": [{
-                        "orderable": false,
-                        "targets": [12, 13]
-                    }],
+                    "order": [[1, 'asc']],
+                    "columnDefs": [
+                        {
+                            "orderable": false,
+                            "targets": [0],
+                        },
+                        {
+                            "className": "dt-center",
+                            "targets": [0],
+                        }],
                     "bAutoWidth": false,
                     "scrollX": true,
                 });
                 'use strict';
-
+                $(document).on('click', '#sitesExport', function () {
+                    if ($('#collectionId').val() == '') {
+                        window.location.href = '{{ baseUrl }}/api/admin/siteManager/export/' + $('#projectId').val() + '/0'
+                    } else {
+                        window.location.href = '{{ baseUrl }}/api/admin/siteManager/export/' + $('#projectId').val() + '/' + $('#collectionId').val();
+                    }
+                });
                 $('#realm').on('change', function () {
                     $("#biome").empty()
                     $("#biome").append("<option></option>");
@@ -412,22 +428,6 @@
                         }
                     }
                 });
-                $('#siteTable tbody').on('click', '.js-site-delete', function (e) {
-                    if (!confirm('Are you sure you want to delete this site?')) {
-                        return false;
-                    }
-                    deleteRequest('{{ baseUrl }}/api/admin/siteManager/delete/' + $(this).data('id'), [], false, false, function () {
-                        location.reload();
-                    });
-                });
-                $('#siteTable tbody').on('click', ".js-open-modal", function (e) {
-                    let data = [];
-                    if (this.dataset.id) {
-                        data = {'id': this.dataset.id};
-                    }
-                    requestModal(this.href, data);
-                    e.preventDefault();
-                });
 
                 $('#siteForm').submit(function (e) {
                     e.preventDefault();
@@ -463,10 +463,12 @@
 
                 /* Save site list */
                 $('.js-site-list').on('change', 'input, select, textarea', function () {
+                    if ($(this)[0].className == 'js-checkbox') {
+                        return
+                    }
                     var id = $(this).parent().parent().find('[name="name"]').attr('id');
                     $('#siteValid' + id).text('')
                     $('#areaValid' + id).text('')
-                    console.log(id)
                     if (this.checkValidity() === false) { // this.style.border = "1px solid red";
                         let tdLongDiv = $(this).parent().children("div");
                         tdLongDiv.addClass("d-block");
@@ -487,10 +489,32 @@
                         });
                     }
                 });
+                
+                $('button[name="table-btn"][data-target="#assignments"]').click(function (e) {
+                    let id = [];
+                    let name = [];
+                    $('.js-checkbox:checked').each(function () {
+                        id.push($(this).data('id'));
+                        name.push($(this).data('name'));
+                    });
+                    let data = {'id': id, 'name': name};
+                    requestModal("{{ baseUrl }}/admin/siteCollections", data);
+                    e.preventDefault();
+                })
 
-                $(document).on('click', '#saveButton', function () {
-                    $('#siteEdit').submit();
-                });
+                $('button[name="table-btn"][data-target="#deletion"]').click(function (e) {
+                    if (!confirm('Are you sure you want to delete this site?')) {
+                        return false;
+                    }
+                    let id = [];
+                    $('.js-checkbox:checked').each(function () {
+                        id.push($(this).data('id'));
+                    });
+                    let data = {'id': id};
+                    postRequest('{{ baseUrl }}/api/admin/siteManager/delete', data, false, false, function () {
+                        location.reload();
+                    });
+                })
             });
         });
     </script>

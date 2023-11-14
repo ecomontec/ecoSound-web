@@ -88,7 +88,6 @@
         })
 
         $('.js-project-checkbox').change(function (e) {
-            i = this.checked ? 1 : 0
             $('[data-project-id="' + $(this).data('project') + '"]').prop('checked', this.checked);
         });
 
@@ -104,27 +103,33 @@
 
         $('#siteCollectionForm').submit(function (e) {
             let data = new FormData();
+            let arr = {}
             let checked = 0
-            data.append('site', '{{ site.name }}')
+            data.append('site', '{{ site_name }}')
             data.append('site_id', '{{ site_id }}')
             $('table#user-perm tbody tr').each(function (i) {
                 let dataInput = $(this).children('td').find(".js-collection-checkbox");
                 if (dataInput.is(':checked')) {
                     checked = 1
                 }
-                if (dataInput.length > 0 && dataInput.is(":checked").toString() != $("#js-collection-hidden-" + dataInput.data('collection-id')).val()) {
-                    data.append('d[' + i + '][c]', dataInput.data('collection-id'));
-                    data.append('d[' + i + '][p]', dataInput.data('project-id'));
-                    data.append('d[' + i + '][b]', dataInput.is(':checked'));
+                if (dataInput.data('collection-id') != null) {
+                    if (!arr[dataInput.is(':checked')]) {
+                        arr[dataInput.is(':checked')] = [];
+                    }
+                    arr[dataInput.is(':checked')].push(dataInput.data('collection-id'))
                 }
             });
+            $.each(arr, function (key, value) {
+                data.append("c[" + key + "]", value);
+            })
             if (checked) {
-                $(".projectValid").text('')
-                postRequest('{{ baseUrl }}/admin/siteCollectionManager/save', data, true, false, function (response) {
+
+                postRequest('{{ baseUrl }}/admin/siteCollectionManager/save', data, false, true, function (response) {
                     if (response.isValid) {
+                        $(".projectValid").text('')
                         let project = response.result
                         for (var i = 0; i < project.length; i++) {
-                            $('#projectValid' + project[i]).text('(existed)')
+                            $('#projectValid' + project[i][0]).text('Site ' + project[i][1] + ' already exists')
                         }
                         return
                     }

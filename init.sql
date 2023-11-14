@@ -57,7 +57,9 @@ CREATE TABLE `models`
     `name`          varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
     `tf_model_path` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
     `labels_path`   varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `source_URL`    varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL
+    `source_URL`    varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `description` text CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL,
+    `parameter` text CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
@@ -107,7 +109,6 @@ CREATE TABLE `file_upload`
     `site_id`        int(11) DEFAULT NULL,
     `collection_id`  int(11) NOT NULL,
     `directory`      int(11) NOT NULL,
-    `sensor_id`      int(11) DEFAULT NULL,
     `recorder_id`    int(11) DEFAULT NULL,
     `microphone_id`  int(11) DEFAULT NULL,
     `species_id`     int(11) DEFAULT NULL,
@@ -170,14 +171,14 @@ CREATE TABLE `project`
 (
     `project_id`        int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `name`              varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-    `description`       longblob,
-    `description_short` longblob,
     `creator_id`        int(11) NOT NULL,
-    `creation_date`     timestamp                            NOT NULL DEFAULT current_timestamp(),
     `url`               varchar(255) COLLATE utf8_unicode_ci NOT NULL,
     `picture_id`        varchar(255) COLLATE utf8_unicode_ci,
+    `description`       longblob,
+    `description_short` longblob,
     `public`            tinyint(1) NOT NULL DEFAULT 1,
-    `active`            tinyint(1) NOT NULL DEFAULT 1
+    `active`            tinyint(1) NOT NULL DEFAULT 1,
+    `creation_date`     timestamp                            NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
@@ -186,30 +187,28 @@ CREATE TABLE `project`
 CREATE TABLE `recording`
 (
     `recording_id`  int(11) NOT NULL,
+    `data_type`     enum('meta-data','audio data') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'audio data',
     `col_id`        int(11) NOT NULL,
     `directory`     int(11) DEFAULT NULL,
-    `sensor_id`     int(11) DEFAULT NULL,
+    `filename`      varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `name`          varchar(160) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `user_id`       int(11) DEFAULT NULL,
+    `site_id`       int(11) DEFAULT NULL,
     `recorder_id`   int(11) DEFAULT NULL,
     `microphone_id` int(11) DEFAULT NULL,
-    `site_id`       int(11) DEFAULT NULL,
-    `sound_id`      int(11) DEFAULT NULL,
-    `user_id`       int(11) DEFAULT NULL,
-    `name`          varchar(160) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `data_type`     enum('meta-data','audio data') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'audio data',
-    `filename`      varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `file_size`     int(11) DEFAULT NULL,
-    `md5_hash`      char(32) COLLATE utf8_unicode_ci     DEFAULT NULL COMMENT 'MD5 hash of the file, to verify that the file has not been changed.',
+    `license_id`    int(11) DEFAULT NULL,
+    `type`          varchar(50) COLLATE utf8_unicode_ci  DEFAULT NULL,
+    `medium`        varchar(50) COLLATE utf8_unicode_ci  DEFAULT NULL,
+    `note`          varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
     `file_date`     date                                 DEFAULT NULL,
     `file_time`     time                                 DEFAULT NULL,
-    `license_id`    int(11) DEFAULT NULL,
+    `file_size`     int(11) DEFAULT NULL,
+    `md5_hash`      char(32) COLLATE utf8_unicode_ci     DEFAULT NULL COMMENT 'MD5 hash of the file, to verify that the file has not been changed.',
     `DOI`           varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
     `sampling_rate` int(11) NOT NULL DEFAULT 44100,
     `bitrate`       int(11) DEFAULT NULL DEFAULT 16,
     `channel_num`   int(1) DEFAULT NULL DEFAULT 1,
     `duration`      float     NOT NULL,
-    `note`          varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `type`          varchar(50) COLLATE utf8_unicode_ci  DEFAULT NULL,
-    `medium`        varchar(50) COLLATE utf8_unicode_ci  DEFAULT NULL,
     `creation_date` timestamp NOT NULL                   DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -220,18 +219,6 @@ CREATE TABLE `role`
 (
     `role_id` int(11) NOT NULL,
     `name`    varchar(128) COLLATE utf8_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
---
--- Table structure for table `sensor`
---
-CREATE TABLE `sensor`
-(
-    `sensor_id`  int(11) NOT NULL,
-    `name`       varchar(200) COLLATE utf8_unicode_ci NOT NULL,
-    `microphone` varchar(200) COLLATE utf8_unicode_ci NOT NULL,
-    `recorder`   varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `note`       varchar(255) COLLATE utf8_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
@@ -250,9 +237,8 @@ CREATE TABLE `setting`
 CREATE TABLE `site`
 (
     `site_id`                 int(11) NOT NULL,
-    `name`                    varchar(100) COLLATE utf8_unicode_ci NOT NULL,
     `user_id`                 int(11) NOT NULL,
-    `creation_date_time`      datetime                             NOT NULL,
+    `name`                    varchar(100) COLLATE utf8_unicode_ci NOT NULL,
     `longitude_WGS84_dd_dddd` double DEFAULT NULL,
     `latitude_WGS84_dd_dddd`  double DEFAULT NULL,
     `topography_m`            double DEFAULT NULL,
@@ -262,7 +248,8 @@ CREATE TABLE `site`
     `gadm2`                   varchar(100),
     `realm_id`                int(11),
     `biome_id`                int(11),
-    `functional_type_id`      int(11)
+    `functional_type_id`      int(11),
+    `creation_date_time`      datetime                             NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
@@ -323,7 +310,7 @@ CREATE TABLE `species`
     `class`       varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
     `common_name` varchar(200) COLLATE utf8_unicode_ci NOT NULL,
     `level`       int(11) NOT NULL,
-    `region`      varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL
+    `source`      varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
@@ -345,24 +332,24 @@ CREATE TABLE `spectrogram`
 CREATE TABLE `tag`
 (
     `tag_id`                 int(11) NOT NULL,
-    `species_id`             int(11) DEFAULT NULL,
+    `sound_id`               int(11) NOT NULL,
     `recording_id`           int(11) NOT NULL,
     `user_id`                int(11) NOT NULL,
+    `creator_type`           varchar(128) COLLATE utf8_unicode_ci         DEFAULT 'user',
+    `confidence`             float                                        DEFAULT NULL,
     `min_time`               float                               NOT NULL,
     `max_time`               float                               NOT NULL,
-    `min_freq`               varchar(10) COLLATE utf8_unicode_ci NOT NULL,
-    `max_freq`               varchar(10) COLLATE utf8_unicode_ci NOT NULL,
+    `min_freq`               float                               NOT NULL,
+    `max_freq`               float                               NOT NULL,
+    `species_id`             int(11) DEFAULT NULL,
     `uncertain`              tinyint(1) DEFAULT NULL COMMENT 'data lost before 18.10.2015',
     `sound_distance_m`       int(4) DEFAULT NULL,
     `distance_not_estimable` tinyint(1) DEFAULT NULL,
     `individuals`            int(2) NOT NULL,
     `animal_sound_type`      varchar(128) COLLATE utf8_unicode_ci         DEFAULT NULL,
-    `sound_id`               int(11) NOT NULL,
     `reference_call`         tinyint(1) NOT NULL,
-    `creator_type`           varchar(128) COLLATE utf8_unicode_ci         DEFAULT 'user',
-    `confidence`             float                                        DEFAULT NULL,
-    `creation_date`          timestamp                           NOT NULL DEFAULT current_timestamp(),
-    `comments`               varchar(500) COLLATE utf8_unicode_ci         DEFAULT NULL
+    `comments`               varchar(500) COLLATE utf8_unicode_ci         DEFAULT NULL,
+    `creation_date`          timestamp                           NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
@@ -516,9 +503,7 @@ ALTER TABLE `play_log`
 ALTER TABLE `recording`
     ADD PRIMARY KEY (`recording_id`),
   ADD KEY `site_id_idx` (`site_id`) USING BTREE,
-  ADD KEY `col_id_idx` (`col_id`) USING BTREE,
-  ADD KEY `sensor_id_idx` (`sensor_id`) USING BTREE,
-  ADD KEY `sound_id_idx` (`sound_id`) USING BTREE;
+  ADD KEY `col_id_idx` (`col_id`) USING BTREE;
 
 --
 -- Indexes for table `role`
@@ -526,12 +511,6 @@ ALTER TABLE `recording`
 ALTER TABLE `role`
     ADD PRIMARY KEY (`role_id`),
   ADD UNIQUE KEY `ID` (`role_id`);
-
---
--- Indexes for table `sensor`
---
-ALTER TABLE `sensor`
-    ADD PRIMARY KEY (`sensor_id`);
 
 --
 -- Indexes for table `setting`
@@ -653,12 +632,6 @@ ALTER TABLE `role`
     MODIFY `role_id` int (11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `sensor`
---
-ALTER TABLE `sensor`
-    MODIFY `sensor_id` int (11) NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT for table `site`
 --
 ALTER TABLE `site`
@@ -714,9 +687,7 @@ UPDATE CASCADE;
 -- Constraints for table `recording`
 --
 ALTER TABLE `recording`
-    ADD CONSTRAINT `col_id_fk` FOREIGN KEY (`col_id`) REFERENCES `collection` (`collection_id`) ON UPDATE CASCADE,
-  ADD CONSTRAINT `sensor_id_fk` FOREIGN KEY (`sensor_id`) REFERENCES `sensor` (`sensor_id`) ON
-UPDATE CASCADE;
+    ADD CONSTRAINT `col_id_fk` FOREIGN KEY (`col_id`) REFERENCES `collection` (`collection_id`) ON UPDATE CASCADE;
 
 --
 -- Constraints for table `spectrogram`

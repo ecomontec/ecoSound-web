@@ -13,7 +13,6 @@ class Recording
     const MICROPHONE_ID = 'microphone_id';
     const RECORDER_NAME = 'modal';
     const MICROPHONE_NAME = 'name';
-    const SOUND_ID = 'sound_id';
     const DIRECTORY = 'directory';
     const FILE_SIZE = "file_size";
     const NAME = "name";
@@ -919,7 +918,6 @@ class Recording
         $this->setRecorderName($values['recorderName']);
         $this->setMicrophone($values['microphone_id']);
         $this->setMicrophoneName($values['microphoneName']);
-        $this->setSound($values['sound_id']);
         $this->setDataType($values['data_type']);
         $this->setFileName($values['filename']);
         $this->setFileDate($values['file_date']);

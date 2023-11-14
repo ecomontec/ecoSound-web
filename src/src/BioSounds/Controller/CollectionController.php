@@ -297,7 +297,7 @@ class CollectionController extends BaseController
             if ($j == 1) {
                 $arr['longitude_center'] = $arr['longitude_center'] + 180;
                 foreach ($array as $key => $value) {
-                    if (abs($value[3] - $arr['longitude_center']) > 180) {
+                    if (abs($value[3] - $arr['longitude_center']) > 45) {
                         $array[$key][3] = $array[$key][3] + 360;
                     }
                 }

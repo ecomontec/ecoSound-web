@@ -2,12 +2,15 @@
 
 namespace BioSounds\Provider;
 
+use BioSounds\Entity\AbstractProvider;
 use BioSounds\Entity\Project;
 use BioSounds\Exception\Database\NotFoundException;
 use BioSounds\Utils\Auth;
 
-class ProjectProvider extends BaseProvider
+class ProjectProvider extends AbstractProvider
 {
+    const TABLE_NAME = "project";
+
     public function getList(): array
     {
         $sql = "SELECT * FROM project WHERE active = 1";
@@ -54,16 +57,24 @@ class ProjectProvider extends BaseProvider
             ->setPublic($result['public']);
     }
 
-    public function getWithPermission($userId, int $disalbe = 1): array
+    public function getWithPermission($userId = null, int $disalbe = 1): array
     {
         if (Auth::isUserAdmin()) {
-            $sql = "SELECT p.*,MAX(c.collection_id) AS collection_id,MAX( u.permission_id ) AS permission_id FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u ON u.collection_id = c.collection_id AND u.user_id = :userId GROUP BY p.project_id ORDER BY p.project_id";
+            if ($userId == null) {
+                $sql = "SELECT p.* FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u ON u.collection_id = c.collection_id GROUP BY p.project_id ORDER BY p.project_id";
+            } else {
+                $sql = "SELECT p.*,MAX(c.collection_id) AS collection_id,MAX( u.permission_id ) AS permission_id FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u ON u.collection_id = c.collection_id AND u.user_id = $userId GROUP BY p.project_id ORDER BY p.project_id";
+            }
         } else {
             $str = $disalbe ? ' WHERE u1.permission_id = 4 ' : ' WHERE u1.permission_id IS NOT NULL';
-            $sql = "SELECT p.*,MAX(c.collection_id) AS collection_id,MAX( u2.permission_id ) AS permission_id FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = " . Auth::getUserID() . " LEFT JOIN user_permission u2 ON u2.collection_id = c.collection_id AND u2.user_id = :userId " . $str . " GROUP BY p.project_id ORDER BY p.project_id";
+            if ($userId == null) {
+                $sql = "SELECT p.* FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = " . Auth::getUserID() . $str . " GROUP BY p.project_id ORDER BY p.project_id";
+            } else {
+                $sql = "SELECT p.*,MAX(c.collection_id) AS collection_id,MAX( u2.permission_id ) AS permission_id FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = " . Auth::getUserID() . " LEFT JOIN user_permission u2 ON u2.collection_id = c.collection_id AND u2.user_id = $userId " . $str . " GROUP BY p.project_id ORDER BY p.project_id";
+            }
         }
         $this->database->prepareQuery($sql);
-        $result = $this->database->executeSelect([':userId' => $userId]);
+        $result = $this->database->executeSelect();
 
         $data = [];
         foreach ($result as $item) {
@@ -82,7 +93,6 @@ class ProjectProvider extends BaseProvider
                 ->setActive($item['active'])
                 ->setCollection($item['collection_id']);
         }
-
         return $data;
     }
 
@@ -185,5 +195,66 @@ class ProjectProvider extends BaseProvider
             return true;
         }
         return false;
+    }
+
+    public function getProject(): array
+    {
+        if (Auth::isUserAdmin()) {
+            $sql = "SELECT p.*,u.name AS username,MAX(c.collection_id) AS collection_id,MAX( u1.permission_id ) AS permission_id FROM project p LEFT JOIN user u ON p.creator_id = u.user_id LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = :userId ";
+        } else {
+            $sql = "SELECT p.*,u.name AS username,MAX(c.collection_id) AS collection_id,MAX( u2.permission_id ) AS permission_id FROM project p LEFT JOIN user u ON p.creator_id = u.user_id LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = " . Auth::getUserID() . " LEFT JOIN user_permission u2 ON u2.collection_id = c.collection_id AND u2.user_id = :userId  WHERE u1.permission_id = 4 ";
+        }
+        $sql .= " GROUP BY p.project_id ";
+        $this->database->prepareQuery($sql);
+        return $this->database->executeSelect([':userId' => Auth::getUserID()]);
+    }
+
+    public function getFilterCount(string $search): int
+    {
+        if (Auth::isUserAdmin()) {
+            $sql = "SELECT p.*,u.name AS username,MAX(c.collection_id) AS collection_id,MAX( u1.permission_id ) AS permission_id FROM project p LEFT JOIN user u ON p.creator_id = u.user_id LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = :userId ";
+        } else {
+            $sql = "SELECT p.*,u.name AS username,MAX(c.collection_id) AS collection_id,MAX( u2.permission_id ) AS permission_id FROM project p LEFT JOIN user u ON p.creator_id = u.user_id LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = " . Auth::getUserID() . " LEFT JOIN user_permission u2 ON u2.collection_id = c.collection_id AND u2.user_id = :userId  WHERE u1.permission_id = 4 ";
+        }
+        if ($search) {
+            $sql .= (Auth::isUserAdmin() ? ' WHERE ' : ' AND ');
+            $sql .= " CONCAT(IFNULL(p.project_id,''), IFNULL(p.name,''), IFNULL(u.name,''), IFNULL(p.url,''), IFNULL(p.creation_date,'')) LIKE '%$search%' ";
+        }
+        $sql .= " GROUP BY p.project_id ";
+        $this->database->prepareQuery($sql);
+        $count = count($this->database->executeSelect([':userId' => Auth::getUserID()]));
+        return $count;
+    }
+
+    public function getListByPage(string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
+    {
+        $arr = [];
+        if (Auth::isUserAdmin()) {
+            $sql = "SELECT p.*,u.name AS username,MAX(c.collection_id) AS collection_id,MAX( u1.permission_id ) AS permission_id FROM project p LEFT JOIN user u ON p.creator_id = u.user_id LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = :userId ";
+        } else {
+            $sql = "SELECT p.*,u.name AS username,MAX(c.collection_id) AS collection_id,MAX( u2.permission_id ) AS permission_id FROM project p LEFT JOIN user u ON p.creator_id = u.user_id LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = " . Auth::getUserID() . " LEFT JOIN user_permission u2 ON u2.collection_id = c.collection_id AND u2.user_id = :userId  WHERE u1.permission_id = 4 ";
+        }
+        if ($search) {
+            $sql .= Auth::isUserAdmin() ? ' WHERE ' : ' AND ';
+            $sql .= " CONCAT(IFNULL(p.project_id,''), IFNULL(p.name,''), IFNULL(u.name,''), IFNULL(p.url,''), IFNULL(p.creation_date,'')) LIKE '%$search%' ";
+        }
+        $sql .= " GROUP BY p.project_id ";
+        $a = ['', 'p.project_id', 'p.name', 'u.name', 'p.url', '', 'p.creation_date', 'p.active'];
+        $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
+        $this->database->prepareQuery($sql);
+        $result = $this->database->executeSelect([':userId' => Auth::getUserID()]);
+        if (count($result)) {
+            foreach ($result as $key => $value) {
+                $arr[$key][] = "<input type='checkbox' class='js-checkbox'data-id='$value[project_id]' name='cb[$value[project_id]]' id='cb[$value[project_id]]'>";
+                $arr[$key][] = "$value[project_id]<input id='project$value[project_id]' type='hidden' name='projectId' value='$value[project_id]'>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' id='$value[project_id]' name='name' style='width:200px;' value='$value[name]'><small id='projectValid$value[project_id]' class='text-danger'></small>";
+                $arr[$key][] = $value['username'];
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='url' style='width:400px;' value='$value[url]'>";
+                $arr[$key][] = "<input type='file' name='picture_id_file' id='picture_id_file$value[project_id]' class='picture_id_file file_upload' accept='image/*' data-project-id='$value[project_id]' hidden><a href='#' class='project-picture' data-project-id='$value[project_id]'><img id='pic$value[project_id]' src='" . APP_URL . "/sounds/projects/$value[picture_id]' alt='Upload Picture' style='height:30px;'></a>";
+                $arr[$key][] = $value['creation_date'];
+                $arr[$key][] = "<input name='active' type='checkbox' " . ($value['active'] ? 'checked' : '') . ">";
+            }
+        }
+        return $arr;
     }
 }

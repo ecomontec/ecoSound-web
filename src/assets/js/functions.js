@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    $(".js-open-modal").click(function (e) {
+    $('tbody').on('click', ".js-open-modal", function (e) {
         let data = [];
         if (this.dataset.id) {
             data = {'id': this.dataset.id};
@@ -240,6 +240,9 @@ function saveFormList(element, url, callback) {
     let value = '';
     columns.each(function (i, item) {
         value = item.value;
+        if (item.className == 'js-checkbox') {
+            return
+        }
         if (item.type === "checkbox" && item.checked) {
             value = 1;
         } else if (item.type === "checkbox" && !item.checked) {
@@ -286,3 +289,87 @@ $(document).keydown(function (event) {
 
     }
 });
+$('.js-all-checkbox').change(function () {
+    if ($(this).prop('checked')) {
+        $('.js-checkbox').prop('checked', true)
+    } else {
+        $('.js-checkbox').prop('checked', false)
+    }
+    checkboxChange()
+});
+
+$('table').on('draw.dt', function () {
+    let allChecked = checkboxChange()
+    if (allChecked) {
+        $('.js-all-checkbox').prop('checked', true);
+    } else {
+        $('.js-all-checkbox').prop('checked', false);
+    }
+});
+
+$('table').on('change', '.js-checkbox', function () {
+    let allChecked = checkboxChange()
+    if (allChecked) {
+        $('.js-all-checkbox').prop('checked', true);
+    } else {
+        $('.js-all-checkbox').prop('checked', false);
+    }
+});
+
+function checkboxChange() {
+    let selectedCount = 0;
+    let allChecked = true;
+
+    $('.js-checkbox').each(function () {
+        if (!$(this).prop('checked')) {
+            allChecked = false;
+        } else {
+            selectedCount++;
+        }
+    });
+
+    if (selectedCount > 0) {
+        $('button[name="table-btn"]').removeClass('btn-outline-secondary').addClass('btn-outline-primary');
+        $('button[name="table-btn"]').prop('disabled', false);
+    } else {
+        $('button[name="table-btn"]').removeClass('btn-outline-primary').addClass('btn-outline-secondary');
+        $('button[name="table-btn"]').prop('disabled', true);
+    }
+    if ($('button[name="table-btn"][data-target="#editPassword"]').length > 0) {
+        if (selectedCount === 1) {
+            $('button[name="table-btn"][data-target="#editPassword"]').removeClass('btn-outline-secondary').addClass('btn-outline-primary');
+            $('button[name="table-btn"][data-target="#editPassword"]').prop('disabled', false);
+        } else {
+            $('button[name="table-btn"][data-target="#editPassword"]').removeClass('btn-outline-primary').addClass('btn-outline-secondary');
+            $('button[name="table-btn"][data-target="#editPassword"]').prop('disabled', true);
+        }
+    }
+    if ($('button[name="table-btn"][data-target="#editDescription"]').length > 0) {
+        if (selectedCount === 1) {
+            $('button[name="table-btn"][data-target="#editDescription"]').removeClass('btn-outline-secondary').addClass('btn-outline-primary');
+            $('button[name="table-btn"][data-target="#editDescription"]').prop('disabled', false);
+        } else {
+            $('button[name="table-btn"][data-target="#editDescription"]').removeClass('btn-outline-primary').addClass('btn-outline-secondary');
+            $('button[name="table-btn"][data-target="#editDescription"]').prop('disabled', true);
+        }
+    }
+    if ($('button[name="table-btn"][data-target="#deleteCollection"]').length > 0) {
+        if (selectedCount === 1) {
+            $('button[name="table-btn"][data-target="#deleteCollection"]').removeClass('btn-outline-secondary').removeClass('btn-outline-primary').addClass('btn-outline-danger');
+            $('button[name="table-btn"][data-target="#deleteCollection"]').prop('disabled', false);
+        } else {
+            $('button[name="table-btn"][data-target="#deleteCollection"]').removeClass('btn-outline-primary').removeClass('btn-outline-danger').addClass('btn-outline-secondary');
+            $('button[name="table-btn"][data-target="#deleteCollection"]').prop('disabled', true);
+        }
+    }
+    if ($('button[name="table-btn"][data-target="#deletion"]').length > 0) {
+        if (selectedCount > 0) {
+            $('button[name="table-btn"][data-target="#deletion"]').removeClass('btn-outline-secondary').removeClass('btn-outline-primary').addClass('btn-outline-danger');
+            $('button[name="table-btn"][data-target="#deletion"]').prop('disabled', false);
+        } else {
+            $('button[name="table-btn"][data-target="#deletion"]').removeClass('btn-outline-primary').removeClass('btn-outline-danger').addClass('btn-outline-secondary');
+            $('button[name="table-btn"][data-target="#deletion"]').prop('disabled', true);
+        }
+    }
+    return allChecked
+}

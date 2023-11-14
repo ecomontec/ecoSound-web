@@ -2,12 +2,16 @@
 
 namespace BioSounds\Provider;
 
+use BioSounds\Entity\AbstractProvider;
 use BioSounds\Entity\Collection;
 use BioSounds\Exception\Database\NotFoundException;
 use BioSounds\Utils\Auth;
+use Cassandra\Varint;
 
-class CollectionProvider extends BaseProvider
+class CollectionProvider extends AbstractProvider
 {
+    const TABLE_NAME = "collection";
+
     public function getCollectionPagesByPermission(int $projectId): array
     {
         $sql = "SELECT c.* FROM collection c ";
@@ -104,10 +108,14 @@ class CollectionProvider extends BaseProvider
      * @return Collection|null
      * @throws \Exception
      */
-    public function getByProject(int $project_id, int $user_id): ?array
+    public function getByProject(int $project_id, ?int $user_id): ?array
     {
-        $this->database->prepareQuery('SELECT c.*,u.permission_id FROM collection c LEFT JOIN user_permission u ON u.collection_id = c.collection_id AND u.user_id = :user_id WHERE c.project_id = :project_id ');
-        $results = $this->database->executeSelect([':project_id' => $project_id, ':user_id' => $user_id]);
+        if ($user_id == null) {
+            $this->database->prepareQuery("SELECT c.* FROM collection c WHERE c.project_id = $project_id");
+        } else {
+            $this->database->prepareQuery("SELECT c.*,u.permission_id FROM collection c LEFT JOIN user_permission u ON u.collection_id = c.collection_id AND u.user_id = $user_id WHERE c.project_id = $project_id");
+        }
+        $results = $this->database->executeSelect();
         $data = [];
         foreach ($results as $item) {
             $data[] = (new Collection())
@@ -125,11 +133,10 @@ class CollectionProvider extends BaseProvider
                 ->setView($item['view'])
                 ->setPermission($item['permission_id'] == null ? 0 : $item['permission_id']);
         }
-
         return $data;
     }
 
-    public function getWithSite(int $project_id, int $site_id): ?array
+    public function getWithSite(int $project_id, string $site_id): ?array
     {
         $this->database->prepareQuery('SELECT c.*,MAX(IF(site_id = :site_id, 1, 0)) AS site_id FROM collection c LEFT JOIN site_collection sc ON sc.collection_id = c.collection_id WHERE c.project_id = :project_id GROUP BY c.collection_id');
         $results = $this->database->executeSelect([':project_id' => $project_id, ':site_id' => $site_id]);
@@ -147,7 +154,7 @@ class CollectionProvider extends BaseProvider
                 ->setPublicAccess($item['public_access'])
                 ->setPublicTags($item['public_tags'])
                 ->setView($item['view'])
-                ->setPermission($item['site_id']);
+                ->setPermission(count(explode(',', $site_id)) == 1 ? $item['site_id'] : 0);
         }
         return $data;
     }
@@ -242,5 +249,65 @@ class CollectionProvider extends BaseProvider
         $this->database->executeDelete([':id' => $id]);
         $this->database->prepareQuery('DELETE FROM site_collection WHERE collection_id = :id');
         $this->database->executeDelete([':id' => $id]);
+    }
+
+    public function getCollection(string $projectId): array
+    {
+        $sql = "SELECT c.*,u.name as username FROM collection c LEFT JOIN user_permission up ON up.collection_id = c.collection_id AND up.user_id = :user_id LEFT JOIN user u ON u.user_id = c.user_id  WHERE c.project_id = :project_id ";
+        $this->database->prepareQuery($sql);
+        return $this->database->executeSelect([':project_id' => $projectId, ':user_id' => Auth::getUserID()]);
+    }
+
+    public function getFilterCount(string $projectId, string $search): int
+    {
+        $sql = "SELECT c.*,up.permission_id,u.name as username FROM collection c LEFT JOIN user_permission up ON up.collection_id = c.collection_id AND up.user_id = :user_id LEFT JOIN user u ON u.user_id = c.user_id  WHERE c.project_id = :project_id ";
+        if ($search) {
+            $sql .= " AND CONCAT(IFNULL(c.collection_id,''), IFNULL(c.name,''), IFNULL(u.name,''), IFNULL(c.doi,''), IFNULL(c.sphere,''), IFNULL(c.note,''), IFNULL(c.creation_date,''), IFNULL(c.view,'')) LIKE '%$search%' ";
+        }
+        $this->database->prepareQuery($sql);
+        $count = count($this->database->executeSelect([':project_id' => $projectId, ':user_id' => Auth::getUserID()]));
+        return $count;
+    }
+
+    public function getListByPage(string $projectId, string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
+    {
+        $arr = [];
+        $sql = "SELECT c.*,up.permission_id,u.name as username FROM collection c LEFT JOIN user_permission up ON up.collection_id = c.collection_id AND up.user_id = :user_id LEFT JOIN user u ON u.user_id = c.user_id  WHERE c.project_id = :project_id ";
+        if ($search) {
+            $sql .= " AND CONCAT(IFNULL(c.collection_id,''), IFNULL(c.name,''), IFNULL(u.name,''), IFNULL(c.doi,''), IFNULL(c.sphere,''), IFNULL(c.note,''), IFNULL(c.creation_date,''), IFNULL(c.view,'')) LIKE '%$search%' ";
+        }
+        $a = ['', 'c.collection_id', 'c.name', 'u.name', 'c.doi', 'c.sphere', 'c.note', 'c.creation_date', 'c.view', 'c.public_access', 'c.public_tags'];
+        $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
+        $this->database->prepareQuery($sql);
+        $result = $this->database->executeSelect([':project_id' => $projectId, ':user_id' => Auth::getUserID()]);
+        if (count($result)) {
+            foreach ($result as $key => $value) {
+                $arr[$key][] = "<input type='checkbox' class='js-checkbox'data-id='$value[collection_id]' data-name='$value[name]' name='cb[$value[collection_id]]' id='cb[$value[collection_id]]'>";
+                $arr[$key][] = "$value[collection_id]<input id='col$value[collection_id]' type='hidden' name='collId' value='$value[collection_id]'><input id='project$value[collection_id]' type='hidden' name='project_id' value='$value[project_id]'>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' id='$value[collection_id]' name='name' value='$value[name]'><small id='collectionValid$value[collection_id]' class='text-danger'></small>";
+                $arr[$key][] = $value['username'];
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='doi' value='$value[doi]'>";
+                $arr[$key][] = "<select id='sphere' name='sphere' class='form-control form-control-sm'>
+                            <option></option>
+                            <option value='hydrosphere' " . ($value['sphere'] == 'hydrosphere' ? 'selected' : '') . ">hydrosphere</option>
+                            <option value='cryosphere' " . ($value['sphere'] == 'cryosphere' ? 'selected' : '') . ">cryosphere</option>
+                            <option value='lithosphere' " . ($value['sphere'] == 'lithosphere' ? 'selected' : '') . ">lithosphere</option>
+                            <option value='pedosphere' " . ($value['sphere'] == 'pedosphere' ? 'selected' : '') . ">pedosphere</option>
+                            <option value='atmosphere' " . ($value['sphere'] == 'atmosphere' ? 'selected' : '') . ">atmosphere</option>
+                            <option value='biosphere' " . ($value['sphere'] == 'biosphere' ? 'selected' : '') . ">biosphere</option>
+                            <option value='anthroposphere' " . ($value['sphere'] == 'anthroposphere' ? 'selected' : '') . ">anthroposphere</option>
+                        </select>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='note' value='$value[note]'>";
+                $arr[$key][] = $value['creation_date'];
+                $arr[$key][] = "<select id='view' name='view' class='form-control form-control-sm' required>;
+                            <option value='gallery' " . ($value['view'] == 'gallery' ? 'selected' : '') . ">gallery</option>
+                            <option value='list' " . ($value['view'] == 'list' ? 'selected' : '') . ">list</option>
+                            <option value='timeline' " . ($value['view'] == 'timeline' ? 'selected' : '') . ">timeline</option>
+                        </select>";
+                $arr[$key][] = "<input name='public_access' type='checkbox' " . ($value['public_access'] ? 'checked' : '') . ">";
+                $arr[$key][] = "<input name='public_tags' type='checkbox' " . ($value['public_tags'] ? 'checked' : '') . ">";
+            }
+        }
+        return $arr;
     }
 }

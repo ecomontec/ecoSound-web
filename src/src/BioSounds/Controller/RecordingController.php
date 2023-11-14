@@ -9,7 +9,6 @@ use BioSounds\Entity\Species;
 use BioSounds\Entity\UserPermission;
 use BioSounds\Entity\Permission;
 use BioSounds\Entity\User;
-use BioSounds\Exception\InvalidParameterException;
 use BioSounds\Exception\NotAuthenticatedException;
 use BioSounds\Presenter\FrequencyScalePresenter;
 use BioSounds\Presenter\RecordingPresenter;
@@ -26,6 +25,7 @@ use BioSounds\Utils\Auth;
 use BioSounds\Utils\Utils;
 use Twig\Environment;
 use Symfony\Component\Process\Process;
+
 
 class RecordingController extends BaseController
 {
@@ -111,6 +111,7 @@ class RecordingController extends BaseController
             'open' => $_POST['open'],
             'modalX' => $_POST['modalX'],
             'modalY' => $_POST['modalY'],
+            'models' => (new RecordingProvider())->getModel(),
         ]);
     }
 
@@ -614,14 +615,19 @@ class RecordingController extends BaseController
         ]);
     }
 
-    public function tf()
+    public function BirdNETAnalyzer($data = null)
     {
+        if (isset($data)) {
+            $_POST = $data;
+        }
         foreach ($_POST as $key => $value) {
             $data[$key] = $value;
         }
+        $i = 0;
+        $j = 0;
         $str = 'python3 ' . ABSOLUTE_DIR . 'BirdNET-Analyzer/analyze.py' .
             ' --i ' . ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['filename'] .
-            ' --o ' . ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . Auth::getUserLoggedID() . ".csv" .
+            ' --o ' . ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['recording_id'] . '-' . Auth::getUserLoggedID() . ".csv" .
             ' --rtype "csv"';
         if ($data['lat'] != '') {
             $str = $str . ' --lat ' . $data['lat'];
@@ -646,24 +652,36 @@ class RecordingController extends BaseController
         }
         exec($str . " 2>&1", $out, $status);
         if ($status == 0) {
-            $handle = fopen(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . Auth::getUserLoggedID() . ".csv", "rb");
+            $handle = fopen(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['recording_id'] . '-' . Auth::getUserLoggedID() . ".csv", "rb");
             $result = [];
-            $i = 1;
             while (!feof($handle)) {
                 $d = fgetcsv($handle);
                 $result[] = $d;
-                $i++;
             }
             fclose($handle);
             $species = (new Species())->get();
             $species_id = (new Species())->getByName('Unknown');
             $arr_specie = [];
             $arr_specie_id = [];
+            $unmatched_species = [];
+            $list = [];
+
+            $folders = glob(ABSOLUTE_DIR . 'BirdNET-Analyzer/labels' . '/*', GLOB_ONLYDIR);
+            $maxValue = null;
+            foreach ($folders as $folder) {
+                $folderName = basename($folder);
+                preg_match_all('/[\d\.]+/', $folderName, $matches);
+                foreach ($matches[0] as $number) {
+                    $floatValue = floatval($number);
+                    if ($maxValue === null || $floatValue > $maxValue) {
+                        $maxValue = $floatValue;
+                    }
+                }
+            }
             foreach ($species as $specie) {
                 $arr_specie[] = $specie['binomial'];
                 $arr_specie_id[$specie['binomial']] = $specie['species_id'];
             }
-            $i = 0;
             foreach ($result as $r) {
                 if ($r[0] != 'Start (s)' && $r[0] != null) {
                     if (in_array($r[2], $arr_specie)) {
@@ -672,11 +690,13 @@ class RecordingController extends BaseController
                     } else {
                         $arr['species_id'] = $species_id[0]['species_id'];
                         $arr['comments'] = $r[2];
+                        $unmatched_species[] = $r[2];
+                        $j = $j + 1;
                     }
                     $arr['sound_id'] = '4';
                     $arr['recording_id'] = $data['recording_id'];
                     $arr['user_id'] = Auth::getUserID();
-                    $arr['creator_type'] = $data['creator_type'];
+                    $arr['creator_type'] = $data['creator_type'] . ' ' . $maxValue;
                     $arr['min_time'] = $r[0];
                     $arr['max_time'] = $r[1];
                     $arr['min_freq'] = 1;
@@ -685,14 +705,102 @@ class RecordingController extends BaseController
                     $arr['confidence'] = $r[4];
                     $arr['individuals'] = 1;
                     $arr['reference_call'] = 0;
-                    (new TagProvider())->insert($arr);
+                    $list[] = $arr;
                     $i = $i + 1;
                 }
+            }
+            (new TagProvider())->insertArr($list);
+        }
+        return json_encode([
+            'errorCode' => 0,
+            'message' => "BirdNET v$maxValue found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. $i tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
+        ]);
+    }
+
+    public function batdetect2($data = null)
+    {
+        if (isset($data)) {
+            $_POST = $data;
+        }
+        if (!Auth::isUserLogged()) {
+            throw new NotAuthenticatedException();
+        }
+        foreach ($_POST as $key => $value) {
+            $data[$key] = $value;
+        }
+        $i = 0;
+        $j = 0;
+        if (!file_exists(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . Auth::getUserLoggedID())) {
+            mkdir(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . Auth::getUserLoggedID(), 0777, true);
+        }
+        copy(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['filename'], ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . Auth::getUserLoggedID() . '/' . $data['filename']);
+        $str = 'batdetect2 detect ' .
+            ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . Auth::getUserLoggedID() . ' ' .
+            ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . Auth::getUserLoggedID() . ' ';
+        if ($data['detection_threshold'] != 'undefined') {
+            $str = $str . $data['detection_threshold'];
+        } else {
+            $str = $str . '0.3';
+        }
+        exec($str . " 2>&1", $out, $status);
+        if ($status == 0) {
+            if (file_exists(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . Auth::getUserLoggedID() . "/" . $data['filename'] . ".csv")) {
+                $handle = fopen(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . Auth::getUserLoggedID() . "/" . $data['filename'] . ".csv", "rb");
+                $result = [];
+                while (!feof($handle)) {
+                    $d = fgetcsv($handle);
+                    $result[] = $d;
+                }
+                fclose($handle);
+                $species = (new Species())->get();
+                $species_id = (new Species())->getByName('Unknown');
+                $arr_specie = [];
+                $arr_specie_id = [];
+                $unmatched_species = [];
+                $list = [];
+
+                foreach ($species as $specie) {
+                    $arr_specie[] = $specie['binomial'];
+                    $arr_specie_id[$specie['binomial']] = $specie['species_id'];
+                }
+                foreach ($result as $r) {
+                    if ($r[0] != 'id' && $r[0] != null) {
+                        if (in_array($r[6], $arr_specie)) {
+                            $arr['species_id'] = $arr_specie_id[$r[6]];
+                            $arr['comments'] = '';
+                        } else {
+                            $arr['species_id'] = $species_id[0]['species_id'];
+                            $arr['comments'] = $r[6];
+                            $unmatched_species[] = $r[6];
+                            $j = $j + 1;
+                        }
+                        $arr['sound_id'] = '4';
+                        $arr['recording_id'] = $data['recording_id'];
+                        $arr['user_id'] = Auth::getUserID();
+                        $arr['creator_type'] = $data['creator_type'];
+                        $arr['min_time'] = $r[2];
+                        $arr['max_time'] = $r[3];
+                        $arr['min_freq'] = $r[5];
+                        $arr['max_freq'] = $r[4];
+                        $arr['distance_not_estimable'] = 1;
+                        $arr['confidence'] = $r[1];
+                        $arr['individuals'] = 1;
+                        $arr['reference_call'] = 0;
+                        $list[] = $arr;
+                        $i = $i + 1;
+                    }
+                }
+                (new TagProvider())->insertArr($list);
+            } else {
+                return json_encode([
+                    'errorCode' => 0,
+                    'message' => "Batdetect2 found 0 detections. 0 tags were inserted.",
+                ]);
             }
         }
         return json_encode([
             'errorCode' => 0,
-            'message' => "Execution succeeded, " . $i . " new tags were added."
+            'message' => "Batdetect2 found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. $i tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
         ]);
     }
 }

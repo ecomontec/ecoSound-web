@@ -56,21 +56,15 @@ class UserPermission extends BaseProvider
             return false;
         }
 
-        $fields = '( ';
-        $valuesNames = '( ';
-        $values = [];
+        $sql = "INSERT INTO user_permission (collection_id, user_id, permission_id) 
+            SELECT c.collection_id, u.user_id, $permissionData[permission_id]
+            FROM collection c
+            CROSS JOIN user u
+            WHERE c.collection_id IN ($permissionData[collection_id])
+            AND u.user_id IN ($permissionData[user_id])";
 
-        foreach ($permissionData as $key => $value) {
-            $fields .= $key;
-            $valuesNames .= ':' . $key;
-            $values[':' . $key] = $value;
-            $fields .= ",";
-            $valuesNames .= ",";
-        }
-        $fields = substr($fields, 0, strlen($fields) - 1) . ' )';
-        $valuesNames = substr($valuesNames, 0, strlen($valuesNames) - 1) . ' )';
-        $this->database->prepareQuery("INSERT INTO user_permission $fields VALUES $valuesNames");
-        return $this->database->executeInsert($values);
+        $this->database->prepareQuery($sql);
+        return $this->database->executeInsert();
     }
 
     /**
@@ -79,10 +73,10 @@ class UserPermission extends BaseProvider
      * @return int|null
      * @throws \Exception
      */
-    public function delete(int $userId, int $colId): ?int
+    public function delete(string $userId, string $colId): ?int
     {
-        $this->database->prepareQuery('DELETE FROM user_permission WHERE user_id = :userId AND collection_id =:colId');
-        return $this->database->executeDelete([':userId' => $userId, ':colId' => $colId]);
+        $this->database->prepareQuery("DELETE FROM user_permission WHERE user_id IN ($userId) AND collection_id IN ($colId)");
+        return $this->database->executeDelete();
     }
 
     /**

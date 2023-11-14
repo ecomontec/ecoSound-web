@@ -17,15 +17,18 @@ class SiteCollectionController extends BaseController
      * @return false|string
      * @throws \Exception
      */
-    public function show(int $siteId)
+    public function show()
     {
-        $site = (new SiteProvider())->get($siteId);
+        $siteId = $_POST['id'];
+        $site_name = $_POST['name'];
+        $site = count(explode(',', $siteId)) == 1 ? (new SiteProvider())->get($siteId[0]) : '';
         $userId = Auth::getUserID();
         $listProjects = (new ProjectProvider())->getSiteProjectWithPermission($userId, $siteId);
         return json_encode([
             'errorCode' => 0,
             'data' => $this->twig->render('administration/siteCollection.html.twig', [
                 'site' => $site,
+                'site_name' => $site_name,
                 'projects' => $listProjects,
                 'site_id' => $siteId,
             ]),
@@ -38,32 +41,27 @@ class SiteCollectionController extends BaseController
      */
     public function save(): string
     {
-        $result = [];
+        $site_name = "'" . implode("','", explode(',', $_POST['site'])) . "'";
         $siteCollectionProvider = new SiteCollection();
-        $collection = explode(',', $siteCollectionProvider->isValid($_POST['site'], $_POST['site_id']));
-        if (isset($_POST['d'])) {
-            foreach ($_POST['d'] as $row) {
-                if (isset($row['c'])) {
-                    $siteCollectionProvider->delete($row['c'], $_POST['site_id']);
-                    if ($row['b'] == 'true') {
-                        if (in_array($row['c'], $collection)) {
-                            if (!in_array($row['p'], $result)) {
-                                $result[] = $row['p'];
-                            }
-                            continue;
-                        }
-                        $siteCollectionProvider->insert($row['c'], $_POST['site_id']);
-                    }
-                }
-            }
-        }
-        if (count($result) > 0) {
+        $result = array_map(function ($segment) {
+            return explode('@', $segment);
+        }, explode('&', $siteCollectionProvider->isValid($site_name, $_POST['site_id'], $_POST['c']['true'])));
+        if ($result[0][0] != '') {
             return json_encode([
                 'isValid' => 1,
                 'result' => $result,
-                'message' => 'Site name already exists in the project.',
             ]);
         }
+        if (isset($_POST['c']['true'])) {
+            $siteCollectionProvider->delete($_POST['site_id'], $_POST['c']['true']);
+        }
+        if (isset($_POST['c']['false'])) {
+            $siteCollectionProvider->delete($_POST['site_id'], $_POST['c']['false']);
+        }
+        if (isset($_POST['c']['true'])) {
+            $siteCollectionProvider->insert($_POST['site_id'], $_POST['c']['true']);
+        }
+
         return json_encode([
             'errorCode' => 0,
             'message' => 'successfully changed site assignment',

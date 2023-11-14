@@ -26,6 +26,27 @@ class IndexLogController extends BaseController
         ]);
     }
 
+    public function getListByPage()
+    {
+        $total = count((new IndexLogProvider())->getIndexLog());
+        $start = $_POST['start'];
+        $length = $_POST['length'];
+        $search = $_POST['search']['value'];
+        $column = $_POST['order'][0]['column'];
+        $dir = $_POST['order'][0]['dir'];
+        $data = (new IndexLogProvider())->getListByPage($start, $length, $search, $column, $dir);
+        if (count($data) == 0) {
+            $data = [];
+        }
+        $result = [
+            'draw' => $_POST['draw'],
+            'recordsTotal' => $total,
+            'recordsFiltered' => (new IndexLogProvider())->getFilterCount($search),
+            'data' => $data,
+        ];
+        return json_encode($result);
+    }
+
     /**
      * @throws \Exception
      */
@@ -34,41 +55,63 @@ class IndexLogController extends BaseController
         if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
         }
-
+        $colArr = [];
         $file_name = "indexLogs.csv";
         $fp = fopen('php://output', 'w');
         header('Content-Type: application/octet-stream;charset=utf-8');
         header('Accept-Ranges:bytes');
         header('Content-Disposition: attachment; filename=' . $file_name);
-
-        $indexLogList = (new IndexLogProvider())->getList();
-        $indexLogAls[] = array('#', 'Recording', 'User', 'Index', 'Time Start', 'Time End', 'Min Frequency', 'Max Frequency', 'Parameter', 'Result', 'Creation Date (UTC)');
-
-        foreach ($indexLogList as $indexLogItem) {
-            $value = '';
-            foreach (explode('!', $indexLogItem->getValue()) as $v) {
-                $value = $value . explode('?', $v)[0] . ': ' . number_format(explode('?', $v)[1], 2, '.', ',') . ' ';
-            }
-            $indexLogArray = array(
-                $indexLogItem->getLogId(),
-                $indexLogItem->getRecordingName(),
-                $indexLogItem->getUserName(),
-                $indexLogItem->getIndexName(),
-                $indexLogItem->getMinTime(),
-                $indexLogItem->getMaxTime(),
-                $indexLogItem->getMinFrequency(),
-                $indexLogItem->getMaxFrequency(),
-                str_replace('@', ' ', str_replace('?', ': ', $indexLogItem->getParam())),
-                $value,
-                $indexLogItem->getDate(),
-            );
-            $indexLogAls[] = $indexLogArray;
+        $columns = (new IndexLogProvider())->getColumns();
+        foreach ($columns as $column) {
+            $colArr[] = $column['COLUMN_NAME'];
         }
+        array_splice($colArr, 2, 0, 'recording');
+        array_splice($colArr, 4, 0, 'user');
+        array_splice($colArr, 6, 0, 'index');
+        $Als[] = $colArr;
+        $List = (new IndexLogProvider())->getIndexLog();
 
-        foreach ($indexLogAls as $line) {
+        foreach ($List as $Item) {
+            $Item['value']= str_replace('!', ' ', str_replace('?', ': ', $Item['value']));
+            $Item['param']= str_replace('@', ' ', str_replace('?', ': ', $Item['param']));
+
+            $valueToMove = $Item['recordingName'];
+            unset($Item['recordingName']);
+            array_splice($Item, 2, 0, $valueToMove);
+            $valueToMove = $Item['userName'];
+            unset($Item['userName']);
+            array_splice($Item, 4, 0, $valueToMove);
+            $valueToMove = $Item['indexName'];
+            unset($Item['indexName']);
+            array_splice($Item, 6, 0, $valueToMove);
+
+            $Als[] = $Item;
+        }
+        foreach ($Als as $line) {
             fputcsv($fp, $line);
         }
         fclose($fp);
         exit();
+    }
+
+    public function delete()
+    {
+        if (!Auth::isUserLogged()) {
+            throw new ForbiddenException();
+        }
+
+        $id = $_POST['id'];
+
+        if (empty($id)) {
+            throw new \Exception(ERROR_EMPTY_ID);
+        }
+
+        $indexLogProvider = new IndexLogProvider();
+        $indexLogProvider->delete($id);
+
+        return json_encode([
+            'errorCode' => 0,
+            'message' => 'Index log deleted successfully.',
+        ]);
     }
 }

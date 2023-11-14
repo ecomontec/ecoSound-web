@@ -5,33 +5,41 @@
     {% include 'administration/collCreate.html.twig' %}
     <div class="card mb-3" id="collectionsList">
         <div class="card-header border-light bg-white text-right">
-            <div class="row">
-                <div class="col-auto mr-auto mt-2">
-                    <form id="projectForm" class="form-inline" action="{{ baseUrl }}/admin/collections">
-                        <label for="projectId">Project</label>
-                        <select id="projectId" name="projectId" class="form-control form-control-sm ml-3">
-                            {% for project in projects %}
-                                <option value="{{ project.id }}" {{ project.id == projectId ? 'selected' }}>
-                                    {{ project.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </form>
-                </div>
-                <button id="collectionsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#collectionsExport" aria-expanded="false" aria-controls="collectionsExport">
-                    <i class="fa fa-download"></i>
-                    Collection Export
-                </button>
-                <button id="collectionFormButton" class="btn btn-outline-primary btn-sm mt-2 ml-2" type="button" data-toggle="collapse" data-target="#collectionFormSection" aria-expanded="false" aria-controls="collectionFormSection">
-                    <i class="fas fa-plus"></i>
-                    Add Collection
-                </button>
+            <div class="col-auto mr-auto">
+                <form id="projectForm" class="form-inline" action="{{ baseUrl }}/admin/collections">
+                    <label for="projectId">Project</label>
+                    <select id="projectId" name="projectId" class="form-control form-control-sm ml-3">
+                        {% for project in projects %}
+                            <option value="{{ project.id }}" {{ project.id == projectId ? 'selected' }}>
+                                {{ project.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </form>
             </div>
+            <button id="viewing" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#viewing" disabled>
+                <i class="fas fa-eye"></i>
+                Viewing
+            </button>
+            <button id="deleteCollection" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#deleteCollection" disabled>
+                <i class="fas fa-trash"></i>
+                Deletion
+            </button>
+            <button id="collectionFormButton" class="btn btn-outline-primary btn-sm mt-2" type="button" data-toggle="collapse" data-target="#collectionFormSection" aria-expanded="false" aria-controls="collectionFormSection">
+                <i class="fas fa-plus"></i>
+                Add Collection
+            </button>
+            <button id="collectionsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#collectionsExport" aria-expanded="false" aria-controls="collectionsExport">
+                <i class="fa fa-download"></i>
+                Collection Export
+            </button>
         </div>
         <table id="collTable" style="display:none; white-space: nowrap;">
             <thead class="table-borderless">
             <tr style="font-size: .875rem;">
-                <th></th>
+                <th>
+                    <input type="checkbox" class="js-all-checkbox" name="check-all" id="check-all">
+                </th>
                 <th>#</th>
                 <th>Name</th>
                 <th>User</th>
@@ -42,65 +50,9 @@
                 <th>View</th>
                 <th>Public Access</th>
                 <th>Public Tags</th>
-                <th></th>
             </tr>
             </thead>
-            <tbody class="form-control-sm js-coll-list">
-            {% for collection in collections %}
-                <tr>
-                    <td>
-                        <a href="{{ baseUrl }}/collection/show/{{ collection.id }}" target="_blank"><i class="fa fa-eye"></i></a>
-                    </td>
-                    <td>
-                        {{ collection.id }}
-                        <input id="col{{ collection.id }}" type="hidden" name="collId" value="{{ collection.id }}">
-                        <input id="project{{ collection.id }}" type="hidden" name="project_id" value="{{ collection.project }}">
-                    </td>
-                    <td data-search="{{ collection.name }}" data-order="{{ collection.name }}">
-                        <input type="text" class="form-control form-control-sm" id="{{ collection.id }}" name="name" value="{{ collection.name }}">
-                        <small id="collectionValid{{ collection.id }}" class="text-danger"></small>
-                    </td>
-                    <td>{{ collection.author }}</td>
-                    <td data-search="{{ collection.doi }}" data-order="{{ collection.doi }}">
-                        <input type="text" class="form-control form-control-sm" name="doi" value="{{ collection.doi }}">
-                    </td>
-                    <td data-search="{{ collection.sphere }}" data-order="{{ collection.sphere }}">
-                        <select id="sphere" name="sphere" class="form-control form-control-sm">
-                            <option></option>
-                            <option value="hydrosphere" {{ collection.sphere == 'hydrosphere' ? 'selected' }}>hydrosphere</option>
-                            <option value="cryosphere" {{ collection.sphere == 'cryosphere' ? 'selected' }}>cryosphere</option>
-                            <option value="lithosphere" {{ collection.sphere == 'lithosphere' ? 'selected' }}>lithosphere</option>
-                            <option value="pedosphere" {{ collection.sphere == 'pedosphere' ? 'selected' }}>pedosphere</option>
-                            <option value="atmosphere" {{ collection.sphere == 'atmosphere' ? 'selected' }}>atmosphere</option>
-                            <option value="biosphere" {{ collection.sphere == 'biosphere' ? 'selected' }}>biosphere</option>
-                            <option value="anthroposphere" {{ collection.sphere == 'anthroposphere' ? 'selected' }}>anthroposphere</option>
-                        </select>
-                    </td>
-                    <td data-search="{{ collection.note }}" data-order="{{ collection.note }}">
-                        <input type="text" class="form-control form-control-sm" name="note" value="{{ collection.note }}">
-                    </td>
-                    <td>{{ collection.creationDate }}</td>
-                    <td data-search="{{ collection.view }}" data-order="{{ collection.view }}">
-                        <select id="view" name="view" class="form-control form-control-sm" required>
-                            <option value="gallery" {{ collection.view == 'gallery' ? 'selected' }}>gallery</option>
-                            <option value="list" {{ collection.view == 'list' ? 'selected' }}>list</option>
-                            <option value="timeline" {{ collection.view == 'timeline' ? 'selected' }}>timeline</option>
-                        </select>
-                    </td>
-                    <td class="text-center" data-search="{{ collection.publicAccess }}" data-order="{{ collection.publicAccess }}">
-                        <input name="public_access" type="checkbox" {{ collection.publicAccess ? 'checked' }}>
-                    </td>
-                    <td class="text-center" data-search="{{ collection.publicTags }}" data-order="{{ collection.publicTags }}">
-                        <input name="public_tags" type="checkbox" {{ collection.publicTags ? 'checked' }}>
-                    </td>
-                    <td>
-                        <a class="js-delete-modal" href="#" data-id="{{ collection.id }}" data-name="{{ collection.name }}" title="Delete collection">
-                            <span class="fas fa-trash"></span>
-                        </a>
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
+            <tbody class="form-control-sm js-coll-list"></tbody>
         </table>
     </div>
     <div class="modal fade" id="modal-div" tabindex="-1" role="dialog">
@@ -142,15 +94,25 @@
         $(document).ready(function () {
             $('#collTable').show()
             $('#collTable').DataTable({
-                "pageLength": 8,
-                "lengthChange": false,
+                "processing": true,
+                "serverSide": true,
+                "ajax": {
+                    "url": '{{ baseUrl }}/admin/collectionMgr/getListByPage/{{ projectId }}/{{ collectionId }}',
+                    "type": 'POST'
+                },
                 "stateSave": true,
                 "StateDuration": -1,
                 "order": [[1, 'asc']],
-                "columnDefs": [{
-                    "orderable": false,
-                    "targets": [0, 9]
-                }],
+                "columnDefs": [
+                    {
+                        "orderable": false,
+                        "targets": [0],
+                    },
+                    {
+                        "className": "dt-center",
+                        "targets": [0, 9, 10],
+                    }
+                ],
                 "bAutoWidth": false,
                 "scrollX": true,
             });
@@ -161,21 +123,30 @@
 
             /* Save collections list */
             $('.js-coll-list').on('change', 'input, select, textarea', function () {
+                if ($(this)[0].className == 'js-checkbox') {
+                    return
+                }
                 var id = $(this).attr('id')
                 $('#collectionValid' + id).text('')
                 saveFormList($(this), 'api/admin/collectionMgr/save', function (response) {
                     if (response.isValid) {
                         $('#collectionValid' + id).text(response.message)
-                        return
                     }
                 });
-                var table = $('#collTable').DataTable()
-                var tr = $(this).closest("tr")
-                table.rows(tr).invalidate()
             });
 
-            $(document).on('click', '#saveButton', function () {
-                $('#collectionEdit').submit();
+            $('#js-delete-button').click(function () {
+                let row = $("#col" + $('#delete_id').val()).parents("tr");
+                toggleLoading();
+                deleteRequest('{{ baseUrl }}/api/admin/collectionMgr/delete/' + $('#delete_id').val(), [], true, false, function () {
+                    location.reload();
+                });
+            });
+
+            $("#collectionFormSection").on('shown.bs.collapse', function () {
+                $("#collectionsList").hide();
+            }).on('hidden.bs.collapse', function () {
+                $("#collectionsList").show();
             });
 
             $('#collectionForm').submit(function (e) {
@@ -194,6 +165,7 @@
                 }
                 this.classList.add('was-validated');
             });
+
             $('#collTable tbody').on('click', '.js-delete-modal', function () {
                 var id = $(this).data('id')
                 var name = $(this).data('name')
@@ -209,13 +181,7 @@
                     $("#modal-div").modal('show');
                 })
             })
-            $('#js-delete-button').click(function () {
-                let row = $("#col" + $('#delete_id').val()).parents("tr");
-                toggleLoading();
-                deleteRequest('{{ baseUrl }}/api/admin/collectionMgr/delete/' + $('#delete_id').val(), [], true, false, function () {
-                    location.reload();
-                });
-            });
+
             $("#confirm_input").on('input', function () {
                 if ($("#confirm_input").val() == $('#modal-collection').text()) {
                     $("#js-delete-button").show()
@@ -225,6 +191,7 @@
                     $("#js-close-button").show()
                 }
             });
+
             $(document).on('click', '#collectionsExport', function () {
                 window.location.href = '{{ baseUrl }}/api/admin/collectionMgr/export/' + $('#projectId').val();
             });
@@ -239,6 +206,34 @@
             $('#projectId').change(function () {
                 $("#projectForm").submit();
             });
+
+            $('button[name="table-btn"][data-target="#viewing"]').click(function (e) {
+                $('.js-checkbox:checked').each(function () {
+                    window.open('/collection/show/' + $(this).data('id'), '_blank');
+                });
+                e.preventDefault();
+            })
+
+            $('button[name="table-btn"][data-target="#deleteCollection"]').click(function (e) {
+                let id = '';
+                let name = '';
+                $('.js-checkbox:checked').each(function () {
+                    id = $(this).data('id');
+                    name = $(this).data('name');
+                });
+                $.ajax({
+                    type: 'POST', url: '{{ baseUrl }}/api/admin/collectionMgr/count/' + id
+                }).done(function (data) {
+                    $('#modal-collection').text(name)
+                    $("#confirm_input").val("")
+                    $("#js-delete-button").hide()
+                    $("#js-close-button").show()
+                    $('#count').text(data)
+                    $('#delete_id').val(id)
+                    $("#modal-div").modal('show');
+                    e.preventDefault();
+                })
+            })
         });
     </script>
 {% endblock %}

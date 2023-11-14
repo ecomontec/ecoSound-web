@@ -43,13 +43,13 @@ class SpectrogramProvider extends BaseProvider
      * @return Spectrogram[]
      * @throws \Exception
      */
-    public function getListInRecording(int $id): array
+    public function getListInRecording(string $id): array
     {
-        $query = 'SELECT recording_id, filename, type FROM spectrogram WHERE recording_id = :recordingId';
+        $query = "SELECT recording_id, filename, type FROM spectrogram WHERE recording_id IN ($id)";
         $this->database->prepareQuery($query);
 
         $data = [];
-        $list = $this->database->executeSelect([':recordingId' => $id]);
+        $list = $this->database->executeSelect();
         foreach ($list as $item) {
             $data[] = (new Spectrogram())
                 ->setRecordingId($item['recording_id'])

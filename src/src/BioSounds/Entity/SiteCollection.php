@@ -48,25 +48,29 @@ class SiteCollection extends BaseProvider
         }
     }
 
-    public function insert(string $collection_id, string $site_id)
+    public function insert(string $site_id, string $collection_id)
     {
-        $fields = '(site_id,collection_id)';
-        $valuesNames = "($site_id,$collection_id)";
-        $this->database->prepareQuery("INSERT INTO site_collection $fields VALUES $valuesNames");
+        $sql = "INSERT INTO site_collection (site_id, collection_id) 
+            SELECT s.site_id, c.collection_id
+            FROM site s
+            CROSS JOIN collection c
+            WHERE s.site_id IN ($site_id)
+            AND c.collection_id IN ($collection_id)";
+        $this->database->prepareQuery($sql);
         return $this->database->executeInsert();
     }
 
-    public function delete(int $collection_id, int $site_id)
+    public function delete(string $site_id, string $collection_id)
     {
-        $this->database->prepareQuery('DELETE FROM site_collection WHERE site_id = :siteId AND collection_id =:colId');
-        return $this->database->executeDelete([':siteId' => $site_id, ':colId' => $collection_id]);
+        $this->database->prepareQuery("DELETE FROM site_collection WHERE site_id IN ($site_id) AND collection_id IN ($collection_id)");
+        return $this->database->executeDelete();
     }
 
-    public function isValid($str, $site_id)
+    public function isValid($str, $site_id, $collection_id)
     {
-        $sql = "SELECT GROUP_CONCAT(collection_id) AS collection FROM (SELECT c.collection_id FROM site s LEFT JOIN site_collection sc ON s.site_id = sc.site_id LEFT JOIN collection c ON c.collection_id = sc.collection_id WHERE s.`name`='$str' AND s.site_id != '$site_id' GROUP BY c.collection_id ORDER BY c.collection_id) a";
+        $sql = "SELECT GROUP_CONCAT(project_id,'@',site_name SEPARATOR '&') AS project FROM (SELECT c.project_id,GROUP_CONCAT(DISTINCT s.`name`) AS site_name FROM site s LEFT JOIN site_collection sc ON s.site_id = sc.site_id LEFT JOIN collection c ON c.collection_id = sc.collection_id WHERE s.`name` IN ($str) AND c.collection_id IN ($collection_id) AND s.site_id NOT IN ($site_id) GROUP BY c.project_id ORDER BY c.project_id) a";
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
-        return $result[0]['collection'];
+        return $result[0]['project'];
     }
 }

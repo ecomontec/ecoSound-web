@@ -8,6 +8,7 @@ use BioSounds\Entity\SoundType;
 use BioSounds\Entity\Tag;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\CollectionProvider;
+use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\SoundProvider;
 use BioSounds\Provider\SoundTypeProvider;
 use BioSounds\Provider\TagProvider;
@@ -22,20 +23,36 @@ class TagController extends BaseController
      * @return string
      * @throws \Exception
      */
-    public function show(int $cId = null)
+    public function show(int $pId = null, int $cId = null)
     {
         if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
         }
+        if (isset($_GET['projectId'])) {
+            $projectId = $_GET['projectId'];
+        }
         if (isset($_GET['colId'])) {
             $colId = $_GET['colId'];
+        }
+        if (!empty($pId)) {
+            $projectId = $pId;
         }
         if (!empty($cId)) {
             $colId = $cId;
         }
-        $collections = Auth::isUserAdmin() ? (new CollectionProvider())->getList() : (new CollectionProvider())->getPublicList(Auth::getUserID());
-        if (empty($colId)) {
-            $colId = $collections[0]->getId();
+
+        $projects = (new ProjectProvider())->getWithPermission(Auth::getUserID(), 0);
+        if (empty($projects)) {
+            $projectId = null;
+            $colId = null;
+        } else {
+            if (empty($projectId)) {
+                $projectId = $projects[0]->getId();
+            }
+            $collections = (new CollectionProvider())->getByProject($projectId, Auth::getUserID());
+            if (empty($colId)) {
+                $colId = $collections[0]->getId();
+            }
         }
         $arr = [];
         $animal_sound_types = (new SoundTypeProvider())->getAllList();
@@ -44,55 +61,94 @@ class TagController extends BaseController
         }
 
         return $this->twig->render('administration/tags.html.twig', [
-            'collections' => $collections,
+            'projectId' => $projectId,
+            'projects' => $projects,
             'colId' => $colId,
-            'tags' => (new TagProvider())->getTagPagesByCollection($colId),
+            'collections' => $collections,
             'animal_sound_types' => $arr,
             'soundTypes' => (new SoundProvider())->getAll(),
             'phonys' => (new SoundProvider())->get(),
         ]);
     }
 
+    public function getListByPage($collectionId)
+    {
+        if ($collectionId == null) {
+            $collectionId = 0;
+        }
+        $total = count((new TagProvider())->getTag($collectionId));
+        $start = $_POST['start'];
+        $length = $_POST['length'];
+        $search = $_POST['search']['value'];
+        $column = $_POST['order'][0]['column'];
+        $dir = $_POST['order'][0]['dir'];
+        $data = (new TagProvider())->getListByPage($collectionId, $start, $length, $search, $column, $dir);
+        if (count($data) == 0) {
+            $data = [];
+        }
+        $result = [
+            'draw' => $_POST['draw'],
+            'recordsTotal' => $total,
+            'recordsFiltered' => (new TagProvider())->getFilterCount($collectionId, $search),
+            'data' => $data,
+        ];
+        return json_encode($result);
+    }
+
     /**
      * @throws \Exception
      */
-    public function export(int $collection_id)
+    public function export($collection_id)
     {
         if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
         }
-
+        $colArr = [];
         $file_name = "tags.csv";
         $fp = fopen('php://output', 'w');
         header('Content-Type: application/octet-stream;charset=utf-8');
         header('Accept-Ranges:bytes');
         header('Content-Disposition: attachment; filename=' . $file_name);
-
-        $tagList = (new TagProvider())->getTagPagesByCollection($collection_id);
-        $tagAls[] = array('#', 'Species', 'Recording', 'User', 'Time Start', 'Time End', 'Min Frequency', 'Max Frequency', 'Uncertain', 'Call Distance', 'Distance Not Estimable', 'Individuals', 'Type', 'Reference Call', 'Comments', 'Creation Date(UTC)');
-        foreach ($tagList as $tagItem) {
-            $tagArray = array(
-                $tagItem->getId(),
-                $tagItem->getSpeciesName(),
-                $tagItem->getRecordingName(),
-                $tagItem->getUserName(),
-                $tagItem->getMinTime(),
-                $tagItem->getMaxTime(),
-                $tagItem->getMinFrequency(),
-                $tagItem->getMaxFrequency(),
-                $tagItem->isUncertain(),
-                $tagItem->getCallDistance(),
-                $tagItem->isDistanceNotEstimable(),
-                $tagItem->getNumberIndividuals(),
-                $tagItem->getType(),
-                $tagItem->isReferenceCall(),
-                $tagItem->getComments(),
-                $tagItem->getCreationDate(),
-            );
-            $tagAls[] = $tagArray;
+        $columns = (new TagProvider())->getColumns();
+        foreach ($columns as $column) {
+            $colArr[] = $column['COLUMN_NAME'];
         }
 
-        foreach ($tagAls as $line) {
+        array_splice($colArr, 2, 0, 'phony');
+        array_splice($colArr, 3, 0, 'sound_type');
+        array_splice($colArr, 5, 0, 'recording');
+        array_splice($colArr, 7, 0, 'user');
+        array_splice($colArr, 15, 0, 'species');
+        array_splice($colArr, 21, 0, 'animal sound type');
+
+        $Als[] = $colArr;
+        $List = (new TagProvider())->getTag($collection_id);
+        foreach ($List as $Item) {
+            unset($Item['TaxonOrder']);
+            unset($Item['TaxonClass']);
+
+            $valueToMove = $Item['phony'];
+            unset($Item['phony']);
+            array_splice($Item, 2, 0, $valueToMove);
+            $valueToMove = $Item['sound_type'];
+            unset($Item['sound_type']);
+            array_splice($Item, 3, 0, $valueToMove);
+            $valueToMove = $Item['recordingName'];
+            unset($Item['recordingName']);
+            array_splice($Item, 5, 0, $valueToMove);
+            $valueToMove = $Item['userName'];
+            unset($Item['userName']);
+            array_splice($Item, 7, 0, $valueToMove);
+            $valueToMove = $Item['speciesName'];
+            unset($Item['speciesName']);
+            array_splice($Item, 15, 0, $valueToMove);
+            $valueToMove = $Item['typeName'];
+            unset($Item['typeName']);
+            array_splice($Item, 21, 0, $valueToMove);
+
+            $Als[] = $Item;
+        }
+        foreach ($Als as $line) {
             fputcsv($fp, $line);
         }
         fclose($fp);
@@ -139,6 +195,25 @@ class TagController extends BaseController
             'errorCode' => 0,
             'message' => 'Tag updated successfully.'
         ]);
+    }
 
+    public function delete()
+    {
+        if (!Auth::isUserLogged()) {
+            throw new ForbiddenException();
+        }
+
+        $id = $_POST['id'];
+
+        if (empty($id)) {
+            throw new \Exception(ERROR_EMPTY_ID);
+        }
+
+        (new TagProvider())->delete($id);
+
+        return json_encode([
+            'errorCode' => 0,
+            'message' => 'Tag deleted successfully.',
+        ]);
     }
 }

@@ -64,10 +64,10 @@ class LabelAssociationProvider extends BaseProvider
      * @param int $id
      * @throws \Exception
      */
-    public function delete(int $id): void
+    public function delete(string $id): void
     {
-        $this->database->prepareQuery('DELETE FROM label_association WHERE recording_id = :id');
-        $this->database->executeDelete([':id' => $id]);
+        $this->database->prepareQuery("DELETE FROM label_association WHERE recording_id IN ($id)");
+        $this->database->executeDelete();
     }
 
 }

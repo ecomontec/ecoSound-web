@@ -4,8 +4,9 @@ namespace BioSounds\Entity;
 
 use BioSounds\Database\Database;
 use BioSounds\Provider\BaseProvider;
+use BioSounds\Utils\Auth;
 
-class TagReview extends BaseProvider
+class TagReview extends AbstractProvider
 {
     const TABLE_NAME = 'tag_review';
     const TAG = 'tag_id';
@@ -14,8 +15,6 @@ class TagReview extends BaseProvider
     const SPECIES = 'species_id';
     const COMMENTS = 'note';
     const DATE = 'creation_date';
-
-    //TODO: Create ReviewStatus model
     const STATUS_TABLE_NAME = 'tag_review_status';
     const STATUS_NAME = 'name';
 
@@ -36,6 +35,23 @@ class TagReview extends BaseProvider
 
         $this->database->prepareQuery($query);
         return $this->database->executeSelect([':tagId' => $tagId]);
+    }
+
+    public function getReview(int $collection_id): array
+    {
+        $sql = "SELECT tr.*,u.name AS user, trs.name AS tag_review_status, s.binomial AS species FROM tag_review tr 
+            LEFT JOIN tag t ON tr.tag_id = t.tag_id
+            LEFT JOIN recording r ON r.recording_id = t.recording_id
+            LEFT JOIN species s ON s.species_id = tr.species_id
+            LEFT JOIN user u ON u.user_id = tr.user_id
+            LEFT JOIN tag_review_status trs ON tr.tag_review_status_id = trs.tag_review_status_id WHERE r.col_id = $collection_id";
+        if (!Auth::isManage()) {
+            $sql .= " AND t.user_id = " . Auth::getUserID();
+        }
+        $sql .= ' ORDER BY t.tag_id';
+
+        $this->database->prepareQuery($sql);
+        return $this->database->executeSelect();
     }
 
     /**
@@ -78,5 +94,42 @@ class TagReview extends BaseProvider
         }
         $this->database->prepareQuery(sprintf($query, implode(', ', array_keys($fields)), implode(', ', $fields)));
         return $this->database->executeInsert($values);
+    }
+
+    public function update($data)
+    {
+        if (empty($data)) {
+            return false;
+        }
+
+        $fields = [];
+        $values = [];
+
+        foreach ($data as $key => $value) {
+            $key = substr($key, 0, strrpos($key, '_'));
+            if ($key == 'species_id' && $value == '') {
+                continue;
+            }
+            if ($key == '') {
+                continue;
+            }
+            $fields[] = $key . " = :" . $key;
+            $values[":" . $key] = $value;
+
+        }
+
+        $query = 'UPDATE tag_review SET ' . implode(", ", $fields) . ' ';
+        $query .= "WHERE tag_id = $data[tag_id_hidden] AND user_id = $data[user_id_hidden]";
+
+        $this->database->prepareQuery($query);
+        return $this->database->executeUpdate($values);
+    }
+
+    public function delete(string $id)
+    {
+        $tag_id = explode('-', $id)[0];
+        $user_id = explode('-', $id)[1];
+        $this->database->prepareQuery("DELETE FROM tag_review WHERE tag_id = $tag_id AND user_id = $user_id");
+        return $this->database->executeDelete();
     }
 }

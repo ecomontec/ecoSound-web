@@ -5,14 +5,29 @@
     {% include 'administration/userForm.html.twig' %}
     <div class="card mb-3" id="usersList">
         <div class="card-header border-light bg-white text-right">
+            <button id="editPassword" name="table-btn" class="btn btn-outline-secondary btn-sm mt-2" type="button" data-target="#editPassword" disabled>
+                <i class="fas fa-edit"></i>
+                Edit Password
+            </button>
+            <button id="privileges" name="table-btn" class="btn btn-outline-secondary btn-sm mt-2" type="button" data-target="#privileges" disabled>
+                <i class="fas fa-tasks"></i>
+                Privileges
+            </button>
             <button id="userFormButton" class="btn btn-outline-primary btn-sm mt-2" type="button" data-toggle="collapse" data-target="#userFormSection" aria-expanded="false" aria-controls="userFormSection">
                 <i class="fas fa-plus"></i>
                 Add User
+            </button>
+            <button id="usersExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#usersExport" aria-expanded="false" aria-controls="usersExport">
+                <i class="fa fa-download"></i>
+                User Export
             </button>
         </div>
         <table id="userTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
             <tr style="font-size: .875rem;">
+                <th>
+                    <input type="checkbox" class="js-all-checkbox" name="check-all" id="check-all">
+                </th>
                 <th>#</th>
                 <th>Name</th>
                 <th>Username</th>
@@ -23,59 +38,9 @@
                     <th>Active</th>
                 {% endif %}
                 <th></th>
-                <th></th>
-                <th></th>
             </tr>
             </thead>
-            <tbody class="form-control-sm js-user-list">
-            {% for user in users %}
-                <tr>
-                    <td>
-                        {{ user.user_id }}
-                        <input type="hidden" class="form-control form-control-sm" name="itemID" value="{{ user.user_id }}">
-                    </td>
-                    <td data-search="{{ user.name }}" data-order="{{ user.name }}">
-                        <input type="text" class="form-control form-control-sm" name="name" value="{{ user.name }}" {{ not is_admin and user.role_id == 1 ? 'disabled' }}>
-                    </td>
-                    <td>{{ user.username }}</td>
-                    <td data-search="{{ user.orcid }}" data-order="{{ user.orcid }}">
-                        <input type="text" class="form-control form-control-sm" name="orcid" value="{{ user.orcid }}" {{ not is_admin and user.role_id == 1 ? 'disabled' }}>
-                    </td>
-                    <td data-search="{{ user.email }}" data-order="{{ user.email }}">
-                        <input type="email" class="form-control form-control-sm" name="email" value="{{ user.email }}" {{ not is_admin and user.role_id == 1 ? 'disabled' }}>
-                    </td>
-                    {% if is_admin %}
-                        <td {% for role in roles %}{% if role.role_id == user.role_id %}data-search="{{ role.name }}" data-order="{{ role.name }}"{% endif %}{% endfor %}>
-                            <select name="role_id" class="form-control form-control-sm">
-                                {% for role in roles %}
-                                    <option value="{{ role.role_id }}" {{ role.role_id == user.role_id ? "selected" }}>{{ role.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </td>
-                        <td class="text-center" data-search="{{ user.active }}" data-order="{{ user.active }}">
-                            <input name="active" type="checkbox" {{ user.active ? 'checked' }}>
-                        </td>
-                    {% endif %}
-                    <td>
-                        {% if is_admin or user.role_id == 2 %}
-                            <a href="{{ baseUrl }}/admin/userMgr/editPassword" class="js-open-modal" data-id="{{ user.user_id }}" title="Edit Password">
-                                <i class='fas fa-edit'></i>
-                            </a>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if user.role_id == 2 %}
-                            <a href="{{ baseUrl }}/UserPermission/{{ user.user_id == user_id and not is_admin?'view':'show' }}/{{ user.user_id }}" class="js-open-modal" title="Collection Privileges" $privhidden>
-                                <i class='fas fa-tasks'></i>
-                            </a>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <input type="color" name="color" alt="Tag color" value="{{ user.color is empty ? default_color : user.color }}" {{ not is_admin and user.role_id == 1 ? 'disabled' }} >
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
+            <tbody class="form-control-sm js-user-list"></tbody>
         </table>
     </div>
 {% endblock %}
@@ -83,37 +48,66 @@
 {% block scripts %}
     {{ parent() }}
     <script>
-        $(document).ready(function () {
-            $('#userTable').show()
-            $('#userTable').DataTable({
-                "pageLength": 8,
-                "lengthChange": false,
-                "stateSave": true,
-                "StateDuration": -1,
-                "order": [[0, 'asc']],
-                "columnDefs": [{
-                    "orderable": false,
-                    "targets": [{% if is_admin %}6, 7, 8{% else %}4, 5, 6{% endif %}]
-                }],
-                "bAutoWidth": false,
-                "scrollX": true,
-            });
-        });
         $(function () {
+            $(document).ready(function () {
+                $('#userTable').show()
+                $('#userTable').DataTable({
+                    "processing": true,
+                    "serverSide": true,
+                    "ajax": {
+                        "url": '{{ baseUrl }}/admin/userMgr/getListByPage',
+                        "type": 'POST'
+                    },
+                    "stateSave": true,
+                    "StateDuration": -1,
+                    "order": [[1, 'asc']],
+                    "columnDefs": [
+                        {
+                            "orderable": false,
+                            "targets": [0],
+                        },
+                        {
+                            "className": "dt-center",
+                            "targets": [{% if is_admin %} 0, 7, 8,{% else %} 0, 6{% endif %}],
+                        }],
+                    "bAutoWidth": false,
+                    "scrollX": true,
+                });
+            });
             'use strict';
+
+            $(document).on('click', '#usersExport', function () {
+                window.location.href = '{{ baseUrl }}/api/admin/userMgr/export';
+            });
 
             /* Save users list */
             $('.js-user-list').on('change', 'input, select, textarea', function () {
+                if ($(this)[0].className == 'js-checkbox') {
+                    return
+                }
                 saveFormList($(this), 'api/admin/userMgr/save');
-                var table = $('#userTable').DataTable()
-                var tr = $(this).closest("tr")
-                table.rows(tr).invalidate()
             });
 
             $("#userFormSection").on('shown.bs.collapse', function () {
                 $("#usersList").hide();
             }).on('hidden.bs.collapse', function () {
                 $("#usersList").show();
+            });
+
+            $('#userForm').submit(function (e) {
+                e.preventDefault();
+                if (this.checkValidity() === false) {
+                    e.stopPropagation();
+                } else {
+                    postRequest('{{ baseUrl }}/api/admin/userMgr/save', new FormData($(this)[0]), false, false, function (response) {
+                        if (response.isValid) {
+                            $('#userValid').text(response.message)
+                            return
+                        }
+                        location.reload();
+                    });
+                }
+                this.classList.add('was-validated');
             });
 
             $(document).on('click', '#saveButton', function () {
@@ -135,7 +129,13 @@
                 if (this.checkValidity() === false) {
                     e.stopPropagation();
                 } else {
-                    $.ajax({type: 'POST', url: '{{ baseUrl }}/api/admin/userMgr/save', data: new FormData($(this)[0])}).done(function (response) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '{{ baseUrl }}/api/admin/userMgr/save',
+                        data: new FormData($(this)[0]),
+                        processData: false,
+                        contentType: false,
+                    }).done(function (response) {
                         showAlert(response.message);
                         $('#modal-div').modal('hide');
                     }).fail(function (response) {
@@ -148,21 +148,29 @@
                 this.classList.add('was-validated');
             });
 
-            $('#userForm').submit(function (e) {
+            $('button[name="table-btn"][data-target="#editPassword"]').click(function (e) {
+                let id = '';
+                $('.js-checkbox:checked').each(function () {
+                    id = $(this).data('id');
+                });
+                let data = {'id': id};
+                requestModal("{{ baseUrl }}/admin/userMgr/editPassword", data);
                 e.preventDefault();
-                if (this.checkValidity() === false) {
-                    e.stopPropagation();
+            })
+
+            $('button[name="table-btn"][data-target="#privileges"]').click(function (e) {
+                let id = [];
+                $('.js-checkbox:checked').each(function () {
+                    id.push($(this).data('id'));
+                });
+                let data = {'id': id};
+                if (id.length == 1 && id[0] =={{ user_id }}) {
+                    requestModal("{{ baseUrl }}/UserPermission/view", data);
                 } else {
-                    postRequest('{{ baseUrl }}/api/admin/userMgr/save', new FormData($(this)[0]), false, false, function (response) {
-                        if (response.isValid) {
-                            $('#userValid').text(response.message)
-                            return
-                        }
-                        location.reload();
-                    });
+                    requestModal("{{ baseUrl }}/UserPermission/show", data);
                 }
-                this.classList.add('was-validated');
-            });
+                e.preventDefault();
+            })
         });
     </script>
 {% endblock %}
