@@ -744,7 +744,6 @@ class RecordingController extends BaseController
         exec($str . " 2>&1", $out, $status);
         if ($status == 0) {
             if (file_exists(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . "/" . $data['filename'] . ".csv")) {
-                var_dump(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . "/" . $data['filename'] . ".csv");
                 $handle = fopen(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . "/" . $data['filename'] . ".csv", "rb");
                 $result = [];
                 while (!feof($handle)) {
