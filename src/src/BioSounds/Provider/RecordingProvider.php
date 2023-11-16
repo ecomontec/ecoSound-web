@@ -362,7 +362,7 @@ class RecordingProvider extends AbstractProvider
                         <input id='old_name$value[recording_id]' type='hidden' value='$value[username]'>
                         <input id='directory$value[recording_id]' type='hidden' value='$value[directory]'>
                         <input id='path$value[recording_id]' type='hidden' value='$value[path]' >
-                        <input id='max_freq$value[recording_id]' type='hidden' value='" . ($value['max_freq'] / 2) . "'>";
+                        <input id='max_freq$value[recording_id]' type='hidden' value='" . ($value['sampling_rate'] / 2) . "'>";
                 $arr[$key][] = $value['filename'];
                 $arr[$key][] = "<input type='text' id='name_$value[recording_id]' class='form-control form-control-sm' style='width:200px;' title='Name' name='name' value='$value[name]'>";
                 $arr[$key][] = "<select id='user_id$value[recording_id]' name='user_id' style='width:120px;' class='form-control form-control-sm'>$str_user</select>";

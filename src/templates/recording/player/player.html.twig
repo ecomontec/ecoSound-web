@@ -289,6 +289,7 @@
                         'sf_thresh': $("#sf_thresh").val(),
                         'temp': soundFilePath,
                         'max_freq': fileFreqMax,
+                        'user_id': '{{ user_id }}',
                     };
                 } else if ($('#tf').val() == 2) {
                     data = {
@@ -300,6 +301,7 @@
                         'file_date': $("#file_date").val(),
                         'detection_threshold': $("#detection_threshold").val(),
                         'temp': soundFilePath,
+                        'user_id': '{{ user_id }}',
                     };
                 }
                 data = jsToFormData(data)

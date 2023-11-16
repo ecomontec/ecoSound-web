@@ -16,6 +16,7 @@ use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\SpectrogramProvider;
 use BioSounds\Provider\SiteProvider;
 use BioSounds\Provider\TagProvider;
+use BioSounds\Service\Queue\RabbitQueueService;
 use BioSounds\Utils\Auth;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -275,63 +276,16 @@ class RecordingController extends BaseController
         exit();
     }
 
-    public function BirdNETAnalyzer(){
+    public function model()
+    {
         if (!Auth::isUserLogged()) {
-            throw new NotAuthenticatedException();
+            throw new ForbiddenException();
         }
-        $connection = new AMQPStreamConnection(QUEUE_HOST, QUEUE_PORT, QUEUE_USER, QUEUE_PASSWORD);
-        $channel = $connection->channel();
-        $channel->queue_declare(Auth::getUserID(), false, true, false, false);
-
-        $messageBody = json_encode($_POST);
-        $message = new AMQPMessage($messageBody);
-        $channel->basic_publish($message, '', Auth::getUserID());
-
-        $callback = function($msg) {
-            $data = $msg->body;
-            echo ' [x] Received recording id: ' . $data['recording_id'] , "\n";
-            (new \BioSounds\Controller\RecordingController())->BirdNETAnalyzer($data);
-            sleep(substr_count($data['recording_id'], '.'));
-            echo " [x] Done", "\n";
-            $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
-        };
-
-        $channel->basic_consume(Auth::getUserID(), '', false, true, false, false, $callback);
-
-        while ($channel->is_consuming()) {
-            $channel->wait();
+        $this->queueService = new RabbitQueueService();
+        foreach ($_POST as $data) {
+            $this->queueService->model($data);
         }
-        $channel->close();
-        $connection->close();
-    }
-
-    public function batdetect2(){
-        if (!Auth::isUserLogged()) {
-            throw new NotAuthenticatedException();
-        }
-        $connection = new AMQPStreamConnection(QUEUE_HOST, QUEUE_PORT, QUEUE_USER, QUEUE_PASSWORD);
-        $channel = $connection->channel();
-        $channel->queue_declare(Auth::getUserID(), false, true, false, false);
-
-        $messageBody = json_encode($_POST);
-        $message = new AMQPMessage($messageBody);
-        $channel->basic_publish($message, '', Auth::getUserID());
-
-        $callback = function($msg) {
-            $data = $msg->body;
-            echo ' [x] Received recording id: ' . $data['recording_id'] , "\n";
-            (new \BioSounds\Controller\RecordingController())->batdetect2($data);
-            sleep(substr_count($data['recording_id'], '.'));
-            echo " [x] Done", "\n";
-            $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
-        };
-
-        $channel->basic_consume(Auth::getUserID(), '', false, true, false, false, $callback);
-
-        while ($channel->is_consuming()) {
-            $channel->wait();
-        }
-        $channel->close();
-        $connection->close();
+        $this->queueService->closeConnection();
+        return true;
     }
 }

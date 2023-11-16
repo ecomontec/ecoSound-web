@@ -13,3 +13,4 @@ done;'
 echo "Queue worker started."
 
 docker-compose exec -T -u www-data apache nohup php worker.php > files_update.log 2>&1 &
+docker-compose exec -T -u www-data apache nohup php model.php > model.log 2>&1 &

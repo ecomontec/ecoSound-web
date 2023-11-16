@@ -230,7 +230,6 @@
                     $(this).siblings().remove();
                     {% for model in models %}
                     if ($(this).val() == '{{ model.tf_model_id }}') {
-                        $('#model-btn').attr("href", "{{ baseUrl }}/recording/{{ model.name|replace({'-': ''}) }}");
                         html = html + '<div class="col-form-label">' +
                             '<strong>Description:</strong>' +
                             '<a class="col-form-label" href="{{ model.source_URL }}" target="_blank" title="Documentation"> <i class="fa fa-book"></i></a>' +
@@ -350,6 +349,7 @@
 
                 $(".js-tf-modal").click(function (e) {
                     let data = []
+                    let arr = []
                     let lat, lon
                     $('.js-checkbox:checked').each(function () {
                         let id = $(this).closest('tr').find('[name="itemID"]').val()
@@ -361,7 +361,7 @@
                                 lat = $('#site_id' + id).find('option:selected').attr('data-lat')
                                 lon = $('#site_id' + id).find('option:selected').attr('data-lon')
                             }
-                            data = {
+                            arr = {
                                 'collection_id': $('#colId').val(),
                                 'recording_id': id,
                                 'filename': $('#name_' + id).val(),
@@ -376,9 +376,10 @@
                                 'sf_thresh': $("#sf_thresh").val(),
                                 'temp': $("#path" + id).val(),
                                 'max_freq': $("#max_freq" + id).val(),
+                                'user_id': '{{ user_id }}',
                             };
                         } else if ($('#tf').val() == 2) {
-                            data = {
+                            arr = {
                                 'collection_id': $('#colId').val(),
                                 'recording_id': id,
                                 'filename': $('#name_' + id).val(),
@@ -387,19 +388,15 @@
                                 'file_date': $('#file_date' + id).val(),
                                 'detection_threshold': $("#detection_threshold").val(),
                                 'temp': $("#path" + id).val(),
+                                'user_id': '{{ user_id }}',
                             };
                         }
-                        data = jsToFormData(data)
-                        $.ajax({
-                            type: 'POST',
-                            url: $('#model-btn').attr('href'),
-                            data: data,
-                            dataType: 'json',
-                            processData: false,
-                            contentType: false,
-                        })
+                        arr = JSON.stringify(arr)
+                        data.push(arr)
                     });
-                    $('#modal-tf').modal('hide')
+                    postRequest('{{ baseUrl }}/api/admin/recordingManager/model', data, false, false, function () {
+                        $('#modal-tf').modal('hide')
+                    });
                     e.preventDefault();
                 });
                 $('button[name="table-btn"][data-target="#viewing"]').click(function (e) {

@@ -45,20 +45,21 @@ class RecordingController extends BaseController
      * RecordingController constructor.
      * @param Environment $twig
      */
-    public function __construct(Environment $twig)
+    public function __construct(Environment $twig = null)
     {
-        parent::__construct($twig);
-
-        $this->recordingPresenter = new RecordingPresenter();
-        $this->recordingService = new RecordingService();
-        $this->recordingPresenter->setSpectrogramHeight(SPECTROGRAM_HEIGHT);
-        $user = new User();
-        if ($user->getFftValue(Auth::getUserID())) {
-            $fftSize = $user->getFftValue(Auth::getUserID());
-        } elseif (Utils::getSetting('fft')) {
-            $fftSize = Utils::getSetting('fft');
+        if ($twig != null) {
+            parent::__construct($twig);
+            $this->recordingPresenter = new RecordingPresenter();
+            $this->recordingService = new RecordingService();
+            $this->recordingPresenter->setSpectrogramHeight(SPECTROGRAM_HEIGHT);
+            $user = new User();
+            if ($user->getFftValue(Auth::getUserID())) {
+                $fftSize = $user->getFftValue(Auth::getUserID());
+            } elseif (Utils::getSetting('fft')) {
+                $fftSize = Utils::getSetting('fft');
+            }
+            $this->fftSize = $fftSize;
         }
-        $this->fftSize = $fftSize;
     }
 
     /**
@@ -627,7 +628,7 @@ class RecordingController extends BaseController
         $j = 0;
         $str = 'python3 ' . ABSOLUTE_DIR . 'BirdNET-Analyzer/analyze.py' .
             ' --i ' . ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['filename'] .
-            ' --o ' . ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['recording_id'] . '-' . Auth::getUserLoggedID() . ".csv" .
+            ' --o ' . ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['recording_id'] . '-' . $data['user_id'] . ".csv" .
             ' --rtype "csv"';
         if ($data['lat'] != '') {
             $str = $str . ' --lat ' . $data['lat'];
@@ -652,7 +653,7 @@ class RecordingController extends BaseController
         }
         exec($str . " 2>&1", $out, $status);
         if ($status == 0) {
-            $handle = fopen(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['recording_id'] . '-' . Auth::getUserLoggedID() . ".csv", "rb");
+            $handle = fopen(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['recording_id'] . '-' . $data['user_id'] . ".csv", "rb");
             $result = [];
             while (!feof($handle)) {
                 $d = fgetcsv($handle);
@@ -695,7 +696,7 @@ class RecordingController extends BaseController
                     }
                     $arr['sound_id'] = '4';
                     $arr['recording_id'] = $data['recording_id'];
-                    $arr['user_id'] = Auth::getUserID();
+                    $arr['user_id'] = $data['user_id'];
                     $arr['creator_type'] = $data['creator_type'] . ' ' . $maxValue;
                     $arr['min_time'] = $r[0];
                     $arr['max_time'] = $r[1];
@@ -730,13 +731,13 @@ class RecordingController extends BaseController
         }
         $i = 0;
         $j = 0;
-        if (!file_exists(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . Auth::getUserLoggedID())) {
-            mkdir(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . Auth::getUserLoggedID(), 0777, true);
+        if (!file_exists(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'])) {
+            mkdir(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'], 0777, true);
         }
-        copy(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['filename'], ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . Auth::getUserLoggedID() . '/' . $data['filename']);
+        copy(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['filename'], ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . '/' . $data['filename']);
         $str = 'batdetect2 detect ' .
-            ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . Auth::getUserLoggedID() . ' ' .
-            ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . Auth::getUserLoggedID() . ' ';
+            ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . ' ' .
+            ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . ' ';
         if ($data['detection_threshold'] != 'undefined') {
             $str = $str . $data['detection_threshold'];
         } else {
@@ -744,8 +745,8 @@ class RecordingController extends BaseController
         }
         exec($str . " 2>&1", $out, $status);
         if ($status == 0) {
-            if (file_exists(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . Auth::getUserLoggedID() . "/" . $data['filename'] . ".csv")) {
-                $handle = fopen(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . Auth::getUserLoggedID() . "/" . $data['filename'] . ".csv", "rb");
+            if (file_exists(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . "/" . $data['filename'] . ".csv")) {
+                $handle = fopen(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . "/" . $data['filename'] . ".csv", "rb");
                 $result = [];
                 while (!feof($handle)) {
                     $d = fgetcsv($handle);
@@ -776,7 +777,7 @@ class RecordingController extends BaseController
                         }
                         $arr['sound_id'] = '4';
                         $arr['recording_id'] = $data['recording_id'];
-                        $arr['user_id'] = Auth::getUserID();
+                        $arr['user_id'] = $data['user_id'];
                         $arr['creator_type'] = $data['creator_type'];
                         $arr['min_time'] = $r[2];
                         $arr['max_time'] = $r[3];
