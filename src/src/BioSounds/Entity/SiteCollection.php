@@ -68,7 +68,7 @@ class SiteCollection extends BaseProvider
 
     public function isValid($str, $site_id, $collection_id)
     {
-        $sql = "SELECT GROUP_CONCAT(project_id,'@',site_name SEPARATOR '&') AS project FROM (SELECT c.project_id,GROUP_CONCAT(DISTINCT s.`name`) AS site_name FROM site s LEFT JOIN site_collection sc ON s.site_id = sc.site_id LEFT JOIN collection c ON c.collection_id = sc.collection_id WHERE s.`name` IN ($str) AND c.collection_id IN ($collection_id) AND s.site_id NOT IN ($site_id) GROUP BY c.project_id ORDER BY c.project_id) a";
+        $sql = "SELECT GROUP_CONCAT(project_id,'@',site_name,'' SEPARATOR '&') AS project FROM (SELECT c.project_id,GROUP_CONCAT(DISTINCT ' \"',s.`name`,'\"') AS site_name FROM site s LEFT JOIN site_collection sc ON s.site_id = sc.site_id LEFT JOIN collection c ON c.collection_id = sc.collection_id WHERE s.`name` IN ($str) AND c.collection_id IN ($collection_id) AND s.site_id NOT IN ($site_id) GROUP BY c.project_id ORDER BY c.project_id) a";
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
         return $result[0]['project'];

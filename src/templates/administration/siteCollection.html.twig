@@ -129,7 +129,7 @@
                         $(".projectValid").text('')
                         let project = response.result
                         for (var i = 0; i < project.length; i++) {
-                            $('#projectValid' + project[i][0]).text('Site ' + project[i][1] + ' already exists')
+                            $('#projectValid' + project[i][0]).text('Site name ' + project[i][1] + ' already exists.')
                         }
                         return
                     }

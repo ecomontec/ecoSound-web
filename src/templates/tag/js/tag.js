@@ -154,6 +154,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (!closeModalTagForm && readyToClose) {
                     showAlert("Saved successfully.")
+                    $("#x").val($("input[name='minTimeView']").val());
+                    $("#w").val($("input[name='maxTimeView']").val());
+                    $("#y").val($("input[name='minFreqView']").val());
+                    $("#h").val($("input[name='maxFreqView']").val());
+                    $("#open").val($("input[name='tag_id']").val());
+                    $("#modalX").val($('#modal-div').offset().left)
+                    $("#modalY").val($('#modal-div').offset().top)
+                    $("#recordingForm").submit();
                 }
             }
 

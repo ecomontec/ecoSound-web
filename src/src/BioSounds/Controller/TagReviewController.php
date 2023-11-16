@@ -23,9 +23,16 @@ class TagReviewController extends BaseController
 
         $tagReview = new TagReview();
 
+        $reviews = $tagReview->getListByTag($tagId);
+        foreach ($reviews as $review) {
+            if ($review['reviewer_id'] == Auth::getUserLoggedID()) {
+                $isReviewGranted = false;
+            }
+        }
+
         return $this->twig->render('tag/tagReview.html.twig', [
             'disableReviewForm' => !Auth::isUserAdmin() && $tagReview->hasUserReviewed(Auth::getUserLoggedID(), $tagId),
-            'reviews' => $tagReview->getListByTag($tagId),
+            'reviews' => $reviews,
             'tagId' => $tagId,
             'isReviewGranted' => $isReviewGranted
         ]);

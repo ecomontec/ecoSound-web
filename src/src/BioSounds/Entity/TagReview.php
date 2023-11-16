@@ -25,7 +25,7 @@ class TagReview extends AbstractProvider
      */
     public function getListByTag(int $tagId): array
     {
-        $query = 'SELECT user.name as reviewer, species.binomial, tag_review_status.name as status, tag_review.' .
+        $query = 'SELECT user.name as reviewer,user.user_id as reviewer_id, species.binomial, tag_review_status.name as status, tag_review.' .
             self::DATE . ' FROM ' . self::TABLE_NAME . ' LEFT JOIN ' . Species::TABLE_NAME . ' ON ' .
             Species::TABLE_NAME . '.' . Species::ID . ' = tag_review.' . self::SPECIES .
             ' LEFT JOIN ' . User::TABLE_NAME . ' ON ' . User::TABLE_NAME . '.' . User::ID .
