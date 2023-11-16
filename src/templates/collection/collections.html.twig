@@ -95,7 +95,7 @@
             minZoom: 1,
             maxZoom: 18,
         })
-        var map = L.map('map', {center: [{{ leaflet.latitude_center }}, {{ leaflet.longitude_center }}], zoom:{{ leaflet.count==1?10:5 }}, layers: [tiles]})
+        var map = L.map('map', {center: [{{ leaflet.latitude_center }}, {{ leaflet.longitude_center }}], zoom:{{ leaflet.count==1?10:5 }}, layers: [tiles], worldCopyJump: true})
         var mcg = L.markerClusterGroup()
         var groupAll = L.featureGroup.subGroup(mcg)
         {% for collection in collections %}
@@ -159,6 +159,7 @@
                 }
             });
         });
+
         function decodeHtml(str) {
             var map =
                 {
@@ -168,8 +169,10 @@
                     '&quot;': '"',
                     '&#039;': "'"
                 };
-            return str.replace(/&amp;|&lt;|&gt;|&quot;|&#039;/g, function (m) { return map[m];
+            return str.replace(/&amp;|&lt;|&gt;|&quot;|&#039;/g, function (m) {
+                return map[m];
 
-            });}
+            });
+        }
     </script>
 {% endblock %}

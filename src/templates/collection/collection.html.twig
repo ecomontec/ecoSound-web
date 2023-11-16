@@ -79,7 +79,7 @@
     <script src="{{ baseUrl }}/assets/js/leaflet.featuregroup.subgroup-src.js"></script>
     <script>
         {% if leaflet.arr %}
-        var map = L.map('map').setView([{{ leaflet.latitude_center }}, {{ leaflet.longitude_center }}],  {{ leaflet.count==1?10:5 }});
+        var map = L.map('map', {worldCopyJump: true}).setView([{{ leaflet.latitude_center }}, {{ leaflet.longitude_center }}],  {{ leaflet.count==1?10:5 }});
         var markers = L.markerClusterGroup();
         var markerArray = []
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
