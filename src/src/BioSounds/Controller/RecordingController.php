@@ -23,6 +23,7 @@ use BioSounds\Provider\TagProvider;
 use BioSounds\Service\RecordingService;
 use BioSounds\Utils\Auth;
 use BioSounds\Utils\Utils;
+use Cassandra\Varint;
 use Twig\Environment;
 use Symfony\Component\Process\Process;
 
@@ -735,7 +736,7 @@ class RecordingController extends BaseController
         $str = 'batdetect2 detect ' .
             ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . ' ' .
             ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . ' ';
-        if ($data['detection_threshold'] != 'undefined') {
+        if ($data['detection_threshold'] != 'undefined' && $data['detection_threshold'] != '') {
             $str = $str . $data['detection_threshold'];
         } else {
             $str = $str . '0.3';
@@ -743,6 +744,7 @@ class RecordingController extends BaseController
         exec($str . " 2>&1", $out, $status);
         if ($status == 0) {
             if (file_exists(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . "/" . $data['filename'] . ".csv")) {
+                var_dump(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . "/" . $data['filename'] . ".csv");
                 $handle = fopen(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . "/" . $data['filename'] . ".csv", "rb");
                 $result = [];
                 while (!feof($handle)) {
