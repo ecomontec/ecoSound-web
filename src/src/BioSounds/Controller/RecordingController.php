@@ -723,9 +723,6 @@ class RecordingController extends BaseController
         if (isset($data)) {
             $_POST = $data;
         }
-        if (!Auth::isUserLogged()) {
-            throw new NotAuthenticatedException();
-        }
         foreach ($_POST as $key => $value) {
             $data[$key] = $value;
         }

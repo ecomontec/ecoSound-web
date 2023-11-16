@@ -286,6 +286,9 @@ class RecordingController extends BaseController
             $this->queueService->model($data);
         }
         $this->queueService->closeConnection();
-        return true;
+        return json_encode([
+            'errorCode' => 0,
+            'message' => 'Models successfully.'
+        ]);
     }
 }
