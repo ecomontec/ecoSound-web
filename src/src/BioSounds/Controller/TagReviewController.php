@@ -57,6 +57,7 @@ class TagReviewController extends BaseController
         if (empty($data[TagReview::SPECIES])) {
             unset($data[TagReview::SPECIES]);
         }
+
         if (isset($data['user_id_hidden'])) {
             unset($data['user_id']);
             (new TagReview())->update($data);
@@ -73,8 +74,18 @@ class TagReviewController extends BaseController
         }
     }
 
-    public function delete(string $id)
+    public function delete()
     {
+        if (!Auth::isUserLogged()) {
+            throw new ForbiddenException();
+        }
+
+        $id = $_POST['id'];
+
+        if (empty($id)) {
+            throw new \Exception(ERROR_EMPTY_ID);
+        }
+
         (new TagReview())->delete($id);
 
         return json_encode([
@@ -107,13 +118,13 @@ class TagReviewController extends BaseController
         $Als[] = $colArr;
         $List = (new TagReview())->getReview($collection_id);
         foreach ($List as $Item) {
-            $valueToMove = $Item['user'];
+            $valueToMove = $Item['user'] == null ? '' : $Item['user'];
             unset($Item['user']);
             array_splice($Item, 2, 0, $valueToMove);
-            $valueToMove = $Item['tag_review_status'];
+            $valueToMove = $Item['tag_review_status'] == null ? '' : $Item['tag_review_status'];
             unset($Item['tag_review_status']);
             array_splice($Item, 4, 0, $valueToMove);
-            $valueToMove = $Item['species'];
+            $valueToMove = $Item['species'] == null ? '' : $Item['species'];
             unset($Item['species']);
             array_splice($Item, 6, 0, $valueToMove);
 

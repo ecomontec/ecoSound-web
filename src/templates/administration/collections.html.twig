@@ -3,10 +3,11 @@
 {% block admin_content %}
 
     {% include 'administration/collCreate.html.twig' %}
+
     <div class="card mb-3" id="collectionsList">
         <div class="card-header border-light bg-white text-right">
-            <div class="col-auto mr-auto">
-                <form id="projectForm" class="form-inline" action="{{ baseUrl }}/admin/collections">
+            <div class="form-inline">
+                <form id="projectForm" class="form-inline col-8" action="{{ baseUrl }}/admin/collections">
                     <label for="projectId">Project</label>
                     <select id="projectId" name="projectId" class="form-control form-control-sm ml-3">
                         {% for project in projects %}
@@ -16,22 +17,26 @@
                         {% endfor %}
                     </select>
                 </form>
+                <div class="col-4 form-inline justify-content-end">
+                    <label class="mr-2">Search:</label>
+                    <input class="form-control-sm" id="search">
+                </div>
             </div>
             <button id="viewing" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#viewing" disabled>
                 <i class="fas fa-eye"></i>
-                Viewing
+                View
             </button>
-            <button id="deleteCollection" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#deleteCollection" disabled>
+            <button id="delete" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#delete" disabled>
                 <i class="fas fa-trash"></i>
-                Deletion
+                Delete
             </button>
             <button id="collectionFormButton" class="btn btn-outline-primary btn-sm mt-2" type="button" data-toggle="collapse" data-target="#collectionFormSection" aria-expanded="false" aria-controls="collectionFormSection">
                 <i class="fas fa-plus"></i>
-                Add Collection
+                Add
             </button>
             <button id="collectionsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#collectionsExport" aria-expanded="false" aria-controls="collectionsExport">
-                <i class="fa fa-download"></i>
-                Collection Export
+                <i class="fa fa-file-csv"></i>
+                Save All as CSV
             </button>
         </div>
         <table id="collTable" style="display:none; white-space: nowrap;">
@@ -93,13 +98,14 @@
     <script>
         $(document).ready(function () {
             $('#collTable').show()
-            $('#collTable').DataTable({
+            let table = $('#collTable').DataTable({
                 "processing": true,
                 "serverSide": true,
                 "ajax": {
                     "url": '{{ baseUrl }}/admin/collectionMgr/getListByPage/{{ projectId }}/{{ collectionId }}',
                     "type": 'POST'
                 },
+                "dom": 'lrtip',
                 "stateSave": true,
                 "StateDuration": -1,
                 "order": [[1, 'asc']],
@@ -116,7 +122,14 @@
                 "bAutoWidth": false,
                 "scrollX": true,
             });
+            if (table.state.loaded()) {
+                $('#search').val(table.state.loaded().search.search);
+            }
+            $('#search').on('input', () => {
+                table.search($('#search').val()).draw();
+            });
         });
+
 
         $(function () {
             'use strict';
@@ -136,7 +149,6 @@
             });
 
             $('#js-delete-button').click(function () {
-                let row = $("#col" + $('#delete_id').val()).parents("tr");
                 toggleLoading();
                 deleteRequest('{{ baseUrl }}/api/admin/collectionMgr/delete/' + $('#delete_id').val(), [], true, false, function () {
                     location.reload();
@@ -214,7 +226,7 @@
                 e.preventDefault();
             })
 
-            $('button[name="table-btn"][data-target="#deleteCollection"]').click(function (e) {
+            $('button[name="table-btn"][data-target="#delete"]').click(function (e) {
                 let id = '';
                 let name = '';
                 $('.js-checkbox:checked').each(function () {

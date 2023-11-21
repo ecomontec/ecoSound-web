@@ -12,12 +12,13 @@ use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\SoundProvider;
 use BioSounds\Provider\SoundTypeProvider;
 use BioSounds\Provider\TagProvider;
+use BioSounds\Provider\TagReviewProvider;
 use BioSounds\Utils\Auth;
 
 
-class TagController extends BaseController
+class TagReviewController extends BaseController
 {
-    const SECTION_TITLE = 'Tags';
+    const SECTION_TITLE = 'Reviews';
 
     /**
      * @return string
@@ -60,14 +61,12 @@ class TagController extends BaseController
             $arr[$animal_sound_type->getTaxonClass() . $animal_sound_type->getTaxonOrder()][$animal_sound_type->getSoundTypeId()] = [$animal_sound_type->getSoundTypeId(), $animal_sound_type->getName()];
         }
 
-        return $this->twig->render('administration/tags.html.twig', [
+        return $this->twig->render('administration/tagReviews.html.twig', [
             'projectId' => $projectId,
             'projects' => $projects,
             'colId' => $colId,
             'collections' => $collections,
             'animal_sound_types' => $arr,
-            'soundTypes' => (new SoundProvider())->getAll(),
-            'phonys' => (new SoundProvider())->get(),
         ]);
     }
 
@@ -76,20 +75,20 @@ class TagController extends BaseController
         if ($collectionId == null) {
             $collectionId = 0;
         }
-        $total = count((new TagProvider())->getTag($collectionId));
+        $total = count((new TagReviewProvider())->getReview($collectionId));
         $start = $_POST['start'];
         $length = $_POST['length'];
         $search = $_POST['search']['value'];
         $column = $_POST['order'][0]['column'];
         $dir = $_POST['order'][0]['dir'];
-        $data = (new TagProvider())->getListByPage($collectionId, $start, $length, $search, $column, $dir);
+        $data = (new TagReviewProvider())->getListByPage($collectionId, $start, $length, $search, $column, $dir);
         if (count($data) == 0) {
             $data = [];
         }
         $result = [
             'draw' => $_POST['draw'],
             'recordsTotal' => $total,
-            'recordsFiltered' => (new TagProvider())->getFilterCount($collectionId, $search),
+            'recordsFiltered' => (new TagReviewProvider())->getFilterCount($collectionId, $search),
             'data' => $data,
         ];
         return json_encode($result);
@@ -104,47 +103,40 @@ class TagController extends BaseController
             throw new ForbiddenException();
         }
         $colArr = [];
-        $file_name = "tags.csv";
+        $file_name = "reviews.csv";
         $fp = fopen('php://output', 'w');
         header('Content-Type: application/octet-stream;charset=utf-8');
         header('Accept-Ranges:bytes');
         header('Content-Disposition: attachment; filename=' . $file_name);
-        $columns = (new TagProvider())->getColumns();
+        $columns = (new TagReviewProvider())->getColumns();
         foreach ($columns as $column) {
             $colArr[] = $column['COLUMN_NAME'];
         }
 
-        array_splice($colArr, 2, 0, 'phony');
-        array_splice($colArr, 3, 0, 'sound_type');
-        array_splice($colArr, 5, 0, 'recording');
-        array_splice($colArr, 7, 0, 'user');
-        array_splice($colArr, 15, 0, 'species');
-        array_splice($colArr, 21, 0, 'animal sound type');
+        array_splice($colArr, 2, 0, 'reviewer');
+        array_splice($colArr, 3, 0, 'recording_id');
+        array_splice($colArr, 4, 0, 'recording');
+        array_splice($colArr, 6, 0, 'status');
+        array_splice($colArr, 8, 0, 'species');
 
         $Als[] = $colArr;
-        $List = (new TagProvider())->getTag($collection_id);
+        $List = (new TagReviewProvider())->getReview($collection_id);
         foreach ($List as $Item) {
-            unset($Item['TaxonOrder']);
-            unset($Item['TaxonClass']);
-
-            $valueToMove = $Item['phony'] == null ? '' : $Item['phony'];
-            unset($Item['phony']);
+            $valueToMove = $Item['username'] == null ? '' : $Item['username'];
+            unset($Item['username']);
             array_splice($Item, 2, 0, $valueToMove);
-            $valueToMove = $Item['sound_type'] == null ? '' : $Item['sound_type'];
-            unset($Item['sound_type']);
+            $valueToMove = $Item['recording_id'] == null ? '' : $Item['recording_id'];
+            unset($Item['recording_id']);
             array_splice($Item, 3, 0, $valueToMove);
-            $valueToMove = $Item['recordingName'] == null ? '' : $Item['recordingName'];
-            unset($Item['recordingName']);
-            array_splice($Item, 5, 0, $valueToMove);
-            $valueToMove = $Item['userName'] == null ? '' : $Item['userName'];
-            unset($Item['userName']);
-            array_splice($Item, 7, 0, $valueToMove);
-            $valueToMove = $Item['speciesName'] == null ? '' : $Item['speciesName'];
-            unset($Item['speciesName']);
-            array_splice($Item, 15, 0, $valueToMove);
-            $valueToMove = $Item['typeName'] == null ? '' : $Item['typeName'];
-            unset($Item['typeName']);
-            array_splice($Item, 21, 0, $valueToMove);
+            $valueToMove = $Item['recording'] == null ? '' : $Item['recording'];
+            unset($Item['recording']);
+            array_splice($Item, 4, 0, $valueToMove);
+            $valueToMove = $Item['state'] == null ? '' : $Item['state'];
+            unset($Item['state']);
+            array_splice($Item, 6, 0, $valueToMove);
+            $valueToMove = $Item['specie'] == null ? '' : $Item['specie'];
+            unset($Item['specie']);
+            array_splice($Item, 8, 0, $valueToMove);
 
             $Als[] = $Item;
         }
@@ -164,7 +156,7 @@ class TagController extends BaseController
         if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
         }
-        $tagProvider = new TagProvider();
+        $tagProvider = new TagReviewProvider();
         $data = [];
 
         foreach ($_POST as $key => $value) {

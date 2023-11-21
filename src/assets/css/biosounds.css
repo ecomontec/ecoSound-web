@@ -358,3 +358,14 @@ div .active a {
 .progress-bar {
     transition: width 0.3s ease-in-out;
 }
+
+.dataTables_length {
+    margin-left: 18px; !important;
+}
+.dataTables_length option{
+    background-color: #FFFFFF; !important;
+}
+
+.txt-primary{
+    color: #51895C;!important;
+}

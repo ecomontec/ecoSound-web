@@ -4,8 +4,10 @@ namespace BioSounds\Entity;
 
 use BioSounds\Provider\BaseProvider;
 
-class SiteCollection extends BaseProvider
+class SiteCollection extends AbstractProvider
 {
+    const TABLE_NAME = "site_collection";
+
     /**
      * @param string $project_id
      * @param string $site_id
@@ -72,5 +74,17 @@ class SiteCollection extends BaseProvider
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
         return $result[0]['project'];
+    }
+
+    public function getSiteCollection(string $projectId, string $collectionId): array
+    {
+        $sql = "SELECT sc.* FROM site_collection sc 
+                LEFT JOIN collection c ON c.collection_id = sc.collection_id
+                WHERE c.project_id = $projectId ";
+        if ($collectionId != null && $collectionId != '0') {
+            $sql .= " AND c.collection_id = $collectionId ";
+        }
+        $this->database->prepareQuery($sql);
+        return $this->database->executeSelect();
     }
 }

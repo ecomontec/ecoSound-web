@@ -353,13 +353,22 @@ function checkboxChange() {
             $('button[name="table-btn"][data-target="#editDescription"]').prop('disabled', true);
         }
     }
-    if ($('button[name="table-btn"][data-target="#deleteCollection"]').length > 0) {
+    if ($('button[name="table-btn"][data-target="#download"]').length > 0) {
         if (selectedCount === 1) {
-            $('button[name="table-btn"][data-target="#deleteCollection"]').removeClass('btn-outline-secondary').removeClass('btn-outline-primary').addClass('btn-outline-danger');
-            $('button[name="table-btn"][data-target="#deleteCollection"]').prop('disabled', false);
+            $('button[name="table-btn"][data-target="#download"]').removeClass('btn-outline-secondary').addClass('btn-outline-primary');
+            $('button[name="table-btn"][data-target="#download"]').prop('disabled', false);
         } else {
-            $('button[name="table-btn"][data-target="#deleteCollection"]').removeClass('btn-outline-primary').removeClass('btn-outline-danger').addClass('btn-outline-secondary');
-            $('button[name="table-btn"][data-target="#deleteCollection"]').prop('disabled', true);
+            $('button[name="table-btn"][data-target="#download"]').removeClass('btn-outline-primary').addClass('btn-outline-secondary');
+            $('button[name="table-btn"][data-target="#download"]').prop('disabled', true);
+        }
+    }
+    if ($('button[name="table-btn"][data-target="#delete"]').length > 0) {
+        if (selectedCount === 1) {
+            $('button[name="table-btn"][data-target="#delete"]').removeClass('btn-outline-secondary').removeClass('btn-outline-primary').addClass('btn-outline-danger');
+            $('button[name="table-btn"][data-target="#delete"]').prop('disabled', false);
+        } else {
+            $('button[name="table-btn"][data-target="#delete"]').removeClass('btn-outline-primary').removeClass('btn-outline-danger').addClass('btn-outline-secondary');
+            $('button[name="table-btn"][data-target="#delete"]').prop('disabled', true);
         }
     }
     if ($('button[name="table-btn"][data-target="#deletion"]').length > 0) {

@@ -5,8 +5,8 @@
     {% include 'administration/upload.html.twig' with {'site': site, 'colId': colId} %}
     <div class="card mb-3" id="recordingsList">
         <div class="card-header border-light bg-white text-right">
-            <div class="col-auto mr-auto mt-2">
-                <form id="projectForm" class="form-inline" action="{{ baseUrl }}/admin/recordings">
+            <div class="form-inline">
+                <form id="projectForm" class="form-inline col-8" action="{{ baseUrl }}/admin/recordings">
                     <label for="projectId">Project</label>
                     <select id="projectId" name="projectId" class="form-control form-control-sm ml-3">
                         {% for project in projects %}
@@ -24,6 +24,10 @@
                         {% endfor %}
                     </select>
                 </form>
+                <div class="col-4 form-inline justify-content-end">
+                    <label class="mr-2">Search:</label>
+                    <input class="form-control-sm" id="search">
+                </div>
             </div>
             <form id="metaDataForm" method="POST" class="collapse">
                 <input type="file" name="metaDataFile" id="metaDataFile" accept="text/csv" style="display: none">
@@ -31,35 +35,32 @@
             </form>
             <button id="viewing" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#viewing" disabled>
                 <i class="fas fa-eye"></i>
-                Viewing
-            </button>
-            <button id="download" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#download" disabled>
-                <i class="fas fa-download"></i>
-                Download
+                View
             </button>
             <button id="models" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#models" disabled>
                 <i class="fa-solid fa-gears"></i>
                 Models
             </button>
+            <button id="download" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#download" disabled>
+                <i class="fas fa-download"></i>
+                Export Recordings
+            </button>
             <button id="deletion" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#deletion" disabled>
                 <i class="fas fa-trash"></i>
-                Deletion
+                Delete
             </button>
             <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" id="metaData" type="button" data-toggle="dropdown" aria-expanded="false">
-                <i class="fa-solid fa-file-csv"></i>
-                Meta-data
+                <span class="fas fa-upload"></span>
+                Upload
             </button>
             <div class="dropdown-menu">
+                <a class="dropdown-item" type="button" id="uploadButton" data-toggle="collapse" data-target="#uploadForm"><i class="fas fa-file-audio"></i> Upload Recordings</a>
                 <a class="dropdown-item" type="button" id="metaDataButton"><i class="fa-solid fa-file-arrow-up"></i> Upload Meta-data</a>
-                <a class="dropdown-item" type="button" id="viewInstructions"><i class="fa-solid fa-circle-info"></i> View Instructions</a>
+                <a class="dropdown-item" type="button" id="viewInstructions"><i class="fa-solid fa-circle-info"></i> Meta-data Instructions</a>
             </div>
-            <button type="button" id="uploadButton" data-toggle="collapse" data-target="#uploadForm" class="btn btn-outline-primary btn-sm mt-2">
-                <span class="fas fa-upload"></span>
-                Upload Files
-            </button>
             <button id="recordingsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#recordingsExport" aria-expanded="false" aria-controls="recordingsExport">
-                <i class="fa fa-download"></i>
-                Recording Export
+                <i class="fa fa-file-csv"></i>
+                Save All As CSV
             </button>
         </div>
         <table id="recTable" style="display:none;white-space: nowrap;">
@@ -99,7 +100,7 @@
                     <div>
                         <div class="form-group">
                             <input id="delete_id" type="hidden">
-                            <label>Deleting this recording will also delete the <b class="text-danger" id="count"></b> tags inside and cannot be reversed!</label>
+                            <label>Deleting <b class="text-danger" id="delete_name"></b> will also delete the <b class="text-danger" id="count"></b> tags inside and cannot be reversed!</label>
                         </div>
                     </div>
                 </div>
@@ -202,13 +203,14 @@
             var microphones ={{ microphones|json_encode|raw }};
             $(document).ready(function () {
                 $('#recTable').show()
-                $('#recTable').DataTable({
+                let table = $('#recTable').DataTable({
                     "processing": true,
                     "serverSide": true,
                     "ajax": {
                         "url": '{{ baseUrl }}/admin/recordingManager/getListByPage/{{ projectId }}/{{ colId }}',
                         "type": 'POST'
                     },
+                    "dom": 'lrtip',
                     "stateSave": true,
                     "StateDuration": -1,
                     "order": [[1, 'asc']],
@@ -224,6 +226,12 @@
                     ],
                     "bAutoWidth": false,
                     "scrollX": true,
+                });
+                if (table.state.loaded()) {
+                    $('#search').val(table.state.loaded().search.search);
+                }
+                $('#search').on('input', () => {
+                    table.search($('#search').val()).draw();
                 });
                 $('#tf').change(function () {
                     let html = ''
@@ -250,9 +258,14 @@
             });
             document.addEventListener("DOMContentLoaded", function (event) {
                 $("#uploadButton").click(function (e) {
-                    $("#uploadButton").toggle();
                     $("#metaData").toggle();
-                    document.getElementById('uploadForm').hidden = false;
+                    $('#uploadForm').hidden = false;
+                });
+
+                $("#uploadForm").on('shown.bs.collapse', function () {
+                    $("#recordingsList").hide();
+                }).on('hidden.bs.collapse', function () {
+                    $("#recordingsList").show();
                 });
 
                 $('#viewInstructions').click(function () {
@@ -427,10 +440,14 @@
                 })
                 $('button[name="table-btn"][data-target="#deletion"]').click(function (e) {
                     let id = [];
+                    let name = [];
                     $('.js-checkbox:checked').each(function () {
                         id.push($(this).data('id'));
+                        name.push($('#name_' + $(this).data('id')).val())
                     });
                     id = id.join(',')
+                    name = name.join(', ')
+                    $('#delete_name').html(name)
                     $.ajax({
                         type: 'POST', url: '{{ baseUrl }}/api/admin/recordingManager/count',
                         data: {'id': id},

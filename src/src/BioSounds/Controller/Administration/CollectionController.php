@@ -132,7 +132,7 @@ class CollectionController extends BaseController
 
         $List = (new CollectionProvider())->getCollection($project_id);
         foreach ($List as $Item) {
-            $valueToMove = $Item['username'];
+            $valueToMove = $Item['username'] == null ? '' : $Item['username'];
             unset($Item['username']);
             array_splice($Item, 4, 0, $valueToMove);
             $Als[] = $Item;

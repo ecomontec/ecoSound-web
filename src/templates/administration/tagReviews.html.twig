@@ -5,7 +5,7 @@
     <div class="card mb-3" id="tagsList">
         <div class="card-header border-light bg-white text-right">
             <div class="form-inline">
-                <form id="collectionForm" class="form-inline col-8" action="{{ baseUrl }}/admin/tags">
+                <form id="collectionForm" class="form-inline col-8" action="{{ baseUrl }}/admin/tagReviews">
                     <label for="projectId">Project</label>
                     <select id="projectId" name="projectId" class="form-control form-control-sm ml-3">
                         {% for project in projects %}
@@ -36,40 +36,27 @@
                 <i class="fas fa-trash"></i>
                 Delete
             </button>
-            <button id="tagsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#tagsExport" aria-expanded="false" aria-controls="tagsExport">
+            <button id="tagReviewsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#tagReviewsExport" aria-expanded="false" aria-controls="tagReviewsExport">
                 <i class="fa fa-file-csv"></i>
                 Save All As CSV
             </button>
         </div>
-        <table id="tagsTable" style="display:none;white-space: nowrap;">
+        <table id="tagReviewsTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
             <tr style="font-size: .875rem;">
                 <th>
                     <input type="checkbox" class="js-all-checkbox" name="check-all" id="check-all">
                 </th>
                 <th>#</th>
-                <th>Phony</th>
-                <th>Sound Type</th>
                 <th>Recording</th>
-                <th>User</th>
-                <th>Creator Type</th>
-                <th>Confidence</th>
-                <th>Time Start</th>
-                <th>Time End</th>
-                <th>Min Freq</th>
-                <th>Max Freq</th>
+                <th>Reviewer</th>
+                <th>Status</th>
                 <th>Species</th>
-                <th>Uncertain</th>
-                <th>Call Distance</th>
-                <th>Distance Not Estimable</th>
-                <th>Individuals</th>
-                <th>Animal Sound Type</th>
-                <th>Reference Call</th>
-                <th>Comments</th>
+                <th>Note</th>
                 <th style="width: 120px">Creation Date (UTC)</th>
             </tr>
             </thead>
-            <tbody class="form-control-sm js-tag-list"></tbody>
+            <tbody class="form-control-sm js-review-list"></tbody>
         </table>
     </div>
     <div class="modal fade" id="modal-div" tabindex="-1" role="dialog">
@@ -108,12 +95,12 @@
     <script src="{{ baseUrl }}/assets/js/bootstrap-select.js" defer></script>
     <script>
         $(document).ready(function () {
-            $('#tagsTable').show()
-            let table = $('#tagsTable').DataTable({
+            $('#tagReviewsTable').show()
+            let table = $('#tagReviewsTable').DataTable({
                 "processing": true,
                 "serverSide": true,
                 "ajax": {
-                    "url": '{{ baseUrl }}/admin/tagMgr/getListByPage/{{ colId }}',
+                    "url": '{{ baseUrl }}/admin/tagReviewMgr/getListByPage/{{ colId }}',
                     "type": 'POST'
                 },
                 "dom": 'lrtip',
@@ -127,7 +114,7 @@
                     },
                     {
                         "className": "dt-center",
-                        "targets": [0, 13, 15, 18],
+                        "targets": [0],
                     },
                 ],
                 "bAutoWidth": false,
@@ -142,11 +129,9 @@
         });
 
         document.addEventListener("DOMContentLoaded", function () {
-            var arr ={{ animal_sound_types|json_encode|raw }};
-            var soundTypes ={{ soundTypes|json_encode|raw }};
             'use strict';
-            $(document).on('click', '#tagsExport', function () {
-                window.location.href = '{{ baseUrl }}/api/admin/tagMgr/export/{{ colId }}';
+            $(document).on('click', '#tagReviewsExport', function () {
+                window.location.href = '{{ baseUrl }}/api/admin/tagReviewMgr/export/{{ colId }}';
             });
 
             $('#js-delete-button').click(function (e) {
@@ -155,36 +140,27 @@
                     id.push($(this).data('id'));
                 });
                 let data = {'id': id};
-                postRequest('{{ baseUrl }}/api/admin/tagMgr/delete', data, false, false, function () {
+                postRequest('{{ baseUrl }}/api/tagReview/delete', data, false, false, function () {
                     location.reload();
                 });
             });
-            $('#tagsTable tbody').on('change', 'select[name=phony]', function () {
-                let id = $(this).attr('id').split('_')[1]
-                let index = 0
-                if ($("#phony_" + id).find("option:selected").text() == 'biophony') {
-                    $(".phony_" + id).show()
+            $('#tagReviewsTable tbody').on('change', 'select[name=tag_review_status_id]', function () {
+                let id = $(this).closest('tr').find('.js-checkbox').data('id')
+                if ($('option:selected', this).text() == 'Corrected') {
+                    $('#speciesName_' + id).show()
+                } else if ($('option:selected', this).text() == 'Accepted') {
+                    $('#speciesName_' + id).hide()
+                    $('.js-species-id' + id).val($('#tag_species' + id).val())
                 } else {
-                    $(".phony_" + id).hide()
-                }
-                $('#sound_id' + id).empty()
-                for (var key in soundTypes) {
-                    if (soundTypes[key]['phony'] == $("#phony_" + id).find("option:selected").text()) {
-                        if (index == 0) {
-                            $('#sound_id' + id).append("<option value='" + soundTypes[key]['sound_id'] + "' selected>" + soundTypes[key]['sound_type'] + "</option>");
-
-                        } else {
-                            $('#sound_id' + id).append("<option value='" + soundTypes[key]['sound_id'] + "'>" + soundTypes[key]['sound_type'] + "</option>");
-                        }
-                    }
-                    index++
+                    $('#speciesName_' + id).hide()
+                    $('#js-species-id' + id).val('')
                 }
             });
-            $(".js-tag-list").on('change', 'input, select, textarea', function () {
+            $(".js-review-list").on('change', 'input, select, textarea', function () {
                 if ($(this)[0].className == 'js-checkbox') {
                     return
                 }
-                saveFormList($(this), 'api/admin/tagMgr/save');
+                saveFormList($(this), 'api/tagReview/save');
             });
             $('#projectId').change(function () {
                 $('#colId').val("")
@@ -193,37 +169,12 @@
             $('#colId').change(function () {
                 $("#collectionForm").submit();
             });
-            $('#tagsTable tbody').on('click', 'input[name=distance_not_estimable]', function () {
-                var id = $(this).attr('id').split('_')[3]
-                let callDistance = $('#sound_distance_m' + id);
-                if ($(this).is(':checked')) {
-                    callDistance.val(null);
-                    callDistance.prop('readonly', true);
-                    return;
-                }
-                callDistance.prop('readonly', false);
-            });
-            $('#tagsTable tbody').on('mouseenter', 'select[name=animal_sound_type]', function () {
-                if ($(this)[0].options.length < 2) {
-                    var id = $(this).attr('id').split('e')[1]
-                    if ($(this).val() > 0) {
-                        $("#animal_sound_type" + id).prepend("<option value='0'></option>")
-                    }
-                    var data = arr[$("#taxon_class" + id).val() + $("#taxon_order" + id).val()]
-                    for (var key in data) {
-                        if ($(this).val() != data[key][0]) {
-                            $("#animal_sound_type" + id).append("<option value=" + data[key][0] + ">" + data[key][1] + "</option>");
-                        }
-                    }
-                }
-            });
             $('button[name="table-btn"][data-target="#viewing"]').click(function (e) {
                 $('.js-checkbox:checked').each(function () {
                     window.open('/recording/show/' + $(this).data('recording-id') + '?t_min=' + $(this).data('tmin') + '&t_max=' + $(this).data('tmax') + '&f_min=' + $(this).data('fmin') + '&f_max=' + $(this).data('fmax'), '_blank');
                 });
                 e.preventDefault();
             })
-
             $('button[name="table-btn"][data-target="#deletion"]').click(function (e) {
                 if ($('.js-checkbox:checked').length > 1) {
                     $('#delete_info').html("Are you sure you want to delete these <b class=\"text-danger\" >" + $('.js-checkbox:checked').length + "</b> entries?")
@@ -232,6 +183,7 @@
                 }
                 $("#modal-div").modal('show');
             })
+
         });
     </script>
 {% endblock %}

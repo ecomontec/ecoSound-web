@@ -250,20 +250,19 @@ class RecordingController extends BaseController
         $List = (new RecordingProvider())->getRecording($collection_id);
         foreach ($List as $Item) {
             unset($Item['md5_hash']);
-
-            $valueToMove = $Item['username'];
+            $valueToMove = $Item['username'] == null ? '' : $Item['username'];
             unset($Item['username']);
             array_splice($Item, 7, 0, $valueToMove);
-            $valueToMove = $Item['site'];
+            $valueToMove = $Item['site'] == null ? '' : $Item['site'];
             unset($Item['site']);
             array_splice($Item, 9, 0, $valueToMove);
-            $valueToMove = $Item['modal'];
+            $valueToMove = $Item['modal'] == null ? '' : $Item['modal'];
             unset($Item['modal']);
             array_splice($Item, 11, 0, $valueToMove);
-            $valueToMove = $Item['microphone'];
+            $valueToMove = $Item['microphone'] == null ? '' : $Item['microphone'];
             unset($Item['microphone']);
             array_splice($Item, 13, 0, $valueToMove);
-            $valueToMove = $Item['license'];
+            $valueToMove = $Item['license'] == null ? '' : $Item['license'];
             unset($Item['license']);
             array_splice($Item, 15, 0, $valueToMove);
 

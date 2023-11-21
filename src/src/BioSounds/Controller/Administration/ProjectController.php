@@ -144,8 +144,9 @@ class ProjectController extends BaseController
         foreach ($List as $Item) {
             unset($Item['collection_id']);
             unset($Item['permission_id']);
-
-            $valueToMove = $Item['username'];
+            $Item['description'] = strip_tags($Item['description']);
+            $Item['description_short'] = strip_tags($Item['description_short']);
+            $valueToMove = $Item['username'] == null ? '' : $Item['username'];
             unset($Item['username']);
             array_splice($Item, 3, 0, $valueToMove);
             $Als[] = $Item;

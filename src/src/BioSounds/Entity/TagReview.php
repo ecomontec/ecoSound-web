@@ -125,11 +125,18 @@ class TagReview extends AbstractProvider
         return $this->database->executeUpdate($values);
     }
 
-    public function delete(string $id)
+    public function delete(string $str)
     {
-        $tag_id = explode('-', $id)[0];
-        $user_id = explode('-', $id)[1];
-        $this->database->prepareQuery("DELETE FROM tag_review WHERE tag_id = $tag_id AND user_id = $user_id");
+        $data = explode(',', $str);
+        $sql = "DELETE FROM tag_review WHERE ";
+        foreach ($data as $key => $d) {
+            $value = explode('-', $d);
+            $sql .= " (tag_id = $value[0] AND user_id = $value[1]) ";
+            if ($key < count($data) - 1) {
+                $sql .= " OR ";
+            }
+        }
+        $this->database->prepareQuery($sql);
         return $this->database->executeDelete();
     }
 }

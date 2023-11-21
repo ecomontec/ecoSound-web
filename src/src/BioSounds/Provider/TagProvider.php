@@ -315,20 +315,19 @@ class TagProvider extends AbstractProvider
 
     public function getFilterCount(string $collectionId, string $search): int
     {
-        $sql = "SELECT t.*,sound.phony,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass,GROUP_CONCAT(tr.str SEPARATOR '$') AS str FROM tag t 
+        $sql = "SELECT t.*,sound.phony,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass FROM tag t 
             INNER JOIN recording r ON r.recording_id = t.recording_id
             LEFT JOIN species s ON s.species_id = t.species_id
             LEFT JOIN collection c ON c.collection_id = r.col_id
             LEFT JOIN user u ON u.user_id = t.user_id
             LEFT JOIN sound ON sound.sound_id = t.sound_id
             LEFT JOIN sound_type st ON st.sound_type_id = t.animal_sound_type 
-            LEFT JOIN (SELECT tr.tag_id,CONCAT_WS('@',u.`name`,tr.tag_review_status_id,trs.`name`,tr.species_id,s.binomial,tr.note,tr.creation_date) AS str FROM tag_review tr LEFT JOIN `user` u ON u.user_id = tr.user_id LEFT JOIN species s ON s.species_id = tr.species_id LEFT JOIN tag_review_status trs ON trs.tag_review_status_id = tr.tag_review_status_id)tr ON t.tag_id = tr.tag_id
             WHERE c.collection_id = $collectionId ";
         if (!Auth::isManage()) {
             $sql .= " AND t.user_id = " . Auth::getUserID();
         }
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(t.tag_id,''), IFNULL(sound.phony,''), IFNULL(sound.sound_type,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(t.creator_type,''), IFNULL(t.confidence,''), IFNULL(t.min_time,''), IFNULL(t.max_time,''), IFNULL(t.min_freq,''), IFNULL(t.max_freq,''), IFNULL(s.binomial,''), IFNULL(t.sound_distance_m,''), IFNULL(t.individuals,''), IFNULL(st.name,''), IFNULL(t.comments,''), IFNULL(t.creation_date,''),IFNULL(str,'')) LIKE '%$search%' ";
+            $sql .= " AND CONCAT(IFNULL(t.tag_id,''), IFNULL(sound.phony,''), IFNULL(sound.sound_type,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(t.creator_type,''), IFNULL(t.confidence,''), IFNULL(t.min_time,''), IFNULL(t.max_time,''), IFNULL(t.min_freq,''), IFNULL(t.max_freq,''), IFNULL(s.binomial,''), IFNULL(t.sound_distance_m,''), IFNULL(t.individuals,''), IFNULL(st.name,''), IFNULL(t.comments,''), IFNULL(t.creation_date,'')) LIKE '%$search%' ";
         }
         $sql .= " GROUP BY t.tag_id";
         $this->database->prepareQuery($sql);
@@ -339,23 +338,22 @@ class TagProvider extends AbstractProvider
     public function getListByPage(string $collectionId, string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
     {
         $arr = [];
-        $sql = "SELECT t.*,sound.phony,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass,GROUP_CONCAT(tr.str SEPARATOR '$') AS str FROM tag t 
+        $sql = "SELECT t.*,sound.phony,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass FROM tag t 
             INNER JOIN recording r ON r.recording_id = t.recording_id
             LEFT JOIN species s ON s.species_id = t.species_id
             LEFT JOIN collection c ON c.collection_id = r.col_id
             LEFT JOIN user u ON u.user_id = t.user_id
             LEFT JOIN sound ON sound.sound_id = t.sound_id
             LEFT JOIN sound_type st ON st.sound_type_id = t.animal_sound_type 
-            LEFT JOIN (SELECT tr.tag_id,CONCAT_WS('@',IFNULL(tr.tag_id,''),IFNULL(u.`name`,''),IFNULL(tr.tag_review_status_id,''),IFNULL(trs.`name`,''),IFNULL(tr.species_id,''),IFNULL(s.binomial,''),IFNULL(tr.note,''),IFNULL(tr.creation_date,''),IFNULL(tr.user_id,'')) AS str FROM tag_review tr LEFT JOIN `user` u ON u.user_id = tr.user_id LEFT JOIN species s ON s.species_id = tr.species_id LEFT JOIN tag_review_status trs ON trs.tag_review_status_id = tr.tag_review_status_id)tr ON t.tag_id = tr.tag_id
             WHERE c.collection_id = $collectionId ";
         if (!Auth::isManage()) {
             $sql .= " AND t.user_id = " . Auth::getUserID();
         }
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(t.tag_id,''), IFNULL(sound.phony,''), IFNULL(sound.sound_type,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(t.creator_type,''), IFNULL(t.confidence,''), IFNULL(t.min_time,''), IFNULL(t.max_time,''), IFNULL(t.min_freq,''), IFNULL(t.max_freq,''), IFNULL(s.binomial,''), IFNULL(t.sound_distance_m,''), IFNULL(t.individuals,''), IFNULL(st.name,''), IFNULL(t.comments,''), IFNULL(t.creation_date,''),IFNULL(str,'')) LIKE '%$search%' ";
+            $sql .= " AND CONCAT(IFNULL(t.tag_id,''), IFNULL(sound.phony,''), IFNULL(sound.sound_type,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(t.creator_type,''), IFNULL(t.confidence,''), IFNULL(t.min_time,''), IFNULL(t.max_time,''), IFNULL(t.min_freq,''), IFNULL(t.max_freq,''), IFNULL(s.binomial,''), IFNULL(t.sound_distance_m,''), IFNULL(t.individuals,''), IFNULL(st.name,''), IFNULL(t.comments,''), IFNULL(t.creation_date,'')) LIKE '%$search%' ";
         }
         $sql .= " GROUP BY t.tag_id";
-        $a = ['', '', 't.tag_id', 'sound.phony', 'sound.sound_type', 'r.name', 'u.name', 't.creator_type', 't.confidence', 't.min_time', 't.max_time', 't.min_freq', 't.max_freq', 's.binomial', 't.uncertain', 't.sound_distance_m', 't.distance_not_estimable', 't.individuals', 'st.name', 'reference_call', 't.comments', 't.creation_date'];
+        $a = [ '', 't.tag_id', 'sound.phony', 'sound.sound_type', 'r.name', 'u.name', 't.creator_type', 't.confidence', 't.min_time', 't.max_time', 't.min_freq', 't.max_freq', 's.binomial', 't.uncertain', 't.sound_distance_m', 't.distance_not_estimable', 't.individuals', 'st.name', 'reference_call', 't.comments', 't.creation_date'];
         $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
@@ -373,14 +371,9 @@ class TagProvider extends AbstractProvider
                         $str_sound_type .= "<option value='$sound_type[sound_id]' " . ($value['sound_id'] == $sound_type['sound_id'] ? 'selected' : '') . ">$sound_type[sound_type]</option>";
                     }
                 }
-                if ($value['str'] != null) {
-                    $arr[$key][] = "<i class='fa fa-caret-right review' data-str='$value[str]'></i>";
-                } else {
-                    $arr[$key][] = "";
-                }
                 $arr[$key][] = "<input type='checkbox' class='js-checkbox' data-id='$value[tag_id]' data-recording-id='$value[recording_id]' data-tmin='$value[min_time]' data-tmax='$value[max_time]' data-fmin='$value[min_freq]' data-fmax='$value[max_freq]' name='cb[$value[collection_id]]' id='cb[$value[collection_id]]'>";
                 $arr[$key][] = "$value[tag_id]
-                        <input type='hidden' name='tag_id' value='$value[tag_id]'/>
+                        <input type='hidden' name='tag_id' value='$value[tag_id]'>
                         <input class='js-species-id$value[tag_id]' data-type='edit' name='species_id' type='hidden' value='$value[species_id]'>
                         <input id='old_id$value[tag_id]' type='hidden' value='$value[species_id]'>
                         <input id='old_name$value[tag_id]' type='hidden' value='$value[speciesName]'>

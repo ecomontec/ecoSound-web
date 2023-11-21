@@ -5,6 +5,7 @@ namespace BioSounds\Controller\Administration;
 use BioSounds\Controller\BaseController;
 use BioSounds\Entity\Site;
 use BioSounds\Entity\SiteCollection;
+use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\SiteProvider;
 use BioSounds\Utils\Auth;
@@ -66,5 +67,33 @@ class SiteCollectionController extends BaseController
             'errorCode' => 0,
             'message' => 'successfully changed site assignment',
         ]);
+    }
+
+    public function export($project_id, $collection_id)
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
+        }
+        $colArr = [];
+        $file_name = "site_collections.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        $columns = (new SiteCollection())->getColumns();
+        foreach ($columns as $column) {
+            $colArr[] = $column['COLUMN_NAME'];
+        }
+
+        $Als[] = $colArr;
+        $List = (new SiteCollection())->getSiteCollection($project_id, $collection_id);
+        foreach ($List as $Item) {
+            $Als[] = $Item;
+        }
+        foreach ($Als as $line) {
+            fputcsv($fp, $line);
+        }
+        fclose($fp);
+        exit();
     }
 }

@@ -144,7 +144,7 @@ VALUES (1, 'Accepted'),
 --
 INSERT INTO `models` (`tf_model_id`,`name`,`tf_model_path`,`labels_path`,`source_URL`,`description`,`parameter`)
 VALUES (1, 'BirdNET-Analyzer', '/BirdNET-Analyzer', '/BirdNET-Analyzer', 'https://github.com/kahst/BirdNET-Analyzer', 'Automated scientific audio data processing and bird ID.', 'sensitivity@Values in [0.5, 1.5]. Defaults to 1.0.$min_conf@Values in [0.01, 0.99]. Defaults to 0.1.$overlap@Values in [0.0, 2.9]. Defaults to 0.0.$sf_thresh@values in [0.01, 0.99]. Defaults to 0.03.'),
-       (2, 'batdetect2', '/batdetect2', '/batdetect2', 'https://github.com/macaodha/batdetect2.git', 'Code for detecting and classifying bat echolocation calls in high frequency audio recordings.', 'detection_threshold@Values in [0.1, 1.0]. Defaults to 0.3.');
+       (2, 'batdetect2', '/batdetect2', '/batdetect2', 'https://github.com/macaodha/batdetect2.git', 'Code for detecting and classifying bat echolocation calls in high frequency audio recordings.', 'detection_threshold@Values in [0, 1.0]. Defaults to 0.3.');
 
 --
 -- Dumping data for table `project`

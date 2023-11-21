@@ -79,7 +79,7 @@ class SiteProvider extends AbstractProvider
             $sql .= " AND c.collection_id = $collectionId ";
         }
         if ($search) {
-            $sql .= " AND CONCAT(s.site_id, s.name, s.longitude_WGS84_dd_dddd, s.latitude_WGS84_dd_dddd, s.topography_m, s.freshwater_depth_m, e1.name, e2.name, e3.name) LIKE '%$search%' ";
+            $sql .= " AND CONCAT(IFNULL(s.site_id,''), IFNULL(s.name,''), IFNULL(s.longitude_WGS84_dd_dddd,''), IFNULL(s.latitude_WGS84_dd_dddd,''), IFNULL(s.topography_m,''), IFNULL(s.freshwater_depth_m,''), IFNULL(s.gadm0,''), IFNULL(s.gadm1,''), IFNULL(s.gadm2,''), IFNULL(e1.name,''), IFNULL(e2.name,''), IFNULL(e3.name,'')) LIKE '%$search%' ";
         }
         $sql .= " GROUP BY s.site_id ";
         $this->database->prepareQuery($sql);

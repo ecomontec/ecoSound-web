@@ -4,8 +4,8 @@
     {% include 'administration/siteCreate.html.twig' %}
     <div class="card mb-3" id="siteList">
         <div class="card-header border-light bg-white text-right">
-            <div class="col-auto mr-auto mt-2">
-                <form id="projectForm" class="form-inline" action="{{ baseUrl }}/admin/sites">
+            <div class="form-inline">
+                <form id="projectForm" class="form-inline col-8" action="{{ baseUrl }}/admin/sites">
                     <label for="projectId">Project</label>
                     <select id="projectId" name="projectId" class="form-control form-control-sm ml-3">
                         {% for project in projects %}
@@ -24,6 +24,10 @@
                         {% endfor %}
                     </select>
                 </form>
+                <div class="col-4 form-inline justify-content-end">
+                    <label class="mr-2">Search:</label>
+                    <input class="form-control-sm" id="search">
+                </div>
             </div>
             <button id="assignments" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#assignments" disabled>
                 <i class="fas fa-tasks"></i>
@@ -31,16 +35,20 @@
             </button>
             <button id="deletion" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#deletion" disabled>
                 <i class="fas fa-trash"></i>
-                Deletion
+                Delete
             </button>
             <button id="siteFormButton" class="btn btn-outline-primary btn-sm mt-2" type="button" data-toggle="collapse" data-target="#siteFormSection" aria-expanded="false" aria-controls="siteFormSection">
                 <i class="fas fa-plus"></i>
-                Add Site
+                Add
             </button>
-            <button id="sitesExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#sitesExport" aria-expanded="false" aria-controls="sitesExport">
-                <i class="fa fa-download"></i>
-                Site Export
+            <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
+                <i class="fa fa-file-csv"></i>
+                Save All As CSV
             </button>
+            <div class="dropdown-menu">
+                <a class="dropdown-item" type="button" id="sitesExport">Site</a>
+                <a class="dropdown-item" type="button" id="siteCollectionsExport">Site Collection</a>
+            </div>
         </div>
         <table id="siteTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
@@ -65,6 +73,36 @@
             <tbody class="form-control-sm js-site-list"></tbody>
         </table>
     </div>
+    <div class="modal fade" id="modal-div" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">Warning</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body ml-3">
+                    <div>
+                        <div class="form-group">
+                            <input id="delete_id" type="hidden">
+                            <label>Are you sure you want to delete <b class="text-danger" id="delete_name"></b>?</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="js-close-button" type="button" class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
+                    <button id="js-delete-button" type="button" class="btn btn-outline-danger">
+                        <i class="fas fa-trash-alt"></i>
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block header %}
@@ -75,13 +113,14 @@
             var arr ={{ iucn_gets|json_encode|raw }};
             $(document).ready(function () {
                 $('#siteTable').show()
-                $('#siteTable').DataTable({
+                let table = $('#siteTable').DataTable({
                     "processing": true,
                     "serverSide": true,
                     "ajax": {
                         "url": '{{ baseUrl }}/admin/siteManager/getListByPage/{{ projectId }}/{{ collectionId }}',
                         "type": 'POST'
                     },
+                    "dom": 'lrtip',
                     "stateSave": true,
                     "StateDuration": -1,
                     "order": [[1, 'asc']],
@@ -97,12 +136,32 @@
                     "bAutoWidth": false,
                     "scrollX": true,
                 });
+                if (table.state.loaded()) {
+                    $('#search').val(table.state.loaded().search.search);
+                }
+                $('#search').on('input', () => {
+                    table.search($('#search').val()).draw();
+                });
                 'use strict';
                 $(document).on('click', '#sitesExport', function () {
                     if ($('#collectionId').val() == '') {
                         window.location.href = '{{ baseUrl }}/api/admin/siteManager/export/' + $('#projectId').val() + '/0'
                     } else {
                         window.location.href = '{{ baseUrl }}/api/admin/siteManager/export/' + $('#projectId').val() + '/' + $('#collectionId').val();
+                    }
+                });
+
+                $("#siteFormSection").on('shown.bs.collapse', function () {
+                    $("#siteList").hide();
+                }).on('hidden.bs.collapse', function () {
+                    $("#siteList").show();
+                });
+
+                $(document).on('click', '#siteCollectionsExport', function () {
+                    if ($('#collectionId').val() == '') {
+                        window.location.href = '{{ baseUrl }}/api/admin/siteCollectionManager/export/' + $('#projectId').val() + '/0'
+                    } else {
+                        window.location.href = '{{ baseUrl }}/api/admin/siteCollectionManager/export/' + $('#projectId').val() + '/' + $('#collectionId').val();
                     }
                 });
                 $('#realm').on('change', function () {
@@ -461,6 +520,23 @@
                     $("#projectForm").submit();
                 });
 
+                $("#modal-div").keydown(function (e) {
+                    if (e.keyCode == 13) {
+                        $("#modal-div").modal('hide');
+                        event.preventDefault();
+                    }
+                });
+
+                $('button[name="table-btn"][data-target="#deletion"]').click(function (e) {
+                    let name = [];
+                    $('.js-checkbox:checked').each(function () {
+                        name.push($(this).data('name'))
+                    });
+                    name = name.join(', ')
+                    $('#delete_name').html(name)
+                    $("#modal-div").modal('show');
+                })
+
                 /* Save site list */
                 $('.js-site-list').on('change', 'input, select, textarea', function () {
                     if ($(this)[0].className == 'js-checkbox') {
@@ -489,7 +565,7 @@
                         });
                     }
                 });
-                
+
                 $('button[name="table-btn"][data-target="#assignments"]').click(function (e) {
                     let id = [];
                     let name = [];
@@ -502,10 +578,7 @@
                     e.preventDefault();
                 })
 
-                $('button[name="table-btn"][data-target="#deletion"]').click(function (e) {
-                    if (!confirm('Are you sure you want to delete this site?')) {
-                        return false;
-                    }
+                $('#js-delete-button').click(function (e) {
                     let id = [];
                     $('.js-checkbox:checked').each(function () {
                         id.push($(this).data('id'));

@@ -15,7 +15,7 @@ use BioSounds\Utils\Auth;
 
 class SiteController extends BaseController
 {
-    const SECTION_TITLE = 'Site';
+    const SECTION_TITLE = 'Sites';
 
     /**
      * @param int|null $projectId
@@ -224,14 +224,16 @@ class SiteController extends BaseController
         $List = (new SiteProvider())->getSite($project_id, $collection_id);
         foreach ($List as $Item) {
             unset($Item['user_id']);
-
-            $valueToMove = $Item['realm'];
+            $Item['realm_id'] = $Item['realm_id'] == '0' ? '' : $Item['realm_id'];
+            $Item['biome_id'] = $Item['biome_id'] == '0' ? '' : $Item['biome_id'];
+            $Item['functional_type_id'] = $Item['functional_type_id'] == '0' ? '' : $Item['functional_type_id'];
+            $valueToMove = $Item['realm'] == null ? '' : $Item['realm'];
             unset($Item['realm']);
             array_splice($Item, 10, 0, $valueToMove);
-            $valueToMove = $Item['biome'];
+            $valueToMove = $Item['biome'] == null ? '' : $Item['biome'];
             unset($Item['biome']);
             array_splice($Item, 12, 0, $valueToMove);
-            $valueToMove = $Item['functional_type'];
+            $valueToMove = $Item['functional_type'] == null ? '' : $Item['functional_type'];
             unset($Item['functional_type']);
             array_splice($Item, 14, 0, $valueToMove);
 

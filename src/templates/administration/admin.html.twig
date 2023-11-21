@@ -1,6 +1,12 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
+    <style>
+        .col-4, .col-8, .col-12 {
+            padding-right: 0;
+            padding-left: 0;
+        }
+    </style>
     <div class="container">
         <nav aria-label="breadcrumb">
             <ul class="breadcrumb bg-white mt-4">
@@ -60,6 +66,11 @@
                             Tags</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{{ baseUrl }}/admin/tagReviews">
+                            <i class="fa fa-tags pr-1"></i>
+                            Reviews</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{{ baseUrl }}/admin/indexLogs">
                             <i class="fa fa-info-circle pr-1"></i>
                             Index Logs</a>
@@ -72,4 +83,20 @@
             </div>
         </div>
     </div>
+    <script>
+        $(document).ready(function () {
+            let currentPath = window.location.pathname;
+            $('.nav-link').each(function () {
+                let linkHref = $(this).attr('href');
+                if (linkHref) {
+                    var linkLastField = linkHref.split('/').filter(function (el) {
+                        return el !== '';
+                    }).pop();
+                    if (currentPath.indexOf(linkLastField) !== -1) {
+                        $(this).addClass('txt-primary')
+                    }
+                }
+            });
+        });
+    </script>
 {% endblock %}

@@ -732,7 +732,7 @@ class RecordingController extends BaseController
         if (!file_exists(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'])) {
             mkdir(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'], 0777, true);
         }
-        copy(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['filename'], ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . '/' . $data['filename']);
+        copy(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav', ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . '/' . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav');
         $str = 'batdetect2 detect ' .
             ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . ' ' .
             ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . ' ';
@@ -743,8 +743,8 @@ class RecordingController extends BaseController
         }
         exec($str . " 2>&1", $out, $status);
         if ($status == 0) {
-            if (file_exists(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . "/" . $data['filename'] . ".csv")) {
-                $handle = fopen(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . "/" . $data['filename'] . ".csv", "rb");
+            if (file_exists(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav' . ".csv")) {
+                $handle = fopen(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav' . ".csv", "rb");
                 $result = [];
                 while (!feof($handle)) {
                     $d = fgetcsv($handle);

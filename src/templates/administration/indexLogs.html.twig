@@ -3,13 +3,19 @@
 {% block admin_content %}
     <div class="card mb-3" id="indexLogsList">
         <div class="card-header border-light bg-white text-right">
+            <div class="form-inline">
+                <div class="col-12 form-inline justify-content-end">
+                    <label class="mr-2">Search:</label>
+                    <input class="form-control-sm" id="search">
+                </div>
+            </div>
             <button id="deletion" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#deletion" disabled>
                 <i class="fas fa-trash"></i>
-                Deletion
+                Delete
             </button>
             <button id="indexLogsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#indexLogsExport" aria-expanded="false" aria-controls="indexLogsExport">
-                <i class="fa fa-download"></i>
-                Index Log Export
+                <i class="fa fa-file-csv"></i>
+                Save All As CSV
             </button>
         </div>
         <table id="indexLogsTable" style="display:none;white-space: nowrap;">
@@ -34,19 +40,50 @@
             <tbody class="form-control-sm js-index-log-list"></tbody>
         </table>
     </div>
+    <div class="modal fade" id="modal-div" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">Warning</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body ml-3">
+                    <div>
+                        <div class="form-group">
+                            <input id="delete_id" type="hidden">
+                            <label id="delete_info"></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="js-close-button" type="button" class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
+                    <button id="js-delete-button" type="button" class="btn btn-outline-danger">
+                        <i class="fas fa-trash-alt"></i>
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 {% block header %}
     {{ parent() }}
     <script>
         $(document).ready(function () {
             $('#indexLogsTable').show()
-            $('#indexLogsTable').DataTable({
+            let table=$('#indexLogsTable').DataTable({
                 "processing": true,
                 "serverSide": true,
                 "ajax": {
                     "url": '{{ baseUrl }}/admin/indexLogMgr/getListByPage/{{ projectId }}/{{ colId }}',
                     "type": 'POST'
                 },
+                "dom": 'lrtip',
                 "stateSave": true,
                 "StateDuration": -1,
                 "order": [[1, 'asc']],
@@ -62,6 +99,12 @@
                 "bAutoWidth": false,
                 "scrollX": true,
             });
+            if (table.state.loaded()) {
+                $('#search').val(table.state.loaded().search.search);
+            }
+            $('#search').on('input', () => {
+                table.search($('#search').val()).draw();
+            });
         });
         $(function () {
             'use strict';
@@ -70,9 +113,15 @@
             });
 
             $('button[name="table-btn"][data-target="#deletion"]').click(function (e) {
-                if (!confirm('Are you sure you want to delete this index log?')) {
-                    return false;
+                if($('.js-checkbox:checked').length>1){
+                    $('#delete_info').html("Are you sure you want to delete these <b class=\"text-danger\" >"+$('.js-checkbox:checked').length+"</b> entries?")
+                }else{
+                    $('#delete_info').html("Are you sure you want to delete this entry?")
                 }
+                $("#modal-div").modal('show');
+            })
+
+            $('#js-delete-button').click(function (e) {
                 let id = [];
                 $('.js-checkbox:checked').each(function () {
                     id.push($(this).data('id'));
@@ -81,7 +130,7 @@
                 postRequest('{{ baseUrl }}/api/admin/indexLogMgr/delete', data, false, false, function () {
                     location.reload();
                 });
-            })
+            });
         });
     </script>
 {% endblock %}

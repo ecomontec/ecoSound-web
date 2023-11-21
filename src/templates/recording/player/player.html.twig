@@ -315,7 +315,10 @@
                 })
                     .done(function (result) {
                         alert(result.message)
-                        location.reload()
+                        if(result.message.indexOf('found 0 detections.') === -1){
+                            location.reload()
+                        }
+                        toggleLoading();
                     })
                     .fail(function (response) {
                         toggleLoading();

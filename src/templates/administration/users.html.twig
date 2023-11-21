@@ -5,6 +5,12 @@
     {% include 'administration/userForm.html.twig' %}
     <div class="card mb-3" id="usersList">
         <div class="card-header border-light bg-white text-right">
+            <div class="form-inline">
+                <div class="col-12 form-inline justify-content-end">
+                    <label class="mr-2">Search:</label>
+                    <input class="form-control-sm" id="search">
+                </div>
+            </div>
             <button id="editPassword" name="table-btn" class="btn btn-outline-secondary btn-sm mt-2" type="button" data-target="#editPassword" disabled>
                 <i class="fas fa-edit"></i>
                 Edit Password
@@ -15,11 +21,11 @@
             </button>
             <button id="userFormButton" class="btn btn-outline-primary btn-sm mt-2" type="button" data-toggle="collapse" data-target="#userFormSection" aria-expanded="false" aria-controls="userFormSection">
                 <i class="fas fa-plus"></i>
-                Add User
+                Add
             </button>
             <button id="usersExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#usersExport" aria-expanded="false" aria-controls="usersExport">
-                <i class="fa fa-download"></i>
-                User Export
+                <i class="fa fa-file-csv"></i>
+                Save All As CSV
             </button>
         </div>
         <table id="userTable" style="display:none;white-space: nowrap;">
@@ -49,15 +55,17 @@
     {{ parent() }}
     <script>
         $(function () {
+            'use strict';
             $(document).ready(function () {
                 $('#userTable').show()
-                $('#userTable').DataTable({
+                let table = $('#userTable').DataTable({
                     "processing": true,
                     "serverSide": true,
                     "ajax": {
                         "url": '{{ baseUrl }}/admin/userMgr/getListByPage',
                         "type": 'POST'
                     },
+                    "dom": 'lrtip',
                     "stateSave": true,
                     "StateDuration": -1,
                     "order": [[1, 'asc']],
@@ -73,14 +81,17 @@
                     "bAutoWidth": false,
                     "scrollX": true,
                 });
+                if (table.state.loaded()) {
+                    $('#search').val(table.state.loaded().search.search);
+                }
+                $('#search').on('input', () => {
+                    table.search($('#search').val()).draw();
+                });
             });
-            'use strict';
-
             $(document).on('click', '#usersExport', function () {
                 window.location.href = '{{ baseUrl }}/api/admin/userMgr/export';
             });
 
-            /* Save users list */
             $('.js-user-list').on('change', 'input, select, textarea', function () {
                 if ($(this)[0].className == 'js-checkbox') {
                     return
