@@ -43,7 +43,7 @@
             </button>
             <button id="download" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#download" disabled>
                 <i class="fas fa-download"></i>
-                Export Recordings
+                Export
             </button>
             <button id="deletion" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#deletion" disabled>
                 <i class="fas fa-trash"></i>
@@ -60,7 +60,7 @@
             </div>
             <button id="recordingsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#recordingsExport" aria-expanded="false" aria-controls="recordingsExport">
                 <i class="fa fa-file-csv"></i>
-                Save All As CSV
+                Save all as CSV
             </button>
         </div>
         <table id="recTable" style="display:none;white-space: nowrap;">
@@ -363,6 +363,7 @@
                 $(".js-tf-modal").click(function (e) {
                     let data = []
                     let arr = []
+                    let name = []
                     let lat, lon
                     $('.js-checkbox:checked').each(function () {
                         let id = $(this).closest('tr').find('[name="itemID"]').val()
@@ -404,11 +405,14 @@
                                 'user_id': '{{ user_id }}',
                             };
                         }
+                        name.push($('#name_' + $(this).data('id')).val())
                         arr = JSON.stringify(arr)
                         data.push(arr)
                     });
+                    name = name.join(', ')
                     postRequest('{{ baseUrl }}/api/admin/recordingManager/model', data, false, false, function () {
                         $('#modal-tf').modal('hide')
+                        showAlert("Model running on " + name + " in background.")
                     });
                     e.preventDefault();
                 });
