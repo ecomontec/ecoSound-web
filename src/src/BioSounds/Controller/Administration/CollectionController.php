@@ -39,13 +39,31 @@ class CollectionController extends BaseController
         if (empty($projectId)) {
             $projectId = $projects[0]->getId();
         }
-        $collProvider = new CollectionProvider();
-
         return $this->twig->render('administration/collections.html.twig', [
             'projects' => $projects,
             'projectId' => $projectId,
-            'collections' => $collProvider->getByProject($projectId, Auth::getUserID()),
         ]);
+    }
+
+    public function getListByPage($projectId = null)
+    {
+        $total = count((new CollectionProvider())->getCollection($projectId));
+        $start = $_POST['start'];
+        $length = $_POST['length'];
+        $search = $_POST['search']['value'];
+        $column = $_POST['order'][0]['column'];
+        $dir = $_POST['order'][0]['dir'];
+        $data = (new CollectionProvider())->getListByPage($projectId, $start, $length, $search, $column, $dir);
+        if (count($data) == 0) {
+            $data = [];
+        }
+        $result = [
+            'draw' => $_POST['draw'],
+            'recordsTotal' => $total,
+            'recordsFiltered' => (new CollectionProvider())->getFilterCount($projectId, $search),
+            'data' => $data,
+        ];
+        return json_encode($result);
     }
 
 
@@ -66,6 +84,12 @@ class CollectionController extends BaseController
                 $key = substr($key, 0, strrpos($key, '_'));
             }
             $data[$key] = $value;
+        }
+        if ($collProvider->isValid($data['project_id'], $data['name'], $data['collId'])) {
+            return json_encode([
+                'isValid' => 1,
+                'message' => 'Collection name already exists.',
+            ]);
         }
         $data['user_id'] = $_SESSION['user_id'];
         if (isset($data['collId'])) {
@@ -93,22 +117,27 @@ class CollectionController extends BaseController
         if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
-
+        $colArr = [];
         $file_name = "collections.csv";
         $fp = fopen('php://output', 'w');
         header('Content-Type: application/octet-stream;charset=utf-8');
         header('Accept-Ranges:bytes');
         header('Content-Disposition: attachment; filename=' . $file_name);
-
-        $collList = (new CollectionProvider())->getByProject($project_id, Auth::getUserID());
-        $colAls[] = array('#', 'Name', 'User', 'DOI', 'Sphere', 'Description', 'Creation Date(UTC)', 'View', 'Public Access', 'Public Tags');
-
-        foreach ($collList as $collItem) {
-            $colArray = array($collItem->getId(), $collItem->getName(), $collItem->getAuthor(), $collItem->getDoi(), $collItem->getSphere(), $collItem->getNote(), $collItem->getCreationDate(), $collItem->getView(), $collItem->getPublicAccess(), $collItem->getPublicTags());
-            $colAls[] = $colArray;
+        $columns = (new CollectionProvider())->getColumns();
+        foreach ($columns as $column) {
+            $colArr[] = $column['COLUMN_NAME'];
         }
+        array_splice($colArr, 4, 0, 'user');
+        $Als[] = $colArr;
 
-        foreach ($colAls as $line) {
+        $List = (new CollectionProvider())->getCollection($project_id);
+        foreach ($List as $Item) {
+            $valueToMove = $Item['username'] == null ? '' : $Item['username'];
+            unset($Item['username']);
+            array_splice($Item, 4, 0, $valueToMove);
+            $Als[] = $Item;
+        }
+        foreach ($Als as $line) {
             fputcsv($fp, $line);
         }
         fclose($fp);
@@ -167,10 +196,6 @@ class CollectionController extends BaseController
                 $labelAssociationProvider->delete($recording[Recording::ID]);
                 $recordingProvider->delete($recording[Recording::ID]);
                 $indexLogProvider->deleteByRecording($recording[Recording::ID]);
-
-                if (!empty($recording[Recording::SOUND_ID])) {
-                    (new SoundProvider())->delete($recording[Recording::SOUND_ID]);
-                }
             }
         }
         $collectionProvider->delete($id);

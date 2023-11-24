@@ -31,6 +31,7 @@
                     </button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                         <a class="dropdown-item" href="{{ player.filePath }}" download><i class='fas fa-file-audio mr-1'></i>Download Recording</a>
+                        <a class="dropdown-item" href="{{ player.filePath|split('.')[:-1]|join('.') ~ '.wav' }}" download><i class='fas fa-file-word mr-1'></i>Download Wav</a>
                         <a class="dropdown-item" href="{{ player.imageFilePath }}" download><i class='fas fa-file-image mr-1'></i>Download Spectrogram</a>
                         <a class="dropdown-item js-open-modal" href="{{ baseUrl }}/recording/details/{{ player.recording.recording_id }}"><i class='fas fa-info-circle mr-1'></i>File Info</a>
                         {% if isUserLogged %}
@@ -142,7 +143,7 @@
     <script src="{{ baseUrl }}/templates/recording/player/js/player.js" defer></script>
     <script src="{{ baseUrl }}/templates/recording/player/js/coordinateExport.js" defer></script>
     <script src="{{ baseUrl }}/templates/recording/player/js/tagControls.js" defer></script>
-    <script src="{{ baseUrl }}/templates/tag/js/tag.js" defer></script>
+    <script src="{{ baseUrl }}/templates/tag/js/tag.js?v=1.0" defer></script>
 {% endblock %}
 
 {% block scripts %}

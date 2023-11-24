@@ -20,11 +20,32 @@ class ProjectController extends BaseController
         if (!Auth::isUserAdmin()) {
             throw new ForbiddenException();
         }
-        $projects = (new ProjectProvider())->getWithPermission(Auth::getUserID());
+        return $this->twig->render('administration/projects.html.twig');
+    }
 
-        return $this->twig->render('administration/projects.html.twig', [
-            'projects' => $projects,
-        ]);
+    public function getListByPage()
+    {
+        if (!Auth::isUserAdmin()) {
+            throw new ForbiddenException();
+        }
+        $total = count((new ProjectProvider())->getProject());
+        $start = $_POST['start'];
+        $length = $_POST['length'];
+        $search = $_POST['search']['value'];
+        $column = $_POST['order'][0]['column'];
+        $dir = $_POST['order'][0]['dir'];
+        $data = (new ProjectProvider())->getListByPage($start, $length, $search, $column, $dir);
+        if (count($data) == 0) {
+            $data = [];
+        }
+        $result = [
+            'draw' => $_POST['draw'],
+            'recordsTotal' => $total,
+            'recordsFiltered' => (new ProjectProvider())->getFilterCount($search),
+            'data' => $data,
+        ];
+
+        return json_encode($result);
     }
 
     /**
@@ -36,6 +57,7 @@ class ProjectController extends BaseController
         if (!Auth::isUserAdmin()) {
             throw new ForbiddenException();
         }
+
         if (!is_dir(ABSOLUTE_DIR . 'sounds/projects/')) {
             mkdir(ABSOLUTE_DIR . 'sounds/projects/');
             chmod(ABSOLUTE_DIR . 'sounds/projects/', 0777);
@@ -47,6 +69,12 @@ class ProjectController extends BaseController
                 $key = substr($key, 0, strrpos($key, '_'));
             }
             $data[$key] = $value;
+        }
+        if ($projectProvider->isValid($data['name'], $data['projectId'])) {
+            return json_encode([
+                'isValid' => 1,
+                'message' => 'Project name already exists.',
+            ]);
         }
         if (isset($data['projectId'])) {
             if ($_FILES["picture_id_file"]) {
@@ -92,5 +120,41 @@ class ProjectController extends BaseController
             ]),
         ]);
 
+    }
+
+    public function export()
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
+        }
+        $colArr = [];
+        $file_name = "projects.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        $columns = (new ProjectProvider())->getColumns();
+        foreach ($columns as $column) {
+            $colArr[] = $column['COLUMN_NAME'];
+        }
+        array_splice($colArr, 3, 0, 'creator');
+        $Als[] = $colArr;
+
+        $List = (new ProjectProvider())->getProject();
+        foreach ($List as $Item) {
+            unset($Item['collection_id']);
+            unset($Item['permission_id']);
+            $Item['description'] = strip_tags($Item['description']);
+            $Item['description_short'] = strip_tags($Item['description_short']);
+            $valueToMove = $Item['username'] == null ? '' : $Item['username'];
+            unset($Item['username']);
+            array_splice($Item, 3, 0, $valueToMove);
+            $Als[] = $Item;
+        }
+        foreach ($Als as $line) {
+            fputcsv($fp, $line);
+        }
+        fclose($fp);
+        exit();
     }
 }

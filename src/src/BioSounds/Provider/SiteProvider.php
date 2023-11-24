@@ -2,6 +2,7 @@
 
 namespace BioSounds\Provider;
 
+use BioSounds\Entity\AbstractProvider;
 use BioSounds\Entity\IucnGet;
 use BioSounds\Entity\Site;
 use BioSounds\Exception\Database\NotFoundException;
@@ -9,8 +10,10 @@ use BioSounds\Exception\Database\NotFoundException;
 use BioSounds\Utils\Auth;
 use Cassandra\Varint;
 
-class SiteProvider extends BaseProvider
+class SiteProvider extends AbstractProvider
 {
+    const TABLE_NAME = "site";
+
     /**
      * @param string $order
      * @return Site[]
@@ -46,9 +49,12 @@ class SiteProvider extends BaseProvider
         return $result;
     }
 
-    public function getCount(string $projectId, string $collectionId): int
+    public function getSite(string $projectId, string $collectionId): array
     {
-        $sql = "SELECT COUNT(*) FROM site s 
+        $sql = "SELECT s.*, e1.`name` AS realm,e2.`name` AS biome,e3.`name` AS functional_type FROM site s 
+                    LEFT JOIN iucn_get e1 ON e1.iucn_get_id = s.realm_id 
+                    LEFT JOIN iucn_get e2 ON e2.iucn_get_id = s.biome_id 
+                    LEFT JOIN iucn_get e3 ON e3.iucn_get_id = s.functional_type_id 
                     LEFT JOIN site_collection sc ON sc.site_id = s.site_id
                     LEFT JOIN collection c ON c.collection_id = sc.collection_id
                     WHERE c.project_id = $projectId ";
@@ -57,8 +63,7 @@ class SiteProvider extends BaseProvider
         }
         $sql .= " GROUP BY s.site_id ";
         $this->database->prepareQuery($sql);
-        $count = count($this->database->executeSelect());
-        return $count;
+        return $this->database->executeSelect();
     }
 
     public function getFilterCount(string $projectId, string $collectionId, string $search): int
@@ -74,7 +79,7 @@ class SiteProvider extends BaseProvider
             $sql .= " AND c.collection_id = $collectionId ";
         }
         if ($search) {
-            $sql .= " AND CONCAT(s.site_id, s.name, s.longitude_WGS84_dd_dddd, s.latitude_WGS84_dd_dddd, s.topography_m, s.freshwater_depth_m, e1.name, e2.name, e3.name) LIKE '%$search%' ";
+            $sql .= " AND CONCAT(IFNULL(s.site_id,''), IFNULL(s.name,''), IFNULL(s.longitude_WGS84_dd_dddd,''), IFNULL(s.latitude_WGS84_dd_dddd,''), IFNULL(s.topography_m,''), IFNULL(s.freshwater_depth_m,''), IFNULL(s.gadm0,''), IFNULL(s.gadm1,''), IFNULL(s.gadm2,''), IFNULL(e1.name,''), IFNULL(e2.name,''), IFNULL(e3.name,'')) LIKE '%$search%' ";
         }
         $sql .= " GROUP BY s.site_id ";
         $this->database->prepareQuery($sql);
@@ -96,29 +101,28 @@ class SiteProvider extends BaseProvider
             $sql .= " AND c.collection_id = $collectionId ";
         }
         if ($search) {
-            $sql .= " AND CONCAT(s.site_id, s.name, s.longitude_WGS84_dd_dddd, s.latitude_WGS84_dd_dddd, s.topography_m, s.freshwater_depth_m, e1.name, e2.name, e3.name) LIKE '%$search%' ";
+            $sql .= " AND CONCAT(IFNULL(s.site_id,''), IFNULL(s.name,''), IFNULL(s.longitude_WGS84_dd_dddd,''), IFNULL(s.latitude_WGS84_dd_dddd,''), IFNULL(s.topography_m,''), IFNULL(s.freshwater_depth_m,''), IFNULL(s.gadm0,''), IFNULL(s.gadm1,''), IFNULL(s.gadm2,''), IFNULL(e1.name,''), IFNULL(e2.name,''), IFNULL(e3.name,'')) LIKE '%$search%' ";
         }
         $sql .= " GROUP BY s.site_id ";
-        $a = ['s.site_id', 's.name', 's.longitude_WGS84_dd_dddd', 's.latitude_WGS84_dd_dddd', 's.topography_m', 's.freshwater_depth_m', 's.gadm0', 's.gadm1', 's.gadm2', 'e1.name', 'e2.name', 'e3.name'];
+        $a = ['','s.site_id', 's.name', 's.longitude_WGS84_dd_dddd', 's.latitude_WGS84_dd_dddd', 's.topography_m', 's.freshwater_depth_m', 's.gadm0', 's.gadm1', 's.gadm2', 'e1.name', 'e2.name', 'e3.name'];
         $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
         if (count($result)) {
             foreach ($result as $key => $value) {
-                $arr[$key][0] = "$value[site_id]<input type='hidden' name='steId' value='$value[site_id]'>";
-                $arr[$key][1] = "<input type='text' class='form-control form-control-sm' style='width:100px;' name='name' value='$value[name]'>";
-                $arr[$key][2] = "<input type='number' class='form-control form-control-sm' style='width:120px;' name='longitude' min='-180' max='180' step='0.0000000000001' pattern='##.##############' value='$value[longitude_WGS84_dd_dddd]'><div class='invalid-feedback'>Please provide a longitude value, from -180 to 180.</div>";
-                $arr[$key][3] = "<input type='number' class='form-control form-control-sm' style='width:120px;' name='latitude' min='-90' max='90' step='0.0000000000001' pattern='##.##############' value='$value[latitude_WGS84_dd_dddd]'><div class='invalid-feedback'>Please provide a latitude value, from -90 to 90.</div>";
-                $arr[$key][4] = "<input type='number' class='form-control form-control-sm' style='width:120px;' name='topography_m' min='-15000' max='10000' step='0.1' pattern='##.##' value='$value[topography_m]'><div class='invalid-feedback'>Please provide a topography value, from -15000.0 to 10000.0.</div>";
-                $arr[$key][5] = "<input type='number' class='form-control form-control-sm' style='width:120px;' name='freshwater_depth_m' min='-2000' max='0' step='0.1' pattern='##.##' value='$value[freshwater_depth_m]'><div class='invalid-feedback'>Please provide a freshwater depth value, from -2000.0 to 0.0.</div>";
-                $arr[$key][6] = "<select id='gadm0_$value[site_id]' name='gadm0' style='width:120px;' class='form-control form-control-sm'><option value='$value[gadm0]' selected>$value[gadm0]</option></select>";
-                $arr[$key][7] = "<select id='gadm1_$value[site_id]' name='gadm1' style='width:120px;' class='form-control form-control-sm'><option value='$value[gadm1]' selected>$value[gadm1]</option></select>";
-                $arr[$key][8] = "<select id='gadm2_$value[site_id]' name='gadm2' style='width:120px;' class='form-control form-control-sm'><option value='$value[gadm2]' selected>$value[gadm2]</option></select>";
-                $arr[$key][9] = "<select id='realm_$value[site_id]' name='realm_id' style='width:120px;' class='form-control form-control-sm'><option value='$value[realm_id]'>$value[realm]</option></select>";
-                $arr[$key][10] = "<select id='biome_$value[site_id]' name='biome_id' class='form-control form-control-sm' style='width:120px;'><option value='$value[biome_id]' selected>$value[biome]</option></select>";
-                $arr[$key][11] = "<select id='functionalType_$value[site_id]' name='functional_type_id' class='form-control form-control-sm' style='width:120px;'><option value='$value[functional_type_id]' selected>$value[functional_type]</option></select>";
-                $arr[$key][12] = "<a href='" . APP_URL . "/admin/siteCollections/$value[site_id]' class='js-open-modal' title='Site Assignment'><i class='fas fa-tasks'></i></a>";
-                $arr[$key][13] = "<a class='js-site-delete' href='#' data-id='$value[site_id]' title='Delete Site'><span class='fas fa-trash'></span></a>";
+                $arr[$key][] = "<input type='checkbox' class='js-checkbox'data-id='$value[site_id]' data-name='$value[name]' name='cb[$value[site_id]]' id='cb[$value[site_id]]'>";
+                $arr[$key][] = "$value[site_id]<input type='hidden' name='steId' value='$value[site_id]'><input id='project$value[site_id]' type='hidden' name='project_id' value='$projectId'>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' style='width:100px;' id='$value[site_id]' name='name' value='$value[name]'><small id='siteValid$value[site_id]' class='text-danger'></small>";
+                $arr[$key][] = "<input type='number' class='form-control form-control-sm' style='width:120px;' id='longitude$value[site_id]' name='longitude' min='-180' max='180' step='0.0000000000001' pattern='##.##############' value='$value[longitude_WGS84_dd_dddd]'><div class='invalid-feedback'>Please provide a longitude value, from -180 to 180.</div>";
+                $arr[$key][] = "<input type='number' class='form-control form-control-sm' style='width:120px;' id='latitude$value[site_id]' name='latitude' min='-90' max='90' step='0.0000000000001' pattern='##.##############' value='$value[latitude_WGS84_dd_dddd]'><div class='invalid-feedback'>Please provide a latitude value, from -90 to 90.</div>";
+                $arr[$key][] = "<input type='number' class='form-control form-control-sm' style='width:120px;' name='topography_m' min='-15000' max='10000' step='0.1' pattern='##.##' value='$value[topography_m]'><div class='invalid-feedback'>Please provide a topography value, from -15000.0 to 10000.0.</div>";
+                $arr[$key][] = "<input type='number' class='form-control form-control-sm' style='width:120px;' name='freshwater_depth_m' min='-2000' max='0' step='0.1' pattern='##.##' value='$value[freshwater_depth_m]'><div class='invalid-feedback'>Please provide a freshwater depth value, from -2000.0 to 0.0.</div>";
+                $arr[$key][] = "<select id='gadm0_$value[site_id]' name='gadm0' style='width:120px;' class='form-control form-control-sm'><option value='$value[gadm0]' selected>$value[gadm0]</option></select><small id='areaValid$value[site_id]' class='text-danger'></small>";
+                $arr[$key][] = "<select id='gadm1_$value[site_id]' name='gadm1' style='width:120px;' class='form-control form-control-sm' " . ($value['gadm0'] == '' ? 'disabled' : '') . "><option value='$value[gadm1]' selected>$value[gadm1]</option></select>";
+                $arr[$key][] = "<select id='gadm2_$value[site_id]' name='gadm2' style='width:120px;' class='form-control form-control-sm' " . ($value['gadm1'] == '' ? 'disabled' : '') . "><option value='$value[gadm2]' selected>$value[gadm2]</option></select>";
+                $arr[$key][] = "<select id='realm_$value[site_id]' name='realm_id' style='width:120px;' class='form-control form-control-sm'><option value='$value[realm_id]'>$value[realm]</option></select>";
+                $arr[$key][] = "<select id='biome_$value[site_id]' name='biome_id' class='form-control form-control-sm' style='width:120px;' " . ($value['realm_id'] == '' ? 'disabled' : '') . "><option value='$value[biome_id]' selected>$value[biome]</option></select>";
+                $arr[$key][] = "<select id='functionalType_$value[site_id]' name='functional_type_id' class='form-control form-control-sm' style='width:120px;' " . ($value['biome_id'] == '' ? 'disabled' : '') . "><option value='$value[functional_type_id]' selected>$value[functional_type]</option></select>";
             }
         }
         return $arr;
@@ -171,11 +175,25 @@ class SiteProvider extends BaseProvider
      * @param int $id
      * @throws \Exception
      */
-    public function delete(int $id): void
+    public function delete(string $id): void
     {
-        $this->database->prepareQuery('DELETE FROM site WHERE ' . Site::PRIMARY_KEY . ' = :id');
-        $this->database->executeDelete([':id' => $id]);
-        $this->database->prepareQuery('DELETE FROM site_collection WHERE site_id = :id');
-        $this->database->executeDelete([':id' => $id]);
+        $this->database->prepareQuery("DELETE FROM site WHERE site_id IN ($id)");
+        $this->database->executeDelete();
+        $this->database->prepareQuery("DELETE FROM site_collection WHERE site_id IN ($id)");
+        $this->database->executeDelete();
+    }
+
+    public function isValid($str, $project_id, $site_id)
+    {
+        $sql = "SELECT s.* FROM site s LEFT JOIN site_collection sc ON s.site_id=sc.site_id LEFT JOIN collection c ON c.collection_id = sc.collection_id WHERE c.project_id = $project_id AND s.`name` = '$str'";
+        if (isset($site_id)) {
+            $sql = $sql . " AND s.site_id != $site_id";
+        }
+        $this->database->prepareQuery($sql);
+        $result = $this->database->executeSelect();
+        if (count($result) > 0) {
+            return true;
+        }
+        return false;
     }
 }

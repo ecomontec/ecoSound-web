@@ -13,7 +13,6 @@ use BioSounds\Utils\Utils;
 class UserController extends BaseController
 {
     const SECTION_TITLE = 'Users';
-    const DEFAULT_TAG_COLOR = '#FFFFFF';
 
     /**
      * @return false|string
@@ -24,12 +23,33 @@ class UserController extends BaseController
         if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
-        $userProducer = new User();
         return $this->twig->render('administration/users.html.twig', [
             'roles' => (new Role())->getRoles(),
-            'users' => $userProducer->getList(),
-            'default_color' => self::DEFAULT_TAG_COLOR,
         ]);
+    }
+
+    public function getListByPage()
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
+        }
+        $total = count((new User())->getList());
+        $start = $_POST['start'];
+        $length = $_POST['length'];
+        $search = $_POST['search']['value'];
+        $column = $_POST['order'][0]['column'];
+        $dir = $_POST['order'][0]['dir'];
+        $data = (new User())->getListByPage($start, $length, $search, $column, $dir);
+        if (count($data) == 0) {
+            $data = [];
+        }
+        $result = [
+            'draw' => $_POST['draw'],
+            'recordsTotal' => $total,
+            'recordsFiltered' => (new User())->getFilterCount($search),
+            'data' => $data,
+        ];
+        return json_encode($result);
     }
 
     /**
@@ -78,7 +98,12 @@ class UserController extends BaseController
                 $data[$key] = $value;
             }
         }
-
+        if ($userProvider->isValid($data['username'])) {
+            return json_encode([
+                'isValid' => 1,
+                'message' => 'Username already exists.',
+            ]);
+        }
         if (isset($data['itemID'])) {
             $userProvider->updateUser($data);
             return json_encode([
@@ -202,5 +227,37 @@ class UserController extends BaseController
                 'userId' => $userId,
             ]),
         ]);
+    }
+
+    public function export()
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
+        }
+        $colArr = [];
+        $file_name = "users.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        $columns = (new User())->getColumns();
+        foreach ($columns as $column) {
+            if ($column['COLUMN_NAME'] == 'password') {
+                continue;
+            }
+            $colArr[] = $column['COLUMN_NAME'];
+        }
+        $Als[] = $colArr;
+
+        $List = (new User())->getList();
+        foreach ($List as $Item) {
+            unset($Item['password']);
+            $Als[] = $Item;
+        }
+        foreach ($Als as $line) {
+            fputcsv($fp, $line);
+        }
+        fclose($fp);
+        exit();
     }
 }

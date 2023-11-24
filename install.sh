@@ -3,6 +3,8 @@
 # Install BioSounds
 
 git clone https://github.com/kahst/BirdNET-Analyzer.git ./src/BirdNET-Analyzer
+git clone https://github.com/macaodha/batdetect2.git ./src/batdetect2
+
 docker-compose up -d
 docker-compose exec apache composer install
 docker-compose exec apache bash -c '

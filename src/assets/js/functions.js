@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    $(".js-open-modal").click(function (e) {
+    $('tbody').on('click', ".js-open-modal", function (e) {
         let data = [];
         if (this.dataset.id) {
             data = {'id': this.dataset.id};
@@ -233,13 +233,16 @@ function getCookie(cname) {
 /*
  * Function for saving the fields of a list with forms.
  */
-function saveFormList(element, url) {
+function saveFormList(element, url, callback) {
     let row = element.closest("tr");
     let columns = row.find("input, select, textarea");
     let formData = new FormData()
     let value = '';
     columns.each(function (i, item) {
         value = item.value;
+        if (item.className == 'js-checkbox') {
+            return
+        }
         if (item.type === "checkbox" && item.checked) {
             value = 1;
         } else if (item.type === "checkbox" && !item.checked) {
@@ -264,7 +267,7 @@ function saveFormList(element, url) {
             formData.append(item.name + "_" + item.type, value);
         }
     });
-    postRequest(baseUrl + '/' + url, formData, false);
+    postRequest(baseUrl + '/' + url, formData, false, false, callback);
 }
 
 function jsToFormData(config) {
@@ -286,3 +289,96 @@ $(document).keydown(function (event) {
 
     }
 });
+$('.js-all-checkbox').change(function () {
+    if ($(this).prop('checked')) {
+        $('.js-checkbox').prop('checked', true)
+    } else {
+        $('.js-checkbox').prop('checked', false)
+    }
+    checkboxChange()
+});
+
+$('table').on('draw.dt', function () {
+    let allChecked = checkboxChange()
+    if (allChecked) {
+        $('.js-all-checkbox').prop('checked', true);
+    } else {
+        $('.js-all-checkbox').prop('checked', false);
+    }
+});
+
+$('table').on('change', '.js-checkbox', function () {
+    let allChecked = checkboxChange()
+    if (allChecked) {
+        $('.js-all-checkbox').prop('checked', true);
+    } else {
+        $('.js-all-checkbox').prop('checked', false);
+    }
+});
+
+function checkboxChange() {
+    let selectedCount = 0;
+    let allChecked = true;
+
+    $('.js-checkbox').each(function () {
+        if (!$(this).prop('checked')) {
+            allChecked = false;
+        } else {
+            selectedCount++;
+        }
+    });
+
+    if (selectedCount > 0) {
+        $('button[name="table-btn"]').removeClass('btn-outline-secondary').addClass('btn-outline-primary');
+        $('button[name="table-btn"]').prop('disabled', false);
+    } else {
+        $('button[name="table-btn"]').removeClass('btn-outline-primary').addClass('btn-outline-secondary');
+        $('button[name="table-btn"]').prop('disabled', true);
+    }
+    if ($('button[name="table-btn"][data-target="#editPassword"]').length > 0) {
+        if (selectedCount === 1) {
+            $('button[name="table-btn"][data-target="#editPassword"]').removeClass('btn-outline-secondary').addClass('btn-outline-primary');
+            $('button[name="table-btn"][data-target="#editPassword"]').prop('disabled', false);
+        } else {
+            $('button[name="table-btn"][data-target="#editPassword"]').removeClass('btn-outline-primary').addClass('btn-outline-secondary');
+            $('button[name="table-btn"][data-target="#editPassword"]').prop('disabled', true);
+        }
+    }
+    if ($('button[name="table-btn"][data-target="#editDescription"]').length > 0) {
+        if (selectedCount === 1) {
+            $('button[name="table-btn"][data-target="#editDescription"]').removeClass('btn-outline-secondary').addClass('btn-outline-primary');
+            $('button[name="table-btn"][data-target="#editDescription"]').prop('disabled', false);
+        } else {
+            $('button[name="table-btn"][data-target="#editDescription"]').removeClass('btn-outline-primary').addClass('btn-outline-secondary');
+            $('button[name="table-btn"][data-target="#editDescription"]').prop('disabled', true);
+        }
+    }
+    if ($('button[name="table-btn"][data-target="#download"]').length > 0) {
+        if (selectedCount === 1) {
+            $('button[name="table-btn"][data-target="#download"]').removeClass('btn-outline-secondary').addClass('btn-outline-primary');
+            $('button[name="table-btn"][data-target="#download"]').prop('disabled', false);
+        } else {
+            $('button[name="table-btn"][data-target="#download"]').removeClass('btn-outline-primary').addClass('btn-outline-secondary');
+            $('button[name="table-btn"][data-target="#download"]').prop('disabled', true);
+        }
+    }
+    if ($('button[name="table-btn"][data-target="#delete"]').length > 0) {
+        if (selectedCount === 1) {
+            $('button[name="table-btn"][data-target="#delete"]').removeClass('btn-outline-secondary').removeClass('btn-outline-primary').addClass('btn-outline-danger');
+            $('button[name="table-btn"][data-target="#delete"]').prop('disabled', false);
+        } else {
+            $('button[name="table-btn"][data-target="#delete"]').removeClass('btn-outline-primary').removeClass('btn-outline-danger').addClass('btn-outline-secondary');
+            $('button[name="table-btn"][data-target="#delete"]').prop('disabled', true);
+        }
+    }
+    if ($('button[name="table-btn"][data-target="#deletion"]').length > 0) {
+        if (selectedCount > 0) {
+            $('button[name="table-btn"][data-target="#deletion"]').removeClass('btn-outline-secondary').removeClass('btn-outline-primary').addClass('btn-outline-danger');
+            $('button[name="table-btn"][data-target="#deletion"]').prop('disabled', false);
+        } else {
+            $('button[name="table-btn"][data-target="#deletion"]').removeClass('btn-outline-primary').removeClass('btn-outline-danger').addClass('btn-outline-secondary');
+            $('button[name="table-btn"][data-target="#deletion"]').prop('disabled', true);
+        }
+    }
+    return allChecked
+}

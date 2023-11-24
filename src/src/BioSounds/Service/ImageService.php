@@ -136,19 +136,24 @@ class ImageService
             (new Process("convert -fill white -draw \"text 5,15 '" . $maxFrequency . " Hz '\" -draw \"text 5,85 '"
                 . $maxFrequency . " Hz'\" -draw \"text 290,15 'L'\" -draw \"text 290,85 'R'\" "
                 . TMP_DIR . '/sall.png -quality 10 ' . $destinationFilePath))->mustRun();
-
-            unlink(TMP_DIR . '/sl.png');
-            unlink(TMP_DIR . '/sr.png');
-            unlink(TMP_DIR . '/sall.png');
-
+            if (file_exists(TMP_DIR . '/sl.png')) {
+                unlink(TMP_DIR . '/sl.png');
+            }
+            if (file_exists(TMP_DIR . '/sr.png')) {
+                unlink(TMP_DIR . '/sr.png');
+            }
+            if (file_exists(TMP_DIR . '/sall.png')) {
+                unlink(TMP_DIR . '/sall.png');
+            }
         } else {
             (new Process(ABSOLUTE_DIR . 'bin/svt.py -s ' . TMP_DIR . '/small_s1.png -w 300 -h 150 -m '
                 . $maxFrequency . ' -f 4096 ' . $originalWavFilePath))->mustRun();
 
             (new Process("convert -fill white -draw \"text 5,15 '" . $maxFrequency . " Hz '\" "
                 . TMP_DIR . '/small_s1.png -quality 10 ' . $destinationFilePath))->mustRun();
-
-            unlink(TMP_DIR . '/small_s1.png');
+            if (file_exists(TMP_DIR . '/small_s1.png')) {
+                unlink(TMP_DIR . '/small_s1.png');
+            }
         }
     }
 

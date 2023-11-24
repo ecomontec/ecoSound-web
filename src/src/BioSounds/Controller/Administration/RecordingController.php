@@ -7,8 +7,6 @@ use BioSounds\Entity\License;
 use BioSounds\Entity\Microphone;
 use BioSounds\Entity\Recorder;
 use BioSounds\Entity\Recording;
-use BioSounds\Entity\Sensor;
-use BioSounds\Entity\User;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\IndexLogProvider;
@@ -17,9 +15,11 @@ use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\SpectrogramProvider;
 use BioSounds\Provider\SiteProvider;
-use BioSounds\Provider\SoundProvider;
 use BioSounds\Provider\TagProvider;
+use BioSounds\Service\Queue\RabbitQueueService;
 use BioSounds\Utils\Auth;
+use PhpAmqpLib\Connection\AMQPStreamConnection;
+use PhpAmqpLib\Message\AMQPMessage;
 
 class RecordingController extends BaseController
 {
@@ -57,27 +57,39 @@ class RecordingController extends BaseController
         if (empty($colId)) {
             $colId = $collections[0]->getId();
         }
-
-        $recordingProvider = new RecordingProvider();
-        $userProducer = new User();
-
-        $recordings = $recordingProvider->getListByCollection(
-            $colId,
-            (Auth::getUserID() == null) ? 0 : Auth::getUserID()
-        );
         $userSites = (new SiteProvider())->getList($projectId, $colId);
         return $this->twig->render('administration/recordings.html.twig', [
             'projectId' => $projectId,
             'projects' => $projects,
             'colId' => $colId,
             'collections' => $collections,
-            'recordings' => $recordings,
             'sites' => $userSites,
-            'users' => $userProducer->getList(),
             'recorders' => (new Recorder())->getBasicList(),
             'microphones' => (new Microphone())->getBasicList(),
             'license' => (new License())->getBasicList(),
+            'models' => (new RecordingProvider())->getModel(),
         ]);
+    }
+
+    public function getListByPage($projectId = null, $collectionId = null)
+    {
+        $total = count((new RecordingProvider())->getRecording($collectionId));
+        $start = $_POST['start'];
+        $length = $_POST['length'];
+        $search = $_POST['search']['value'];
+        $column = $_POST['order'][0]['column'];
+        $dir = $_POST['order'][0]['dir'];
+        $data = (new RecordingProvider())->getListByPage($projectId, $collectionId, $start, $length, $search, $column, $dir);
+        if (count($data) == 0) {
+            $data = [];
+        }
+        $result = [
+            'draw' => $_POST['draw'],
+            'recordsTotal' => $total,
+            'recordsFiltered' => (new RecordingProvider())->getFilterCount($collectionId, $search),
+            'data' => $data,
+        ];
+        return json_encode($result);
     }
 
     /**
@@ -137,12 +149,12 @@ class RecordingController extends BaseController
      * @return false|string
      * @throws \Exception
      */
-    public function delete(int $id)
+    public function delete()
     {
         if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
-
+        $id = $_POST['id'];
         if (empty($id)) {
             throw new \Exception(ERROR_EMPTY_ID);
         }
@@ -159,12 +171,17 @@ class RecordingController extends BaseController
         $soundsDir = "sounds/sounds/$colId/$dirID/";
         $imagesDir = "sounds/images/$colId/$dirID/";
 
-        unlink($soundsDir . $fileName);
+        if (file_exists($soundsDir . $fileName)) {
+            unlink($soundsDir . $fileName);
+        }
+
         //Check if there are images
         $images = (new SpectrogramProvider())->getListInRecording($id);
 
         foreach ($images as $image) {
-            unlink($imagesDir . $image->getFilename());
+            if (file_exists($imagesDir . $image->getFilename())) {
+                unlink($imagesDir . $image->getFilename());
+            }
         }
 
         $wavFileName = substr($fileName, 0, strrpos($fileName, '.')) . '.wav';
@@ -176,19 +193,15 @@ class RecordingController extends BaseController
         $recordingProvider->delete($id);
         $indexLogProvider->deleteByRecording($id);
 
-        if (!empty($recording[Recording::SOUND_ID])) {
-            (new SoundProvider())->delete($recording[Recording::SOUND_ID]);
-        }
-
         return json_encode([
             'errorCode' => 0,
             'message' => 'Recording deleted successfully.',
         ]);
     }
 
-    public function count($id)
+    public function count()
     {
-        $count = count((new tagProvider())->getList($id));
+        $count = count((new tagProvider())->getList($_POST['id']));
         return $count;
     }
 
@@ -207,5 +220,74 @@ class RecordingController extends BaseController
         }
         fclose($fp);
         exit();
+    }
+
+    public function export($collection_id)
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
+        }
+        $colArr = [];
+        $file_name = "recordings.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        $columns = (new RecordingProvider())->getColumns();
+        foreach ($columns as $column) {
+            if ($column['COLUMN_NAME'] == 'md5_hash') {
+                continue;
+            }
+            $colArr[] = $column['COLUMN_NAME'];
+        }
+        array_splice($colArr, 7, 0, 'user');
+        array_splice($colArr, 9, 0, 'site');
+        array_splice($colArr, 11, 0, 'recorder');
+        array_splice($colArr, 13, 0, 'microphone');
+        array_splice($colArr, 15, 0, 'license');
+        $Als[] = $colArr;
+
+        $List = (new RecordingProvider())->getRecording($collection_id);
+        foreach ($List as $Item) {
+            unset($Item['md5_hash']);
+            $valueToMove = $Item['username'] == null ? '' : $Item['username'];
+            unset($Item['username']);
+            array_splice($Item, 7, 0, $valueToMove);
+            $valueToMove = $Item['site'] == null ? '' : $Item['site'];
+            unset($Item['site']);
+            array_splice($Item, 9, 0, $valueToMove);
+            $valueToMove = $Item['modal'] == null ? '' : $Item['modal'];
+            unset($Item['modal']);
+            array_splice($Item, 11, 0, $valueToMove);
+            $valueToMove = $Item['microphone'] == null ? '' : $Item['microphone'];
+            unset($Item['microphone']);
+            array_splice($Item, 13, 0, $valueToMove);
+            $valueToMove = $Item['license'] == null ? '' : $Item['license'];
+            unset($Item['license']);
+            array_splice($Item, 15, 0, $valueToMove);
+
+            $Als[] = $Item;
+        }
+        foreach ($Als as $line) {
+            fputcsv($fp, $line);
+        }
+        fclose($fp);
+        exit();
+    }
+
+    public function model()
+    {
+        if (!Auth::isUserLogged()) {
+            throw new ForbiddenException();
+        }
+        $this->queueService = new RabbitQueueService();
+        foreach ($_POST as $data) {
+            $this->queueService->model($data);
+        }
+        $this->queueService->closeConnection();
+        return json_encode([
+            'errorCode' => 0,
+            'message' => 'Models successfully.'
+        ]);
     }
 }

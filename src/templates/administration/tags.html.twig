@@ -4,31 +4,49 @@
     <link rel="stylesheet" href="{{ baseUrl }}/assets/css/bootstrap-select.css">
     <div class="card mb-3" id="tagsList">
         <div class="card-header border-light bg-white text-right">
-            <div class="row">
-                <div class="col-auto mr-auto mt-2">
-                    <form id="collectionForm" class="form-inline" action="{{ baseUrl }}/admin/tags">
-                        <label for="colId">Collection</label>
-                        <select id="colId" name="colId" class="form-control form-control-sm ml-3">
-                            {% for collection in collections %}
-                                <option value="{{ collection.id }}" {{ collection.id == colId ? 'selected' }}>
-                                    {{ collection.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </form>
-                </div>
-                <div class="col-auto ml-auto">
-                    <button id="tagsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#tagsExport" aria-expanded="false" aria-controls="tagsExport">
-                        <i class="fa fa-download"></i>
-                        Tag Export
-                    </button>
+            <div class="form-inline">
+                <form id="collectionForm" class="form-inline col-8" action="{{ baseUrl }}/admin/tags">
+                    <label for="projectId">Project</label>
+                    <select id="projectId" name="projectId" class="form-control form-control-sm ml-3">
+                        {% for project in projects %}
+                            <option value="{{ project.id }}" {{ project.id == projectId ? 'selected' }} {{ project.collection is null ?"disabled" }}>
+                                {{ project.name }}{{ project.collection_id }}{{ project.collection is null ?" (No Data)" }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <label for="collId" class="ml-3">Collection</label>
+                    <select id="colId" name="colId" class="form-control form-control-sm ml-3">
+                        {% for collection in collections %}
+                            <option value="{{ collection.id }}" {{ collection.id == colId ? 'selected' }}>
+                                {{ collection.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </form>
+                <div class="col-4 form-inline justify-content-end">
+                    <label class="mr-2">Search:</label>
+                    <input class="form-control-sm" id="search">
                 </div>
             </div>
+            <button id="viewing" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#viewing" disabled>
+                <i class="fas fa-eye"></i>
+                View
+            </button>
+            <button id="deletion" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#deletion" disabled>
+                <i class="fas fa-trash"></i>
+                Delete
+            </button>
+            <button id="tagsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#tagsExport" aria-expanded="false" aria-controls="tagsExport">
+                <i class="fa fa-file-csv"></i>
+                Save all as CSV
+            </button>
         </div>
         <table id="tagsTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
             <tr style="font-size: .875rem;">
-                <th></th>
+                <th>
+                    <input type="checkbox" class="js-all-checkbox" name="check-all" id="check-all">
+                </th>
                 <th>#</th>
                 <th>Phony</th>
                 <th>Sound Type</th>
@@ -49,95 +67,40 @@
                 <th>Reference Call</th>
                 <th>Comments</th>
                 <th style="width: 120px">Creation Date (UTC)</th>
-                <th></th>
             </tr>
             </thead>
-            <tbody class="form-control-sm js-tag-list">
-            {% for tag in tags %}
-                <tr>
-                    <td>
-                        <a href="{{ baseUrl }}/recording/show/{{ tag.recording }}?t_min={{ tag.minTime }}&t_max={{ tag.maxTime }}&f_min={{ tag.minFrequency }}&f_max={{ tag.maxFrequency }}" target="_blank"><i class="fa fa-eye"></i></a>
-                        <input class='js-species-id{{ tag.Id }}' data-type="edit" name='species_id' type='hidden' value="{{ tag.speciesId }}">
-                        <input id="old_id{{ tag.Id }}" type="hidden" value="{{ tag.speciesId }}">
-                        <input id="old_name{{ tag.Id }}" type="hidden" value="{{ tag.speciesName }}">
-                        <input id="taxon_order{{ tag.Id }}" type="hidden" value="{{ tag.taxonOrder }}">
-                        <input id="taxon_class{{ tag.Id }}" type="hidden" value="{{ tag.taxonClass }}">
-                    </td>
-                    <td>
-                        {{ tag.Id }}
-                        <input type="hidden" name="tag_id" value="{{ tag.Id }}"/>
-                    </td>
-                    <td data-search="{{ tag.phony }}" data-order="{{ tag.phony }}">
-                        <select id="phony_{{ tag.Id }}" name="phony" class="form-control form-control-sm" style="width:180px;">
-                            {% for phony in phonys %}
-                                <option value="{{ phony.phony }}" {{ tag.phony == phony.phony ? "selected" }}>{{ phony.phony }}</option>
-                            {% endfor %}
-                        </select>
-                    </td>
-                    <td data-search="{{ tag.sound_type }}" data-order="{{ tag.sound_type }}">
-                        <select id="sound_id{{ tag.Id }}" name="sound_id" class="form-control form-control-sm" data-live-search="true" style="width:180px;">
-                            {% for soundType in soundTypes %}
-                                {% if soundType.phony == tag.phony %}
-                                    <option value="{{ soundType.sound_id }}" {{ tag.soundId == soundType.sound_id ? "selected" }}>{{ soundType.sound_type }}</option>
-                                {% endif %}
-                            {% endfor %}
-                        </select>
-                    </td>
-                    <td>{{ tag.recordingName }}</td>
-                    <td>{{ tag.userName }}</td>
-                    <td>{{ tag.creatorType }}</td>
-                    <td>{{ tag.confidence }}</td>
-                    <td data-search="{{ tag.minTime }}" data-order="{{ tag.minTime }}">
-                        <input type="number" class="form-control form-control-sm" style="width:60px;" name="min_time" maxlength="100" value="{{ tag.minTime }}">
-                    </td>
-                    <td data-search="{{ tag.maxTime }}" data-order="{{ tag.maxTime }}">
-                        <input type="number" class="form-control form-control-sm" style="width:60px;" name="max_time" maxlength="100" value="{{ tag.maxTime }}">
-                    </td>
-                    <td data-search="{{ tag.minFrequency }}" data-order="{{ tag.minFrequency }}">
-                        <input type="number" class="form-control form-control-sm" style="width:75px;" name="min_freq" maxlength="100" value="{{ tag.minFrequency }}">
-                    </td>
-                    <td data-search="{{ tag.maxFrequency }}" data-order="{{ tag.maxFrequency }}">
-                        <input type="number" class="form-control form-control-sm" style="width:75px;" name="max_freq" maxlength="100" value="{{ tag.maxFrequency }}">
-                    </td>
-                    <td data-search="{{ tag.speciesName }}" data-order="{{ tag.speciesName }}">
-                        <input id="speciesName_{{ tag.Id }}" style="width:150px;{{ tag.phony!='biophony'?'display:none' }}" data-type="edit" class="form-control form-control-sm js-species-autocomplete phony_{{ tag.Id }}" type="text" size="30" value="{{ tag.speciesName }}">
-                        <div class="invalid-feedback">
-                            Please select a species from the list.
-                        </div>
-                    </td>
-                    <td class="text-center" data-search="{{ tag.uncertain }}" data-order="{{ tag.uncertain }}">
-                        <input {{ tag.phony!='biophony'?'style="display:none"' }} class="phony_{{ tag.Id }}" name="uncertain" type="checkbox" {{ tag.uncertain ? 'checked' }} >
-                    </td>
-                    <td data-search="{{ tag.callDistance }}" data-order="{{ tag.callDistance }}">
-                        <input id="sound_distance_m{{ tag.Id }}" type="number" class="form-control form-control-sm phony_{{ tag.Id }}" style="width:75px;{{ tag.phony!='biophony'?'display:none' }}" name="sound_distance_m" maxlength="100" value="{{ tag.callDistance }}" {{ tag.distanceNotEstimable ? 'readonly' }} >
-                    </td>
-                    <td class="text-center" data-search="{{ tag.distanceNotEstimable }}" data-order="{{ tag.distanceNotEstimable }}">
-                        <input {{ tag.phony!='biophony'?'style="display:none"' }} class="phony_{{ tag.Id }}" id="distance_not_estimable_{{ tag.Id }}" name="distance_not_estimable" type="checkbox" {{ tag.distanceNotEstimable ? 'checked' }} >
-                    </td>
-                    <td data-search="{{ tag.numberIndividuals }}" data-order="{{ tag.numberIndividuals }}">
-                        <input {{ tag.phony!='biophony'?'style="display:none"' }} class="phony_{{ tag.Id }}" type="number" class="form-control form-control-sm" name="individuals" min="0" max="1000" value="{{ tag.numberIndividuals }}">
-                    </td>
-                    <td data-search="{{ tag.type }}" data-order="{{ tag.type }}">
-                        <select id="animal_sound_type{{ tag.Id }}" name="animal_sound_type" class="form-control form-control-sm phony_{{ tag.Id }}" style="width:180px;{{ tag.phony!='biophony'?'display:none' }}">
-                            <option value="{{ tag.typeId?tag.typeId:0 }}" selected>{{ tag.type }}</option>
-                        </select>
-                    </td>
-                    <td class="text-center" data-search="{{ tag.referenceCall }}" data-order="{{ tag.referenceCall }}">
-                        <input name="reference_call" type="checkbox" {{ tag.referenceCall ? 'checked' }}>
-                    </td>
-                    <td data-search="{{ tag.comments }}" data-order="{{ tag.comments }}">
-                        <textarea name="comments" class="form-control form-control-sm" maxlength="200" rows="1" style="resize:none;width:180px;">{{ tag.comments }}</textarea>
-                    </td>
-                    <td>{{ tag.creationDate }}</td>
-                    <td>
-                        <a class="js-delete-button" href="#" data-id="{{ tag.Id }}" title="Delete tag">
-                            <span class="fas fa-trash"></span>
-                        </a>
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
+            <tbody class="form-control-sm js-tag-list"></tbody>
         </table>
+    </div>
+    <div class="modal fade" id="modal-div" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">Warning</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body ml-3">
+                    <div>
+                        <div class="form-group">
+                            <input id="delete_id" type="hidden">
+                            <label id="delete_info"></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="js-close-button" type="button" class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
+                    <button id="js-delete-button" type="button" class="btn btn-outline-danger">
+                        <i class="fas fa-trash-alt"></i>
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 {% endblock %}
 {% block header %}
@@ -145,22 +108,36 @@
     <script src="{{ baseUrl }}/assets/js/bootstrap-select.js" defer></script>
     <script>
         $(document).ready(function () {
-            $('select[name=sound_id]').selectpicker('refresh');
-            $('.custom-select').css("width", "180px");
-            $(".btn").css("text-align", "left");
             $('#tagsTable').show()
-            $('#tagsTable').DataTable({
-                "pageLength": 8,
-                "lengthChange": false,
+            let table = $('#tagsTable').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "ajax": {
+                    "url": '{{ baseUrl }}/admin/tagMgr/getListByPage/{{ colId }}',
+                    "type": 'POST'
+                },
+                "dom": 'lrtip',
                 "stateSave": true,
                 "StateDuration": -1,
                 "order": [[1, 'asc']],
-                "columnDefs": [{
-                    "orderable": false,
-                    "targets": [0, 17]
-                }],
+                "columnDefs": [
+                    {
+                        "orderable": false,
+                        "targets": [0]
+                    },
+                    {
+                        "className": "dt-center",
+                        "targets": [0, 13, 15, 18],
+                    },
+                ],
                 "bAutoWidth": false,
                 "scrollX": true,
+            });
+            if (table.state.loaded()) {
+                $('#search').val(table.state.loaded().search.search);
+            }
+            $('#search').on('input', () => {
+                table.search($('#search').val()).draw();
             });
         });
 
@@ -172,23 +149,51 @@
                 window.location.href = '{{ baseUrl }}/api/admin/tagMgr/export/{{ colId }}';
             });
 
-            $('.js-delete-button').click(function (e) {
-                if (!confirm('Are you sure you want to delete this tag?')) {
-                    return false;
+            $('#js-delete-button').click(function (e) {
+                let id = [];
+                $('.js-checkbox:checked').each(function () {
+                    id.push($(this).data('id'));
+                });
+                let data = {'id': id};
+                postRequest('{{ baseUrl }}/api/admin/tagMgr/delete', data, false, false, function () {
+                    location.reload();
+                });
+            });
+            $('#tagsTable tbody').on('change', 'select[name=phony]', function () {
+                let id = $(this).attr('id').split('_')[1]
+                let index = 0
+                if ($("#phony_" + id).find("option:selected").text() == 'biophony') {
+                    $(".phony_" + id).show()
+                } else {
+                    $(".phony_" + id).hide()
                 }
-                let row = $(this).parents("tr");
-                deleteRequest('{{ baseUrl }}/api/tag/delete/' + $(this).data('id'), [], false, false, row.remove());
+                $('#sound_id' + id).empty()
+                for (var key in soundTypes) {
+                    if (soundTypes[key]['phony'] == $("#phony_" + id).find("option:selected").text()) {
+                        if (index == 0) {
+                            $('#sound_id' + id).append("<option value='" + soundTypes[key]['sound_id'] + "' selected>" + soundTypes[key]['sound_type'] + "</option>");
+
+                        } else {
+                            $('#sound_id' + id).append("<option value='" + soundTypes[key]['sound_id'] + "'>" + soundTypes[key]['sound_type'] + "</option>");
+                        }
+                    }
+                    index++
+                }
             });
             $(".js-tag-list").on('change', 'input, select, textarea', function () {
+                if ($(this)[0].className == 'js-checkbox') {
+                    return
+                }
                 saveFormList($(this), 'api/admin/tagMgr/save');
-                var table = $('#tagsTable').DataTable()
-                var tr = $(this).closest("tr")
-                table.rows(tr).invalidate()
+            });
+            $('#projectId').change(function () {
+                $('#colId').val("")
+                $("#collectionForm").submit();
             });
             $('#colId').change(function () {
                 $("#collectionForm").submit();
             });
-            $('input[name=distance_not_estimable]').click(function () {
+            $('#tagsTable tbody').on('click', 'input[name=distance_not_estimable]', function () {
                 var id = $(this).attr('id').split('_')[3]
                 let callDistance = $('#sound_distance_m' + id);
                 if ($(this).is(':checked')) {
@@ -198,7 +203,7 @@
                 }
                 callDistance.prop('readonly', false);
             });
-            $("select[name='animal_sound_type']").on('mouseenter ', function () {
+            $('#tagsTable tbody').on('mouseenter', 'select[name=animal_sound_type]', function () {
                 if ($(this)[0].options.length < 2) {
                     var id = $(this).attr('id').split('e')[1]
                     if ($(this).val() > 0) {
@@ -212,22 +217,21 @@
                     }
                 }
             });
-            $('select[name=phony]').on('change', function () {
-                var id = $(this).attr('id').split('_')[1]
-                if ($("#phony_" + id).find("option:selected").text() == 'biophony') {
-                    $(".phony_" + id).show()
+            $('button[name="table-btn"][data-target="#viewing"]').click(function (e) {
+                $('.js-checkbox:checked').each(function () {
+                    window.open('{{ baseUrl }}/recording/show/' + $(this).data('recording-id') + '?t_min=' + $(this).data('tmin') + '&t_max=' + $(this).data('tmax') + '&f_min=' + $(this).data('fmin') + '&f_max=' + $(this).data('fmax'), '_blank');
+                });
+                e.preventDefault();
+            })
+
+            $('button[name="table-btn"][data-target="#deletion"]').click(function (e) {
+                if ($('.js-checkbox:checked').length > 1) {
+                    $('#delete_info').html("Are you sure you want to delete these <b class=\"text-danger\" >" + $('.js-checkbox:checked').length + "</b> entries?")
                 } else {
-                    $(".phony_" + id).hide()
+                    $('#delete_info').html("Are you sure you want to delete this entry?")
                 }
-                $('#sound_id' + id).empty()
-                for (var key in soundTypes) {
-                    if (soundTypes[key]['phony'] == $("#phony_" + id).find("option:selected").text()) {
-                        $('#sound_id' + id).append("<option value='" + soundTypes[key]['sound_id'] + "'>" + soundTypes[key]['sound_type'] + "</option>");
-                    }
-                }
-                $('#sound_id' + id).selectpicker('refresh');
-                $('.custom-select').css("width", "180px");
-            });
+                $("#modal-div").modal('show');
+            })
         });
     </script>
 {% endblock %}

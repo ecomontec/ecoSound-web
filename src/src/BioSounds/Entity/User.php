@@ -2,10 +2,9 @@
 
 namespace BioSounds\Entity;
 
-use BioSounds\Provider\BaseProvider;
 use BioSounds\Utils\Auth;
 
-class User extends BaseProvider
+class User extends AbstractProvider
 {
     const TABLE_NAME = "user";
     const ID = "user_id";
@@ -13,6 +12,7 @@ class User extends BaseProvider
     const FULL_NAME = "name";
     const PASSWORD = "password";
     const TAG_COLOR = "color";
+    const DEFAULT_TAG_COLOR = '#FFFFFF';
 
     /**
      * @return int
@@ -377,5 +377,71 @@ class User extends BaseProvider
 
         $this->database->prepareQuery("UPDATE user SET password = :nePasswd WHERE user_id = :userId");
         return $this->database->executeUpdate($values);
+    }
+
+    public function isValid($str)
+    {
+        $sql = "SELECT * FROM user WHERE `username` = '$str'";
+        $this->database->prepareQuery($sql);
+        $result = $this->database->executeSelect();
+        if (count($result) > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public function getListByPage(string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
+    {
+        $arr = [];
+        $sql = "SELECT * FROM user ";
+        $is_admin = Auth::isUserAdmin();
+        if ($search) {
+            $sql .= " WHERE CONCAT(IFNULL(user_id,''), IFNULL(name,''), IFNULL(username,''), IFNULL(orcid,''), IFNULL(email,'')) LIKE '%$search%' ";
+        }
+        if ($is_admin) {
+            $a = ['', 'user_id', 'name', 'username', 'orcid', 'email', 'role_id', 'active', 'color'];
+        } else {
+            $a = ['', 'user_id', 'name', 'username', 'orcid', 'email', 'color'];
+        }
+        $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
+        $this->database->prepareQuery($sql);
+        $result = $this->database->executeSelect();
+
+        $roles = (new Role())->getRoles();
+        if (count($result)) {
+            foreach ($result as $key => $value) {
+                if ($is_admin || $value['role_id'] == 2) {
+                    $arr[$key][] = "<input type='checkbox' class='js-checkbox'data-id='$value[user_id]' name='cb[$value[user_id]]' id='cb[$value[user_id]]'>";
+                } else {
+                    $arr[$key][] = "";
+                }
+                $arr[$key][] = "$value[user_id]<input type='hidden' class='form-control form-control-sm' name='itemID' value='$value[user_id]'>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='name' value='$value[name]' " . ((!$is_admin && $value['role_id'] == 1) ? 'disabled' : '') . ">";
+                $arr[$key][] = $value['username'];
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='orcid' value='$value[orcid]' maxlength='19' pattern='^(\d{4}-\d{4}-\d{4}-\d{4})$' " . ((!$is_admin && $value['role_id'] == 1) ? 'disabled' : '') . "><div class='invalid-feedback'>Please provide a valid ORCID.</div>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='email' value='$value[email]' " . ((!$is_admin && $value['role_id'] == 1) ? 'disabled' : '') . ">";
+                if ($is_admin) {
+                    $str = '';
+                    foreach ($roles as $role) {
+                        $str = $str . "<option value='$role[role_id]' " . ($role['role_id'] == $value['role_id'] ? "selected" : '') . ">$role[name]</option>";
+                    }
+                    $arr[$key][] = "<select name='role_id' class='form-control form-control-sm'>$str</select>";
+                    $arr[$key][] = "<input name='active' type='checkbox' " . ($value['active'] ? 'checked' : '') . ">";
+                }
+                $arr[$key][] = "<input type='color' name='color' alt='Tag color' value='" . (isset($value['color']) ? $value['color'] : self::DEFAULT_TAG_COLOR) . "' " . ((!$is_admin && $value['role_id'] == 1) ? 'disabled' : '') . ">";
+            }
+        }
+        return $arr;
+    }
+
+    public function getFilterCount(string $search): int
+    {
+        $sql = "SELECT COUNT(*) FROM user ";
+        if ($search) {
+            $sql .= " WHERE CONCAT(IFNULL(user_id,''), IFNULL(name,''), IFNULL(username,''), IFNULL(orcid,''), IFNULL(email,'')) LIKE '%$search%' ";
+        }
+        $this->database->prepareQuery($sql);
+        $count = $this->database->executeSelect();
+        return $count[0]['COUNT(*)'];
     }
 }

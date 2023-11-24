@@ -30,7 +30,7 @@
                         <div class="form-group col-md-6">
                             <label for="recorder" class="col-form-label-sm">Recorder</label>
                             <select id="recorder" name="recorder" class="form-control form-control-sm" required>
-                                <option></option>
+                                <option selected disabled></option>
                                 {% for recorder in recorders %}
                                     <option value="{{ recorder.recorder_id }}" data-microphone="{{ recorder.microphone }}">{{ recorder.modal }}{% if recorder.brand!='' or recorder.brand is not null %} | {{ recorder.brand }}{% endif %}</option>
                                 {% endfor %}
@@ -38,7 +38,7 @@
                         </div>
                         <div class="form-group col-md-6">
                             <label for="microphone" class="col-form-label-sm">Microphone</label>
-                            <select id="microphone" name="microphone" class="form-control form-control-sm" readonly required></select>
+                            <select id="microphone" name="microphone" class="form-control form-control-sm" disabled required></select>
                         </div>
                     </div>
                     <div class="row">

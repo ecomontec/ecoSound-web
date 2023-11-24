@@ -136,15 +136,21 @@
         })
 
         $('#userPermissionForm').submit(function (e) {
-            var data = new FormData()
-            data.append('user_id',$('#user_id').val())
-            $('table#user-perm tbody tr').each(function (i) {
+            let data = new FormData()
+            let arr = {}
+            data.append('user_id', $('#user_id').val())
+            $('table#user-perm tbody tr').each(function () {
                 let dataInput = $(this).children('td').find(".js-data-input");
-                if (dataInput.length > 0 && dataInput.data('permission-id') != $("#js-permission-hidden-" + dataInput.data('collection-id')).val()) {
-                    data.append('d[' + i + '][c]', dataInput.data('collection-id'));
-                    data.append('d[' + i + '][p]', dataInput.data('permission-id'));
+                if (dataInput.data('permission-id') != null) {
+                    if (!arr[dataInput.data('permission-id')]) {
+                        arr[dataInput.data('permission-id')] = [];
+                    }
+                    arr[dataInput.data('permission-id')].push(dataInput.data('collection-id'))
                 }
             });
+            $.each(arr, function (key, value) {
+                data.append("c[" + key + "]", value);
+            })
             postRequest('{{ baseUrl }}/api/UserPermission/save', data, true, false, function () {
                 $('#modal-div').modal('hide');
             });

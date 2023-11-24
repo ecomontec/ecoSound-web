@@ -1,6 +1,7 @@
 import optparse
 import maad
 from maad import sound, rois
+from maad.features import shape_features
 import numpy
 
 

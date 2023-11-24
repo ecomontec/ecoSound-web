@@ -64,30 +64,6 @@ VALUES (1, 'Copyright', ''),
        (8, 'CC-BY-NC-ND', 'https://creativecommons.org/licenses/by-nc-nd/4.0');
 
 --
--- Dumping data for table `sensor`
---
-INSERT INTO `sensor` (`sensor_id`, `name`, `microphone`, `recorder`, `note`)
-VALUES (1, 'None', '', NULL, ''),
-       (2, 'pre-2014 SMX-II (Wildlife acoustics)', 'WM61A (Panasonic)', 'SM2+', 'info according to WA, but several types were found'),
-       (3, 'SMX-U1 (Wildlife acoustics)', 'FG-23629-C36-1 (Knowles)', 'SM2Bat+', ''),
-       (4, 'SMX-US (Wildlife acoustics)', 'SPM0404UD5 (Knowles)', 'SM2Bat+', ''),
-       (5, 'BMX-U1 (Biotope.fr)', 'SPU0410LR5H-QB (Knowles)', 'SM2Bat+', ''),
-       (6, 'SMO1 (Sonitor Parus precursor)', 'SPU0410LR5H-QB (Knowles)', 'SM2Bat+', ''),
-       (7, 'Primo EM172', 'Primo EM172', 'Solo', ''),
-       (8, 'mixed', '', NULL, ''),
-       (9, 'Audiomoth 1.0, 1.1', 'SPM0408LE5H-TB (<6) (Knowles)', 'Audiomoth 1.0, 1.1', ''),
-       (10, 'Sennheiser ME66', '', NULL, ''),
-       (11, 'RØDE VideoMic', '', NULL, ''),
-       (12, 'Olympus LS-P4', '', 'Olympus LS-P4', ''),
-       (13, 'Sony Ericsson K600i', '', 'Sony Ericsson K600i', ''),
-       (14, 'Roland R05', '', 'Roland R05', ''),
-       (15, 'SM4 (internal acoustic)', '', 'SM4 (Wildlife Acoustics)', ''),
-       (16, 'post-2014 SMX-II (Wildlife acoustics)', 'unknown but similar to PUI mic', 'SM2+', ''),
-       (17, 'Audiomoth 1.2', 'SPM0408LE5H-TB (>5) (Knowles)', 'Audiomoth 1.2', ''),
-       (18, 'Petterson D240X', 'unspecified', 'Petterson D240X', '');
-
-
---
 -- Dumping data for table `setting`
 --
 INSERT INTO `setting` (`name`, `value`)
@@ -150,11 +126,11 @@ VALUES (1, '(Bird) Call - unspecific', 'AVES', ''),
 --
 -- Dumping data for table `species`
 --
-INSERT INTO `species` (`species_id`, `binomial`, `genus`, `family`, `taxon_order`, `class`, `common_name`, `level`, `region`)
-VALUES (1, 'Unknown', '', '', '', '', '', 1, ''),
-       (2, 'Test bird', 'Test Genus', 'Test Family', '', 'AVES', 'common bird name', 1, 'Test region'),
-       (3, 'Test amphibian', 'Test Genus', 'Test Family', '', 'AMPHIBIA', 'common amphibian name', 1, 'Test region'),
-       (4, 'Test primate', 'Test Genus', 'Test Family', 'PRIMATA', 'MAMMALIA', 'common primate name', 1, 'Test region');
+INSERT INTO `species` (`species_id`, `binomial`, `genus`, `family`, `taxon_order`, `class`, `common_name`, `level`,`source`)
+VALUES (1, 'Unknown', '', '', '', '', '', 1,''),
+       (2, 'Test bird', 'Test Genus', 'Test Family', '', 'AVES', 'common bird name', 1,''),
+       (3, 'Test amphibian', 'Test Genus', 'Test Family', '', 'AMPHIBIA', 'common amphibian name', 1,''),
+       (4, 'Test primate', 'Test Genus', 'Test Family', 'PRIMATA', 'MAMMALIA', 'common primate name', 1,'');
 --
 -- Dumping data for table `tag_review_status`
 --
@@ -166,8 +142,10 @@ VALUES (1, 'Accepted'),
 --
 -- Dumping data for table `models`
 --
-INSERT INTO `models` (`name`, `tf_model_path`, `labels_path`, `source_URL`)
-VALUES ('BirdNET-Analyzer', '/BirdNET-Analyzer', '/BirdNET-Analyzer', 'https://github.com/kahst/BirdNET-Analyzer');
+INSERT INTO `models` (`tf_model_id`,`name`,`tf_model_path`,`labels_path`,`source_URL`,`description`,`parameter`)
+VALUES (1, 'BirdNET-Analyzer', '/BirdNET-Analyzer', '/BirdNET-Analyzer', 'https://github.com/kahst/BirdNET-Analyzer', 'Automated scientific audio data processing and bird ID.', 'sensitivity@Values in [0.5, 1.5]. Defaults to 1.0.$min_conf@Values in [0.01, 0.99]. Defaults to 0.1.$overlap@Values in [0.0, 2.9]. Defaults to 0.0.$sf_thresh@values in [0.01, 0.99]. Defaults to 0.03.'),
+       (2, 'batdetect2', '/batdetect2', '/batdetect2', 'https://github.com/macaodha/batdetect2.git', 'Code for detecting and classifying bat echolocation calls in high frequency audio recordings.', 'detection_threshold@Values in [0, 1.0]. Defaults to 0.3.');
+
 --
 -- Dumping data for table `project`
 --

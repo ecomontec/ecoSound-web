@@ -15,16 +15,21 @@ class UserPermissionController extends BaseController
      * @return false|string
      * @throws \Exception
      */
-    public function show(int $userId)
+    public function show()
     {
-        $listProjects = (new ProjectProvider())->getWithPermission($userId);
+        $userId = explode(',', $_POST['id']);
+        if (count($userId) == 1) {
+            $listProjects = (new ProjectProvider())->getWithPermission($userId[0]);
+        } else {
+            $listProjects = (new ProjectProvider())->getWithPermission();
+        }
         $permission = new Permission();
         return json_encode([
             'errorCode' => 0,
             'data' => $this->twig->render('administration/userPermission.html.twig', [
                 'projects' => $listProjects,
-                'username' => (new User())->getFullName($userId),
-                'userId' => $userId,
+                'username' => count($userId) == 1 ? (new User())->getFullName($userId[0]) : '',
+                'userId' => $_POST['id'],
                 'viewId' => $permission->getViewId(),
                 'reviewId' => $permission->getReviewId(),
                 'accessId' => $permission->getAccessId(),
@@ -38,17 +43,17 @@ class UserPermissionController extends BaseController
      * @return false|string
      * @throws \Exception
      */
-    public function view(int $userId)
+    public function view()
     {
+        $userId = $_POST['id'];
         $listProjects = (new ProjectProvider())->getWithPermission($userId, 0);
         $permission = new Permission();
-
         return json_encode([
             'errorCode' => 0,
             'data' => $this->twig->render('administration/userPermissionView.html.twig', [
                 'projects' => $listProjects,
                 'username' => (new User())->getFullName($userId),
-                'userId' => $userId,
+                'userId' => $_POST['id'],
                 'viewId' => $permission->getViewId(),
                 'reviewId' => $permission->getReviewId(),
                 'accessId' => $permission->getAccessId(),
@@ -64,15 +69,14 @@ class UserPermissionController extends BaseController
     public function save(): string
     {
         $userProvider = new UserPermission();
-        foreach ($_POST['d'] as $row) {
-            if (isset($row['c'])) {
-                $userProvider->delete($_POST['user_id'], $row['c']);
-                if ($row['p'] > 0) {
-                    $arr['collection_id'] = $row['c'];
-                    $arr['permission_id'] = $row['p'];
-                    $arr['user_id'] = $_POST['user_id'];
-                    $userProvider->insert($arr);
-                }
+        $delete = implode(',', $_POST['c']);
+        $userProvider->delete($_POST['user_id'], $delete);
+        foreach ($_POST['c'] as $key => $value) {
+            if ($key != 0) {
+                $row['user_id'] = $_POST['user_id'];
+                $row['collection_id'] = $value;
+                $row['permission_id'] = $key;
+                $userProvider->insert($row);
             }
         }
         return json_encode([

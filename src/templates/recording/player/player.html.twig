@@ -100,13 +100,13 @@
             <div>
                 <a href="#" class="js-open-maad-modal">
                     <i class="sum mt-3"></i>
-                    <strong>Acoustic Index Analysis </strong>
+                    <strong>Alpha acoustic indices</strong>
                 </a>
             </div>
             <div>
                 <a href="#" class="js-open-tf-modal">
                     <i class="fa-solid fa-gears mt-3"></i>
-                    <strong>Tensorflow Models</strong>
+                    <strong>AI models</strong>
                 </a>
             </div>
         </div>
@@ -163,7 +163,7 @@
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title maad-title">TensorFlow Models</h5>
+                        <h5 class="modal-title maad-title">Classifiers</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -172,41 +172,10 @@
                         <div>
                             <div class="form-group">
                                 <select id="tf" name="tf_id" autocomplete="off" class="form-control form-control-sm col-6 mb-3" required>
-                                    <option value="0">BirdNET-Analyzer</option>
+                                    {% for model in models %}
+                                        <option value="{{ model.tf_model_id }}">{{ model.name }}</option>
+                                    {% endfor %}
                                 </select>
-                                <div class="col-form-label">
-                                    <strong>Description:</strong>
-                                    <a class="col-form-label" href="https://github.com/kahst/BirdNET-Analyzer" target="_blank" title="Documentation"> <i class="fa fa-book"></i></a>
-                                    <div class="col-form-label-sm">Automated scientific audio data processing and bird ID.</div>
-                                </div>
-                                <div class="form-inline">
-                                    <label class="ml-1 col-form-label-sm" for="sensitivity">sensitivity</label>
-                                </div>
-                                <div class="form-group form-inline">
-                                    <input id="sensitivity" name="sensitivity" class="form-control form-control-sm" type="text">
-                                    <label class="ml-2 col-form-label-sm">Values in [0.5, 1.5]. Defaults to 1.0.</label>
-                                </div>
-                                <div class="form-inline">
-                                    <label class="ml-1 col-form-label-sm" for="min_conf">min_conf</label>
-                                </div>
-                                <div class="form-group form-inline">
-                                    <input id="min_conf" name="min_conf" class="form-control form-control-sm" type="text">
-                                    <label class="ml-2 col-form-label-sm">Values in [0.01, 0.99]. Defaults to 0.1.</label>
-                                </div>
-                                <div class="form-inline">
-                                    <label class="ml-1 col-form-label-sm" for="overlap">overlap</label>
-                                </div>
-                                <div class="form-group form-inline">
-                                    <input id="overlap" name="overlap" class="form-control form-control-sm" type="text">
-                                    <label class="ml-2 col-form-label-sm">Values in [0.0, 2.9]. Defaults to 0.0.</label>
-                                </div>
-                                <div class="form-inline">
-                                    <label class="ml-1 col-form-label-sm" for="sf_thresh">sf_thresh</label>
-                                </div>
-                                <div class="form-group form-inline">
-                                    <input id="sf_thresh" name="sf_thresh" class="form-control form-control-sm" type="text">
-                                    <label class="ml-2 col-form-label-sm">values in [0.01, 0.99]. Defaults to 0.03.</label>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -215,7 +184,7 @@
                             <i class="fas fa-times"></i>
                             Close
                         </button>
-                        <a href="{{ baseUrl }}/recording/tf" class="js-tf-modal btn btn-outline-primary">
+                        <a id='model-btn' class="js-tf-modal btn btn-outline-primary">
                             <i class="fa-solid fa-check"></i>
                             Submit
                         </a>
@@ -224,6 +193,32 @@
             </div>
         </div>
         <script>
+            $(document).ready(function () {
+                $('#tf').change(function () {
+                    let html = ''
+                    $(this).siblings().remove();
+                    {% for model in models %}
+                    if ($(this).val() == '{{ model.tf_model_id }}') {
+                        $('#model-btn').attr("href", "{{ baseUrl }}/recording/{{ model.name|replace({'-': ''}) }}");
+                        html = html + '<div class="col-form-label">' +
+                            '<strong>Description:</strong>' +
+                            '<a class="col-form-label" href="{{ model.source_URL }}" target="_blank" title="Documentation"> <i class="fa fa-book"></i></a>' +
+                            '<div class="col-form-label-sm">{{ model.description }}</div></div>'
+                        let data = '{{ model.parameter }}'.split('$').map(item => item.split('@'));
+                        $.each(data, function (index, value) {
+                            html = html + '<div class="form-inline">' +
+                                '<label class="ml-1 col-form-label-sm" for="' + value[0] + '">' + value[0] + '</label></div>' +
+                                '<div class="form-group form-inline">' +
+                                '<input id="' + value[0] + '" name="' + value[0] + '" class="form-control form-control-sm" type="text">' +
+                                '<label class="ml-2 col-form-label-sm">' + value[1] + '</label></div>'
+                        })
+                        $(this).after(html)
+                    }
+                    {% endfor %}
+                })
+                $("#tf").change();
+            });
+
             $("#maad").change(function () {
                 $.ajax({
                     url: "{{ baseUrl }}/recording/getMaadlabel/" + $("#maad").val(),
@@ -269,29 +264,46 @@
             });
             $(".js-tf-modal").click(function (e) {
                 let data = []
-                if ($('#lat').val() == "" || $('#lon').val() == "" || $('#file_date').val() == "") {
-                    if (!confirm("Your recordings have not been assigned to geographic locations and date-times. BirdNET will produce unreliable results!")) {
-                        e.preventDefault();
-                        return
+                if ($('#tf').val() == 1) {
+                    if ($('#lat').val() == "" || $('#lon').val() == "" || $('#file_date').val() == "") {
+                        if (!confirm("Your recordings have not been assigned to geographic locations and date-times. BirdNET will produce unreliable results!")) {
+                            e.preventDefault();
+                            return
+                        }
                     }
                 }
                 toggleLoading();
-                data = {
-                    'collection_id': $('input[name=collection_id]').val(),
-                    'recording_id': $('input[name=recording_id]').val(),
-                    'filename': $('input[name=filename]').val(),
-                    'creator_type': $('#tf').text().replace(/\ +/g, ""),
-                    'recording_directory': $('input[name=recording_directory]').val(),
-                    'lat': $("#lat").val(),
-                    'lon': $("#lon").val(),
-                    'file_date': $("#file_date").val(),
-                    'sensitivity': $("#sensitivity").val(),
-                    'min_conf': $("#min_conf").val(),
-                    'overlap': $("#overlap").val(),
-                    'sf_thresh': $("#sf_thresh").val(),
-                    'temp': soundFilePath,
-                    'max_freq':fileFreqMax,
-                };
+                if ($('#tf').val() == 1) {
+                    data = {
+                        'collection_id': $('input[name=collection_id]').val(),
+                        'recording_id': $('input[name=recording_id]').val(),
+                        'filename': $('input[name=filename]').val(),
+                        'creator_type': $("#tf option:selected").text(),
+                        'recording_directory': $('input[name=recording_directory]').val(),
+                        'lat': $("#lat").val(),
+                        'lon': $("#lon").val(),
+                        'file_date': $("#file_date").val(),
+                        'sensitivity': $("#sensitivity").val(),
+                        'min_conf': $("#min_conf").val(),
+                        'overlap': $("#overlap").val(),
+                        'sf_thresh': $("#sf_thresh").val(),
+                        'temp': soundFilePath,
+                        'max_freq': fileFreqMax,
+                        'user_id': '{{ user_id }}',
+                    };
+                } else if ($('#tf').val() == 2) {
+                    data = {
+                        'collection_id': $('input[name=collection_id]').val(),
+                        'recording_id': $('input[name=recording_id]').val(),
+                        'filename': $('input[name=filename]').val(),
+                        'creator_type': $("#tf option:selected").text(),
+                        'recording_directory': $('input[name=recording_directory]').val(),
+                        'file_date': $("#file_date").val(),
+                        'detection_threshold': $("#detection_threshold").val(),
+                        'temp': soundFilePath,
+                        'user_id': '{{ user_id }}',
+                    };
+                }
                 data = jsToFormData(data)
                 $.ajax({
                     type: 'POST',
@@ -303,7 +315,10 @@
                 })
                     .done(function (result) {
                         alert(result.message)
-                        location.reload()
+                        if(result.message.indexOf('found 0 detections.') === -1){
+                            location.reload()
+                        }
+                        toggleLoading();
                     })
                     .fail(function (response) {
                         toggleLoading();

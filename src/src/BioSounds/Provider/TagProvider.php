@@ -4,12 +4,14 @@
 namespace BioSounds\Provider;
 
 
+use BioSounds\Entity\AbstractProvider;
 use BioSounds\Entity\Species;
 use BioSounds\Entity\Tag;
 use BioSounds\Entity\User;
 use BioSounds\Utils\Auth;
+use Cassandra\Varint;
 
-class TagProvider extends BaseProvider
+class TagProvider extends AbstractProvider
 {
     const TABLE_NAME = "tag";
 
@@ -46,7 +48,7 @@ class TagProvider extends BaseProvider
      * @return Tag[]
      * @throws \Exception
      */
-    public function getList(int $recordingId, int $userId = null): array
+    public function getList(string $recordingId, int $userId = null): array
     {
         $result = [];
 
@@ -58,9 +60,7 @@ class TagProvider extends BaseProvider
         $query .= 'LEFT JOIN sound ON tag.sound_id = sound.sound_id ';
         $query .= 'LEFT JOIN recording r ON r.recording_id = tag.recording_id ';
         $query .= 'LEFT JOIN collection c ON c.collection_id = r.col_id ';
-        $query .= 'WHERE tag.recording_id = :recordingId';
-
-        $values[':recordingId'] = $recordingId;
+        $query .= "WHERE tag.recording_id IN ($recordingId)";
 
         if (!empty($userId)) {
             $query .= ' AND (tag.user_id = :userId OR c.public_tags = 1) ';
@@ -142,6 +142,31 @@ class TagProvider extends BaseProvider
         return $this->database->executeInsert($values);
     }
 
+    public function insertArr($data): int
+    {
+        if (empty($data)) {
+            return false;
+        }
+        $keys = [];
+        $arr = [];
+
+        $sql = 'INSERT INTO tag (';
+        foreach ($data[0] as $key => $value) {
+            $keys[] = $key;
+        }
+        $sql .= implode(',', $keys) . ') VALUES ';
+        foreach ($data as $value) {
+            $values = [];
+            foreach ($value as $v) {
+                $values[] = '"' . $v . '"';
+            }
+            $arr[] = '(' . implode(',', $values) . ')';
+        }
+        $sql .= implode(',', $arr);
+        $this->database->prepareQuery($sql);
+        return $this->database->executeInsert();
+    }
+
     /**
      * @param $data
      * @return array|bool|int
@@ -172,10 +197,10 @@ class TagProvider extends BaseProvider
      * @return array|int
      * @throws \Exception
      */
-    public function delete(int $tagId)
+    public function delete(string $tagId)
     {
-        $this->database->prepareQuery('DELETE FROM tag WHERE tag_id = :tagId');
-        return $this->database->executeDelete([':tagId' => $tagId]);
+        $this->database->prepareQuery("DELETE FROM tag WHERE tag_id IN ($tagId)");
+        return $this->database->executeDelete();
     }
 
     public function getTagPagesByCollection(int $colId): array
@@ -192,7 +217,6 @@ class TagProvider extends BaseProvider
         }
         $sql .= " ORDER BY t.tag_id";
         $this->database->prepareQuery($sql);
-
         $result = $this->database->executeSelect([":colId" => $colId,]);
 
         $data = [];
@@ -270,5 +294,112 @@ class TagProvider extends BaseProvider
                 ->setConfidence(isset($item['confidence']) ? $item['confidence'] : null);
         }
         return $data;
+    }
+
+    public function getTag(string $collectionId): array
+    {
+        $sql = "SELECT t.*,sound.phony,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass FROM tag t 
+            INNER JOIN recording r ON r.recording_id = t.recording_id
+            LEFT JOIN species s ON s.species_id = t.species_id
+            LEFT JOIN collection c ON c.collection_id = r.col_id
+            LEFT JOIN user u ON u.user_id = t.user_id
+            LEFT JOIN sound ON sound.sound_id = t.sound_id
+            LEFT JOIN sound_type st ON st.sound_type_id = t.animal_sound_type WHERE c.collection_id = $collectionId ";
+        if (!Auth::isManage()) {
+            $sql .= " AND t.user_id = " . Auth::getUserID();
+        }
+        $sql .= ' ORDER BY t.tag_id';
+        $this->database->prepareQuery($sql);
+        return $this->database->executeSelect();
+    }
+
+    public function getFilterCount(string $collectionId, string $search): int
+    {
+        $sql = "SELECT t.*,sound.phony,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass FROM tag t 
+            INNER JOIN recording r ON r.recording_id = t.recording_id
+            LEFT JOIN species s ON s.species_id = t.species_id
+            LEFT JOIN collection c ON c.collection_id = r.col_id
+            LEFT JOIN user u ON u.user_id = t.user_id
+            LEFT JOIN sound ON sound.sound_id = t.sound_id
+            LEFT JOIN sound_type st ON st.sound_type_id = t.animal_sound_type 
+            WHERE c.collection_id = $collectionId ";
+        if (!Auth::isManage()) {
+            $sql .= " AND t.user_id = " . Auth::getUserID();
+        }
+        if ($search) {
+            $sql .= " AND CONCAT(IFNULL(t.tag_id,''), IFNULL(sound.phony,''), IFNULL(sound.sound_type,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(t.creator_type,''), IFNULL(t.confidence,''), IFNULL(t.min_time,''), IFNULL(t.max_time,''), IFNULL(t.min_freq,''), IFNULL(t.max_freq,''), IFNULL(s.binomial,''), IFNULL(t.sound_distance_m,''), IFNULL(t.individuals,''), IFNULL(st.name,''), IFNULL(t.comments,''), IFNULL(t.creation_date,'')) LIKE '%$search%' ";
+        }
+        $sql .= " GROUP BY t.tag_id";
+        $this->database->prepareQuery($sql);
+        $count = count($this->database->executeSelect());
+        return $count;
+    }
+
+    public function getListByPage(string $collectionId, string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
+    {
+        $arr = [];
+        $sql = "SELECT t.*,sound.phony,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass FROM tag t 
+            INNER JOIN recording r ON r.recording_id = t.recording_id
+            LEFT JOIN species s ON s.species_id = t.species_id
+            LEFT JOIN collection c ON c.collection_id = r.col_id
+            LEFT JOIN user u ON u.user_id = t.user_id
+            LEFT JOIN sound ON sound.sound_id = t.sound_id
+            LEFT JOIN sound_type st ON st.sound_type_id = t.animal_sound_type 
+            WHERE c.collection_id = $collectionId ";
+        if (!Auth::isManage()) {
+            $sql .= " AND t.user_id = " . Auth::getUserID();
+        }
+        if ($search) {
+            $sql .= " AND CONCAT(IFNULL(t.tag_id,''), IFNULL(sound.phony,''), IFNULL(sound.sound_type,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(t.creator_type,''), IFNULL(t.confidence,''), IFNULL(t.min_time,''), IFNULL(t.max_time,''), IFNULL(t.min_freq,''), IFNULL(t.max_freq,''), IFNULL(s.binomial,''), IFNULL(t.sound_distance_m,''), IFNULL(t.individuals,''), IFNULL(st.name,''), IFNULL(t.comments,''), IFNULL(t.creation_date,'')) LIKE '%$search%' ";
+        }
+        $sql .= " GROUP BY t.tag_id";
+        $a = [ '', 't.tag_id', 'sound.phony', 'sound.sound_type', 'r.name', 'u.name', 't.creator_type', 't.confidence', 't.min_time', 't.max_time', 't.min_freq', 't.max_freq', 's.binomial', 't.uncertain', 't.sound_distance_m', 't.distance_not_estimable', 't.individuals', 'st.name', 'reference_call', 't.comments', 't.creation_date'];
+        $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
+        $this->database->prepareQuery($sql);
+        $result = $this->database->executeSelect();
+        $phonys = (new SoundProvider())->get();
+        $sound_types = (new SoundProvider())->getAll();
+        if (count($result)) {
+            foreach ($result as $key => $value) {
+                $str_phony = '';
+                $str_sound_type = '';
+                foreach ($phonys as $phony) {
+                    $str_phony .= "<option value='" . $phony->getPhony() . "' " . ($value['phony'] == $phony->getPhony() ? 'selected' : '') . ">" . $phony->getPhony() . "</option>";
+                }
+                foreach ($sound_types as $sound_type) {
+                    if ($sound_type['phony'] == $value['phony']) {
+                        $str_sound_type .= "<option value='$sound_type[sound_id]' " . ($value['sound_id'] == $sound_type['sound_id'] ? 'selected' : '') . ">$sound_type[sound_type]</option>";
+                    }
+                }
+                $arr[$key][] = "<input type='checkbox' class='js-checkbox' data-id='$value[tag_id]' data-recording-id='$value[recording_id]' data-tmin='$value[min_time]' data-tmax='$value[max_time]' data-fmin='$value[min_freq]' data-fmax='$value[max_freq]' name='cb[$value[collection_id]]' id='cb[$value[collection_id]]'>";
+                $arr[$key][] = "$value[tag_id]
+                        <input type='hidden' name='tag_id' value='$value[tag_id]'>
+                        <input class='js-species-id$value[tag_id]' data-type='edit' name='species_id' type='hidden' value='$value[species_id]'>
+                        <input id='old_id$value[tag_id]' type='hidden' value='$value[species_id]'>
+                        <input id='old_name$value[tag_id]' type='hidden' value='$value[speciesName]'>
+                        <input id='taxon_order$value[tag_id]' type='hidden' value='$value[TaxonOrder]'>
+                        <input id='taxon_class$value[tag_id]' type='hidden' value='$value[TaxonClass]'>";
+                $arr[$key][] = "<select id='phony_$value[tag_id]' name='phony' class='form-control form-control-sm' style='width:180px;'>$str_phony</select>";
+                $arr[$key][] = "<select id='sound_id$value[tag_id]' name='sound_id' class='form-control form-control-sm' style='width:180px;'>$str_sound_type</select>";
+                $arr[$key][] = $value['recordingName'];
+                $arr[$key][] = $value['userName'];
+                $arr[$key][] = $value['creator_type'];
+                $arr[$key][] = $value['confidence'];
+                $arr[$key][] = "<input type='number' class='form-control form-control-sm' style='width:60px;' name='min_time' maxlength='100' value='$value[min_time]'>";
+                $arr[$key][] = "<input type='number' class='form-control form-control-sm' style='width:60px;' name='max_time' maxlength='100' value='$value[max_time]'>";
+                $arr[$key][] = "<input type='number' class='form-control form-control-sm' style='width:75px;' name='min_freq' maxlength='100' value='$value[min_freq]'>";
+                $arr[$key][] = "<input type='number' class='form-control form-control-sm' style='width:75px;' name='max_freq' maxlength='100' value='$value[max_freq]'>";
+                $arr[$key][] = "<input id='speciesName_$value[tag_id]' style='width:150px;" . ($value['phony'] != 'biophony' ? 'display:none' : '') . "' data-type='edit' class='form-control form-control-sm js-species-autocomplete phony_$value[tag_id]' type='text' size='30' value='$value[speciesName]'><div class='invalid-feedback'>Please select a species from the list.</div>";
+                $arr[$key][] = "<input " . ($value['phony'] != 'biophony' ? 'display:none' : '') . " class='phony_$value[tag_id]' name='uncertain' type='checkbox' " . ($value['uncertain'] ? 'checked' : '') . ">";
+                $arr[$key][] = "<input id='sound_distance_m$value[tag_id]' type='number' class='form-control form-control-sm phony_$value[tag_id]' style='width:75px;" . ($value['phony'] != 'biophony' ? 'display:none' : '') . "' name='sound_distance_m' maxlength='100' value='$value[sound_distance_m]' " . ($value['distance_not_estimable'] ? 'readonly' : '') . ">";
+                $arr[$key][] = "<input " . ($value['phony'] != 'biophony' ? 'display:none' : '') . " class='phony_$value[tag_id]' id='distance_not_estimable_$value[tag_id]' name='distance_not_estimable' type='checkbox' " . ($value['distance_not_estimable'] ? 'checked' : '') . ">";
+                $arr[$key][] = "<input " . ($value['phony'] != 'biophony' ? 'display:none' : '') . " class='phony_$value[tag_id] form-control form-control-sm' type='number' name='individuals' min='0' max='1000' value='$value[individuals]'>";
+                $arr[$key][] = "<select id='animal_sound_type$value[tag_id]' name='animal_sound_type' class='form-control form-control-sm phony_$value[tag_id]' style='width:180px;" . ($value['phony'] != 'biophony' ? 'display:none' : '') . "'><option value='" . ($value['type_id'] ? $value['type_id'] : 0) . "' selected>$value[typeName]</option></select>";
+                $arr[$key][] = "<input name='reference_call' type='checkbox' " . ($value['reference_call'] ? 'checked' : '') . ">";
+                $arr[$key][] = "<textarea name='comments' class='form-control form-control-sm' maxlength='200' rows='1' style='resize:none;width:180px;'>$value[comments]</textarea>";
+                $arr[$key][] = $value['creation_date'];
+            }
+        }
+        return $arr;
     }
 }

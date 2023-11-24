@@ -2,53 +2,73 @@
 
 {% block admin_content %}
 
-    {% include 'administration/upload.html.twig' with {'sensor': sensor, 'site': site, 'colId': colId} %}
+    {% include 'administration/upload.html.twig' with {'site': site, 'colId': colId} %}
     <div class="card mb-3" id="recordingsList">
         <div class="card-header border-light bg-white text-right">
-            <div class="row">
-                <div class="col-auto mr-auto mt-2">
-                    <form id="projectForm" class="form-inline" action="{{ baseUrl }}/admin/recordings">
-                        <label for="projectId">Project</label>
-                        <select id="projectId" name="projectId" class="form-control form-control-sm ml-3">
-                            {% for project in projects %}
-                                <option value="{{ project.id }}" {{ project.id == projectId ? 'selected' }} {{ project.collection is null ?"disabled" }}>
-                                    {{ project.name }}{{ project.collection_id }}{{ project.collection is null ?" (No Data)" }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                        <label for="collId" class="ml-3">Collection</label>
-                        <select id="colId" name="colId" class="form-control form-control-sm ml-3">
-                            {% for collection in collections %}
-                                <option value="{{ collection.id }}" {{ collection.id == colId ? 'selected' }}>
-                                    {{ collection.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </form>
-                </div>
-                <div class="col-auto ml-auto">
-                    <form id="metaDataForm" method="POST" class="collapse">
-                        <input type="file" name="metaDataFile" id="metaDataFile" accept="text/csv" style="display: none">
-                        <input type="hidden" name="colId" value="{{ colId }}">
-                    </form>
-                    <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" id="metaData" type="button" data-toggle="dropdown" aria-expanded="false">
-                        <i class="fa-solid fa-file-csv"></i> Meta-data
-                    </button>
-                    <div class="dropdown-menu">
-                        <a class="dropdown-item" type="button" id="metaDataButton"><i class="fa-solid fa-file-arrow-up"></i> Upload Meta-data</a>
-                        <a class="dropdown-item" type="button" id="viewInstructions"><i class="fa-solid fa-circle-info"></i> View Instructions</a>
-                    </div>
-                    <button type="button" id="uploadButton" data-toggle="collapse" data-target="#uploadForm" class="btn btn-outline-primary btn-sm mt-2">
-                        <span class="fas fa-upload"></span>
-                        Upload Files
-                    </button>
+            <div class="form-inline">
+                <form id="projectForm" class="form-inline col-8" action="{{ baseUrl }}/admin/recordings">
+                    <label for="projectId">Project</label>
+                    <select id="projectId" name="projectId" class="form-control form-control-sm ml-3">
+                        {% for project in projects %}
+                            <option value="{{ project.id }}" {{ project.id == projectId ? 'selected' }} {{ project.collection is null ?"disabled" }}>
+                                {{ project.name }}{{ project.collection_id }}{{ project.collection is null ?" (No Data)" }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <label for="collId" class="ml-3">Collection</label>
+                    <select id="colId" name="colId" class="form-control form-control-sm ml-3">
+                        {% for collection in collections %}
+                            <option value="{{ collection.id }}" {{ collection.id == colId ? 'selected' }}>
+                                {{ collection.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </form>
+                <div class="col-4 form-inline justify-content-end">
+                    <label class="mr-2">Search:</label>
+                    <input class="form-control-sm" id="search">
                 </div>
             </div>
+            <form id="metaDataForm" method="POST" class="collapse">
+                <input type="file" name="metaDataFile" id="metaDataFile" accept="text/csv" style="display: none">
+                <input type="hidden" name="colId" value="{{ colId }}">
+            </form>
+            <button id="viewing" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#viewing" disabled>
+                <i class="fas fa-eye"></i>
+                View
+            </button>
+            <button id="models" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#models" disabled>
+                <i class="fa-solid fa-gears"></i>
+                Models
+            </button>
+            <button id="download" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#download" disabled>
+                <i class="fas fa-download"></i>
+                Export
+            </button>
+            <button id="deletion" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#deletion" disabled>
+                <i class="fas fa-trash"></i>
+                Delete
+            </button>
+            <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" id="metaData" type="button" data-toggle="dropdown" aria-expanded="false">
+                <span class="fas fa-upload"></span>
+                Upload
+            </button>
+            <div class="dropdown-menu">
+                <a class="dropdown-item" type="button" id="uploadButton" data-toggle="collapse" data-target="#uploadForm"><i class="fas fa-file-audio"></i> Upload Recordings</a>
+                <a class="dropdown-item" type="button" id="metaDataButton"><i class="fa-solid fa-file-arrow-up"></i> Upload Meta-data</a>
+                <a class="dropdown-item" type="button" id="viewInstructions"><i class="fa-solid fa-circle-info"></i> Meta-data Instructions</a>
+            </div>
+            <button id="recordingsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#recordingsExport" aria-expanded="false" aria-controls="recordingsExport">
+                <i class="fa fa-file-csv"></i>
+                Save all as CSV
+            </button>
         </div>
         <table id="recTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
             <tr style="font-size: .875rem;">
-                <th></th>
+                <th>
+                    <input type="checkbox" class="js-all-checkbox" name="check-all" id="check-all">
+                </th>
                 <th>#</th>
                 <th>Original Filename</th>
                 <th>Name</th>
@@ -62,110 +82,9 @@
                 <th>Note</th>
                 <th>Date</th>
                 <th>Time</th>
-                <th></th>
-                <th></th>
             </tr>
             </thead>
-            <tbody class="form-control-sm js-recording-list">
-            {% for recording in recordings %}
-                <tr>
-                    <td>
-                        {% if recording.data_type=='audio data' %}
-                            <a href="{{ baseUrl }}/recording/show/{{ recording.id }}" target="_blank"><i class="fa fa-eye"></i></a>
-                        {% else %}
-                            <i class="fa fa-eye-slash"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {{ recording.id }}
-                        <input type="hidden" name="itemID" value="{{ recording.id }}"/>
-                        <input id="old_id{{ recording.id }}" type="hidden" value="{{ recording.user_id }}">
-                        <input id="old_name{{ recording.id }}" type="hidden" value="{{ recording.username }}">
-                        <input id="directory{{ recording.id }}" type="hidden" value="{{ recording.directory }}">
-                        <input id="path{{ recording.id }}" type="hidden" value="{{ recording.path }}">
-                        <input id="max_freq{{ recording.id }}" type="hidden" value="{{ recording.samplingRate/2 }}">
-                    </td>
-                    <td>{{ recording.filename }}</td>
-                    <td data-search="{{ recording.name }}" data-order="{{ recording.name }}">
-                        <input type='text' id="name_{{ recording.id }}" class="form-control form-control-sm" style="width:200px;" title="Name" name="name" value="{{ recording.name }}">
-                    </td>
-                    <td data-search="{{ recording.username }}" data-order="{{ recording.username }}">
-                        <select id="user_id{{ recording.id }}" name="user_id" style="width:120px;" class="form-control form-control-sm show-menu-arrow" data-live-search="true">
-                            <option value="{{ recording.userId }}">{{ recording.username }}</option>
-                        </select>
-                    </td>
-                    <td data-search="{{ recording.siteName }}" data-order="{{ recording.siteName }}">
-                        <select id="site_id{{ recording.id }}" name="site_id" style="width:120px;" class="form-control form-control-sm">
-                            <option value="0"></option>
-                            {% for st in sites %}
-                                <option value="{{ st.site_id }}" {{ st.site_id == recording.site ? 'selected' }} data-lat="{{ st.latitude_WGS84_dd_dddd }}" data-lon="{{ st.longitude_WGS84_dd_dddd }}">
-                                    {{ st.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </td>
-                    <td data-search="{{ recording.recorderName }}{{ recording.brand }}" data-order="{{ recording.brand }}">
-                        <select name="recorder_id" id="recorder_{{ recording.id }}" style="width:250px;" class="form-control form-control-sm">
-                            <option value="0"></option>
-                            {% for recorder in recorders %}
-                                <option value="{{ recorder.recorder_id }}" data-microphone="{{ recorder.microphone }}" {{ recorder.recorder_id == recording.recorder ? 'selected' }}>
-                                    {{ recorder.modal }}{% if recorder.brand!='' or recorder.brand is not null %} | {{ recorder.brand }}{% endif %}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </td>
-                    <td data-search="{{ recording.microphoneName }}" data-order="{{ recording.microphoneName }}">
-                        <select name="microphone_id" id="microphone_{{ recording.id }}" style="width:250px;" class="form-control form-control-sm">
-                            <option value="{{ recording.microphone }}">{{ recording.microphoneName }}</option>
-                        </select>
-                    </td>
-                    <td data-search="{{ recording.licenseName }}" data-order="{{ recording.licenseName }}">
-                        <select name="license_id" style="width:140px;" class="form-control form-control-sm">
-                            <option value="0"></option>
-                            {% for licensed in license %}
-                                <option value="{{ licensed.license_id }}" {{ licensed.license_id == recording.license ? 'selected' }}>{{ licensed.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </td>
-                    <td data-search="{{ recording.type }}" data-order="{{ recording.type }}">
-                        <select name="type" style="width:100px;" class="form-control form-control-sm">
-                            <option value="0"></option>
-                            <option {{ recording.type == 'Passive' ? 'selected' }}>Passive</option>
-                            <option {{ recording.type == 'Focal' ? 'selected' }}>Focal</option>
-                            <option {{ recording.type == 'Enclosure' ? 'selected' }}>Enclosure</option>
-                        </select>
-                    </td>
-                    <td data-search="{{ recording.medium }}" data-order="{{ recording.medium }}">
-                        <select name="medium" style="width:80px;" class="form-control form-control-sm">
-                            <option value="0"></option>
-                            <option {{ recording.medium == 'Air' ? 'selected' }}>Air</option>
-                            <option {{ recording.medium == 'Water' ? 'selected' }}>Water</option>
-                        </select>
-                    </td>
-                    <td data-search="{{ recording.note }}" data-order="{{ recording.note }}">
-                        <input type='text' class="form-control form-control-sm" style="width:200px;" title="Note" name="note" value="{{ recording.note }}">
-                    </td>
-                    <td data-search="{{ recording.fileDate }}" data-order="{{ recording.fileDate }}">
-                        <input type='date' id="file_date{{ recording.id }}" class="form-control form-control-sm" title="Date" name="file_date" value="{{ recording.fileDate }}">
-                    </td>
-                    <td data-search="{{ recording.fileTime }}" data-order="{{ recording.fileTime }}">
-                        <input type='time' class="form-control form-control-sm" title="Time" name="file_time" min="00:00:00" max="23:59:59" step="1" value="{{ recording.fileTime }}">
-                    </td>
-                    <td>
-                        {% if recording.data_type=='audio data' %}
-                            <a href="#" class="js-open-tf-modal" data-id="{{ recording.id }}">
-                                <span class="fa-solid fa-gears"></span>
-                            </a>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a class="js-delete-modal" href="#" data-id="{{ recording.id }}" title="Delete recording">
-                            <span class="fas fa-trash"></span>
-                        </a>
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
+            <tbody class="form-control-sm js-recording-list"></tbody>
         </table>
     </div>
     <div class="modal fade" id="modal-div" tabindex="-1" role="dialog">
@@ -181,7 +100,7 @@
                     <div>
                         <div class="form-group">
                             <input id="delete_id" type="hidden">
-                            <label>Deleting this recording will also delete the <b class="text-danger" id="count"></b> tags inside and cannot be reversed!</label>
+                            <label>Deleting <b class="text-danger" id="delete_name"></b> will also delete the <b class="text-danger" id="count"></b> tags inside and cannot be reversed!</label>
                         </div>
                     </div>
                 </div>
@@ -234,7 +153,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title maad-title">TensorFlow Models</h5>
+                    <h5 class="modal-title maad-title">Classifiers</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -242,43 +161,11 @@
                 <div class="modal-body ml-3">
                     <div>
                         <div class="form-group">
-                            <input type="hidden" id="tf_id">
                             <select id="tf" name="tf_id" autocomplete="off" class="form-control form-control-sm col-6 mb-3" required>
-                                <option value="0">BirdNET-Analyzer</option>
+                                {% for model in models %}
+                                    <option value="{{ model.tf_model_id }}">{{ model.name }}</option>
+                                {% endfor %}
                             </select>
-                            <div class="col-form-label">
-                                <strong>Description:</strong>
-                                <a class="col-form-label" href="https://github.com/kahst/BirdNET-Analyzer" target="_blank" title="Documentation"> <i class="fa fa-book"></i></a>
-                                <div class="col-form-label-sm">Automated scientific audio data processing and bird ID.</div>
-                            </div>
-                            <div class="form-inline">
-                                <label class="ml-1 col-form-label-sm" for="sensitivity">sensitivity</label>
-                            </div>
-                            <div class="form-group form-inline">
-                                <input id="sensitivity" name="sensitivity" class="form-control form-control-sm" type="text">
-                                <label class="ml-2 col-form-label-sm">Values in [0.5, 1.5]. Defaults to 1.0.</label>
-                            </div>
-                            <div class="form-inline">
-                                <label class="ml-1 col-form-label-sm" for="min_conf">min_conf</label>
-                            </div>
-                            <div class="form-group form-inline">
-                                <input id="min_conf" name="min_conf" class="form-control form-control-sm" type="text">
-                                <label class="ml-2 col-form-label-sm">Values in [0.01, 0.99]. Defaults to 0.1.</label>
-                            </div>
-                            <div class="form-inline">
-                                <label class="ml-1 col-form-label-sm" for="overlap">overlap</label>
-                            </div>
-                            <div class="form-group form-inline">
-                                <input id="overlap" name="overlap" class="form-control form-control-sm" type="text">
-                                <label class="ml-2 col-form-label-sm">Values in [0.0, 2.9]. Defaults to 0.0.</label>
-                            </div>
-                            <div class="form-inline">
-                                <label class="ml-1 col-form-label-sm" for="sf_thresh">sf_thresh</label>
-                            </div>
-                            <div class="form-group form-inline">
-                                <input id="sf_thresh" name="sf_thresh" class="form-control form-control-sm" type="text">
-                                <label class="ml-2 col-form-label-sm">values in [0.01, 0.99]. Defaults to 0.03.</label>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -287,7 +174,7 @@
                         <i class="fas fa-times"></i>
                         Close
                     </button>
-                    <a href="{{ baseUrl }}/recording/tf" class="js-tf-modal btn btn-outline-primary">
+                    <a id='model-btn' class="js-tf-modal btn btn-outline-primary">
                         <i class="fa-solid fa-check"></i>
                         Submit
                     </a>
@@ -316,53 +203,87 @@
             var microphones ={{ microphones|json_encode|raw }};
             $(document).ready(function () {
                 $('#recTable').show()
-                $('#recTable').DataTable({
-                    "pageLength": 8,
-                    "lengthChange": false,
+                let table = $('#recTable').DataTable({
+                    "processing": true,
+                    "serverSide": true,
+                    "ajax": {
+                        "url": '{{ baseUrl }}/admin/recordingManager/getListByPage/{{ projectId }}/{{ colId }}',
+                        "type": 'POST'
+                    },
+                    "dom": 'lrtip',
                     "stateSave": true,
                     "StateDuration": -1,
                     "order": [[1, 'asc']],
-                    "columnDefs": [{
-                        "orderable": false,
-                        "targets": [0, 14, 15]
-                    }],
+                    "columnDefs": [
+                        {
+                            "orderable": false,
+                            "targets": [0],
+                        },
+                        {
+                            "className": "dt-center",
+                            "targets": [0],
+                        }
+                    ],
                     "bAutoWidth": false,
                     "scrollX": true,
                 });
+                if (table.state.loaded()) {
+                    $('#search').val(table.state.loaded().search.search);
+                }
+                $('#search').on('input', () => {
+                    table.search($('#search').val()).draw();
+                });
+                $('#tf').change(function () {
+                    let html = ''
+                    $(this).siblings().remove();
+                    {% for model in models %}
+                    if ($(this).val() == '{{ model.tf_model_id }}') {
+                        html = html + '<div class="col-form-label">' +
+                            '<strong>Description:</strong>' +
+                            '<a class="col-form-label" href="{{ model.source_URL }}" target="_blank" title="Documentation"> <i class="fa fa-book"></i></a>' +
+                            '<div class="col-form-label-sm">{{ model.description }}</div></div>'
+                        let data = '{{ model.parameter }}'.split('$').map(item => item.split('@'));
+                        $.each(data, function (index, value) {
+                            html = html + '<div class="form-inline">' +
+                                '<label class="ml-1 col-form-label-sm" for="' + value[0] + '">' + value[0] + '</label></div>' +
+                                '<div class="form-group form-inline">' +
+                                '<input id="' + value[0] + '" name="' + value[0] + '" class="form-control form-control-sm" type="text">' +
+                                '<label class="ml-2 col-form-label-sm">' + value[1] + '</label></div>'
+                        })
+                        $(this).after(html)
+                    }
+                    {% endfor %}
+                })
+                $("#tf").change();
             });
             document.addEventListener("DOMContentLoaded", function (event) {
                 $("#uploadButton").click(function (e) {
-                    $("#uploadButton").toggle();
                     $("#metaData").toggle();
-                    document.getElementById('uploadForm').hidden = false;
+                    $('#uploadForm').hidden = false;
                 });
-                $('.js-delete-modal').click(function (e) {
-                    var id = $(this).data('id')
-                    $.ajax({
-                        type: 'POST', url: '{{ baseUrl }}/api/admin/recordingManager/count/' + id
-                    }).done(function (data) {
-                        $('#count').text(data)
-                        $('#delete_id').val(id)
-                        $("#modal-div").modal('show');
-                    })
-                })
+
+                $("#uploadForm").on('shown.bs.collapse', function () {
+                    $("#recordingsList").hide();
+                }).on('hidden.bs.collapse', function () {
+                    $("#recordingsList").show();
+                });
 
                 $('#viewInstructions').click(function () {
                     $("#modal-info").modal('show');
                 })
 
                 $('#js-delete-button').click(function () {
-                    let row = $("#user_id" + $('#delete_id').val()).parents("tr");
-                    deleteRequest('{{ baseUrl }}/api/admin/recordingManager/delete/' + $('#delete_id').val(), [], false, false, row.remove());
-                    $('#modal-div').modal('hide');
+                    postRequest('{{ baseUrl }}/api/admin/recordingManager/delete', {'id': $('#delete_id').val()}, false, false, function () {
+                        location.reload();
+                    });
                 });
 
                 /* Save recordings list */
                 $(".js-recording-list").on('change', 'input, select, textarea', function () {
+                    if ($(this)[0].className == 'js-checkbox') {
+                        return
+                    }
                     saveFormList($(this), 'api/admin/recordingManager/save');
-                    var table = $('#recTable').DataTable()
-                    var tr = $(this).closest("tr")
-                    table.rows(tr).invalidate()
                 });
 
                 $("#modal-div").keydown(function (e) {
@@ -383,7 +304,7 @@
 
                 $("#recorder").on('change', function () {
                     $('#microphone').empty()
-                    $('#microphone').removeAttr('readonly')
+                    $('#microphone').removeAttr('disabled')
                     var microphone = $(this).find('option:selected').attr('data-microphone').split(',')
                     $('#microphone').append("<option></option>")
                     for (var key in microphones) {
@@ -431,69 +352,115 @@
                 $('#metaDemo').on('click', function () {
                     window.location.href = '{{ baseUrl }}/api/admin/recordingManager/download';
                 });
-                $('.js-open-tf-modal').click(function () {
-                    $('#tf_id').val($(this).attr('data-id'))
+                $('#models').on('click', function () {
                     $('#modal-tf').modal('show');
                 })
 
+                $(document).on('click', '#recordingsExport', function () {
+                    window.location.href = '{{ baseUrl }}/api/admin/recordingManager/export/' + $('#colId').val();
+                });
 
                 $(".js-tf-modal").click(function (e) {
-
                     let data = []
-                    let id = $('#tf_id').val()
+                    let arr = []
+                    let name = []
                     let lat, lon
-                    if ($('#site_id' + id).find('option:selected').attr('data-lon') == undefined || $('#site_id' + id).find('option:selected').attr('data-lat') == undefined || $('#file_date' + id).val() == "") {
-                        if (!confirm("Your recordings have not been assigned to geographic locations and date-times. BirdNET will produce unreliable results!")) {
-                            e.preventDefault();
-                            return
-                        }
-                        lat = ''
-                        lon = ''
-                    } else {
-                        lat = $('#site_id' + id).find('option:selected').attr('data-lat')
-                        lon = $('#site_id' + id).find('option:selected').attr('data-lon')
-                    }
-                    toggleLoading();
-                    data = {
-                        'temp': $("#path" + id).val(),
-                        'recording_directory': $('#directory' + id).val(),
-                        'filename': $('#name_' + id).val(),
-                        'collection_id': $('#colId').val(),
-                        'recording_id': id,
-                        'lat': lat,
-                        'lon': lon,
-                        'file_date': $('#file_date' + id).val(),
-                        'creator_type': $('#tf').text().replace(/\ +/g, ""),
-                        'sensitivity': $("#sensitivity").val(),
-                        'min_conf': $("#min_conf").val(),
-                        'overlap': $("#overlap").val(),
-                        'sf_thresh': $("#sf_thresh").val(),
-                        'max_freq': $("#max_freq" + id).val(),
-                    };
-                    data = jsToFormData(data)
-                    $.ajax({
-                        type: 'POST',
-                        url: this.href,
-                        data: data,
-                        dataType: 'json',
-                        processData: false,
-                        contentType: false,
-                    })
-                        .done(function (result) {
-                            $('#modal-tf').modal('hide')
-                            toggleLoading();
-                            showAlert(result.message);
-                        })
-                        .fail(function (response) {
-                            toggleLoading();
-                            if (!response.responseJSON) {
-                                showAlert('Error ' + response.message);
-                                return;
+                    $('.js-checkbox:checked').each(function () {
+                        let id = $(this).closest('tr').find('[name="itemID"]').val()
+                        if ($('#tf').val() == 1) {
+                            if ($('#site_id' + id).find('option:selected').attr('data-lon') == undefined || $('#site_id' + id).find('option:selected').attr('data-lat') == undefined || $('#file_date' + id).val() == "") {
+                                lat = ''
+                                lon = ''
+                            } else {
+                                lat = $('#site_id' + id).find('option:selected').attr('data-lat')
+                                lon = $('#site_id' + id).find('option:selected').attr('data-lon')
                             }
-                            showAlert(response.responseJSON.message);
-                        })
+                            arr = {
+                                'collection_id': $('#colId').val(),
+                                'recording_id': id,
+                                'filename': $('#name_' + id).val(),
+                                'creator_type': $("#tf option:selected").text(),
+                                'recording_directory': $('#directory' + id).val(),
+                                'lat': lat,
+                                'lon': lon,
+                                'file_date': $('#file_date' + id).val(),
+                                'sensitivity': $("#sensitivity").val(),
+                                'min_conf': $("#min_conf").val(),
+                                'overlap': $("#overlap").val(),
+                                'sf_thresh': $("#sf_thresh").val(),
+                                'temp': $("#path" + id).val(),
+                                'max_freq': $("#max_freq" + id).val(),
+                                'user_id': '{{ user_id }}',
+                            };
+                        } else if ($('#tf').val() == 2) {
+                            arr = {
+                                'collection_id': $('#colId').val(),
+                                'recording_id': id,
+                                'filename': $('#name_' + id).val(),
+                                'creator_type': $("#tf option:selected").text(),
+                                'recording_directory': $('#directory' + id).val(),
+                                'file_date': $('#file_date' + id).val(),
+                                'detection_threshold': $("#detection_threshold").val(),
+                                'temp': $("#path" + id).val(),
+                                'user_id': '{{ user_id }}',
+                            };
+                        }
+                        name.push($('#name_' + $(this).data('id')).val())
+                        arr = JSON.stringify(arr)
+                        data.push(arr)
+                    });
+                    name = name.join(', ')
+                    postRequest('{{ baseUrl }}/api/admin/recordingManager/model', data, false, false, function () {
+                        $('#modal-tf').modal('hide')
+                        showAlert("Model running on " + name + " in background.")
+                    });
                     e.preventDefault();
                 });
+                $('button[name="table-btn"][data-target="#viewing"]').click(function (e) {
+                    let count = 0
+                    $('.js-checkbox:checked').each(function () {
+                        if ($(this).data('type') == 'audio data') {
+                            count = count + 1
+                            window.open('{{ baseUrl }}/recording/show/' + $(this).data('id'), '_blank');
+                        }
+                    });
+                    if (count == 0) {
+                        showAlert('Select at least one audio data.');
+                    }
+                    e.preventDefault();
+                })
+                $('button[name="table-btn"][data-target="#download"]').click(function (e) {
+                    let count = 0
+                    $('.js-checkbox:checked').each(function () {
+                        if ($(this).data('type') == 'audio data') {
+                            count = count + 1
+                            $('#download' + $(this).data('id'))[0].click()
+                        }
+                    });
+                    if (count == 0) {
+                        showAlert('Select at least one audio data.');
+                    }
+                    e.preventDefault();
+                })
+                $('button[name="table-btn"][data-target="#deletion"]').click(function (e) {
+                    let id = [];
+                    let name = [];
+                    $('.js-checkbox:checked').each(function () {
+                        id.push($(this).data('id'));
+                        name.push($('#name_' + $(this).data('id')).val())
+                    });
+                    id = id.join(',')
+                    name = name.join(', ')
+                    $('#delete_name').html(name)
+                    $.ajax({
+                        type: 'POST', url: '{{ baseUrl }}/api/admin/recordingManager/count',
+                        data: {'id': id},
+                    }).done(function (data) {
+                        $('#count').text(data)
+                        $('#delete_id').val(id)
+                        $("#modal-div").modal('show');
+                    })
+                })
             });
         </script>
     {% endblock %}

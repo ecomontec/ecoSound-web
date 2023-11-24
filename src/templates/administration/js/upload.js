@@ -51,11 +51,9 @@ $('#uploadForm')
         e.preventDefault();
     })
     .on('show.bs.collapse', function () {
-        $("#uploadButton").hide();
         $("#metaData").hide();
     })
     .on('hide.bs.collapse', function () {
-        $("#uploadButton").show();
         $("#metaData").show();
     });
 

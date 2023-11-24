@@ -125,7 +125,9 @@
                     $.ajax({
                         type: 'POST',
                         url: '{{ baseUrl }}/api/admin/userMgr/resetSave',
-                        data: new FormData($(this)[0])
+                        data: new FormData($(this)[0]),
+                        processData: false,
+                        contentType: false,
                     }).done(function (response) {
                         showAlert(response.message);
                         $('#modal-div').modal('hide');

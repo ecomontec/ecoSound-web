@@ -5,6 +5,7 @@ namespace BioSounds\Controller;
 use BioSounds\Entity\TagReview;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Exception\NotAuthenticatedException;
+use BioSounds\Provider\TagProvider;
 use BioSounds\Utils\Auth;
 
 class TagReviewController extends BaseController
@@ -22,9 +23,16 @@ class TagReviewController extends BaseController
 
         $tagReview = new TagReview();
 
+        $reviews = $tagReview->getListByTag($tagId);
+        foreach ($reviews as $review) {
+            if ($review['reviewer_id'] == Auth::getUserLoggedID()) {
+                $isReviewGranted = false;
+            }
+        }
+
         return $this->twig->render('tag/tagReview.html.twig', [
             'disableReviewForm' => !Auth::isUserAdmin() && $tagReview->hasUserReviewed(Auth::getUserLoggedID(), $tagId),
-            'reviews' => $tagReview->getListByTag($tagId),
+            'reviews' => $reviews,
             'tagId' => $tagId,
             'isReviewGranted' => $isReviewGranted
         ]);
@@ -40,13 +48,6 @@ class TagReviewController extends BaseController
             throw new NotAuthenticatedException();
         }
 
-        if (!Auth::isUserAdmin() &&
-            (!isset($_SESSION['user_col_permission']) ||
-                empty($_SESSION['user_col_permission']))
-        ) {
-            throw new ForbiddenException();
-        }
-
         $data[TagReview::USER] = Auth::getUserLoggedID();
 
         foreach ($_POST as $key => $value) {
@@ -57,11 +58,82 @@ class TagReviewController extends BaseController
             unset($data[TagReview::SPECIES]);
         }
 
-        (new TagReview())->insert($data);
+        if (isset($data['user_id_hidden'])) {
+            unset($data['user_id']);
+            (new TagReview())->update($data);
+            return json_encode([
+                'errorCode' => 0,
+                'message' => 'Tag review updated successfully.'
+            ]);
+        } else {
+            (new TagReview())->insert($data);
+            return json_encode([
+                'errorCode' => 0,
+                'message' => 'Tag review saved successfully.',
+            ]);
+        }
+    }
+
+    public function delete()
+    {
+        if (!Auth::isUserLogged()) {
+            throw new ForbiddenException();
+        }
+
+        $id = $_POST['id'];
+
+        if (empty($id)) {
+            throw new \Exception(ERROR_EMPTY_ID);
+        }
+
+        (new TagReview())->delete($id);
 
         return json_encode([
             'errorCode' => 0,
-            'message' => 'Tag review saved successfully.',
+            'message' => 'Review deleted successfully.',
         ]);
+    }
+
+    public function export(int $collection_id)
+    {
+        if (!Auth::isUserLogged()) {
+            throw new ForbiddenException();
+        }
+
+        $colArr = [];
+        $file_name = "reviews.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        $columns = (new TagReview())->getColumns();
+        foreach ($columns as $column) {
+            $colArr[] = $column['COLUMN_NAME'];
+        }
+
+        array_splice($colArr, 2, 0, 'user');
+        array_splice($colArr, 4, 0, 'tag_review_status');
+        array_splice($colArr, 6, 0, 'species');
+
+        $Als[] = $colArr;
+        $List = (new TagReview())->getReview($collection_id);
+        foreach ($List as $Item) {
+            $valueToMove = $Item['user'] == null ? '' : $Item['user'];
+            unset($Item['user']);
+            array_splice($Item, 2, 0, $valueToMove);
+            $valueToMove = $Item['tag_review_status'] == null ? '' : $Item['tag_review_status'];
+            unset($Item['tag_review_status']);
+            array_splice($Item, 4, 0, $valueToMove);
+            $valueToMove = $Item['species'] == null ? '' : $Item['species'];
+            unset($Item['species']);
+            array_splice($Item, 6, 0, $valueToMove);
+
+            $Als[] = $Item;
+        }
+        foreach ($Als as $line) {
+            fputcsv($fp, $line);
+        }
+        fclose($fp);
+        exit();
     }
 }

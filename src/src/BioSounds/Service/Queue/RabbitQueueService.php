@@ -42,6 +42,18 @@ class RabbitQueueService
         $this->channel->basic_publish($message, '', QUEUE_NAME);
     }
 
+    public function model($data)
+    {
+        $this->channel->queue_declare('model', false, true, false, false);
+
+        $message = new AMQPMessage(
+            $data,
+            ['delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT]
+        );
+
+        $this->channel->basic_publish($message, '', 'model');
+    }
+
     /**
      * @throws \Exception
      */
