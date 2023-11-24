@@ -1,10 +1,4 @@
 FROM php:7.4-apache AS apache
-# china
-RUN sed -i s:/archive.ubuntu.com:/mirrors.tuna.tsinghua.edu.cn/ubuntu:g /etc/apt/sources.list
-RUN cat /etc/apt/sources.list
-RUN apt-get clean
-RUN apt-get -y update --fix-missing
-# china
 
 COPY apache/000-default.conf /etc/apache2/sites-enabled/000-default.conf
 RUN a2enmod rewrite
