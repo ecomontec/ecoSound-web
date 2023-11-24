@@ -176,7 +176,7 @@
             })
             $('button[name="table-btn"][data-target="#viewing"]').click(function (e) {
                 $('.js-checkbox:checked').each(function () {
-                    window.open('/collection/index/' + $(this).data('id'), '_blank');
+                    window.open('{{ baseUrl }}/collection/index/' + $(this).data('id'), '_blank');
                 });
                 e.preventDefault();
             })

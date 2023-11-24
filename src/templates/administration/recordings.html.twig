@@ -421,7 +421,7 @@
                     $('.js-checkbox:checked').each(function () {
                         if ($(this).data('type') == 'audio data') {
                             count = count + 1
-                            window.open('/recording/show/' + $(this).data('id'), '_blank');
+                            window.open('{{ baseUrl }}/recording/show/' + $(this).data('id'), '_blank');
                         }
                     });
                     if (count == 0) {

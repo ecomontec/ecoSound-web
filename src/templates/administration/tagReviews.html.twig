@@ -171,7 +171,7 @@
             });
             $('button[name="table-btn"][data-target="#viewing"]').click(function (e) {
                 $('.js-checkbox:checked').each(function () {
-                    window.open('/recording/show/' + $(this).data('recording-id') + '?t_min=' + $(this).data('tmin') + '&t_max=' + $(this).data('tmax') + '&f_min=' + $(this).data('fmin') + '&f_max=' + $(this).data('fmax'), '_blank');
+                    window.open('{{ baseUrl }}/recording/show/' + $(this).data('recording-id') + '?t_min=' + $(this).data('tmin') + '&t_max=' + $(this).data('tmax') + '&f_min=' + $(this).data('fmin') + '&f_max=' + $(this).data('fmax'), '_blank');
                 });
                 e.preventDefault();
             })
