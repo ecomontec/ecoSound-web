@@ -742,6 +742,17 @@ class RecordingController extends BaseController
             $str = $str . '0.3';
         }
         exec($str . " 2>&1", $out, $status);
+        $versionOutput = shell_exec("pip3 show batdetect2");
+        $versionLines = explode("\n", $versionOutput);
+        $version = null;
+
+        foreach ($versionLines as $line) {
+            if (strpos($line, "Version:") !== false) {
+                $version = trim(str_replace("Version:", "", $line));
+                break;
+            }
+        }
+
         if ($status == 0) {
             if (file_exists(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav' . ".csv")) {
                 $handle = fopen(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav' . ".csv", "rb");
@@ -776,7 +787,7 @@ class RecordingController extends BaseController
                         $arr['sound_id'] = '4';
                         $arr['recording_id'] = $data['recording_id'];
                         $arr['user_id'] = $data['user_id'];
-                        $arr['creator_type'] = $data['creator_type'];
+                        $arr['creator_type'] = $data['creator_type'] . ' ' . $version;
                         $arr['min_time'] = $r[2];
                         $arr['max_time'] = $r[3];
                         $arr['min_freq'] = $r[5];
@@ -793,13 +804,13 @@ class RecordingController extends BaseController
             } else {
                 return json_encode([
                     'errorCode' => 0,
-                    'message' => "Batdetect2 found 0 detections. 0 tags were inserted.",
+                    'message' => "Batdetect2 $version found 0 detections. 0 tags were inserted.",
                 ]);
             }
         }
         return json_encode([
             'errorCode' => 0,
-            'message' => "Batdetect2 found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. $i tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
+            'message' => "Batdetect2 $version found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. $i tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
         ]);
     }
 }
