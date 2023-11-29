@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    $('tbody').on('click', ".js-open-modal", function (e) {
+    $('body').on('click', ".js-open-modal", function (e) {
         let data = [];
         if (this.dataset.id) {
             data = {'id': this.dataset.id};
