@@ -67,7 +67,7 @@ class RecordingProvider extends AbstractProvider
             ':userId' => $userId,
         ];
 
-        $query = 'SELECT recording.recording_id,recording.data_type, recording.name,recording.sampling_rate, recording.filename, col_id, recording.directory, recording.site_id, recording.user_id,recorder.modal AS recorderName,recorder.brand AS brand,recorder.recorder_id,microphone.name AS microphoneName,microphone.microphone_id,';
+        $query = 'SELECT recording.recording_id,recording.data_type, recording.name,recording.sampling_rate, recording.filename, col_id, recording.directory, recording.site_id, recording.user_id,recorder.model AS recorderName,recorder.brand AS brand,recorder.recorder_id,microphone.name AS microphoneName,microphone.microphone_id,';
         $query .= 'recording.type, recording.medium, recording.note, user.name AS user_name,  file_size, bitrate, channel_num, duration, site.name as site_name, license.license_id, license.name as license_name, ';
         $query .= 'lba.label_id, lba.name as label_name,e1.`name` as realm,e2.`name` as biome,e3.`name` as functionalType,site.longitude_WGS84_dd_dddd AS longitude,site.latitude_WGS84_dd_dddd AS latitude,';
         $query .= "CONCAT(file_date,' ', file_time) AS start_date,DATE_ADD(STR_TO_DATE(CONCAT(file_date ,' ',file_time),'%Y-%m-%d %H:%i:%S'),INTERVAL duration second) AS end_date,";
@@ -297,16 +297,16 @@ class RecordingProvider extends AbstractProvider
 
     public function getRecording(string $collectionId): array
     {
-        $sql = "SELECT r.*,u.`name` AS username,s.`name` AS site,re.modal,m.`name` AS microphone,l.`name` AS license,DATE_FORMAT(r.file_date, '%Y-%m-%d') AS file_date, DATE_FORMAT(r.file_time, '%H:%i:%s') AS file_time FROM recording r LEFT JOIN user u ON u.user_id = r.user_id LEFT JOIN site s ON s.site_id = r.site_id LEFT JOIN recorder re ON r.recorder_id = re.recorder_id LEFT JOIN microphone m ON r.microphone_id = m.microphone_id LEFT JOIN license l ON r.license_id = l.license_id WHERE col_id = $collectionId";
+        $sql = "SELECT r.*,u.`name` AS username,s.`name` AS site,re.model,m.`name` AS microphone,l.`name` AS license,DATE_FORMAT(r.file_date, '%Y-%m-%d') AS file_date, DATE_FORMAT(r.file_time, '%H:%i:%s') AS file_time FROM recording r LEFT JOIN user u ON u.user_id = r.user_id LEFT JOIN site s ON s.site_id = r.site_id LEFT JOIN recorder re ON r.recorder_id = re.recorder_id LEFT JOIN microphone m ON r.microphone_id = m.microphone_id LEFT JOIN license l ON r.license_id = l.license_id WHERE col_id = $collectionId";
         $this->database->prepareQuery($sql);
         return $this->database->executeSelect();
     }
 
     public function getFilterCount(string $collectionId, string $search): int
     {
-        $sql = "SELECT r.*,u.`name` AS username,s.`name` AS site,re.modal,m.`name` AS microphone,l.`name` AS license,DATE_FORMAT(r.file_date, '%Y-%m-%d') AS file_date, DATE_FORMAT(r.file_time, '%H:%i:%s') AS file_time FROM recording r LEFT JOIN user u ON u.user_id = r.user_id LEFT JOIN site s ON s.site_id = r.site_id LEFT JOIN recorder re ON r.recorder_id = re.recorder_id LEFT JOIN microphone m ON r.microphone_id = m.microphone_id LEFT JOIN license l ON r.license_id = l.license_id WHERE col_id = $collectionId";
+        $sql = "SELECT r.*,u.`name` AS username,s.`name` AS site,re.model,m.`name` AS microphone,l.`name` AS license,DATE_FORMAT(r.file_date, '%Y-%m-%d') AS file_date, DATE_FORMAT(r.file_time, '%H:%i:%s') AS file_time FROM recording r LEFT JOIN user u ON u.user_id = r.user_id LEFT JOIN site s ON s.site_id = r.site_id LEFT JOIN recorder re ON r.recorder_id = re.recorder_id LEFT JOIN microphone m ON r.microphone_id = m.microphone_id LEFT JOIN license l ON r.license_id = l.license_id WHERE col_id = $collectionId";
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.modal,''), IFNULL(m.name,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.note,''), IFNULL(r.creation_date,'')) LIKE '%$search%' ";
+            $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.model,''), IFNULL(m.name,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.note,''), IFNULL(r.creation_date,'')) LIKE '%$search%' ";
         }
         $this->database->prepareQuery($sql);
         $count = count($this->database->executeSelect());
@@ -316,11 +316,11 @@ class RecordingProvider extends AbstractProvider
     public function getListByPage(string $projectId, string $collectionId, string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
     {
         $arr = [];
-        $sql = "SELECT r.*,u.`name` AS username,s.`name` AS site,re.modal,m.`name` AS microphone,l.`name` AS license,DATE_FORMAT(r.file_date, '%Y-%m-%d') AS file_date, DATE_FORMAT(r.file_time, '%H:%i:%s') AS file_time,f.path FROM recording r LEFT JOIN user u ON u.user_id = r.user_id LEFT JOIN site s ON s.site_id = r.site_id LEFT JOIN recorder re ON r.recorder_id = re.recorder_id LEFT JOIN microphone m ON r.microphone_id = m.microphone_id LEFT JOIN license l ON r.license_id = l.license_id LEFT JOIN file_upload f ON f.recording_id = r.recording_id WHERE col_id = $collectionId";
+        $sql = "SELECT r.*,u.`name` AS username,s.`name` AS site,re.model,m.`name` AS microphone,l.`name` AS license,DATE_FORMAT(r.file_date, '%Y-%m-%d') AS file_date, DATE_FORMAT(r.file_time, '%H:%i:%s') AS file_time,f.path FROM recording r LEFT JOIN user u ON u.user_id = r.user_id LEFT JOIN site s ON s.site_id = r.site_id LEFT JOIN recorder re ON r.recorder_id = re.recorder_id LEFT JOIN microphone m ON r.microphone_id = m.microphone_id LEFT JOIN license l ON r.license_id = l.license_id LEFT JOIN file_upload f ON f.recording_id = r.recording_id WHERE col_id = $collectionId";
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.modal,''), IFNULL(m.name,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.note,''), IFNULL(r.creation_date,'')) LIKE '%$search%' ";
+            $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.model,''), IFNULL(m.name,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.note,''), IFNULL(r.creation_date,'')) LIKE '%$search%' ";
         }
-        $a = ['', 'r.recording_id', 'r.filename', 'r.name', 'u.name', 's.name', 're.modal', 'm.name', 'l.name', 'r.type', 'r.medium', 'r.note', 'file_date', 'file_time'];
+        $a = ['', 'r.recording_id', 'r.filename', 'r.name', 'u.name', 's.name', 're.model', 'm.name', 'l.name', 'r.type', 'r.medium', 'r.note', 'file_date', 'file_time'];
         $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
@@ -343,7 +343,7 @@ class RecordingProvider extends AbstractProvider
                     $str_site .= "<option value='$site[site_id]' " . ($site['site_id'] == $value['site_id'] ? 'selected' : '') . " data-lat='$site[latitude_WGS84_dd_dddd]' data-lon='$site[longitude_WGS84_dd_dddd]'>$site[name]</option>";
                 }
                 foreach ($recorders as $recorder) {
-                    $str_recorder .= "<option value='$recorder[recorder_id]'  data-microphone='$recorder[microphone]' " . ($recorder['recorder_id'] == $value['recorder_id'] ? 'selected' : '') . ">" . (($recorder['brand'] == null || $recorder['brand'] == '') ? $recorder['modal'] : ($recorder['modal'] . '|' . $recorder['brand'])) . "</option>";
+                    $str_recorder .= "<option value='$recorder[recorder_id]'  data-microphone='$recorder[microphone]' " . ($recorder['recorder_id'] == $value['recorder_id'] ? 'selected' : '') . ">" . (($recorder['brand'] == null || $recorder['brand'] == '') ? $recorder['model'] : ($recorder['model'] . '|' . $recorder['brand'])) . "</option>";
                 }
                 foreach ($microphones as $microphone) {
                     $str_microphone .= "<option value='$microphone[microphone_id]' " . ($microphone['microphone_id'] == $value['microphone_id'] ? 'selected' : '') . ">$microphone[name]</option>";
