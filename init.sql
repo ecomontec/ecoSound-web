@@ -268,7 +268,7 @@ CREATE TABLE `sound`
 CREATE TABLE `recorder`
 (
     `recorder_id` int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `modal`       varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `model`       varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
     `version`     varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
     `brand`       varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
     `microphone`  varchar(300) COLLATE utf8_unicode_ci DEFAULT NULL

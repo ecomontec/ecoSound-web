@@ -74,6 +74,7 @@ class RecordingController extends BaseController
         if (empty($id)) {
             throw new \Exception(ERROR_EMPTY_ID);
         }
+
         $recording = new RecordingFft();
         if ($recording->getUserRecordingFft(Auth::getUserID(), $id)) {
             $this->fftSize = $recording->getUserRecordingFft(Auth::getUserID(), $id);
@@ -83,6 +84,11 @@ class RecordingController extends BaseController
 
         //TODO: Remove when recording is an Entity. Add to it.
         $recordingData['collection'] = (new CollectionProvider())->get($recordingData[Recording::COL_ID]);
+
+        $this->colId = $recordingData[Recording::COL_ID];
+        $isAccessed = $this->checkPermissions();
+        $isAccessed &= $this->isAccessible();
+        $this->collection = (new CollectionProvider())->get($this->colId);
 
         $this->recordingPresenter->setRecording($recordingData);
 
@@ -99,22 +105,26 @@ class RecordingController extends BaseController
             $this->recordingPresenter->setEstimateDistID(filter_var($_POST['estimateDistID'], FILTER_VALIDATE_INT));
         }
         $this->setCanvas($recordingData);
-        return $this->twig->render('recording/recording.html.twig', [
-            'project' => (new ProjectProvider())->get($this->recordingPresenter->getRecording()['collection']->getProject()),
-            'player' => $this->recordingPresenter,
-            'sound' => $this->recordingPresenter->getRecording(),
-            'frequency_data' => $this->recordingPresenter->getFrequencyScaleData(),
-            'title' => sprintf(self::PAGE_TITLE, $recordingData[Recording::NAME]),
-            'labels' => Auth::isUserLogged() ? (new LabelProvider())->getBasicList(Auth::getUserLoggedID()) : '',
-            'myLabel' => Auth::isUserLogged() ? (new LabelAssociationProvider())->getUserLabel($id, Auth::getUserLoggedID()) : '',
-            'indexs' => Auth::isUserLogged() ? (new IndexTypeProvider())->getList() : '',
-            'ffts' => [4096, 2048, 1024, 512, 256, 128,],
-            'fftsize' => $this->fftSize,
-            'open' => $_POST['open'],
-            'modalX' => $_POST['modalX'],
-            'modalY' => $_POST['modalY'],
-            'models' => (new RecordingProvider())->getModel(),
-        ]);
+        if ($isAccessed || $this->collection->getPublicAccess()) {
+            return $this->twig->render('recording/recording.html.twig', [
+                'project' => (new ProjectProvider())->get($this->recordingPresenter->getRecording()['collection']->getProject()),
+                'player' => $this->recordingPresenter,
+                'sound' => $this->recordingPresenter->getRecording(),
+                'frequency_data' => $this->recordingPresenter->getFrequencyScaleData(),
+                'title' => sprintf(self::PAGE_TITLE, $recordingData[Recording::NAME]),
+                'labels' => Auth::isUserLogged() ? (new LabelProvider())->getBasicList(Auth::getUserLoggedID()) : '',
+                'myLabel' => Auth::isUserLogged() ? (new LabelAssociationProvider())->getUserLabel($id, Auth::getUserLoggedID()) : '',
+                'indexs' => Auth::isUserLogged() ? (new IndexTypeProvider())->getList() : '',
+                'ffts' => [4096, 2048, 1024, 512, 256, 128,],
+                'fftsize' => $this->fftSize,
+                'open' => $_POST['open'],
+                'modalX' => $_POST['modalX'],
+                'modalY' => $_POST['modalY'],
+                'models' => (new RecordingProvider())->getModel(),
+            ]);
+        } else {
+            return $this->twig->render('collection/noaccess.html.twig');
+        }
     }
 
     /**
@@ -742,6 +752,17 @@ class RecordingController extends BaseController
             $str = $str . '0.3';
         }
         exec($str . " 2>&1", $out, $status);
+        $versionOutput = shell_exec("pip3 show batdetect2");
+        $versionLines = explode("\n", $versionOutput);
+        $version = null;
+
+        foreach ($versionLines as $line) {
+            if (strpos($line, "Version:") !== false) {
+                $version = trim(str_replace("Version:", "", $line));
+                break;
+            }
+        }
+
         if ($status == 0) {
             if (file_exists(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav' . ".csv")) {
                 $handle = fopen(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav' . ".csv", "rb");
@@ -776,7 +797,7 @@ class RecordingController extends BaseController
                         $arr['sound_id'] = '4';
                         $arr['recording_id'] = $data['recording_id'];
                         $arr['user_id'] = $data['user_id'];
-                        $arr['creator_type'] = $data['creator_type'];
+                        $arr['creator_type'] = $data['creator_type'] . ' ' . $version;
                         $arr['min_time'] = $r[2];
                         $arr['max_time'] = $r[3];
                         $arr['min_freq'] = $r[5];
@@ -793,13 +814,43 @@ class RecordingController extends BaseController
             } else {
                 return json_encode([
                     'errorCode' => 0,
-                    'message' => "Batdetect2 found 0 detections. 0 tags were inserted.",
+                    'message' => "Batdetect2 $version found 0 detections. 0 tags were inserted.",
                 ]);
             }
         }
         return json_encode([
             'errorCode' => 0,
-            'message' => "Batdetect2 found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. $i tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
+            'message' => "Batdetect2 $version found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. $i tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
         ]);
     }
+    private function checkPermissions(): bool
+    {
+        if (!Auth::isUserLogged()) {
+            // throw new NotAuthenticatedException();
+            return false;
+        }
+
+        if (empty($this->colId)) {
+            // throw new \Exception(ERROR_EMPTY_ID);
+            return false;
+        }
+        return true;
+    }
+
+    private function isAccessible(): bool
+    {
+        $visibleCollObjs = Auth::isUserAdmin() ? (new CollectionProvider())->getList() : (new CollectionProvider())->getAccessedList((Auth::getUserID() == null) ? 0 : Auth::getUserID());
+
+        $vCollIDs = array();
+        foreach ($visibleCollObjs as $vCollObj) {
+            $vCollIDs[] = $vCollObj->getId();
+        }
+
+        if (!in_array($this->colId, $vCollIDs)) {
+            // throw new \Exception(ERROR_EMPTY_ID);
+            return false;
+        }
+        return true;
+    }
+
 }

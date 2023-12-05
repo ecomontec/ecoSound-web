@@ -256,8 +256,8 @@ class RecordingController extends BaseController
             $valueToMove = $Item['site'] == null ? '' : $Item['site'];
             unset($Item['site']);
             array_splice($Item, 9, 0, $valueToMove);
-            $valueToMove = $Item['modal'] == null ? '' : $Item['modal'];
-            unset($Item['modal']);
+            $valueToMove = $Item['model'] == null ? '' : $Item['model'];
+            unset($Item['model']);
             array_splice($Item, 11, 0, $valueToMove);
             $valueToMove = $Item['microphone'] == null ? '' : $Item['microphone'];
             unset($Item['microphone']);

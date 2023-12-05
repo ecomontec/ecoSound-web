@@ -11,7 +11,7 @@ class Recording
     const SITE_ID = 'site_id';
     const RECORDER_ID = 'recorder_id';
     const MICROPHONE_ID = 'microphone_id';
-    const RECORDER_NAME = 'modal';
+    const RECORDER_NAME = 'model';
     const MICROPHONE_NAME = 'name';
     const DIRECTORY = 'directory';
     const FILE_SIZE = "file_size";

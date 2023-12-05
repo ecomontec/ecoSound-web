@@ -6,5 +6,5 @@ class Recorder extends AbstractProvider
 {
     const TABLE_NAME = 'recorder';
     const PRIMARY_KEY = 'recorder_id';
-    const NAME = 'modal,brand,microphone';
+    const NAME = 'model,brand,microphone';
 }
