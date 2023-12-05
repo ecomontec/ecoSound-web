@@ -1,5 +1,3 @@
-import {AudioContext, OfflineAudioContext} from 'https://jspm.dev/standardized-audio-context';
-
 let playButton = $('#play');
 let playbackControl = document.querySelector('.js-playback-rate-control');
 let playbackValue = document.querySelector('.playback-rate-value');
