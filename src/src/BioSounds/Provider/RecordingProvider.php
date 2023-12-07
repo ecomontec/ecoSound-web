@@ -306,7 +306,7 @@ class RecordingProvider extends AbstractProvider
     {
         $sql = "SELECT r.*,u.`name` AS username,s.`name` AS site,re.model,m.`name` AS microphone,l.`name` AS license,DATE_FORMAT(r.file_date, '%Y-%m-%d') AS file_date, DATE_FORMAT(r.file_time, '%H:%i:%s') AS file_time FROM recording r LEFT JOIN user u ON u.user_id = r.user_id LEFT JOIN site s ON s.site_id = r.site_id LEFT JOIN recorder re ON r.recorder_id = re.recorder_id LEFT JOIN microphone m ON r.microphone_id = m.microphone_id LEFT JOIN license l ON r.license_id = l.license_id WHERE col_id = $collectionId";
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.model,''), IFNULL(m.name,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.note,''), IFNULL(r.creation_date,'')) LIKE '%$search%' ";
+            $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.model,''), IFNULL(m.name,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.note,''),IFNULL(r.DOI,''), IFNULL(r.creation_date,'')) LIKE '%$search%' ";
         }
         $this->database->prepareQuery($sql);
         $count = count($this->database->executeSelect());
@@ -318,9 +318,9 @@ class RecordingProvider extends AbstractProvider
         $arr = [];
         $sql = "SELECT r.*,u.`name` AS username,s.`name` AS site,re.model,m.`name` AS microphone,l.`name` AS license,DATE_FORMAT(r.file_date, '%Y-%m-%d') AS file_date, DATE_FORMAT(r.file_time, '%H:%i:%s') AS file_time,f.path FROM recording r LEFT JOIN user u ON u.user_id = r.user_id LEFT JOIN site s ON s.site_id = r.site_id LEFT JOIN recorder re ON r.recorder_id = re.recorder_id LEFT JOIN microphone m ON r.microphone_id = m.microphone_id LEFT JOIN license l ON r.license_id = l.license_id LEFT JOIN file_upload f ON f.recording_id = r.recording_id WHERE col_id = $collectionId";
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.model,''), IFNULL(m.name,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.note,''), IFNULL(r.creation_date,'')) LIKE '%$search%' ";
+            $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.model,''), IFNULL(m.name,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.note,''),IFNULL(r.DOI,''), IFNULL(r.creation_date,'')) LIKE '%$search%' ";
         }
-        $a = ['', 'r.recording_id', 'r.filename', 'r.name', 'u.name', 's.name', 're.model', 'm.name', 'l.name', 'r.type', 'r.medium', 'r.note', 'file_date', 'file_time'];
+        $a = ['', 'r.recording_id', 'r.filename', 'r.name', 'u.name', 's.name', 're.model', 'm.name', 'l.name', 'r.type', 'r.medium', 'r.note', 'r.DOI', 'file_date', 'file_time'];
         $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
@@ -382,6 +382,7 @@ class RecordingProvider extends AbstractProvider
                             <option " . ($value['medium'] == 'Water' ? 'selected' : '') . ">Water</option>
                         </select>";
                 $arr[$key][] = "<input type='text' class='form-control form-control-sm' style='width:200px;' title='Note' name='note' value='$value[note]'>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' style='width:200px;' title='DOI' name='DOI' value='$value[DOI]'>";
                 $arr[$key][] = "<input type='date' id='file_date$value[recording_id]' class='form-control form-control-sm' title='Date' name='file_date' value='$value[file_date]'>";
                 $arr[$key][] = "<input type='time' class='form-control form-control-sm' title='Time' name='file_time' min='00:00:00' max='23:59:59' step='1' value='$value[file_time]'>";
 
