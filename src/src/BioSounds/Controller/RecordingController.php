@@ -137,12 +137,7 @@ class RecordingController extends BaseController
         if (empty($id)) {
             throw new \Exception(ERROR_EMPTY_ID);
         }
-
         $recording = (new RecordingProvider())->getSimple($id);
-        if ($recording->getCollection() != 1 && $recording->getCollection() != 3 && !Auth::isUserLogged()) {
-            throw new NotAuthenticatedException();
-        }
-
         return json_encode([
             'errorCode' => 0,
             'data' => $this->twig->render('recording/fileInfo.html.twig', [

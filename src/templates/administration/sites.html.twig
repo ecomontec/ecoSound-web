@@ -73,7 +73,7 @@
             <tbody class="form-control-sm js-site-list"></tbody>
         </table>
     </div>
-    <div class="modal fade" id="modal-div" tabindex="-1" role="dialog">
+    <div class="modal fade" id="modal-delete" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -534,7 +534,7 @@
                     });
                     name = name.join(', ')
                     $('#delete_name').html(name)
-                    $("#modal-div").modal('show');
+                    $("#modal-delete").modal('show');
                 })
 
                 /* Save site list */
