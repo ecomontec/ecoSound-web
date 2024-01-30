@@ -45,6 +45,7 @@ CREATE TABLE `index_log`
     `maxFrequency`  varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
     `value`         varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
     `param`         varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `version`       varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
     `creation_date` timestamp NOT NULL                   DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 

@@ -10445,16 +10445,29 @@ readers do not read off random characters that represent icons */
     content: url("../webfonts/arrow-peak-hover.svg");
 }
 
-.sum {
+.svg-model {
+    width: 16px;
+    content: url("../webfonts/model.svg");
+}
+
+.svg-model:hover {
+    content: url("../webfonts/model-hover.svg");
+}
+
+.js-open-tf-modal:hover .svg-model {
+    content: url("../webfonts/model-hover.svg");
+}
+
+.svg-sum {
     height: 16px;
     content: url("../webfonts/sum.svg");
 }
 
-.sum:hover {
+.svg-sum:hover {
     content: url("../webfonts/sum-hover.svg");
 }
 
-.js-open-maad-modal:hover .sum {
+.js-open-maad-modal:hover .svg-sum {
     content: url("../webfonts/sum-hover.svg");
 }
 

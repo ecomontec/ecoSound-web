@@ -2,12 +2,8 @@
 <script src="{{ baseUrl }}/assets/js/vis-data.min.js"></script>
 <script src="{{ baseUrl }}/assets/js/vis-timeline-graph2d.min.js"></script>
 <link rel="stylesheet" href="{{ baseUrl }}/assets/css/vis-timeline-graph2d.min.css">
-<style>
-
-</style>
 <div id="visualization"></div>
 <script>
-
     var tl_container = document.getElementById("visualization");
     var tl_groups = []
     var tl_arr = []
@@ -50,6 +46,21 @@
         },
     };
     var timeline = new vis.Timeline(tl_container, tl_items, tl_groups, tl_options);
+    $(document).ready(function () {
+        $('.vis-item').on('mouseover', function () {
+            $(this).find('.vis-item-overflow').css('overflow', 'visible')
+        });
+        $('.vis-item').on('mouseout', function () {
+            if (!$(this).hasClass('vis-selected')) {
+                $(this).find('.vis-item-overflow').css('overflow', 'hidden')
+            }
+        });
+        timeline.on('select', function (properties) {
+            if (properties.items.length == 0) {
+                $('.vis-item').find('.vis-item-overflow').css('overflow', 'hidden')
+            }
+        });
+    });
 </script>
 
 
