@@ -21,11 +21,10 @@ $("#file-uploader").pluploadQueue({
         },
         FilesAdded: function (up, files) {
             plupload.each(files, function (file) {
-                if (file.name.replace(/\.[^/.]+$/, "").length > 40) {
+                if (file.name.replace(/\.[^/.]+$/, "").length > 150) {
                     $(".plupload_start").addClass('plupload_disabled');
                     up.removeFile(file);
-                    showAlert('File name too long. Max is 40 characters. Please rename the file '
-                        + file.name + ' and upload it again.', true);
+                    showAlert('File name: ' + file.name + ' too long. Maximum: 150 characters. File was skipped.', true);
                 }
             });
         }
