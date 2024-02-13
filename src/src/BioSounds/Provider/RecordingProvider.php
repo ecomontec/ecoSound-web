@@ -316,7 +316,7 @@ class RecordingProvider extends AbstractProvider
     public function getListByPage(string $projectId, string $collectionId, string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
     {
         $arr = [];
-        $sql = "SELECT r.*,u.`name` AS username,s.`name` AS site,re.model,m.`name` AS microphone,l.`name` AS license,DATE_FORMAT(r.file_date, '%Y-%m-%d') AS file_date, DATE_FORMAT(r.file_time, '%H:%i:%s') AS file_time,f.path FROM recording r LEFT JOIN user u ON u.user_id = r.user_id LEFT JOIN site s ON s.site_id = r.site_id LEFT JOIN recorder re ON r.recorder_id = re.recorder_id LEFT JOIN microphone m ON r.microphone_id = m.microphone_id LEFT JOIN license l ON r.license_id = l.license_id LEFT JOIN file_upload f ON f.recording_id = r.recording_id WHERE col_id = $collectionId";
+        $sql = "SELECT r.*,u.`name` AS username,s.`name` AS site,re.model,m.`name` AS microphone,l.`name` AS license,DATE_FORMAT(r.file_date, '%Y-%m-%d') AS file_date, DATE_FORMAT(r.file_time, '%H:%i:%s') AS file_time FROM recording r LEFT JOIN user u ON u.user_id = r.user_id LEFT JOIN site s ON s.site_id = r.site_id LEFT JOIN recorder re ON r.recorder_id = re.recorder_id LEFT JOIN microphone m ON r.microphone_id = m.microphone_id LEFT JOIN license l ON r.license_id = l.license_id LEFT JOIN file_upload f ON f.recording_id = r.recording_id WHERE col_id = $collectionId";
         if ($search) {
             $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.model,''), IFNULL(m.name,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.note,''),IFNULL(r.DOI,''), IFNULL(r.creation_date,'')) LIKE '%$search%' ";
         }
@@ -361,7 +361,10 @@ class RecordingProvider extends AbstractProvider
                         <input id='old_id$value[recording_id]' type='hidden' value='$value[recording_id]'>
                         <input id='old_name$value[recording_id]' type='hidden' value='$value[username]'>
                         <input id='directory$value[recording_id]' type='hidden' value='$value[directory]'>
+                        <input id='filename$value[recording_id]' type='hidden' value='$value[filename]'>
+                        <input id='channel_num$value[recording_id]' type='hidden' value='$value[channel_num]' >
                         <input id='path$value[recording_id]' type='hidden' value='$value[path]' >
+                        <input id='max_time$value[recording_id]' type='hidden' value='$value[duration]' >
                         <input id='max_freq$value[recording_id]' type='hidden' value='" . ($value['sampling_rate'] / 2) . "'>";
                 $arr[$key][] = $value['filename'];
                 $arr[$key][] = "<input type='text' id='name_$value[recording_id]' class='form-control form-control-sm' style='width:200px;' title='Name' name='name' value='$value[name]'>";

@@ -577,6 +577,75 @@ class RecordingController extends BaseController
         }
     }
 
+    public function maads($data)
+    {
+        $str = 'python3 ' . ABSOLUTE_DIR . 'bin/getMaad.py' .
+            ' -f ' . ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . explode('.', $data['filename'], -1)[0] .
+            ' --ch ' . ($data['channel'] == 2 ? 'right' : 'left') .
+            ' --mint ' . $data['minTime'] .
+            ' --maxt ' . $data['maxTime'] .
+            ' --minf ' . $data['minFrequency'] .
+            ' --maxf ' . $data['maxFrequency'];
+        if ($data['index'] != '') {
+            $str = $str . ' --it ' . $data['index'];
+        }
+        if ($data['param'] != '') {
+            $str = $str . ' --pa ' . substr($data['param'], 0, -1);
+        }
+        exec($str . " 2>&1", $out, $status);
+
+        $versionOutput = shell_exec("pip3 show scikit-maad");
+        $versionLines = explode("\n", $versionOutput);
+        $version = null;
+
+        foreach ($versionLines as $line) {
+            if (strpos($line, "Version:") !== false) {
+                $data['version'] = trim(str_replace("Version:", "", $line));
+                break;
+            }
+        }
+
+        if ($status == 0 && $out[count($out) - 1] != "0") {
+            $result = $out[count($out) - 1];
+            if ($data['channel_num'] == 1) {
+                $channel = 'Mono';
+            } elseif ($data['channel'] == 2) {
+                $channel = 'Right';
+            } else {
+                $channel = 'Left';
+            }
+            if ($data['index'] != '') {
+                $arr = explode("!", $result);
+                foreach ($arr as $k => $v) {
+                    $name = explode("?", $v)[0];
+                    $value = explode("?", $v)[1];
+                    $index['output_name' . $k] = $name;
+                    $index['output_value' . $k] = $value;
+                }
+            }
+        } else {
+            $index['output_name0'] = 'Invalid Parameter';
+        }
+        $index['recording_id'] = $data['recording_id'];
+        $index['user_id'] = $data['user_id'];
+        $index['index_id'] = $data['index_id'];
+        $index['minTime'] = $data['minTime'];
+        $index['maxTime'] = $data['maxTime'];
+        $index['minFrequency'] = $data['minFrequency'];
+        $index['maxFrequency'] = $data['maxFrequency'];
+        $arr = explode("@", substr('Channel?' . $channel . '@' . $data['param'], 0, -1));
+        foreach ($arr as $k => $v) {
+            $name = explode("?", $v)[0];
+            $value = explode("?", $v)[1];
+            $index['input_name' . $k] = $name;
+            $index['input_value' . $k] = $value;
+        }
+        (new IndexLog())->insert($index);
+        return json_encode([
+            'errorCode' => 0,
+            'message' => 'Index saved successfully.'
+        ]);
+    }
 
     public function saveLabel()
     {
@@ -611,9 +680,36 @@ class RecordingController extends BaseController
 
         $data = [];
         $data['user_id'] = Auth::getUserLoggedID();
+        $versionOutput = shell_exec("pip3 show scikit-maad");
+        $versionLines = explode("\n", $versionOutput);
+        $version = null;
 
+        foreach ($versionLines as $line) {
+            if (strpos($line, "Version:") !== false) {
+                $data['version'] = trim(str_replace("Version:", "", $line));
+                break;
+            }
+        }
         foreach ($_POST as $key => $value) {
-            $data[$key] = $value;
+            if ($key == 'param') {
+                $arr = explode("@", $value);
+                foreach ($arr as $k => $v) {
+                    $name = explode("?", $v)[0];
+                    $value = explode("?", $v)[1];
+                    $data['input_name' . $k] = $name;
+                    $data['input_value' . $k] = $value;
+                }
+            } else if ($key == 'value') {
+                $arr = explode("!", $value);
+                foreach ($arr as $k => $v) {
+                    $name = explode("?", $v)[0];
+                    $value = explode("?", $v)[1];
+                    $data['output_name' . $k] = $name;
+                    $data['output_value' . $k] = $value;
+                }
+            } else {
+                $data[$key] = $value;
+            }
         }
         (new IndexLog())->insert($data);
         return json_encode([
@@ -818,6 +914,7 @@ class RecordingController extends BaseController
             'message' => "Batdetect2 $version found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. $i tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
         ]);
     }
+
     private function checkPermissions(): bool
     {
         if (!Auth::isUserLogged()) {

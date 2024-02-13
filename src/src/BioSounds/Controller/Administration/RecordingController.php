@@ -10,6 +10,7 @@ use BioSounds\Entity\Recording;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\IndexLogProvider;
+use BioSounds\Provider\IndexTypeProvider;
 use BioSounds\Provider\LabelAssociationProvider;
 use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\RecordingProvider;
@@ -68,6 +69,7 @@ class RecordingController extends BaseController
             'microphones' => (new Microphone())->getBasicList(),
             'license' => (new License())->getBasicList(),
             'models' => (new RecordingProvider())->getModel(),
+            'indexs' => (new IndexTypeProvider())->getList(),
         ]);
     }
 
@@ -281,13 +283,25 @@ class RecordingController extends BaseController
             throw new ForbiddenException();
         }
         $this->queueService = new RabbitQueueService();
-        foreach ($_POST as $data) {
-            $this->queueService->model($data);
-        }
+        $this->queueService->queue(json_encode($_POST), 'AI model', count($_POST));
         $this->queueService->closeConnection();
         return json_encode([
             'errorCode' => 0,
             'message' => 'Models successfully.'
+        ]);
+    }
+
+    public function maad()
+    {
+        if (!Auth::isUserLogged()) {
+            throw new ForbiddenException();
+        }
+        $this->queueService = new RabbitQueueService();
+        $this->queueService->queue(json_encode($_POST), 'index analysis', count($_POST));
+        $this->queueService->closeConnection();
+        return json_encode([
+            'errorCode' => 0,
+            'message' => 'Alpha acoustic indices successfully.'
         ]);
     }
 }

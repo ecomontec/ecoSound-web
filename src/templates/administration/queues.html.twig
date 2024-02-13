@@ -1,7 +1,7 @@
 {% extends 'administration/admin.html.twig' %}
 
 {% block admin_content %}
-    <div class="card mb-3" id="indexLogsList">
+    <div class="card mb-3" id="queuesList">
         <div class="card-header border-light bg-white text-right">
             <div class="form-inline">
                 <div class="col-12 form-inline justify-content-end">
@@ -13,52 +13,20 @@
                 <i class="fas fa-trash"></i>
                 Delete
             </button>
-            <button id="indexLogsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#indexLogsExport" aria-expanded="false" aria-controls="indexLogsExport">
-                <i class="fa fa-file-csv"></i>
-                Save all as CSV
-            </button>
         </div>
-        <table id="indexLogsTable" style="display:none;white-space: nowrap;">
+        <table id="queuesTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
             <tr style="font-size: .875rem;">
                 <th>
                     <input type="checkbox" class="js-all-checkbox" name="check-all" id="check-all">
                 </th>
                 <th>#</th>
-                <th>Recording</th>
-                <th>User</th>
-                <th>Index</th>
-                <th>Time Start</th>
-                <th>Time End</th>
-                <th>Min Freq</th>
-                <th>Max Freq</th>
-                <th>Input Name 1</th>
-                <th>Input Value 1</th>
-                <th>Input Name 2</th>
-                <th>Input Value 2</th>
-                <th>Input Name 3</th>
-                <th>Input Value 3</th>
-                <th>Input Name 4</th>
-                <th>Input Value 4</th>
-                <th>Input Name 5</th>
-                <th>Input Value 5</th>
-                <th>Input Name 6</th>
-                <th>Input Value 6</th>
-                <th>Input Name 7</th>
-                <th>Input Value 7</th>
-                <th>Output Name 1</th>
-                <th>Output Value 1</th>
-                <th>Output Name 2</th>
-                <th>Output Value 2</th>
-                <th>Output Name 3</th>
-                <th>Output Value 3</th>
-                <th>Output Name 4</th>
-                <th>Output Value 4</th>
-                <th>Output Name 5</th>
-                <th>Output Value 5</th>
-                <th>Output Name 6</th>
-                <th>Output Value 6</th>
-                <th>Creation Date (UTC)</th>
+                <th>Type</th>
+                <th>Progress</th>
+                <th>Status</th>
+                <th>Start Datetime</th>
+                <th>End Datetime</th>
+                <th>Elapsed Time</th>
             </tr>
             </thead>
             <tbody class="form-control-sm js-index-log-list"></tbody>
@@ -99,12 +67,12 @@
     {{ parent() }}
     <script>
         $(document).ready(function () {
-            $('#indexLogsTable').show()
-            let table=$('#indexLogsTable').DataTable({
+            $('#queuesTable').show()
+            let table=$('#queuesTable').DataTable({
                 "processing": true,
                 "serverSide": true,
                 "ajax": {
-                    "url": '{{ baseUrl }}/admin/indexLogMgr/getListByPage/{{ projectId }}/{{ colId }}',
+                    "url": '{{ baseUrl }}/admin/queueMgr/getListByPage',
                     "type": 'POST'
                 },
                 "dom": 'lrtip',
@@ -132,10 +100,6 @@
         });
         $(function () {
             'use strict';
-            $(document).on('click', '#indexLogsExport', function () {
-                window.location.href = '{{ baseUrl }}/api/admin/indexLogMgr/export';
-            });
-
             $('button[name="table-btn"][data-target="#deletion"]').click(function (e) {
                 if($('.js-checkbox:checked').length>1){
                     $('#delete_info').html("Are you sure you want to delete these <b class=\"text-danger\" >"+$('.js-checkbox:checked').length+"</b> entries?")
@@ -151,7 +115,7 @@
                     id.push($(this).data('id'));
                 });
                 let data = {'id': id};
-                postRequest('{{ baseUrl }}/api/admin/indexLogMgr/delete', data, false, false, function () {
+                postRequest('{{ baseUrl }}/api/admin/queueMgr/delete', data, false, false, function () {
                     location.reload();
                 });
             });

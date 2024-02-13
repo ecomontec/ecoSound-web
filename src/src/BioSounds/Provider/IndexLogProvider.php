@@ -28,26 +28,7 @@ class IndexLogProvider extends AbstractProvider
         }
         $sql = $sql . " ORDER BY i.log_id";
         $this->database->prepareQuery($sql);
-        if (!empty($result = $this->database->executeSelect())) {
-            foreach ($result as $indexLog) {
-                $list[] = (new IndexLog())
-                    ->setLogId($indexLog['log_id'])
-                    ->setRecordingId($indexLog['recording_id'])
-                    ->setRecordingName($indexLog['recordingName'])
-                    ->setUserId($indexLog['user_id'])
-                    ->setUserName($indexLog['userName'])
-                    ->setIndexId($indexLog['index_id'])
-                    ->setIndexName($indexLog['indexName'])
-                    ->setMinTime($indexLog['minTime'])
-                    ->setMaxTime($indexLog['maxTime'])
-                    ->setMinFrequency($indexLog['minFrequency'])
-                    ->setMaxFrequency($indexLog['maxFrequency'])
-                    ->setValue($indexLog['value'])
-                    ->setParam($indexLog['param'])
-                    ->setDate($indexLog['creation_date']);
-            }
-        }
-        return $list;
+        return $this->database->executeSelect();
     }
 
     /**
@@ -85,7 +66,7 @@ class IndexLogProvider extends AbstractProvider
         }
         if ($search) {
             $sql .= Auth::isUserAdmin() ? ' WHERE ' : ' AND ';
-            $sql .= " CONCAT(IFNULL(i.log_id,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(it.name,''), IFNULL(i.minTime,''), IFNULL(i.maxTime,''), IFNULL(i.minFrequency,''), IFNULL(i.maxFrequency,''), IFNULL(i.param,''), IFNULL(i.value,''), IFNULL(i.creation_date,'')) LIKE '%$search%' ";
+            $sql .= " CONCAT(IFNULL(i.log_id,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(it.name,''), IFNULL(i.minTime,''), IFNULL(i.maxTime,''), IFNULL(i.minFrequency,''), IFNULL(i.maxFrequency,''), IFNULL(i.input_name0,''), IFNULL(i.input_value0,''), IFNULL(i.input_name1,''), IFNULL(i.input_value1,''), IFNULL(i.input_name2,''), IFNULL(i.input_value2,''), IFNULL(i.input_name3,''), IFNULL(i.input_value3,''), IFNULL(i.input_name4,''), IFNULL(i.input_value4,''), IFNULL(i.input_name5,''), IFNULL(i.input_value5,''), IFNULL(i.input_name6,''), IFNULL(i.input_value6,''), IFNULL(i.output_name0,''), IFNULL(i.output_value0,''), IFNULL(i.output_name1,''), IFNULL(i.output_value1,''), IFNULL(i.output_name2,''), IFNULL(i.output_value2,''), IFNULL(i.output_name3,''), IFNULL(i.output_value3,''), IFNULL(i.output_name4,''), IFNULL(i.output_value4,''), IFNULL(i.output_name5,''), IFNULL(i.output_value5,''), IFNULL(i.creation_date,'')) LIKE '%$search%' ";
         }
         $this->database->prepareQuery($sql);
         $count = count($this->database->executeSelect());
@@ -104,9 +85,9 @@ class IndexLogProvider extends AbstractProvider
         }
         if ($search) {
             $sql .= Auth::isUserAdmin() ? ' WHERE ' : ' AND ';
-            $sql .= " CONCAT(IFNULL(i.log_id,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(it.name,''), IFNULL(i.minTime,''), IFNULL(i.maxTime,''), IFNULL(i.minFrequency,''), IFNULL(i.maxFrequency,''), IFNULL(i.param,''), IFNULL(i.value,''), IFNULL(i.creation_date,'')) LIKE '%$search%' ";
+            $sql .= " CONCAT(IFNULL(i.log_id,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(it.name,''), IFNULL(i.minTime,''), IFNULL(i.maxTime,''), IFNULL(i.minFrequency,''), IFNULL(i.maxFrequency,''), IFNULL(i.input_name0,''), IFNULL(i.input_value0,''), IFNULL(i.input_name1,''), IFNULL(i.input_value1,''), IFNULL(i.input_name2,''), IFNULL(i.input_value2,''), IFNULL(i.input_name3,''), IFNULL(i.input_value3,''), IFNULL(i.input_name4,''), IFNULL(i.input_value4,''), IFNULL(i.input_name5,''), IFNULL(i.input_value5,''), IFNULL(i.input_name6,''), IFNULL(i.input_value6,''), IFNULL(i.output_name0,''), IFNULL(i.output_value0,''), IFNULL(i.output_name1,''), IFNULL(i.output_value1,''), IFNULL(i.output_name2,''), IFNULL(i.output_value2,''), IFNULL(i.output_name3,''), IFNULL(i.output_value3,''), IFNULL(i.output_name4,''), IFNULL(i.output_value4,''), IFNULL(i.output_name5,''), IFNULL(i.output_value5,''), IFNULL(i.creation_date,'')) LIKE '%$search%' ";
         }
-        $a = ['', 'i.log_id', 'r.name', 'u.name', 'it.name', 'i.minTime', 'i.maxTime', 'i.minFrequency', 'i.maxFrequency', 'i.param', 'i.value', 'i.creation_date'];
+        $a = ['', 'i.log_id', 'r.name', 'u.name', 'it.name', 'i.minTime', 'i.maxTime', 'i.minFrequency', 'i.maxFrequency', 'i.input_name0', 'i.input_value0', 'i.input_name1', 'i.input_value1', 'i.input_name2', 'i.input_value2', 'i.input_name3', 'i.input_value3', 'i.input_name4', 'i.input_value4', 'i.input_name5', 'i.input_value5', 'i.input_name6', 'i.input_value6', 'i.output_name0', 'i.output_value0', 'i.output_name1', 'i.output_value1', 'i.output_name2', 'i.output_value2', 'i.output_name3', 'i.output_value3', 'i.output_name4', 'i.output_value4', 'i.output_name5', 'i.output_value5', 'i.creation_date'];
         $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
@@ -121,11 +102,32 @@ class IndexLogProvider extends AbstractProvider
                 $arr[$key][] = $value['maxTime'];
                 $arr[$key][] = $value['minFrequency'];
                 $arr[$key][] = $value['maxFrequency'];
-                $arr[$key][] = str_replace('@', ' ', str_replace('?', ':', $value['param']));
-                $arr[$key][] = implode(' ', array_map(function ($v) {
-                    $parts = explode('?', $v);
-                    return $parts[0] . ': ' . number_format(floatval($parts[1]), 2, '.', ',');
-                }, explode('!', $value['value'])));;
+                $arr[$key][] = $value['input_name0'];
+                $arr[$key][] = $value['input_value0'];
+                $arr[$key][] = $value['input_name1'];
+                $arr[$key][] = $value['input_value1'] ? number_format(floatval($value['input_value1']), 2, '.', ',') : '';
+                $arr[$key][] = $value['input_name2'];
+                $arr[$key][] = $value['input_value2'] ? number_format(floatval($value['input_value2']), 2, '.', ',') : '';
+                $arr[$key][] = $value['input_name3'];
+                $arr[$key][] = $value['input_value3'] ? number_format(floatval($value['input_value3']), 2, '.', ',') : '';
+                $arr[$key][] = $value['input_name4'];
+                $arr[$key][] = $value['input_value4'] ? number_format(floatval($value['input_value4']), 2, '.', ',') : '';
+                $arr[$key][] = $value['input_name5'];
+                $arr[$key][] = $value['input_value5'] ? number_format(floatval($value['input_value5']), 2, '.', ',') : '';
+                $arr[$key][] = $value['input_name6'];
+                $arr[$key][] = $value['input_value6'] ? number_format(floatval($value['input_value6']), 2, '.', ',') : '';
+                $arr[$key][] = $value['output_name0'];
+                $arr[$key][] = $value['output_value0'] ? number_format(floatval($value['output_value0']), 2, '.', ',') : '';
+                $arr[$key][] = $value['output_name1'];
+                $arr[$key][] = $value['output_value1'] ? number_format(floatval($value['output_value1']), 2, '.', ',') : '';
+                $arr[$key][] = $value['output_name2'];
+                $arr[$key][] = $value['output_value2'] ? number_format(floatval($value['output_value2']), 2, '.', ',') : '';
+                $arr[$key][] = $value['output_name3'];
+                $arr[$key][] = $value['output_value3'] ? number_format(floatval($value['output_value3']), 2, '.', ',') : '';
+                $arr[$key][] = $value['output_name4'];
+                $arr[$key][] = $value['output_value4'] ? number_format(floatval($value['output_value4']), 2, '.', ',') : '';
+                $arr[$key][] = $value['output_name5'];
+                $arr[$key][] = $value['output_value5'] ? number_format(floatval($value['output_value5']), 2, '.', ',') : '';
                 $arr[$key][] = $value['creation_date'];
             }
         }

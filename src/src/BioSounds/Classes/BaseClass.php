@@ -101,7 +101,6 @@ class BaseClass
         $this->twig->addGlobal('license_detail', Utils::getSetting(Setting::FILES_LICENSE_DETAIL));
         $this->twig->addGlobal('guide_url', self::GUIDE_URL);
         $this->twig->addGlobal('isUserLogged', Auth::isUserLogged());
-        $this->twig->addGlobal('collections', Auth::isUserAdmin() ? (new CollectionProvider())->getList() : (new CollectionProvider())->getManageList((Auth::getUserID() == null) ? 0 : Auth::getUserID()));
         $this->twig->addGlobal('username', Auth::getUserName());
         $this->twig->addGlobal('is_admin', Auth::isUserAdmin());
         $this->twig->addGlobal('isManage', Auth::isManage());

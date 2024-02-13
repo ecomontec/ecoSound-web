@@ -4,7 +4,6 @@ namespace BioSounds\Service;
 
 use BioSounds\Entity\File;
 use BioSounds\Entity\Recording;
-use BioSounds\Entity\Sound;
 use BioSounds\Exception\File\FileCopyException;
 use BioSounds\Exception\File\FileExistsException;
 use BioSounds\Exception\File\FileInvalidException;
@@ -14,7 +13,6 @@ use BioSounds\Exception\File\FolderCreationException;
 use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\FileProvider;
 use BioSounds\Provider\RecordingProvider;
-use BioSounds\Provider\SoundProvider;
 use BioSounds\Service\Queue\RabbitQueueService;
 use BioSounds\Utils\Auth;
 use BioSounds\Utils\Utils;
@@ -86,10 +84,10 @@ class FileService
         }
         $collection = $this->collectionProvider->get($colID);
         try {
+            $list = [];
             while ($fileName = readdir($handle)) {
                 $fileDate = $date;
                 $fileTime = $time;
-
                 if ($fileName == '.' || $fileName == '..') {
                     continue;
                 }
@@ -125,7 +123,10 @@ class FileService
                     ->setUser(Auth::getUserID())
                     ->setType($type)
                     ->setMedium($medium);
-                $this->queueService->add($this->fileProvider->insert($file));
+                $list[] = $this->fileProvider->insert($file);
+            }
+            if ($message == '') {
+                $this->queueService->queue(json_encode($list), 'upload', $request['file-uploader_count']);
             }
         } catch (\Exception $exception) {
             Utils::deleteDirContents($uploadPath);
@@ -144,7 +145,6 @@ class FileService
     public function process(int $fileId)
     {
         $soundId = null;
-
         try {
             if (empty($file = $this->fileProvider->get($fileId))) {
                 throw new FileQueueNotFoundException($fileId);
@@ -231,8 +231,12 @@ class FileService
             (new ImageService())->generateImages($sound);
 
             $this->updateFileStatus($file, File::STATUS_SUCCESS, $sound[Recording::ID]);
+            return json_encode([
+                'errorCode' => 0,
+            ]);
         } catch (FileQueueNotFoundException $exception) {
             error_log($exception);
+            return $exception;
         } catch (ProcessFailedException $exception) {
             error_log($exception);
             if (!empty($file)) {
@@ -242,11 +246,13 @@ class FileService
                     $soundId,
                     'Command failed : ' . $exception->getProcess()->getCommandLine()
                 );
+                return 'Command failed : ' . $exception->getProcess()->getCommandLine();
             }
         } catch (\Exception $exception) {
             error_log($exception);
             if (!empty($file)) {
                 $this->updateFileStatus($file, File::STATUS_ERROR, $soundId, $exception->getMessage());
+                return $exception->getMessage();
             }
         }
     }

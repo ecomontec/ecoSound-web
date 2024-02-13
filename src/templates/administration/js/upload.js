@@ -4,8 +4,10 @@ $("#file-uploader").pluploadQueue({
     runtimes: 'html5',
     url: baseUrl + '/scripts/uploaded.php?dir=' + uploadDir,
     max_file_size: '1000mb',
-    chunk_size: '1mb',
+    chunk_size: '10mb',
     unique_names: false,
+    multiple_queues: true,
+    prevent_duplicates: true,
     filters: {
         max_file_size: '1000mb',
         mime_types: [
@@ -14,27 +16,31 @@ $("#file-uploader").pluploadQueue({
     },
     init: {
         UploadComplete: function (up) {
-            $("#save_button").toggleDisabled();
+            $("#save_button").prop("disabled", false);
         },
         Error: function (up, args) {
-            showAlert("Error uploading files.");
+            showAlert(args.message.replace(/\.([^\.]*)$/, ": $1") + args.file.name);
         },
         FilesAdded: function (up, files) {
             plupload.each(files, function (file) {
-                if (file.name.replace(/\.[^/.]+$/, "").length > 40) {
+                if (file.name.replace(/\.[^/.]+$/, "").length > 150) {
                     $(".plupload_start").addClass('plupload_disabled');
                     up.removeFile(file);
-                    showAlert('File name too long. Max is 40 characters. Please rename the file '
-                        + file.name + ' and upload it again.', true);
+                    showAlert('File name: ' + file.name + ' too long. Maximum: 150 characters. File was skipped.', true);
                 }
             });
+            if (up.files.length > 0) {
+                document.querySelector('.plupload_start').click();
+                $('#uploadForm').collapse('show');
+                $("#save_button").prop("disabled", true);
+            }
         }
     }
 });
 
 $('#uploadForm')
     .submit(function (e) {
-        $('#save_button').toggleDisabled();
+        $("#save_button").prop("disabled", true);
         let values = new FormData($(this)[0]);
         values["colID"] = $("#collection").val();
 
@@ -43,19 +49,14 @@ $('#uploadForm')
             values,
             true,
             true,
-            function () {
-                $('#hiddenForm').toggle();
+            function (response) {
                 $('#upload_btn').toggle();
-            }
-        );
+                if (response.error_code == 0) {
+                    location.reload();
+                }
+            })
         e.preventDefault();
     })
-    .on('show.bs.collapse', function () {
-        $("#metaData").hide();
-    })
-    .on('hide.bs.collapse', function () {
-        $("#metaData").show();
-    });
 
 $("#reference").change(function (e) {
     let referenceFields = $('.js-reference-field');
@@ -107,8 +108,7 @@ $(function () {
             success: function (result) {
                 if (result.message == 'Upload success.') {
                     location.reload();
-                }
-                else{
+                } else {
                     showAlert(result.message)
                     $('#metaDataFile').val('')
                     toggleLoading();

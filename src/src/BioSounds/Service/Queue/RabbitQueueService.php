@@ -2,6 +2,8 @@
 
 namespace BioSounds\Service\Queue;
 
+use BioSounds\Entity\Queue;
+use BioSounds\Utils\Auth;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -27,31 +29,25 @@ class RabbitQueueService
         $this->channel = $this->connection->channel();
     }
 
-    /**
-     * @param int $fileId
-     */
-    public function add(int $fileId)
+    public function queue($data, $type, $count)
     {
-        $this->channel->queue_declare(QUEUE_NAME, false, true, false, false);
-
-        $message = new AMQPMessage(
-            $fileId,
-            ['delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT]
-        );
-
-        $this->channel->basic_publish($message, '', QUEUE_NAME);
-    }
-
-    public function model($data)
-    {
-        $this->channel->queue_declare('model', false, true, false, false);
-
+        $this->channel->queue_declare('list', false, true, false, false);
+        $arr['type'] = $type;
+        $arr['user_id'] = Auth::getUserID();
+        $arr['start_time'] = date('Y-m-d H:i:s');
+        $arr['total'] = $count;
+        $arr['payload'] = $data;
+        $queue_id = (new Queue())->insert($arr);
         $message = new AMQPMessage(
             $data,
             ['delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT]
         );
-
-        $this->channel->basic_publish($message, '', 'model');
+        $headers = [
+            'list_type' => $type,
+            'queue_id' => $queue_id,
+        ];
+        $message->set('application_headers', new \PhpAmqpLib\Wire\AMQPTable($headers));
+        $this->channel->basic_publish($message, '', 'list');
     }
 
     /**

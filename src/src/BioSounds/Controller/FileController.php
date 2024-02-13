@@ -28,7 +28,7 @@ class FileController
         $message = (new FileService())->upload($_POST, 'tmp/' . $uploadDirectory . '/');
 
         return json_encode([
-            'error_code' => 0,
+            'error_code' => $message ? 1 : 0,
             'message' => $message ? $message : 'Files sent to the upload queue successfully.',
         ]);
     }
