@@ -72,22 +72,25 @@ class queueProvider extends AbstractProvider
                 $arr[$key][] = $value['type'];
                 $arr[$key][] = $value['completed'] . '/' . $value['total'];
                 if ($value['status'] == '-2') {
-                    if($value['stop_time']){
+                    if ($value['stop_time']) {
                         $arr[$key][] = '<div class="text-warning">cancelled</div>';
-                    }else{
+                    } else {
                         $arr[$key][] = '<div class="text-dark">being cancelled</div>';
                     }
                 } elseif ($value['status'] == '1') {
-                    $arr[$key][] = '<div class="text-info">finished</div>';
+                    $arr[$key][] = '<div class="text-success">finished</div>';
                 } elseif ($value['status'] == '-1') {
                     $arr[$key][] = '<div class="text-danger">failed</div>';
                 } else {
-                    $arr[$key][] = '<div class="text-success">ongoing</div>';
+                    $arr[$key][] = '<div class="text-info">ongoing</div>';
                 }
                 $arr[$key][] = $value['start_time'];
                 $arr[$key][] = $value['stop_time'];
                 $time_diff = (new DateTime($value['start_time']))->diff(new DateTime($value['stop_time']));
                 $arr[$key][] = $value['stop_time'] ? sprintf("%s%s%s", $time_diff->h > 0 ? $time_diff->h . "h " : "", $time_diff->i > 0 ? $time_diff->i . "m " : "", $time_diff->s . "s") : '';
+                if (Auth::isUserAdmin()) {
+                    $arr[$key][] = $value['erroe'];
+                }
             }
         }
         return $arr;
