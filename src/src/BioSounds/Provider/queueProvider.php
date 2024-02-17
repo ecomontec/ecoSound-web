@@ -89,7 +89,7 @@ class queueProvider extends AbstractProvider
                 $time_diff = (new DateTime($value['start_time']))->diff(new DateTime($value['stop_time']));
                 $arr[$key][] = $value['stop_time'] ? sprintf("%s%s%s", $time_diff->h > 0 ? $time_diff->h . "h " : "", $time_diff->i > 0 ? $time_diff->i . "m " : "", $time_diff->s . "s") : '';
                 if (Auth::isUserAdmin()) {
-                    $arr[$key][] = $value['erroe'];
+                    $arr[$key][] = $value['error'];
                 }
             }
         }
