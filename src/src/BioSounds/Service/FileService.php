@@ -100,9 +100,7 @@ class FileService
                 }
 
                 if ($dateFromFile) {
-                    if (!preg_match($this::DATE_TIME_PATTERN, $fileName, $dateTime)) {
-                        $message = sprintf($message . ' ' . $this::DATETIME_INVALID_MESSAGE, $fileName);
-                    } else {
+                    if (preg_match($this::DATE_TIME_PATTERN, $fileName, $dateTime)) {
                         $fileDate = sprintf($this::DATE_FORMAT, $dateTime[1], $dateTime[2], $dateTime[3]);
                         $fileTime = sprintf($this::TIME_FORMAT, $dateTime[4], $dateTime[5], $dateTime[6]);
                     }

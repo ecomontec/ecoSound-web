@@ -541,6 +541,10 @@
                         $('#maad' + value).remove();
                     }
                 });
+                $('.toggle_button').click(function () {
+                    $('#file-page').toggle();
+                    $('#info-page').toggle();
+                })
                 $(".js-maad-modal").click(function (e) {
                     if ($('#maad-box').text() == '') {
                         showAlert('Select at least one index.')
@@ -573,7 +577,7 @@
                                     'channel_num': $('#channel_num' + id).val(),
                                     'channel': 1,
                                     'param': param[$(this).val()],
-                                    'user_id':'{{ user_id }}'
+                                    'user_id': '{{ user_id }}'
                                 };
                                 arr = JSON.stringify(arr)
                                 data.push(arr)
