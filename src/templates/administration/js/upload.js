@@ -4,7 +4,7 @@ $("#file-uploader").pluploadQueue({
     runtimes: 'html5',
     url: baseUrl + '/scripts/uploaded.php?dir=' + uploadDir,
     max_file_size: '1000mb',
-    chunk_size: '10mb',
+    chunk_size: '1mb',
     unique_names: false,
     multiple_queues: true,
     prevent_duplicates: true,
