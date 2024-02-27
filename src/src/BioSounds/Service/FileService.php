@@ -60,20 +60,18 @@ class FileService
     /**
      * @param array $request
      * @param string $uploadPath
-     * @return array
      * @throws \Exception
      */
-    public function upload(array $request, string $uploadPath): string
+    public function upload(array $request, string $uploadPath)
     {
-        $message = '';
         $colID = $request['colId'];
         $site = isset($request['site']) ? $request['site'] : null;
         $site = $site == 0 ? null : $site;
         $recorder = $request['recorder'];
         $microphone = $request['microphone'];
         $dateFromFile = isset($request['dateFromFile']) ? $request['dateFromFile'] : false;
-        $time = isset($request['time']) ? $request['time'] : null;
-        $date = isset($request['date']) ? $request['date'] : null;
+        $time = isset($request['time']) ? $request['time'] : '00:00:00';
+        $date = isset($request['date']) ? $request['date'] : '1970-01-01';
         $doi = isset($request['doi']) && !empty($request['doi']) ? $request['doi'] : null;
         $license = isset($request['license']) ? $request['license'] : null;
         $type = isset($request['type']) && !empty($request['type']) ? $request['type'] : null;
@@ -82,20 +80,12 @@ class FileService
         if (!is_dir($uploadPath) || !$handle = opendir($uploadPath)) {
             throw new FileNotFoundException($uploadPath);
         }
-        $collection = $this->collectionProvider->get($colID);
         try {
             $list = [];
             while ($fileName = readdir($handle)) {
                 $fileDate = $date;
                 $fileTime = $time;
                 if ($fileName == '.' || $fileName == '..') {
-                    continue;
-                }
-
-                if (!empty($result = $this->recordingProvider->getByHash(hash_file('md5', $uploadPath . $fileName), $colID))) {
-                    $names[] = $fileName;
-                    $ids[] = $result['recording_id'];
-                    $message = sprintf("Recording " . implode(", ", $names) . " cannot be uploaded because collection " . $collection->getName() . " already contains that recording (ID: " . implode(", ", $ids) . ").");
                     continue;
                 }
 
@@ -123,9 +113,7 @@ class FileService
                     ->setMedium($medium);
                 $list[] = $this->fileProvider->insert($file);
             }
-            if ($message == '') {
-                $this->queueService->queue(json_encode($list), 'upload', $request['file-uploader_count']);
-            }
+            $this->queueService->queue(json_encode($list), 'upload', $request['file-uploader_count']);
         } catch (\Exception $exception) {
             Utils::deleteDirContents($uploadPath);
             throw $exception;
@@ -133,7 +121,6 @@ class FileService
             closedir($handle);
             $this->queueService->closeConnection();
         }
-        return $message;
     }
 
     /**
@@ -158,10 +145,10 @@ class FileService
             if (!is_file($file->getPath())) {
                 throw new FileInvalidException($file->getPath());
             }
-
+            $fileExists = 0;
             $fileHash = hash_file('md5', $file->getPath());
             if (!empty($this->recordingProvider->getByHash($fileHash, $file->getCollection()))) {
-                throw new FileExistsException($file->getName());
+                $fileExists = 1;
             }
 
             if (empty($fileFormat = Utils::getFileFormat($file->getPath()))) {
@@ -229,8 +216,13 @@ class FileService
             (new ImageService())->generateImages($sound);
 
             $this->updateFileStatus($file, File::STATUS_SUCCESS, $sound[Recording::ID]);
+            if ($file->getDate() == '1970-01-01' && $file->getTime() == '00:00:00') {
+                $formatErrors = 1;
+            }
             return json_encode([
                 'errorCode' => 0,
+                'fileExists' => $fileExists ? $file->getName() : '',
+                'formatErrors' => $formatErrors ? $file->getName() : '',
             ]);
         } catch (FileQueueNotFoundException $exception) {
             error_log($exception);

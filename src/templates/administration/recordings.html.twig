@@ -105,7 +105,7 @@
                     <div>
                         <div class="form-group">
                             <input id="delete_id" type="hidden">
-                            <label>Deleting <b class="text-danger" id="delete_name"></b> will also delete the <b class="text-danger" id="count"></b> tags inside and cannot be reversed!</label>
+                            <label style=" width: 100%;height: 70vh;overflow: auto">Deleting <b class="text-danger" id="delete_name"></b> will also delete the <b class="text-danger" id="count"></b> tags inside and cannot be reversed!</label>
                         </div>
                     </div>
                 </div>
@@ -233,7 +233,7 @@
 
         <script src="{{ baseUrl }}/assets/plupload/js/plupload.full.min.js" defer></script>
         <script src="{{ baseUrl }}/assets/plupload/js/jquery.plupload.queue.min.js" defer></script>
-        <script src="{{ baseUrl }}/templates/administration/js/upload.js?v=1.0" defer></script>
+        <script src="{{ baseUrl }}/templates/administration/js/upload.js?v=1.2" defer></script>
         <script src="{{ baseUrl }}/assets/js/bootstrap-select.js" defer></script>
 
     {% endblock %}
@@ -302,6 +302,10 @@
             document.addEventListener("DOMContentLoaded", function (event) {
                 $("#uploadButton").click(function (e) {
                     document.querySelector('#file-uploader_browse').click();
+                });
+
+                $('#file-uploader').on('change', 'input[type=file]', function (event) {
+                    toggleLoading()
                 });
 
                 $('#uploadForm').collapse('hide').on('hide.bs.collapse', function () {
@@ -542,7 +546,10 @@
                     }
                 });
                 $('.toggle_button').click(function () {
-                    $('#file-page').toggle();
+                    $('.plupload_filelist_header').toggle();
+                    $('#file-uploader_filelist').toggle();
+                    $('#file-btn').toggle();
+                    $('#info-btn').toggle();
                     $('#info-page').toggle();
                 })
                 $(".js-maad-modal").click(function (e) {
@@ -557,7 +564,7 @@
                     let arr = []
                     $('.param').each(function () {
                         if ($(this).val() != '') {
-                            param[$(this).data('id')] = (param[$(this).data('id')] ? param[$(this).data('id')] : '') + $(this).data('id') + '?' + $(this).val() + '@'
+                            param[$(this).data('id')] = (param[$(this).data('id')] ? param[$(this).data('id')] : '') + $(this).attr('id') + '?' + $(this).val() + '@'
                         }
                     })
                     $('.js-checkbox:checked').each(function () {
@@ -565,10 +572,10 @@
                             id = $(this).data('id');
                             $('#maad option:selected').each(function () {
                                 arr = {
-                                    'minTime': 0,
-                                    'maxTime': $('#max_time' + id).val(),
-                                    'minFrequency': 1,
-                                    'maxFrequency': $('#max_freq' + id).val(),
+                                    'min_time': 0,
+                                    'max_time': $('#max_time' + id).val(),
+                                    'min_frequency': 1,
+                                    'max_frequency': $('#max_freq' + id).val(),
                                     'collection_id': $('#colId').val(),
                                     'recording_id': id,
                                     'filename': '/' + $('#directory' + id).val() + '/' + $('#filename' + id).val(),

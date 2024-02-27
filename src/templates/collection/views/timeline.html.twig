@@ -38,6 +38,9 @@
         maxHeight: 800,
         min: "{{ min }}",
         max: "{{ max }}",
+        cluster: {
+            maxItems: 1,
+        },
         order: function (a, b) {
             if (b.start - a.start == 0) {
                 return b.order.localeCompare(a.order)

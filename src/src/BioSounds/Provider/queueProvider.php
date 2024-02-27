@@ -47,7 +47,7 @@ class queueProvider extends AbstractProvider
     {
         $sql = "SELECT * FROM queue WHERE user_id = " . Auth::getUserLoggedID() . " AND (error != '-1' OR error IS NULL)";
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(queue_id,''), IFNULL(type,''), IFNULL(completed,''), IFNULL(total,''), IFNULL(status,''), IFNULL(start_time,''), IFNULL(stop_time,'')) LIKE '%$search%' ";
+            $sql .= " AND CONCAT(IFNULL(queue_id,''), IFNULL(type,''), IFNULL(completed,''), IFNULL(total,''), IFNULL(status,''), IFNULL(start_time,''), IFNULL(stop_time,''), IFNULL(warning,''), IFNULL(error,'')) LIKE '%$search%' ";
         }
         $this->database->prepareQuery($sql);
         $count = count($this->database->executeSelect());
@@ -59,9 +59,9 @@ class queueProvider extends AbstractProvider
         $arr = [];
         $sql = "SELECT * FROM queue WHERE user_id = " . Auth::getUserLoggedID() . " AND (error != '-1' OR error IS NULL)";
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(queue_id,''), IFNULL(type,''), IFNULL(completed,''), IFNULL(total,''), IFNULL(status,''), IFNULL(start_time,''), IFNULL(stop_time,'')) LIKE '%$search%' ";
+            $sql .= " AND CONCAT(IFNULL(queue_id,''), IFNULL(type,''), IFNULL(completed,''), IFNULL(total,''), IFNULL(status,''), IFNULL(start_time,''), IFNULL(stop_time,''), IFNULL(warning,''), IFNULL(error,'')) LIKE '%$search%' ";
         }
-        $a = ['', 'queue_id', 'type', 'completed', 'total', 'status', 'start_time', 'stop_time'];
+        $a = ['', 'queue_id', 'type', 'completed', 'total', 'status', 'start_time', 'stop_time', 'warning', 'error'];
         $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
@@ -88,9 +88,8 @@ class queueProvider extends AbstractProvider
                 $arr[$key][] = $value['stop_time'];
                 $time_diff = (new DateTime($value['start_time']))->diff(new DateTime($value['stop_time']));
                 $arr[$key][] = $value['stop_time'] ? sprintf("%s%s%s", $time_diff->h > 0 ? $time_diff->h . "h " : "", $time_diff->i > 0 ? $time_diff->i . "m " : "", $time_diff->s . "s") : '';
-                if (Auth::isUserAdmin()) {
-                    $arr[$key][] = $value['error'];
-                }
+                $arr[$key][] = $value['warning'];
+                $arr[$key][] = $value['error'];
             }
         }
         return $arr;

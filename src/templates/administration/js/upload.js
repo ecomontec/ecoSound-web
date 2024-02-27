@@ -1,5 +1,6 @@
 let uploadDir = Math.floor(Math.random() * (10000000 - 100000) + 100000);
-
+var isUploading = false;
+var closeButtonClicked = false;
 $("#file-uploader").pluploadQueue({
     runtimes: 'html5',
     url: baseUrl + '/scripts/uploaded.php?dir=' + uploadDir,
@@ -17,9 +18,12 @@ $("#file-uploader").pluploadQueue({
     init: {
         UploadComplete: function (up) {
             $("#save_button").prop("disabled", false);
+            isUploading = false;
+            $('.loading').hide()
         },
         Error: function (up, args) {
             showAlert(args.message.replace(/\.([^\.]*)$/, ": $1") + args.file.name);
+            $('.loading').hide()
         },
         FilesAdded: function (up, files) {
             plupload.each(files, function (file) {
@@ -30,11 +34,25 @@ $("#file-uploader").pluploadQueue({
                 }
             });
             if (up.files.length > 0) {
+                isUploading = true;
                 document.querySelector('.plupload_start').click();
                 $('#uploadForm').collapse('show');
                 $("#save_button").prop("disabled", true);
             }
+            $('.loading').hide()
         }
+    }
+});
+
+$('#closeButton').click(function () {
+    closeButtonClicked = true;
+});
+
+$(window).on('beforeunload', function (event) {
+    if (!closeButtonClicked && isUploading) {
+        var confirmationMessage = 'Leaving this page will abort the ongoing upload. Abort?';
+        (event || window.event).returnValue = confirmationMessage;
+        return confirmationMessage;
     }
 });
 
@@ -42,8 +60,13 @@ $('#uploadForm')
     .submit(function (e) {
         $("#save_button").prop("disabled", true);
         let values = new FormData($(this)[0]);
-        values["colID"] = $("#collection").val();
+        let entries = Array.from(values.entries());
 
+        for (let pair of entries) {
+            if (pair[0].includes("file-uploader") && pair[0] != 'file-uploader_count') {
+                values.delete(pair[0]);
+            }
+        }
         postRequest(
             baseUrl + '/api/file/upload/' + uploadDir,
             values,
@@ -52,7 +75,9 @@ $('#uploadForm')
             function (response) {
                 $('#upload_btn').toggle();
                 if (response.error_code == 0) {
-                    location.reload();
+                    setTimeout(function () {
+                        location.reload();
+                    }, 2000);
                 }
             })
         e.preventDefault();

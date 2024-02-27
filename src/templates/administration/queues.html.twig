@@ -13,6 +13,10 @@
                 <i class="fas fa-trash"></i>
                 Delete/Abort
             </button>
+            <button id="queuesExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#queuesExport" aria-expanded="false" aria-controls="queuesExport">
+                <i class="fa fa-file-csv"></i>
+                Save all as CSV
+            </button>
         </div>
         <table id="queuesTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
@@ -27,9 +31,8 @@
                 <th>Start Datetime</th>
                 <th>End Datetime</th>
                 <th>Elapsed Time</th>
-                {% if is_admin %}
-                    <th>Error</th>
-                {% endif %}
+                <th>Warning</th>
+                <th>Error</th>
             </tr>
             </thead>
             <tbody class="form-control-sm js-index-log-list"></tbody>
@@ -69,8 +72,13 @@
 {% block header %}
     {{ parent() }}
     <script>
+        var checkboxState = {};
         $(document).ready(function () {
             $('#queuesTable').show()
+            $('#queuesTable').on('change', '.js-checkbox', function () {
+                var id = $(this).data('id');
+                checkboxState[id] = $(this).prop('checked');
+            });
             let table = $('#queuesTable').DataTable({
                 "processing": true,
                 "serverSide": true,
@@ -95,7 +103,18 @@
                 "scrollX": true,
             });
             setInterval(function () {
-                $('#queuesTable').DataTable().ajax.reload();
+                $('#queuesTable').DataTable().ajax.reload(function () {
+                    $.each(checkboxState, function (id, checked) {
+                        $('#queuesTable .js-checkbox[data-id="' + id + '"]').prop('checked', checked);
+                    });
+                    if ($('#queuesTable .js-checkbox:checked').length > 0 > 0) {
+                        $('button[name="table-btn"][data-target="#deletion"]').removeClass('btn-outline-secondary').removeClass('btn-outline-primary').addClass('btn-outline-danger');
+                        $('button[name="table-btn"][data-target="#deletion"]').prop('disabled', false);
+                    } else {
+                        $('button[name="table-btn"][data-target="#deletion"]').removeClass('btn-outline-primary').removeClass('btn-outline-danger').addClass('btn-outline-secondary');
+                        $('button[name="table-btn"][data-target="#deletion"]').prop('disabled', true);
+                    }
+                }, false);
             }, 5000);
             if (table.state.loaded()) {
                 $('#search').val(table.state.loaded().search.search);
@@ -104,6 +123,7 @@
                 table.search($('#search').val()).draw();
             });
         });
+
         $(function () {
             'use strict';
             $('button[name="table-btn"][data-target="#deletion"]').click(function (e) {
@@ -124,6 +144,9 @@
                 postRequest('{{ baseUrl }}/api/admin/queueMgr/delete', data, false, false, function () {
                     location.reload();
                 });
+            });
+            $(document).on('click', '#queuesExport', function () {
+                window.location.href = '{{ baseUrl }}/api/admin/queueMgr/export';
             });
         });
     </script>

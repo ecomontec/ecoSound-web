@@ -3,6 +3,7 @@
 require_once __DIR__ . '/vendor/autoload.php';
 
 use BioSounds\Entity\Queue;
+use BioSounds\Provider\IndexLogProvider;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use BioSounds\Service\FileService;
 
@@ -31,7 +32,12 @@ $callback = function ($msg) use ($config) {
     try {
         $headers = $msg->get('application_headers')->getNativeData();
         $data = json_decode($msg->body, true);
-        foreach ($data as $d) {
+        if ($headers['list_type'] == 'index analysis') {
+            $id = (new IndexLogProvider())->getId();
+        }
+        $addedFiles = "";
+        $errorFiles = "";
+        foreach ($data as $index => $d) {
             $result = (new Queue())->getById($headers['queue_id']);
             if ($result['status'] == '-2') {
                 $result['stop_time'] = date('Y-m-d H:i:s');
@@ -51,10 +57,25 @@ $callback = function ($msg) use ($config) {
                 }
                 if ($headers['list_type'] == 'upload') {
                     $back = (new FileService())->process($d);
+                    if (isset(json_decode($back)->formatErrors) && json_decode($back)->formatErrors != '') {
+                        if ($errorFiles != '') {
+                            $errorFiles .= ", ";
+                        }
+                        $errorFiles .= json_decode($back)->formatErrors;
+                        $arr['warning'] = "File " . $errorFiles . " had an unrecognised date - time format - used 1970 - 01 - 01 00:00:00 instead . ";
+                    }
+                    if (isset(json_decode($back)->fileExists) && json_decode($back)->fileExists != '') {
+                        if ($addedFiles != '') {
+                            $addedFiles .= ", ";
+                        }
+                        $addedFiles .= json_decode($back)->fileExists;
+                        $arr['warning'] = $arr['warning'] . "File " . $addedFiles . " already exists in the system.";
+                    }
+
                 }
                 if ($headers['list_type'] == 'index analysis') {
                     $d = json_decode($d, true);
-                    $back = (new \BioSounds\Controller\RecordingController())->maads($d);
+                    $back = (new \BioSounds\Controller\RecordingController())->maads($d, $id);
                 }
                 if (isset(json_decode($back)->errorCode) && json_decode($back)->errorCode == '0') {
                     $arr['queue_id'] = $headers['queue_id'];

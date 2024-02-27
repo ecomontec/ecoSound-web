@@ -2,29 +2,12 @@
     <div class="card mb-4">
         <div class="card-body">
             <div class="row">
-                <div class="col-md-12" id="file-page">
-                    <div id="file-uploader" class="file-uploader">You browser doesn't support native upload.</div>
-                    <input type="hidden" name="colId" value="{{ colId }}">
-                    <div class="card-footer bg-transparent">
-                        <div class="form-group text-right mt-2">
-                            <button id="closeButton" type="button" class="btn btn-outline-secondary" data-toggle="collapse" data-target="#uploadForm">
-                                <i class="fa-solid fa-trash"></i>
-                                Abort
-                            </button>
-                            <button class="btn btn-outline-primary toggle_button ml-2">
-                                <i class="fa-solid fa-arrow-right"></i>
-                                Next
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="col-md-12" id="info-page" style="display: none">
                     <div class="row">
                         <div class="form-group col-md-6">
-                            <label class="col-form-label-sm" for="date">Date
-                            </label>
+                            <label class="col-form-label-sm" for="date">Date</label>
                             <input id="date" class="form-control form-control-sm  js-file-field" name="date" type="date" required>
+                            <input type="hidden" name="colId" value="{{ colId }}">
                         </div>
                         <div class="form-group col-md-4">
                             <label class="col-form-label-sm" for="time">Time
@@ -97,8 +80,21 @@
                             </select>
                         </div>
                     </div>
+                </div>
+                <div class="col-md-12">
+                    <div id="file-uploader" class="file-uploader">You browser doesn't support native upload.</div>
                     <div class="card-footer bg-transparent">
-                        <div class="form-group text-right mt-2">
+                        <div class="form-group text-right mt-2" id="file-btn">
+                            <button id="closeButton" type="button" class="btn btn-outline-secondary" data-toggle="collapse" data-target="#uploadForm">
+                                <i class="fa-solid fa-trash"></i>
+                                Abort
+                            </button>
+                            <button class="btn btn-outline-primary toggle_button ml-2">
+                                <i class="fa-solid fa-arrow-right"></i>
+                                Next
+                            </button>
+                        </div>
+                        <div class="form-group text-right mt-2" id="info-btn" style="display: none">
                             <button type="button" class="btn btn-outline-secondary toggle_button">
                                 <i class="fa-solid fa-rotate-left"></i>
                                 Back

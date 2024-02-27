@@ -14,6 +14,7 @@ use BioSounds\Presenter\FrequencyScalePresenter;
 use BioSounds\Presenter\RecordingPresenter;
 use BioSounds\Presenter\TagPresenter;
 use BioSounds\Provider\CollectionProvider;
+use BioSounds\Provider\IndexLogProvider;
 use BioSounds\Provider\IndexTypeProvider;
 use BioSounds\Provider\LabelAssociationProvider;
 use BioSounds\Provider\LabelProvider;
@@ -528,10 +529,10 @@ class RecordingController extends BaseController
         $str = 'python3 ' . ABSOLUTE_DIR . 'bin/getMaad.py' .
             ' -f ' . ABSOLUTE_DIR . 'tmp/' . implode('.', explode('.', explode('/tmp/', $data['filename'])[1], -1)) .
             ' --ch ' . ($data['channel'] == 2 ? 'right' : 'left') .
-            ' --mint ' . $data['minTime'] .
-            ' --maxt ' . $data['maxTime'] .
-            ' --minf ' . $data['minFrequency'] .
-            ' --maxf ' . $data['maxFrequency'];
+            ' --mint ' . $data['min_time'] .
+            ' --maxt ' . $data['max_time'] .
+            ' --minf ' . $data['min_frequency'] .
+            ' --maxf ' . $data['max_frequency'];
         if ($data['index'] != '') {
             $str = $str . ' --it ' . $data['index'];
         }
@@ -558,10 +559,10 @@ class RecordingController extends BaseController
                         'result' => $result,
                         'recording_id' => $data['recording_id'],
                         'index_id' => $data['index_id'],
-                        'minTime' => $data['minTime'],
-                        'maxTime' => $data['maxTime'],
-                        'minFrequency' => $data['minFrequency'],
-                        'maxFrequency' => $data['maxFrequency'],
+                        'min_time' => $data['min_time'],
+                        'max_time' => $data['max_time'],
+                        'min_frequency' => $data['min_frequency'],
+                        'max_frequency' => $data['max_frequency'],
                         'param' => substr('Channel?' . $channel . '@' . $data['param'], 0, -1),
                     ])
                 ]);
@@ -577,15 +578,15 @@ class RecordingController extends BaseController
         }
     }
 
-    public function maads($data)
+    public function maads($data, $id)
     {
         $str = 'python3 ' . ABSOLUTE_DIR . 'bin/getMaad.py' .
             ' -f ' . ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . explode('.', $data['filename'], -1)[0] .
             ' --ch ' . ($data['channel'] == 2 ? 'right' : 'left') .
-            ' --mint ' . $data['minTime'] .
-            ' --maxt ' . $data['maxTime'] .
-            ' --minf ' . $data['minFrequency'] .
-            ' --maxf ' . $data['maxFrequency'];
+            ' --mint ' . $data['mint_ime'] .
+            ' --maxt ' . $data['max_time'] .
+            ' --minf ' . $data['min_frequency'] .
+            ' --maxf ' . $data['max_frequency'];
         if ($data['index'] != '') {
             $str = $str . ' --it ' . $data['index'];
         }
@@ -600,47 +601,58 @@ class RecordingController extends BaseController
 
         foreach ($versionLines as $line) {
             if (strpos($line, "Version:") !== false) {
-                $data['version'] = trim(str_replace("Version:", "", $line));
+                $index['version'] = trim(str_replace("Version:", "", $line));
                 break;
             }
         }
-
+        $index['log_id'] = $id;
+        $index['recording_id'] = $data['recording_id'];
+        $index['user_id'] = $data['user_id'];
+        $index['index_id'] = $data['index_id'];
+        $index['min_time'] = $data['min_time'];
+        $index['max_time'] = $data['max_time'];
+        $index['min_frequency'] = $data['min_frequency'];
+        $index['max_frequency'] = $data['max_frequency'];
+        if ($data['channel_num'] == 1) {
+            $channel = 'Mono';
+        } elseif ($data['channel'] == 2) {
+            $channel = 'Right';
+        } else {
+            $channel = 'Left';
+        }
         if ($status == 0 && $out[count($out) - 1] != "0") {
             $result = $out[count($out) - 1];
-            if ($data['channel_num'] == 1) {
-                $channel = 'Mono';
-            } elseif ($data['channel'] == 2) {
-                $channel = 'Right';
-            } else {
-                $channel = 'Left';
-            }
             if ($data['index'] != '') {
                 $arr = explode("!", $result);
                 foreach ($arr as $k => $v) {
                     $name = explode("?", $v)[0];
                     $value = explode("?", $v)[1];
-                    $index['output_name' . $k] = $name;
-                    $index['output_value' . $k] = $value;
+                    $output_name[$k] = $name;
+                    $output_value[$k] = $value;
                 }
             }
         } else {
-            $index['output_name0'] = 'Invalid Parameter';
+            $output_name[] = 'Invalid Parameter';
         }
-        $index['recording_id'] = $data['recording_id'];
-        $index['user_id'] = $data['user_id'];
-        $index['index_id'] = $data['index_id'];
-        $index['minTime'] = $data['minTime'];
-        $index['maxTime'] = $data['maxTime'];
-        $index['minFrequency'] = $data['minFrequency'];
-        $index['maxFrequency'] = $data['maxFrequency'];
         $arr = explode("@", substr('Channel?' . $channel . '@' . $data['param'], 0, -1));
         foreach ($arr as $k => $v) {
             $name = explode("?", $v)[0];
             $value = explode("?", $v)[1];
-            $index['input_name' . $k] = $name;
-            $index['input_value' . $k] = $value;
+            $input_name[$k] = $name;
+            $input_value[$k] = $value;
         }
-        (new IndexLog())->insert($index);
+
+        for ($i = 0; $i <= 6; $i++) {
+            $index['input_number'] = $i + 1;
+            if (isset($output_name[$i]) || isset($output_value[$i]) || isset($input_name[$i]) || isset($input_value[$i])) {
+                $index['input_name'] = $input_name[$i];
+                $index['input_value'] = $input_value[$i];
+                $index['output_name'] = $output_name[$i];
+                $index['output_value'] = $output_value[$i];
+                (new IndexLog())->insert($index);
+            }
+        }
+
         return json_encode([
             'errorCode' => 0,
             'message' => 'Index saved successfully.'
@@ -677,9 +689,9 @@ class RecordingController extends BaseController
         if (!Auth::isUserLogged()) {
             throw new NotAuthenticatedException();
         }
-
         $data = [];
         $data['user_id'] = Auth::getUserLoggedID();
+        $data['log_id'] = (new IndexLogProvider())->getId();
         $versionOutput = shell_exec("pip3 show scikit-maad");
         $versionLines = explode("\n", $versionOutput);
         $version = null;
@@ -691,27 +703,35 @@ class RecordingController extends BaseController
             }
         }
         foreach ($_POST as $key => $value) {
-            if ($key == 'param') {
-                $arr = explode("@", $value);
-                foreach ($arr as $k => $v) {
-                    $name = explode("?", $v)[0];
-                    $value = explode("?", $v)[1];
-                    $data['input_name' . $k] = $name;
-                    $data['input_value' . $k] = $value;
-                }
-            } else if ($key == 'value') {
-                $arr = explode("!", $value);
-                foreach ($arr as $k => $v) {
-                    $name = explode("?", $v)[0];
-                    $value = explode("?", $v)[1];
-                    $data['output_name' . $k] = $name;
-                    $data['output_value' . $k] = $value;
-                }
-            } else {
+            if ($key != 'param' && $key != 'value') {
                 $data[$key] = $value;
             }
         }
-        (new IndexLog())->insert($data);
+        foreach (explode("@", $_POST['param']) as $k => $v) {
+            $name = explode("?", $v)[0];
+            $value = explode("?", $v)[1];
+            $input_name[$k] = $name;
+            $input_value[$k] = $value;
+        }
+        foreach (explode("!", $_POST['value']) as $k => $v) {
+            $name = explode("?", $v)[0];
+            $value = explode("?", $v)[1];
+            $output_name[$k] = $name;
+            $output_value[$k] = $value;
+        }
+
+        for ($i = 0; $i <= 6; $i++) {
+            $index['input_number'] = $i + 1;
+            if (isset($output_name[$i]) || isset($output_value[$i]) || isset($input_name[$i]) || isset($input_value[$i])) {
+                $data['input_number'] = $i;
+                $data['input_name'] = $input_name[$i];
+                $data['input_value'] = $input_value[$i];
+                $data['output_name'] = $output_name[$i];
+                $data['output_value'] = $output_value[$i];
+                (new IndexLog())->insert($data);
+            }
+        }
+
         return json_encode([
             'errorCode' => 0,
             'message' => 'Index saved successfully.'

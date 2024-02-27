@@ -81,7 +81,7 @@
 }
 
 .plupload_scroll .plupload_filelist {
-    height: 330px;
+    height: 395px;
     overflow-y: scroll;
 }
 
@@ -158,6 +158,8 @@
 li.plupload_uploading {
     background: #ECF3DC url('img/backgrounds.gif') repeat-x 0 -238px;
 }
+
+li.plupload_done {color:#AAA}
 
 li.plupload_delete a {
     background: url('img/delete.gif');

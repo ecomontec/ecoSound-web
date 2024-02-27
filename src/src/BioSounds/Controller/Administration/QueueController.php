@@ -60,4 +60,50 @@ class QueueController extends BaseController
             'message' => 'Queue deleted successfully.',
         ]);
     }
+
+    public function export()
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
+        }
+        $colArr = [];
+        $file_name = "queues.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        $columns = (new queueProvider())->getColumns();
+        foreach ($columns as $column) {
+            if ($column['COLUMN_NAME'] == 'user_id' || $column['COLUMN_NAME'] == 'payload') {
+                continue;
+            }
+            $colArr[] = $column['COLUMN_NAME'];
+        }
+        $Als[] = $colArr;
+
+        $List = (new queueProvider())->getQueue();
+        foreach ($List as $Item) {
+            if ($Item['status'] == '-2') {
+                if ($Item['stop_time']) {
+                    $Item['status'] = 'cancelled';
+                } else {
+                    $Item['status'] = 'being cancelled';
+                }
+            } elseif ($Item['status'] == '1') {
+                $Item['status'] = 'finished';
+            } elseif ($Item['status'] == '-1') {
+                $Item['status'] = 'failed';
+            } else {
+                $Item['status'] = 'ongoing';
+            }
+            unset($Item['user_id']);
+            unset($Item['payload']);
+            $Als[] = $Item;
+        }
+        foreach ($Als as $line) {
+            fputcsv($fp, $line);
+        }
+        fclose($fp);
+        exit();
+    }
 }

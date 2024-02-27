@@ -32,42 +32,22 @@ WHERE table_schema = 'biosounds';
 --
 CREATE TABLE `index_log`
 (
-    `log_id`        int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `recording_id`  int(11) NOT NULL,
-    `user_id`       int(11) NOT NULL,
-    `index_id`      int(11) NOT NULL,
-    `minTime`       varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `maxTime`       varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `minFrequency`  varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `maxFrequency`  varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `input_name0`   varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `input_value0`  varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `input_name1`   varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `input_value1`  varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `input_name2`   varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `input_value2`  varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `input_name3`   varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `input_value3`  varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `input_name4`   varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `input_value4`  varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `input_name5`   varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `input_value5`  varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `input_name6`   varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `input_value6`  varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `output_name0`   varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `output_value0`  varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `output_name1`   varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `output_value1`  varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `output_name2`   varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `output_value2`  varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `output_name3`   varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `output_value3`  varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `output_name4`   varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `output_value4`  varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `output_name5`   varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `output_value5`  varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `version`       varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `creation_date` timestamp NOT NULL                   DEFAULT current_timestamp()
+    `log_id`         int(11) NOT NULL,
+    `recording_id`   int(11) NOT NULL,
+    `user_id`        int(11) NOT NULL,
+    `index_id`       int(11) NOT NULL,
+    `version`        varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `min_time`       varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `max_time`       varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `min_frequency`  varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `max_frequency`  varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `input_number`   int(11) NOT NULL,
+    `input_name`     varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `input_value`    varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `output_name`    varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `output_value`   varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `creation_date`  timestamp NOT NULL                   DEFAULT current_timestamp(),
+     INDEX `log_id`(`log_id` ASC, `recording_id` ASC, `index_id` ASC) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
@@ -495,6 +475,7 @@ CREATE TABLE `queue`
     `start_time` datetime,
     `stop_time` datetime,
     `error`  text COLLATE utf8_unicode_ci,
+    `warning`  text COLLATE utf8_unicode_ci,
     `payload`  text COLLATE utf8_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
