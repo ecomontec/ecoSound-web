@@ -29,14 +29,13 @@ class RabbitQueueService
         $this->channel = $this->connection->channel();
     }
 
-    public function queue($data, $type, $count)
+    public function queue($type, $count)
     {
         $this->channel->queue_declare('list', false, true, false, false);
         $arr['type'] = $type;
         $arr['user_id'] = Auth::getUserID();
         $arr['start_time'] = date('Y-m-d H:i:s');
         $arr['total'] = $count;
-        $arr['payload'] = $data;
         $queue_id = (new Queue())->insert($arr);
         $message = new AMQPMessage(
             $data,

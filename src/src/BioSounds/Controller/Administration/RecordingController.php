@@ -283,7 +283,7 @@ class RecordingController extends BaseController
             throw new ForbiddenException();
         }
         $this->queueService = new RabbitQueueService();
-        $this->queueService->queue(json_encode($_POST), 'AI model', count($_POST));
+        $this->queueService->queue('AI model', count($_POST));
         $this->queueService->closeConnection();
         return json_encode([
             'errorCode' => 0,
@@ -297,7 +297,7 @@ class RecordingController extends BaseController
             throw new ForbiddenException();
         }
         $this->queueService = new RabbitQueueService();
-        $this->queueService->queue(json_encode($_POST), 'index analysis', count($_POST));
+        $this->queueService->queue('index analysis', count($_POST));
         $this->queueService->closeConnection();
         return json_encode([
             'errorCode' => 0,

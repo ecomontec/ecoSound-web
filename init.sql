@@ -475,8 +475,7 @@ CREATE TABLE `queue`
     `start_time` datetime,
     `stop_time` datetime,
     `error`  text COLLATE utf8_unicode_ci,
-    `warning`  text COLLATE utf8_unicode_ci,
-    `payload`  text COLLATE utf8_unicode_ci
+    `warning`  text COLLATE utf8_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --

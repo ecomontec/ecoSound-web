@@ -74,7 +74,7 @@ class QueueController extends BaseController
         header('Content-Disposition: attachment; filename=' . $file_name);
         $columns = (new queueProvider())->getColumns();
         foreach ($columns as $column) {
-            if ($column['COLUMN_NAME'] == 'user_id' || $column['COLUMN_NAME'] == 'payload') {
+            if ($column['COLUMN_NAME'] == 'user_id') {
                 continue;
             }
             $colArr[] = $column['COLUMN_NAME'];
@@ -97,7 +97,6 @@ class QueueController extends BaseController
                 $Item['status'] = 'ongoing';
             }
             unset($Item['user_id']);
-            unset($Item['payload']);
             $Als[] = $Item;
         }
         foreach ($Als as $line) {
