@@ -113,7 +113,7 @@ class FileService
                     ->setMedium($medium);
                 $list[] = $this->fileProvider->insert($file);
             }
-            $this->queueService->queue('upload', $request['file-uploader_count']);
+            $this->queueService->queue(json_encode($list), 'upload', $request['file-uploader_count']);
         } catch (\Exception $exception) {
             Utils::deleteDirContents($uploadPath);
             throw $exception;

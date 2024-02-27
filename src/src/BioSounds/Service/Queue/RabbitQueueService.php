@@ -29,7 +29,7 @@ class RabbitQueueService
         $this->channel = $this->connection->channel();
     }
 
-    public function queue($type, $count)
+    public function queue($data, $type, $count)
     {
         $this->channel->queue_declare('list', false, true, false, false);
         $arr['type'] = $type;
