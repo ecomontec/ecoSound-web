@@ -170,6 +170,7 @@ class Recording
     private $recorderName;
     private $microphoneName;
     private $startDate;
+    private $endDate;
     private $path;
 
     /**
@@ -435,24 +436,6 @@ class Recording
     /**
      * @return null|string
      */
-    public function getDataType(): ?string
-    {
-        return $this->data_type;
-    }
-
-    /**
-     * @param null|string $data_type
-     * @return Recording
-     */
-    public function setDataType(?string $data_type): Recording
-    {
-        $this->data_type = $data_type;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
     public function getEndDate(): ?string
     {
         return $this->endDate;
@@ -465,6 +448,24 @@ class Recording
     public function setEndDate(?string $endDate): Recording
     {
         $this->endDate = $endDate;
+        return $this;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getDataType(): ?string
+    {
+        return $this->data_type;
+    }
+
+    /**
+     * @param null|string $data_type
+     * @return Recording
+     */
+    public function setDataType(?string $data_type): Recording
+    {
+        $this->data_type = $data_type;
         return $this;
     }
 

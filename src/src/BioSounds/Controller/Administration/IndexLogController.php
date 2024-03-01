@@ -63,12 +63,13 @@ class IndexLogController extends BaseController
         header('Content-Disposition: attachment; filename=' . $file_name);
         $columns = (new IndexLogProvider())->getColumns();
         foreach ($columns as $column) {
-            if($column['COLUMN_NAME']!='input_number'&&	$column['COLUMN_NAME']!='input_name'&&$column['COLUMN_NAME']!='input_value'&&$column['COLUMN_NAME']!='output_name'&&$column['COLUMN_NAME']!='output_value'){
+            if ($column['COLUMN_NAME'] != 'variable_type' && $column['COLUMN_NAME'] != 'variable_order' && $column['COLUMN_NAME'] != 'variable_name' && $column['COLUMN_NAME'] != 'variable_value') {
                 $colArr[] = $column['COLUMN_NAME'];
             }
         }
         array_splice($colArr, 2, 0, 'recording');
-        array_splice($colArr, 4, 0, 'user');   array_splice($colArr, 6, 0, 'input_value_6');
+        array_splice($colArr, 4, 0, 'user');
+        array_splice($colArr, 6, 0, 'index');
         array_splice($colArr, 12, 0, 'output_value_6');
         array_splice($colArr, 12, 0, 'output_name_6');
         array_splice($colArr, 12, 0, 'output_value_5');

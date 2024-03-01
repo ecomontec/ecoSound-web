@@ -597,7 +597,6 @@ class RecordingController extends BaseController
 
         $versionOutput = shell_exec("pip3 show scikit-maad");
         $versionLines = explode("\n", $versionOutput);
-        $version = null;
 
         foreach ($versionLines as $line) {
             if (strpos($line, "Version:") !== false) {
@@ -627,32 +626,30 @@ class RecordingController extends BaseController
                 foreach ($arr as $k => $v) {
                     $name = explode("?", $v)[0];
                     $value = explode("?", $v)[1];
-                    $output_name[$k] = $name;
-                    $output_value[$k] = $value;
+                    $index['variable_type'] = 'output';
+                    $index['variable_order'] = $k + 1;
+                    $index['variable_name'] = $name;
+                    $index['variable_value'] = $value;
+                    (new IndexLog())->insert($index);
                 }
             }
         } else {
-            $output_name[] = 'Invalid Parameter';
+            $index['variable_type'] = 'output';
+            $index['variable_order'] = 1;
+            $index['variable_name'] = 'Invalid Parameter';
+            $index['variable_value'] = '';
+            (new IndexLog())->insert($index);
         }
         $arr = explode("@", substr('Channel?' . $channel . '@' . $data['param'], 0, -1));
         foreach ($arr as $k => $v) {
             $name = explode("?", $v)[0];
             $value = explode("?", $v)[1];
-            $input_name[$k] = $name;
-            $input_value[$k] = $value;
+            $index['variable_type'] = 'input';
+            $index['variable_order'] = $k + 1;
+            $index['variable_name'] = $name;
+            $index['variable_value'] = $value;
+            (new IndexLog())->insert($index);
         }
-
-        for ($i = 0; $i <= 6; $i++) {
-            $index['input_number'] = $i + 1;
-            if (isset($output_name[$i]) || isset($output_value[$i]) || isset($input_name[$i]) || isset($input_value[$i])) {
-                $index['input_name'] = $input_name[$i];
-                $index['input_value'] = $input_value[$i];
-                $index['output_name'] = $output_name[$i];
-                $index['output_value'] = $output_value[$i];
-                (new IndexLog())->insert($index);
-            }
-        }
-
         return json_encode([
             'errorCode' => 0,
             'message' => 'Index saved successfully.'
@@ -694,7 +691,6 @@ class RecordingController extends BaseController
         $data['log_id'] = (new IndexLogProvider())->getId();
         $versionOutput = shell_exec("pip3 show scikit-maad");
         $versionLines = explode("\n", $versionOutput);
-        $version = null;
 
         foreach ($versionLines as $line) {
             if (strpos($line, "Version:") !== false) {
@@ -710,28 +706,21 @@ class RecordingController extends BaseController
         foreach (explode("@", $_POST['param']) as $k => $v) {
             $name = explode("?", $v)[0];
             $value = explode("?", $v)[1];
-            $input_name[$k] = $name;
-            $input_value[$k] = $value;
+            $data['variable_type'] = 'input';
+            $data['variable_order'] = $k + 1;
+            $data['variable_name'] = $name;
+            $data['variable_value'] = $value;
+            (new IndexLog())->insert($data);
         }
         foreach (explode("!", $_POST['value']) as $k => $v) {
             $name = explode("?", $v)[0];
             $value = explode("?", $v)[1];
-            $output_name[$k] = $name;
-            $output_value[$k] = $value;
+            $data['variable_type'] = 'output';
+            $data['variable_order'] = $k + 1;
+            $data['variable_name'] = $name;
+            $data['variable_value'] = $value;
+            (new IndexLog())->insert($data);
         }
-
-        for ($i = 0; $i <= 6; $i++) {
-            $index['input_number'] = $i + 1;
-            if (isset($output_name[$i]) || isset($output_value[$i]) || isset($input_name[$i]) || isset($input_value[$i])) {
-                $data['input_number'] = $i;
-                $data['input_name'] = $input_name[$i];
-                $data['input_value'] = $input_value[$i];
-                $data['output_name'] = $output_name[$i];
-                $data['output_value'] = $output_value[$i];
-                (new IndexLog())->insert($data);
-            }
-        }
-
         return json_encode([
             'errorCode' => 0,
             'message' => 'Index saved successfully.'

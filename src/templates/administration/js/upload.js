@@ -58,10 +58,12 @@ $(window).on('beforeunload', function (event) {
 
 $('#uploadForm')
     .submit(function (e) {
-        $("#save_button").prop("disabled", true);
         let values = new FormData($(this)[0]);
         let entries = Array.from(values.entries());
-
+        $("#save_button").prop("disabled", true);
+        $('.card-body input').prop('disabled', true);
+        $('.card-body select').prop('disabled', true);
+        $('.plupload_add').hide();
         for (let pair of entries) {
             if (pair[0].includes("file-uploader") && pair[0] != 'file-uploader_count') {
                 values.delete(pair[0]);
@@ -74,11 +76,6 @@ $('#uploadForm')
             true,
             function (response) {
                 $('#upload_btn').toggle();
-                if (response.error_code == 0) {
-                    setTimeout(function () {
-                        location.reload();
-                    }, 2000);
-                }
             })
         e.preventDefault();
     })
@@ -92,6 +89,7 @@ $("#reference").change(function (e) {
 
 $("#from-file").change(function (e) {
     let fileFields = $('.js-file-field');
+    fileFields.val('')
     fileFields.prop('disabled', !fileFields.prop('disabled'));
     fileFields.prop('required', !fileFields.prop('required'));
 });

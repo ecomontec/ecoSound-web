@@ -410,12 +410,12 @@
                         }
                     });
                     if (count == 0) {
-                        showAlert('Select at least one audio data.');
+                        showAlert('Select at least one audio recording.');
                         e.preventDefault();
                         return
                     }
                     $('#modal-tf').modal('show');
-                    $('#modal-tf').find('#tf-info').html('<div>Launch job for ' + $('.js-checkbox:checked').length + ' recordings?</div>')
+                    $('#modal-tf').find('#tf-info').html('<small>Launch job for ' + $('.js-checkbox:checked').length + ' recordings?</small>')
                 })
                 $('#maads').on('click', function () {
                     let count = 0
@@ -425,12 +425,12 @@
                         }
                     });
                     if (count == 0) {
-                        showAlert('Select at least one audio data.');
+                        showAlert('Select at least one audio recording.');
                         e.preventDefault();
                         return
                     }
                     $('#modal-maad').modal('show');
-                    $('#modal-maad').find('#maad-info').html('<div>Launch job for ' + $('.js-checkbox:checked').length + ' recordings?</div>')
+                    $('#modal-maad').find('#maad-info').html('<small>Launch job for ' + $('.js-checkbox:checked').length + ' recordings?</small>')
                 })
                 $(document).on('click', '#recordingsExport', function () {
                     window.location.href = '{{ baseUrl }}/api/admin/recordingManager/export/' + $('#colId').val();
@@ -500,7 +500,7 @@
                         }
                     });
                     if (count == 0) {
-                        showAlert('Select at least one audio data.');
+                        showAlert('Select at least one audio recording.');
                     }
                     e.preventDefault();
                 })
@@ -513,7 +513,7 @@
                         }
                     });
                     if (count == 0) {
-                        showAlert('Select at least one audio data.');
+                        showAlert('Select at least one audio recording.');
                     }
                     e.preventDefault();
                 })
@@ -545,13 +545,6 @@
                         $('#maad' + value).remove();
                     }
                 });
-                $('.toggle_button').click(function () {
-                    $('.plupload_filelist_header').toggle();
-                    $('#file-uploader_filelist').toggle();
-                    $('#file-btn').toggle();
-                    $('#info-btn').toggle();
-                    $('#info-page').toggle();
-                })
                 $(".js-maad-modal").click(function (e) {
                     if ($('#maad-box').text() == '') {
                         showAlert('Select at least one index.')

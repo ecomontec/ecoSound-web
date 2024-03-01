@@ -32,21 +32,20 @@ WHERE table_schema = 'biosounds';
 --
 CREATE TABLE `index_log`
 (
-    `log_id`         int(11) NOT NULL,
-    `recording_id`   int(11) NOT NULL,
-    `user_id`        int(11) NOT NULL,
-    `index_id`       int(11) NOT NULL,
-    `version`        varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `min_time`       varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `max_time`       varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `min_frequency`  varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `max_frequency`  varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `input_number`   int(11) NOT NULL,
-    `input_name`     varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `input_value`    varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `output_name`    varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `output_value`   varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `creation_date`  timestamp NOT NULL                   DEFAULT current_timestamp(),
+    `log_id`            int(11) NOT NULL,
+    `recording_id`      int(11) NOT NULL,
+    `user_id`           int(11) NOT NULL,
+    `index_id`          int(11) NOT NULL,
+    `version`           varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `min_time`          varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `max_time`          varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `min_frequency`     varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `max_frequency`     varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `variable_type`     varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `variable_order`    int(11) NOT NULL,
+    `variable_name`     varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `variable_value`    varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `creation_date`     timestamp NOT NULL                  DEFAULT current_timestamp(),
      INDEX `log_id`(`log_id` ASC, `recording_id` ASC, `index_id` ASC) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 

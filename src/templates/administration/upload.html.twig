@@ -1,23 +1,26 @@
 <form id="uploadForm" method="POST" class="collapse">
+
     <div class="card mb-4">
         <div class="card-body">
             <div class="row">
-                <div class="col-md-12" id="info-page" style="display: none">
+                <div class="col-md-7">
+                    <div id="file-uploader" class="file-uploader">You browser doesn't support native upload.</div>
+                </div>
+                <div class="col-md-5 mt-2">
                     <div class="row">
                         <div class="form-group col-md-6">
                             <label class="col-form-label-sm" for="date">Date</label>
                             <input id="date" class="form-control form-control-sm  js-file-field" name="date" type="date" required>
                             <input type="hidden" name="colId" value="{{ colId }}">
                         </div>
-                        <div class="form-group col-md-4">
-                            <label class="col-form-label-sm" for="time">Time
-                            </label>
+                        <div class="form-group col-md-6">
+                            <label class="col-form-label-sm" for="time">Time</label>
                             <input id="time" class="form-control form-control-sm js-file-field" name="time" type="time" min="00:00:00" max="23:59:59" step="1" required>
-                        </div>
-                        <div class="form-group col-md-2">
-                            <div class="form-check form-control-sm pt-5">
-                                <input id="from-file" class="form-check-input" name="dateFromFile" type="checkbox">
-                                <label class="form-check-label" for="from-file">File</label>
+                            <div class="d-flex justify-content-end">
+                                <div>
+                                    <input id="from-file" class="form-check-input" name="dateFromFile" type="checkbox">
+                                    <label class="label" for="from-file"><small>Date and time from filename</small></label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -81,30 +84,17 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-12">
-                    <div id="file-uploader" class="file-uploader">You browser doesn't support native upload.</div>
-                    <div class="card-footer bg-transparent">
-                        <div class="form-group text-right mt-2" id="file-btn">
-                            <button id="closeButton" type="button" class="btn btn-outline-secondary" data-toggle="collapse" data-target="#uploadForm">
-                                <i class="fa-solid fa-trash"></i>
-                                Abort
-                            </button>
-                            <button class="btn btn-outline-primary toggle_button ml-2">
-                                <i class="fa-solid fa-arrow-right"></i>
-                                Next
-                            </button>
-                        </div>
-                        <div class="form-group text-right mt-2" id="info-btn" style="display: none">
-                            <button type="button" class="btn btn-outline-secondary toggle_button">
-                                <i class="fa-solid fa-rotate-left"></i>
-                                Back
-                            </button>
-                            <button id="save_button" type="submit" class="btn btn-outline-primary ml-2" disabled>
-                                <i class="fas fa-save"></i>
-                                Insert
-                            </button>
-                        </div>
-                    </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <div class="form-group text-right mt-2">
+                    <button id="closeButton" type="button" class="btn btn-outline-secondary" data-toggle="collapse" data-target="#uploadForm">
+                        <i class="fa-solid fa-close"></i>
+                        Close
+                    </button>
+                    <button id="save_button" type="submit" class="btn btn-outline-primary ml-2" disabled>
+                        <i class="fas fa-save"></i>
+                        Insert
+                    </button>
                 </div>
             </div>
         </div>

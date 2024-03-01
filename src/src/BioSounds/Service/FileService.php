@@ -29,7 +29,7 @@ class FileService
     const FILE_EXISTS_MESSAGE = 'File %s not inserted. It already exists in the system.';
     const DATE_FORMAT = '%d-%d-%d';
     const TIME_FORMAT = '%d:%d:%d';
-    const DATE_TIME_PATTERN = '/(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})/';
+    const DATE_TIME_PATTERN = '/(19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])_(0\d|1\d|2[0-3])([0-5]\d)([0-5]\d)/';
 
     /**
      * @var Recording
@@ -150,74 +150,75 @@ class FileService
             if (!empty($this->recordingProvider->getByHash($fileHash, $file->getCollection()))) {
                 $fileExists = 1;
             }
-
-            if (empty($fileFormat = Utils::getFileFormat($file->getPath()))) {
-                return;
-            }
-
-            $wavFilePath = $file->getPath();
-            if ($fileFormat !== 'wav') {
-                $wavFilePath = Utils::generateWavFile($file->getPath());
-            }
-
-            $sound = [
-                Recording::COL_ID => $file->getCollection(),
-                Recording::FILE_DATE => $file->getDate(),
-                Recording::DIRECTORY => $file->getDirectory(),
-                Recording::FILE_TIME => $file->getTime(),
-                Recording::SITE_ID => $file->getSite(),
-                Recording::RECORDER_ID => $file->getRecorder(),
-                Recording::MICROPHONE_ID => $file->getMicrophone(),
-                Recording::FILENAME => $file->getName(),
-                Recording::CHANNEL_NUM => Utils::getFileChannels($wavFilePath),
-                Recording::FILE_SIZE => filesize($wavFilePath),
-                Recording::SAMPLING_RATE => Utils::getFileSamplingRate($wavFilePath),
-                Recording::BITRATE => Utils::getFileBitRate($wavFilePath),
-                Recording::NAME => $file->getName(),
-                Recording::DURATION => floatval(Utils::getFileDuration($wavFilePath)),
-                Recording::MD5_HASH => $fileHash,
-                Recording::DOI => $file->getDoi(),
-                Recording::LICENSE_ID => $file->getLicense(),
-                Recording::USER_ID => $file->getUser(),
-                Recording::Type => $file->getType(),
-                Recording::Medium => $file->getMedium(),
-            ];
-
-            $sound[Recording::ID] = (new RecordingProvider())->insert($sound);
-            $soundId = $sound[Recording::ID];
-
-            $path = ABSOLUTE_DIR . 'sounds/sounds/' . $file->getCollection() . '/' . $file->getDirectory();
-            if (!is_dir(ABSOLUTE_DIR)) {
-                throw new FileNotFoundException(ABSOLUTE_DIR);
-            }
-
-            if (
-                !is_dir(ABSOLUTE_DIR . 'sounds/sounds/' . $file->getCollection()) &&
-                !mkdir(ABSOLUTE_DIR . 'sounds/sounds/' . $file->getCollection(), 0755, true)
-            ) {
-                throw new FolderCreationException(ABSOLUTE_DIR . 'sounds/sounds/' . $file->getCollection());
-            }
-
-            if (!is_dir($path) && !mkdir($path, 0755, true)) {
-                throw new FolderCreationException($path);
-            }
-
-            if (!rename($file->getPath(), $path . '/' . $file->getName())) {
-                throw new FileCopyException($file->getPath(), $path);
-            }
-
-            if ($fileFormat !== 'wav') {
-                $pathInfo = pathinfo($wavFilePath);
-                if (!rename($wavFilePath, $path . '/' . $pathInfo['filename'] . '.wav')) {
-                    throw new FileCopyException($wavFilePath, $path);
+            if (!$fileExists) {
+                if (empty($fileFormat = Utils::getFileFormat($file->getPath()))) {
+                    return;
                 }
-            }
 
-            (new ImageService())->generateImages($sound);
+                $wavFilePath = $file->getPath();
+                if ($fileFormat !== 'wav') {
+                    $wavFilePath = Utils::generateWavFile($file->getPath());
+                }
 
-            $this->updateFileStatus($file, File::STATUS_SUCCESS, $sound[Recording::ID]);
-            if ($file->getDate() == '1970-01-01' && $file->getTime() == '00:00:00') {
-                $formatErrors = 1;
+                $sound = [
+                    Recording::COL_ID => $file->getCollection(),
+                    Recording::FILE_DATE => $file->getDate(),
+                    Recording::DIRECTORY => $file->getDirectory(),
+                    Recording::FILE_TIME => $file->getTime(),
+                    Recording::SITE_ID => $file->getSite(),
+                    Recording::RECORDER_ID => $file->getRecorder(),
+                    Recording::MICROPHONE_ID => $file->getMicrophone(),
+                    Recording::FILENAME => $file->getName(),
+                    Recording::CHANNEL_NUM => Utils::getFileChannels($wavFilePath),
+                    Recording::FILE_SIZE => filesize($wavFilePath),
+                    Recording::SAMPLING_RATE => Utils::getFileSamplingRate($wavFilePath),
+                    Recording::BITRATE => Utils::getFileBitRate($wavFilePath),
+                    Recording::NAME => $file->getName(),
+                    Recording::DURATION => floatval(Utils::getFileDuration($wavFilePath)),
+                    Recording::MD5_HASH => $fileHash,
+                    Recording::DOI => $file->getDoi(),
+                    Recording::LICENSE_ID => $file->getLicense(),
+                    Recording::USER_ID => $file->getUser(),
+                    Recording::Type => $file->getType(),
+                    Recording::Medium => $file->getMedium(),
+                ];
+
+                $sound[Recording::ID] = (new RecordingProvider())->insert($sound);
+                $soundId = $sound[Recording::ID];
+
+                $path = ABSOLUTE_DIR . 'sounds/sounds/' . $file->getCollection() . '/' . $file->getDirectory();
+                if (!is_dir(ABSOLUTE_DIR)) {
+                    throw new FileNotFoundException(ABSOLUTE_DIR);
+                }
+
+                if (
+                    !is_dir(ABSOLUTE_DIR . 'sounds/sounds/' . $file->getCollection()) &&
+                    !mkdir(ABSOLUTE_DIR . 'sounds/sounds/' . $file->getCollection(), 0755, true)
+                ) {
+                    throw new FolderCreationException(ABSOLUTE_DIR . 'sounds/sounds/' . $file->getCollection());
+                }
+
+                if (!is_dir($path) && !mkdir($path, 0755, true)) {
+                    throw new FolderCreationException($path);
+                }
+
+                if (!rename($file->getPath(), $path . '/' . $file->getName())) {
+                    throw new FileCopyException($file->getPath(), $path);
+                }
+
+                if ($fileFormat !== 'wav') {
+                    $pathInfo = pathinfo($wavFilePath);
+                    if (!rename($wavFilePath, $path . '/' . $pathInfo['filename'] . '.wav')) {
+                        throw new FileCopyException($wavFilePath, $path);
+                    }
+                }
+
+                (new ImageService())->generateImages($sound);
+
+                $this->updateFileStatus($file, File::STATUS_SUCCESS, $sound[Recording::ID]);
+                if ($file->getDate() == '1970-01-01' && $file->getTime() == '00:00:00') {
+                    $formatErrors = 1;
+                }
             }
             return json_encode([
                 'errorCode' => 0,
@@ -255,9 +256,9 @@ class FileService
      * @throws \Exception
      */
     private function updateFileStatus(
-        File $file,
-        int $status,
-        int $recordingId = null,
+        File   $file,
+        int    $status,
+        int    $recordingId = null,
         string $errorMessage = null
     )
     {

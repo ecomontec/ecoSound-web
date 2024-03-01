@@ -37,7 +37,7 @@ $callback = function ($msg) use ($config) {
         }
         $addedFiles = "";
         $errorFiles = "";
-        foreach ($data as $index => $d) {
+        foreach ($data as $d) {
             $result = (new Queue())->getById($headers['queue_id']);
             if ($result['status'] == '-2') {
                 $result['stop_time'] = date('Y-m-d H:i:s');
@@ -57,21 +57,23 @@ $callback = function ($msg) use ($config) {
                 }
                 if ($headers['list_type'] == 'upload') {
                     $back = (new FileService())->process($d);
-                    if (isset(json_decode($back)->formatErrors) && json_decode($back)->formatErrors != '') {
-                        if ($errorFiles != '') {
-                            $errorFiles .= ", ";
-                        }
-                        $errorFiles .= json_decode($back)->formatErrors;
-                        $arr['warning'] = "File " . $errorFiles . " had an unrecognised date - time format - used 1970 - 01 - 01 00:00:00 instead . ";
-                    }
                     if (isset(json_decode($back)->fileExists) && json_decode($back)->fileExists != '') {
                         if ($addedFiles != '') {
                             $addedFiles .= ", ";
                         }
                         $addedFiles .= json_decode($back)->fileExists;
-                        $arr['warning'] = $arr['warning'] . "File " . $addedFiles . " already exists in the system.";
+                    } elseif (isset(json_decode($back)->formatErrors) && json_decode($back)->formatErrors != '') {
+                        if ($errorFiles != '') {
+                            $errorFiles .= ", ";
+                        }
+                        $errorFiles .= json_decode($back)->formatErrors;
                     }
-
+                    if ($addedFiles) {
+                        $arr['warning'] = "File " . $addedFiles . " already exists in the system.";
+                    }
+                    if ($errorFiles) {
+                        $arr['warning'] = "File " . $errorFiles . " had an unrecognised date-time format-used 1970-01-01 00:00:00 instead." . $addedFiles ? $arr['warning'] : '';
+                    }
                 }
                 if ($headers['list_type'] == 'index analysis') {
                     $d = json_decode($d, true);
@@ -84,6 +86,15 @@ $callback = function ($msg) use ($config) {
                         $arr['stop_time'] = date('Y-m-d H:i:s');
                         $arr['status'] = 1;
                     }
+                    (new Queue())->update($arr);
+                } elseif ($headers['list_type'] == 'upload') {
+                    $arr['queue_id'] = $headers['queue_id'];
+                    $arr['completed'] = (int)$result['completed'] + 1;
+                    if ($result['total'] == (int)$result['completed'] + 1) {
+                        $arr['stop_time'] = date('Y-m-d H:i:s');
+                        $arr['status'] = 1;
+                    }
+                    $arr['error'] .= $back;
                     (new Queue())->update($arr);
                 } else {
                     $arr['queue_id'] = $headers['queue_id'];

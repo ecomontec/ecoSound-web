@@ -70,6 +70,10 @@ class CollectionController extends BaseController
                 $max[] = $date->getRecording()->getEndDate();
             }
         }
+
+        $max_date = strtotime(max($max));
+        $min_date = strtotime(min($min));
+        $diff_date = (int)(($max_date - $min_date) / 60 / 60 / 24 * 0.1);
         if ($isAccessed || $this->collection->getPublicAccess()) {
             return $this->twig->render('collection/collection.html.twig', [
                 'project' => (new ProjectProvider())->get($this->collection->getProject()),
@@ -78,8 +82,8 @@ class CollectionController extends BaseController
                 'display' => $display,
                 'leaflet' => $this->leaflet,
                 'none_count' => (new RecordingProvider())->getNullCount($id),
-                'min'=>count($min)>0?date('Y-m-d H:i:s',strtotime('-1 Day',strtotime(min($min)))):0,
-                'max'=>count($max)>0?date('Y-m-d H:i:s',strtotime('+1 Day',strtotime(max($max)))):0,
+                'min' => count($min) > 0 ? date('Y-m-d H:i:s', strtotime('-1 Day', $min_date)) : 0,
+                'max' => count($max) > 0 ? date('Y-m-d H:i:s', strtotime("+$diff_date Day", $max_date)) : 0,
             ]);
         } else {
             return $this->twig->render('collection/noaccess.html.twig');
@@ -126,8 +130,8 @@ class CollectionController extends BaseController
                 'display' => $display,
                 'leaflet' => $this->leaflet,
                 'none_count' => (new RecordingProvider())->getNullCount($id),
-                'min'=>count($min)>0?date('Y-m-d H:i:s',strtotime('-1 Day',strtotime(min($min)))):0,
-                'max'=>count($max)>0?date('Y-m-d H:i:s',strtotime('+1 Day',strtotime(max($max)))):0,
+                'min' => count($min) > 0 ? date('Y-m-d H:i:s', strtotime('-1 Day', strtotime(min($min)))) : 0,
+                'max' => count($max) > 0 ? date('Y-m-d H:i:s', strtotime('+1 Day', strtotime(max($max)))) : 0,
             ]);
         } else {
             return "No results";
