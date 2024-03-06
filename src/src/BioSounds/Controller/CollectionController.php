@@ -64,16 +64,16 @@ class CollectionController extends BaseController
         $this->leaflet = $this->getLeaflet($this->recordings);
         $max = [];
         $min = [];
+
         if ($display == 'timeline') {
             foreach ($this->recordings as $date) {
                 $min[] = $date->getRecording()->getStartDate();
                 $max[] = $date->getRecording()->getEndDate();
             }
+            $max_date = strtotime(max($max));
+            $min_date = strtotime(min($min));
+            $diff_date = (int)(($max_date - $min_date) / 60 / 60 / 24 * 0.1);
         }
-
-        $max_date = strtotime(max($max));
-        $min_date = strtotime(min($min));
-        $diff_date = (int)(($max_date - $min_date) / 60 / 60 / 24 * 0.1);
         if ($isAccessed || $this->collection->getPublicAccess()) {
             return $this->twig->render('collection/collection.html.twig', [
                 'project' => (new ProjectProvider())->get($this->collection->getProject()),

@@ -71,7 +71,9 @@ class queueProvider extends AbstractProvider
                 $arr[$key][] = $value['queue_id'];
                 $arr[$key][] = $value['type'];
                 $arr[$key][] = $value['completed'] . '/' . $value['total'];
-                if ($value['status'] == '-2') {
+                if ($value['status'] == '2') {
+                    $arr[$key][] = '<div class="text-secondary">pending</div>';
+                } else if ($value['status'] == '-2') {
                     if ($value['stop_time']) {
                         $arr[$key][] = '<div class="text-warning">cancelled</div>';
                     } else {

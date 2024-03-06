@@ -83,7 +83,9 @@ class QueueController extends BaseController
 
         $List = (new queueProvider())->getQueue();
         foreach ($List as $Item) {
-            if ($Item['status'] == '-2') {
+            if ($Item['status'] == '2') {
+                $Item['status'] = 'pending';
+            } else if ($Item['status'] == '-2') {
                 if ($Item['stop_time']) {
                     $Item['status'] = 'cancelled';
                 } else {

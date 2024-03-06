@@ -146,11 +146,16 @@
             })
 
             $('#js-delete-button').click(function (e) {
-                let id = [];
+                let dataArray  = [];
                 $('.js-checkbox:checked').each(function () {
-                    id.push($(this).data('id'));
+                    var id = $(this).data('id');
+                    var recording_id = $(this).data('recording');
+                    var index_id = $(this).data('index');
+
+                    var dataString = '(' + id + ', ' + recording_id + ', ' + index_id + ')';
+                    dataArray.push(dataString);
                 });
-                let data = {'id': id};
+                let data = {'id': dataArray.join(', ')};
                 postRequest('{{ baseUrl }}/api/admin/indexLogMgr/delete', data, false, false, function () {
                     location.reload();
                 });

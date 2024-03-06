@@ -133,7 +133,7 @@ class RecordingProvider extends AbstractProvider
         if (empty($result = $this->database->executeSelect())) {
             throw new NotFoundException($id);
         }
-        return $result[0];
+        return $result;
     }
 
     /**

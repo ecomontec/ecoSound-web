@@ -11,8 +11,13 @@ class Queue extends BaseProvider
 
     public function getById($id): array
     {
-        $this->database->prepareQuery("SELECT * FROM queue WHERE queue_id = " . $id);
-        return $this->database->executeSelect()[0];
+        if (isset($_SESSION['index_id'])) {
+            $_SESSION['index_id'] = $_SESSION['index_id'] + 1;
+            return $_SESSION['index_id'];
+        } else {
+            $this->database->prepareQuery("SELECT * FROM queue WHERE queue_id = " . $id);
+            return $this->database->executeSelect()[0];
+        }
     }
 
     public function insert(array $data)

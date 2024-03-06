@@ -105,7 +105,7 @@
                     <div>
                         <div class="form-group">
                             <input id="delete_id" type="hidden">
-                            <label style=" width: 100%;height: 70vh;overflow: auto">Deleting <b class="text-danger" id="delete_name"></b> will also delete the <b class="text-danger" id="count"></b> tags inside and cannot be reversed!</label>
+                            <label style=" width: 100%;max-height: 70vh;overflow: auto">Deleting <b class="text-danger" id="delete_name"></b> will also delete the <b class="text-danger" id="count"></b> tags inside and cannot be reversed!</label>
                         </div>
                     </div>
                 </div>
@@ -439,53 +439,28 @@
                 $(".js-tf-modal").click(function (e) {
                     let data = []
                     let arr = []
-                    let lat, lon
+                    let id = [];
                     $('.js-checkbox:checked').each(function () {
-                        if ($(this).data('type') == 'audio data') {
-                            let id = $(this).closest('tr').find('[name="itemID"]').val()
-                            if ($('#tf').val() == 1) {
-                                if ($('#site_id' + id).find('option:selected').attr('data-lon') == undefined || $('#site_id' + id).find('option:selected').attr('data-lat') == undefined || $('#file_date' + id).val() == "") {
-                                    lat = ''
-                                    lon = ''
-                                } else {
-                                    lat = $('#site_id' + id).find('option:selected').attr('data-lat')
-                                    lon = $('#site_id' + id).find('option:selected').attr('data-lon')
-                                }
-                                arr = {
-                                    'collection_id': $('#colId').val(),
-                                    'recording_id': id,
-                                    'filename': $('#name_' + id).val(),
-                                    'creator_type': $("#tf option:selected").text(),
-                                    'recording_directory': $('#directory' + id).val(),
-                                    'lat': lat,
-                                    'lon': lon,
-                                    'file_date': $('#file_date' + id).val(),
-                                    'sensitivity': $("#sensitivity").val(),
-                                    'min_conf': $("#min_conf").val(),
-                                    'overlap': $("#overlap").val(),
-                                    'sf_thresh': $("#sf_thresh").val(),
-                                    'temp': $("#path" + id).val(),
-                                    'max_freq': $("#max_freq" + id).val(),
-                                    'user_id': '{{ user_id }}',
-                                };
-                            } else if ($('#tf').val() == 2) {
-                                arr = {
-                                    'collection_id': $('#colId').val(),
-                                    'recording_id': id,
-                                    'filename': $('#name_' + id).val(),
-                                    'creator_type': $("#tf option:selected").text(),
-                                    'recording_directory': $('#directory' + id).val(),
-                                    'file_date': $('#file_date' + id).val(),
-                                    'detection_threshold': $("#detection_threshold").val(),
-                                    'temp': $("#path" + id).val(),
-                                    'user_id': '{{ user_id }}',
-                                };
-                            }
-                            arr = JSON.stringify(arr)
-                            data.push(arr)
-                        }
+                        id.push($(this).closest('tr').find('[name="itemID"]').val());
                     });
-                    postRequest('{{ baseUrl }}/api/admin/recordingManager/model', data, false, false, function () {
+                    id = id.join(',')
+                    if ($('#tf').val() == 1) {
+                        arr = {
+                            'sensitivity': $("#sensitivity").val(),
+                            'min_conf': $("#min_conf").val(),
+                            'overlap': $("#overlap").val(),
+                            'sf_thresh': $("#sf_thresh").val(),
+                            'creator_type': $("#tf option:selected").text(),
+                        };
+                    } else if ($('#tf').val() == 2) {
+                        arr = {
+                            'detection_threshold': $("#detection_threshold").val(),
+                            'creator_type': $("#tf option:selected").text(),
+                        };
+                    }
+                    arr = JSON.stringify(arr)
+                    data.push(arr)
+                    postRequest('{{ baseUrl }}/api/admin/recordingManager/model', {'id': id, 'data': data}, false, false, function () {
                         $('#modal-tf').modal('hide')
                         showAlert("Job added to your queue - check status under corresponding tab")
                     });
@@ -553,7 +528,7 @@
                     }
                     let data = []
                     let param = {}
-                    let id
+                    let id = []
                     let arr = []
                     $('.param').each(function () {
                         if ($(this).val() != '') {
@@ -562,29 +537,20 @@
                     })
                     $('.js-checkbox:checked').each(function () {
                         if ($(this).data('type') == 'audio data') {
-                            id = $(this).data('id');
-                            $('#maad option:selected').each(function () {
-                                arr = {
-                                    'min_time': 0,
-                                    'max_time': $('#max_time' + id).val(),
-                                    'min_frequency': 1,
-                                    'max_frequency': $('#max_freq' + id).val(),
-                                    'collection_id': $('#colId').val(),
-                                    'recording_id': id,
-                                    'filename': '/' + $('#directory' + id).val() + '/' + $('#filename' + id).val(),
-                                    'index_id': $(this).val(),
-                                    'index': $(this).text(),
-                                    'channel_num': $('#channel_num' + id).val(),
-                                    'channel': 1,
-                                    'param': param[$(this).val()],
-                                    'user_id': '{{ user_id }}'
-                                };
-                                arr = JSON.stringify(arr)
-                                data.push(arr)
-                            })
+                            id.push($(this).data('id'));
                         }
                     });
-                    postRequest('{{ baseUrl }}/api/admin/recordingManager/maad', data, false, false, function () {
+                    id = id.join(',')
+                    $('#maad option:selected').each(function () {
+                        arr = {
+                            'index_id': $(this).val(),
+                            'index': $(this).text(),
+                            'param': param[$(this).val()],
+                        };
+                        data.push(arr)
+                    })
+                    data = JSON.stringify(data)
+                    postRequest('{{ baseUrl }}/api/admin/recordingManager/maad', {'id': id, 'data': data}, false, false, function () {
                         $('#modal-maad').modal('hide')
                         showAlert("Job added to your queue - check status under corresponding tab")
                     });

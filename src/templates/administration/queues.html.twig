@@ -103,18 +103,20 @@
                 "scrollX": true,
             });
             setInterval(function () {
-                $('#queuesTable').DataTable().ajax.reload(function () {
-                    $.each(checkboxState, function (id, checked) {
-                        $('#queuesTable .js-checkbox[data-id="' + id + '"]').prop('checked', checked);
-                    });
-                    if ($('#queuesTable .js-checkbox:checked').length > 0 > 0) {
-                        $('button[name="table-btn"][data-target="#deletion"]').removeClass('btn-outline-secondary').removeClass('btn-outline-primary').addClass('btn-outline-danger');
-                        $('button[name="table-btn"][data-target="#deletion"]').prop('disabled', false);
-                    } else {
-                        $('button[name="table-btn"][data-target="#deletion"]').removeClass('btn-outline-primary').removeClass('btn-outline-danger').addClass('btn-outline-secondary');
-                        $('button[name="table-btn"][data-target="#deletion"]').prop('disabled', true);
-                    }
-                }, false);
+                if (!document.hidden) {
+                    $('#queuesTable').DataTable().ajax.reload(function () {
+                        $.each(checkboxState, function (id, checked) {
+                            $('#queuesTable .js-checkbox[data-id="' + id + '"]').prop('checked', checked);
+                        });
+                        if ($('#queuesTable .js-checkbox:checked').length > 0) {
+                            $('button[name="table-btn"][data-target="#deletion"]').removeClass('btn-outline-secondary').removeClass('btn-outline-primary').addClass('btn-outline-danger');
+                            $('button[name="table-btn"][data-target="#deletion"]').prop('disabled', false);
+                        } else {
+                            $('button[name="table-btn"][data-target="#deletion"]').removeClass('btn-outline-primary').removeClass('btn-outline-danger').addClass('btn-outline-secondary');
+                            $('button[name="table-btn"][data-target="#deletion"]').prop('disabled', true);
+                        }
+                    }, false);
+                }
             }, 5000);
             if (table.state.loaded()) {
                 $('#search').val(table.state.loaded().search.search);

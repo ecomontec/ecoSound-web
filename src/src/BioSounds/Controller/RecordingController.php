@@ -81,7 +81,7 @@ class RecordingController extends BaseController
             $this->fftSize = $recording->getUserRecordingFft(Auth::getUserID(), $id);
         }
         $this->recordingId = $id;
-        $recordingData = (new RecordingProvider())->get($this->recordingId);
+        $recordingData = (new RecordingProvider())->get($this->recordingId)[0];
 
         //TODO: Remove when recording is an Entity. Add to it.
         $recordingData['collection'] = (new CollectionProvider())->get($recordingData[Recording::COL_ID]);
@@ -763,6 +763,7 @@ class RecordingController extends BaseController
             $str = $str . ' --sf_thresh ' . $data['sf_thresh'];
         }
         exec($str . " 2>&1", $out, $status);
+        var_dump($out);
         if ($status == 0) {
             $handle = fopen(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['recording_id'] . '-' . $data['user_id'] . ".csv", "rb");
             $result = [];

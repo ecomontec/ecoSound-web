@@ -36,6 +36,7 @@ class RabbitQueueService
         $arr['user_id'] = Auth::getUserID();
         $arr['start_time'] = date('Y-m-d H:i:s');
         $arr['total'] = $count;
+        $arr['status'] = '2';
         $queue_id = (new Queue())->insert($arr);
         $message = new AMQPMessage(
             $data,

@@ -31,6 +31,7 @@ class IndexLogProvider extends AbstractProvider
 
     public function getId(): int
     {
+
         $sql = "SELECT IFNULL(MAX(log_id), 0) + 1 AS log_id FROM index_log";
         $this->database->prepareQuery($sql);
         return $this->database->executeSelect()[0]['log_id'];
@@ -201,7 +202,7 @@ class IndexLogProvider extends AbstractProvider
         $result = $this->database->executeSelect();
         if (count($result)) {
             foreach ($result as $key => $value) {
-                $arr[$key][] = "<input type='checkbox' class='js-checkbox'data-id='$value[log_id]' name='cb[$value[log_id]]' id='cb[$value[log_id]]'>";
+                $arr[$key][] = "<input type='checkbox' class='js-checkbox'data-id='$value[log_id]' data-recording='$value[recording_id]' data-index='$value[index_id]' name='cb[$value[log_id]]' id='cb[$value[log_id]]'>";
                 $arr[$key][] = $value['log_id'];
                 $arr[$key][] = $value['recordingName'];
                 $arr[$key][] = $value['userName'];
@@ -244,7 +245,7 @@ class IndexLogProvider extends AbstractProvider
 
     public function delete(string $id): void
     {
-        $this->database->prepareQuery("DELETE FROM index_log WHERE log_id IN ($id)");
+        $this->database->prepareQuery("DELETE FROM index_log WHERE (log_id,recording_id,index_id) IN ($id)");
         $this->database->executeDelete();
     }
 }

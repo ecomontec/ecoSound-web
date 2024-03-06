@@ -39,6 +39,9 @@ $callback = function ($msg) use ($config) {
         $errorFiles = "";
         foreach ($data as $d) {
             $result = (new Queue())->getById($headers['queue_id']);
+            if ($result['status'] == '2') {
+                $arr['status'] = 0;
+            }
             if ($result['status'] == '-2') {
                 $result['stop_time'] = date('Y-m-d H:i:s');
                 (new Queue())->update($result);
@@ -47,7 +50,6 @@ $callback = function ($msg) use ($config) {
             } else {
                 $back = '';
                 if ($headers['list_type'] == 'AI model') {
-                    $d = json_decode($d, true);
                     if ($d['creator_type'] == 'BirdNET-Analyzer') {
                         $back = (new \BioSounds\Controller\RecordingController())->BirdNETAnalyzer($d);
                     }
@@ -76,7 +78,6 @@ $callback = function ($msg) use ($config) {
                     }
                 }
                 if ($headers['list_type'] == 'index analysis') {
-                    $d = json_decode($d, true);
                     $back = (new \BioSounds\Controller\RecordingController())->maads($d, $id);
                 }
                 if (isset(json_decode($back)->errorCode) && json_decode($back)->errorCode == '0') {
