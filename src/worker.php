@@ -82,7 +82,9 @@ $callback = function ($msg) use ($config) {
                 }
                 if (isset(json_decode($back)->errorCode) && json_decode($back)->errorCode == '0') {
                     $arr['queue_id'] = $headers['queue_id'];
-                    $arr['completed'] = (int)$result['completed'] + 1;
+                    if ($result['total'] != (int)$result['completed']) {
+                        $arr['completed'] = (int)$result['completed'] + 1;
+                    }
                     if ($result['total'] == (int)$result['completed'] + 1) {
                         $arr['stop_time'] = date('Y-m-d H:i:s');
                         $arr['status'] = 1;
@@ -90,7 +92,9 @@ $callback = function ($msg) use ($config) {
                     (new Queue())->update($arr);
                 } elseif ($headers['list_type'] == 'upload') {
                     $arr['queue_id'] = $headers['queue_id'];
-                    $arr['completed'] = (int)$result['completed'] + 1;
+                    if ($result['total'] != (int)$result['completed']) {
+                        $arr['completed'] = (int)$result['completed'] + 1;
+                    }
                     if ($result['total'] == (int)$result['completed'] + 1) {
                         $arr['stop_time'] = date('Y-m-d H:i:s');
                         $arr['status'] = 1;
