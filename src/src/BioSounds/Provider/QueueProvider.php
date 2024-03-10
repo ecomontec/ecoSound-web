@@ -8,7 +8,7 @@ use BioSounds\Utils\Auth;
 use Cassandra\Varint;
 use DateTime;
 
-class queueProvider extends AbstractProvider
+class QueueProvider extends AbstractProvider
 {
     const TABLE_NAME = "queue";
 

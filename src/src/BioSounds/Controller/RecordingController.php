@@ -581,7 +581,7 @@ class RecordingController extends BaseController
     public function maads($data, $id)
     {
         $str = 'python3 ' . ABSOLUTE_DIR . 'bin/getMaad.py' .
-            ' -f ' . ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . explode('.', $data['filename'], -1)[0] .
+            ' -f ' . ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . '/' . $data['directory'] . '/' . explode('.', $data['filename'], -1)[0] .
             ' --ch ' . ($data['channel'] == 2 ? 'right' : 'left') .
             ' --mint ' . $data['mint_ime'] .
             ' --maxt ' . $data['max_time'] .
@@ -739,7 +739,7 @@ class RecordingController extends BaseController
         $j = 0;
         $str = 'python3 ' . ABSOLUTE_DIR . 'BirdNET-Analyzer/analyze.py' .
             ' --i ' . ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['filename'] .
-            ' --o ' . ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['recording_id'] . '-' . $data['user_id'] . ".csv" .
+            ' --o ' . ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv" .
             ' --rtype "csv"';
         if ($data['lat'] != '') {
             $str = $str . ' --lat ' . $data['lat'];
@@ -763,9 +763,8 @@ class RecordingController extends BaseController
             $str = $str . ' --sf_thresh ' . $data['sf_thresh'];
         }
         exec($str . " 2>&1", $out, $status);
-        var_dump($out);
         if ($status == 0) {
-            $handle = fopen(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['recording_id'] . '-' . $data['user_id'] . ".csv", "rb");
+            $handle = fopen(ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv", "rb");
             $result = [];
             while (!feof($handle)) {
                 $d = fgetcsv($handle);
@@ -823,6 +822,7 @@ class RecordingController extends BaseController
                 }
             }
             (new TagProvider())->insertArr($list);
+            unlink(ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv");
         }
         return json_encode([
             'errorCode' => 0,
@@ -840,13 +840,13 @@ class RecordingController extends BaseController
         }
         $i = 0;
         $j = 0;
-        if (!file_exists(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'])) {
-            mkdir(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'], 0777, true);
+        $soundPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . "/sounds";
+        if (!file_exists($soundPath)) {
+            mkdir($soundPath, 0777, true);
         }
-        copy(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav', ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . '/' . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav');
-        $str = 'batdetect2 detect ' .
-            ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . ' ' .
-            ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . ' ';
+        copy(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav', $soundPath . '/' . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav');
+        $resultPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'];
+        $str = 'batdetect2 detect ' . $soundPath . ' ' . $resultPath . ' ';
         if ($data['detection_threshold'] != 'undefined' && $data['detection_threshold'] != '') {
             $str = $str . $data['detection_threshold'];
         } else {
@@ -865,8 +865,8 @@ class RecordingController extends BaseController
         }
 
         if ($status == 0) {
-            if (file_exists(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav' . ".csv")) {
-                $handle = fopen(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav' . ".csv", "rb");
+            if (file_exists($resultPath . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav' . ".csv")) {
+                $handle = fopen($resultPath . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav' . ".csv", "rb");
                 $result = [];
                 while (!feof($handle)) {
                     $d = fgetcsv($handle);
@@ -913,12 +913,14 @@ class RecordingController extends BaseController
                 }
                 (new TagProvider())->insertArr($list);
             } else {
+                Utils::deleteDirContents($resultPath);
                 return json_encode([
                     'errorCode' => 0,
                     'message' => "Batdetect2 $version found 0 detections. 0 tags were inserted.",
                 ]);
             }
         }
+        Utils::deleteDirContents($resultPath);
         return json_encode([
             'errorCode' => 0,
             'message' => "Batdetect2 $version found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. $i tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),

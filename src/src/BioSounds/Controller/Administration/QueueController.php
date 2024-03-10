@@ -4,7 +4,7 @@ namespace BioSounds\Controller\Administration;
 
 use BioSounds\Controller\BaseController;
 use BioSounds\Exception\ForbiddenException;
-use BioSounds\Provider\queueProvider;
+use BioSounds\Provider\QueueProvider;
 use BioSounds\Utils\Auth;
 
 class QueueController extends BaseController
@@ -25,20 +25,20 @@ class QueueController extends BaseController
 
     public function getListByPage()
     {
-        $total = count((new queueProvider())->getQueue());
+        $total = count((new QueueProvider())->getQueue());
         $start = $_POST['start'];
         $length = $_POST['length'];
         $search = $_POST['search']['value'];
         $column = $_POST['order'][0]['column'];
         $dir = $_POST['order'][0]['dir'];
-        $data = (new queueProvider())->getListByPage($start, $length, $search, $column, $dir);
+        $data = (new QueueProvider())->getListByPage($start, $length, $search, $column, $dir);
         if (count($data) == 0) {
             $data = [];
         }
         $result = [
             'draw' => $_POST['draw'],
             'recordsTotal' => $total,
-            'recordsFiltered' => (new queueProvider())->getFilterCount($search),
+            'recordsFiltered' => (new QueueProvider())->getFilterCount($search),
             'data' => $data,
         ];
         return json_encode($result);
@@ -53,7 +53,7 @@ class QueueController extends BaseController
         if (empty($id)) {
             throw new \Exception(ERROR_EMPTY_ID);
         }
-        $queueProvider = new queueProvider();
+        $queueProvider = new QueueProvider();
         $queueProvider->delete($id);
         return json_encode([
             'errorCode' => 0,
@@ -72,7 +72,7 @@ class QueueController extends BaseController
         header('Content-Type: application/octet-stream;charset=utf-8');
         header('Accept-Ranges:bytes');
         header('Content-Disposition: attachment; filename=' . $file_name);
-        $columns = (new queueProvider())->getColumns();
+        $columns = (new QueueProvider())->getColumns();
         foreach ($columns as $column) {
             if ($column['COLUMN_NAME'] == 'user_id') {
                 continue;
@@ -81,7 +81,7 @@ class QueueController extends BaseController
         }
         $Als[] = $colArr;
 
-        $List = (new queueProvider())->getQueue();
+        $List = (new QueueProvider())->getQueue();
         foreach ($List as $Item) {
             if ($Item['status'] == '2') {
                 $Item['status'] = 'pending';

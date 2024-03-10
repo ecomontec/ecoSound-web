@@ -63,38 +63,12 @@ class IndexLogController extends BaseController
         header('Content-Disposition: attachment; filename=' . $file_name);
         $columns = (new IndexLogProvider())->getColumns();
         foreach ($columns as $column) {
-            if ($column['COLUMN_NAME'] != 'variable_type' && $column['COLUMN_NAME'] != 'variable_order' && $column['COLUMN_NAME'] != 'variable_name' && $column['COLUMN_NAME'] != 'variable_value') {
-                $colArr[] = $column['COLUMN_NAME'];
-            }
+            $colArr[] = $column['COLUMN_NAME'];
         }
         array_splice($colArr, 2, 0, 'recording');
         array_splice($colArr, 4, 0, 'user');
         array_splice($colArr, 6, 0, 'index');
-        array_splice($colArr, 12, 0, 'output_value_6');
-        array_splice($colArr, 12, 0, 'output_name_6');
-        array_splice($colArr, 12, 0, 'output_value_5');
-        array_splice($colArr, 12, 0, 'output_name_5');
-        array_splice($colArr, 12, 0, 'output_value_4');
-        array_splice($colArr, 12, 0, 'output_name_4');
-        array_splice($colArr, 12, 0, 'output_value_3');
-        array_splice($colArr, 12, 0, 'output_name_3');
-        array_splice($colArr, 12, 0, 'output_value_2');
-        array_splice($colArr, 12, 0, 'output_name_2');
-        array_splice($colArr, 12, 0, 'output_value_1');
-        array_splice($colArr, 12, 0, 'output_name_1');
-        array_splice($colArr, 12, 0, 'input_value_6');
-        array_splice($colArr, 12, 0, 'input_name_6');
-        array_splice($colArr, 12, 0, 'input_value_5');
-        array_splice($colArr, 12, 0, 'input_name_5');
-        array_splice($colArr, 12, 0, 'input_value_4');
-        array_splice($colArr, 12, 0, 'input_name_4');
-        array_splice($colArr, 12, 0, 'input_value_3');
-        array_splice($colArr, 12, 0, 'input_name_3');
-        array_splice($colArr, 12, 0, 'input_value_2');
-        array_splice($colArr, 12, 0, 'input_name_2');
-        array_splice($colArr, 12, 0, 'input_value_1');
-        array_splice($colArr, 12, 0, 'input_name_1');
-        array_splice($colArr, 12, 0, 'channel');
+
         $Als[] = $colArr;
         $List = (new IndexLogProvider())->getIndexLog();
 

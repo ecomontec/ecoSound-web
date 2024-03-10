@@ -301,7 +301,6 @@ class RecordingController extends BaseController
                     'min_conf' => $para->min_conf,
                     'overlap' => $para->overlap,
                     'sf_thresh' => $para->sf_thresh,
-                    'temp' => '',
                     'max_freq' => $recording['sampling_rate'] / 2,
                     'user_id' => Auth::getUserID(),
                 ];
@@ -317,7 +316,6 @@ class RecordingController extends BaseController
                         'recording_directory' => $recording['directory'],
                         'file_date' => $recording['file_date'],
                         'detection_threshold' => $para->detection_threshold,
-                        'temp' => '',
                         'user_id' => Auth::getUserID(),
                     ];
                 }
@@ -343,12 +341,13 @@ class RecordingController extends BaseController
         foreach ($para as $p) {
             foreach ($recordings as $recording) {
                 $data[] = [
-                    'minTime' => 0,
-                    'maxTime' => $recording['duration'],
-                    'minFrequency' => 1,
-                    'maxFrequency' => $recording['sampling_rate'] / 2,
+                    'min_time' => 0,
+                    'max_time' => $recording['duration'],
+                    'min_frequency' => 1,
+                    'max_frequency' => $recording['sampling_rate'] / 2,
                     'collection_id' => $recording['col_id'],
                     'recording_id' => $recording['recording_id'],
+                    'directory' => $recording['directory'],
                     'filename' => $recording['filename'],
                     'index_id' => $p->index_id,
                     'index' => $p->index,
