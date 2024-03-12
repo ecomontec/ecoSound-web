@@ -72,7 +72,7 @@ class IndexLogProvider extends AbstractProvider
         }
         if ($search) {
             $sql .= Auth::isUserAdmin() ? ' WHERE ' : ' AND ';
-            $sql .= " CONCAT(IFNULL(log_id,''), IFNULL(recordingName,''), IFNULL(userName,''), IFNULL(indexName,''), IFNULL(min_time,''), IFNULL(max_time,''), IFNULL(min_frequency,''), IFNULL(max_frequency,''), IFNULL(variable_type,''), IFNULL(variable_order,''), IFNULL(variable_name,''), IFNULL(variable_value,''), IFNULL(creation_date,''), IFNULL(version,'')) LIKE '%$search%' ";
+            $sql .= " CONCAT(IFNULL(i.log_id,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(it.name,''), IFNULL(i.min_time,''), IFNULL(i.max_time,''), IFNULL(i.min_frequency,''), IFNULL(i.max_frequency,''), IFNULL(i.variable_type,''), IFNULL(i.variable_order,''), IFNULL(i.variable_name,''), IFNULL(i.variable_value,''), IFNULL(i.creation_date,''), IFNULL(i.version,'')) LIKE '%$search%' ";
         }
         $this->database->prepareQuery($sql);
         $count = count($this->database->executeSelect());
@@ -91,7 +91,7 @@ class IndexLogProvider extends AbstractProvider
         }
         if ($search) {
             $sql .= Auth::isUserAdmin() ? ' WHERE ' : ' AND ';
-            $sql .= " CONCAT(IFNULL(log_id,''), IFNULL(recordingName,''), IFNULL(userName,''), IFNULL(indexName,''), IFNULL(min_time,''), IFNULL(max_time,''), IFNULL(min_frequency,''), IFNULL(max_frequency,''), IFNULL(variable_type,''), IFNULL(variable_order,''), IFNULL(variable_name,''), IFNULL(variable_value,''), IFNULL(creation_date,''), IFNULL(version,'')) LIKE '%$search%' ";
+            $sql .= " CONCAT(IFNULL(i.log_id,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(it.name,''), IFNULL(i.min_time,''), IFNULL(i.max_time,''), IFNULL(i.min_frequency,''), IFNULL(i.max_frequency,''), IFNULL(i.variable_type,''), IFNULL(i.variable_order,''), IFNULL(i.variable_name,''), IFNULL(i.variable_value,''), IFNULL(i.creation_date,''), IFNULL(i.version,'')) LIKE '%$search%' ";
         }
         $a = ['', 'i.log_id', 'r.name', 'u.name', 'it.name', 'i.version', 'i.min_time', 'i.max_time', 'i.min_frequency', 'i.max_frequency', 'i.variable_type', 'i.variable_order', 'i.variable_name', 'i.variable_value', 'i.creation_date'];
         $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start ";
