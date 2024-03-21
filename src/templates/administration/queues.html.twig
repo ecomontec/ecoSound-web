@@ -1,7 +1,7 @@
 {% extends 'administration/admin.html.twig' %}
 
 {% block admin_content %}
-    <div class="card mb-3" id="indexLogsList">
+    <div class="card mb-3" id="queuesList">
         <div class="card-header border-light bg-white text-right">
             <div class="form-inline">
                 <div class="col-12 form-inline justify-content-end">
@@ -11,33 +11,28 @@
             </div>
             <button id="deletion" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#deletion" disabled>
                 <i class="fas fa-trash"></i>
-                Delete
+                Delete/Abort
             </button>
-            <button id="indexLogsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#indexLogsExport" aria-expanded="false" aria-controls="indexLogsExport">
+            <button id="queuesExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#queuesExport" aria-expanded="false" aria-controls="queuesExport">
                 <i class="fa fa-file-csv"></i>
                 Save all as CSV
             </button>
         </div>
-        <table id="indexLogsTable" style="display:none;white-space: nowrap;">
+        <table id="queuesTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
             <tr style="font-size: .875rem;">
                 <th>
                     <input type="checkbox" class="js-all-checkbox" name="check-all" id="check-all">
                 </th>
                 <th>#</th>
-                <th>Recording</th>
-                <th>User</th>
-                <th>Index</th>
-                <th>Version</th>
-                <th>Time Start</th>
-                <th>Time End</th>
-                <th>Min Freq</th>
-                <th>Max Freq</th>
-                <th>Variable Type</th>
-                <th>Variable Order</th>
-                <th>Variable Name</th>
-                <th>Variable Value</th>
-                <th>Creation Date (UTC)</th>
+                <th>Type</th>
+                <th>Progress</th>
+                <th>Status</th>
+                <th>Start Datetime</th>
+                <th>End Datetime</th>
+                <th>Elapsed Time</th>
+                <th>Warning</th>
+                <th>Error</th>
             </tr>
             </thead>
             <tbody class="form-control-sm js-index-log-list"></tbody>
@@ -77,13 +72,18 @@
 {% block header %}
     {{ parent() }}
     <script>
+        var checkboxState = {};
         $(document).ready(function () {
-            $('#indexLogsTable').show()
-            let table=$('#indexLogsTable').DataTable({
+            $('#queuesTable').show()
+            $('#queuesTable').on('change', '.js-checkbox', function () {
+                var id = $(this).data('id');
+                checkboxState[id] = $(this).prop('checked');
+            });
+            let table = $('#queuesTable').DataTable({
                 "processing": true,
                 "serverSide": true,
                 "ajax": {
-                    "url": '{{ baseUrl }}/admin/indexLogMgr/getListByPage/{{ projectId }}/{{ colId }}',
+                    "url": '{{ baseUrl }}/api/admin/queueMgr/getListByPage',
                     "type": 'POST'
                 },
                 "dom": 'lrtip',
@@ -102,6 +102,22 @@
                 "bAutoWidth": false,
                 "scrollX": true,
             });
+            setInterval(function () {
+                if (!document.hidden) {
+                    $('#queuesTable').DataTable().ajax.reload(function () {
+                        $.each(checkboxState, function (id, checked) {
+                            $('#queuesTable .js-checkbox[data-id="' + id + '"]').prop('checked', checked);
+                        });
+                        if ($('#queuesTable .js-checkbox:checked').length > 0) {
+                            $('button[name="table-btn"][data-target="#deletion"]').removeClass('btn-outline-secondary').removeClass('btn-outline-primary').addClass('btn-outline-danger');
+                            $('button[name="table-btn"][data-target="#deletion"]').prop('disabled', false);
+                        } else {
+                            $('button[name="table-btn"][data-target="#deletion"]').removeClass('btn-outline-primary').removeClass('btn-outline-danger').addClass('btn-outline-secondary');
+                            $('button[name="table-btn"][data-target="#deletion"]').prop('disabled', true);
+                        }
+                    }, false);
+                }
+            }, 5000);
             if (table.state.loaded()) {
                 $('#search').val(table.state.loaded().search.search);
             }
@@ -109,35 +125,30 @@
                 table.search($('#search').val()).draw();
             });
         });
+
         $(function () {
             'use strict';
-            $(document).on('click', '#indexLogsExport', function () {
-                window.location.href = '{{ baseUrl }}/api/admin/indexLogMgr/export';
-            });
-
             $('button[name="table-btn"][data-target="#deletion"]').click(function (e) {
-                if($('.js-checkbox:checked').length>1){
-                    $('#delete_info').html("Are you sure you want to delete these <b class=\"text-danger\" >"+$('.js-checkbox:checked').length+"</b> entries?")
-                }else{
+                if ($('.js-checkbox:checked').length > 1) {
+                    $('#delete_info').html("Are you sure you want to delete these <b class=\"text-danger\" >" + $('.js-checkbox:checked').length + "</b> entries?")
+                } else {
                     $('#delete_info').html("Are you sure you want to delete this entry?")
                 }
                 $("#modal-div").modal('show');
             })
 
             $('#js-delete-button').click(function (e) {
-                let dataArray  = [];
+                let id = [];
                 $('.js-checkbox:checked').each(function () {
-                    var id = $(this).data('id');
-                    var recording_id = $(this).data('recording');
-                    var index_id = $(this).data('index');
-
-                    var dataString = '(' + id + ', ' + recording_id + ', ' + index_id + ')';
-                    dataArray.push(dataString);
+                    id.push($(this).data('id'));
                 });
-                let data = {'id': dataArray.join(', ')};
-                postRequest('{{ baseUrl }}/api/admin/indexLogMgr/delete', data, false, false, function () {
+                let data = {'id': id};
+                postRequest('{{ baseUrl }}/api/admin/queueMgr/delete', data, false, false, function () {
                     location.reload();
                 });
+            });
+            $(document).on('click', '#queuesExport', function () {
+                window.location.href = '{{ baseUrl }}/api/admin/queueMgr/export';
             });
         });
     </script>

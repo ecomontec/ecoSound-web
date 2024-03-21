@@ -78,6 +78,9 @@ class AppController extends BaseClass
     {
         (new Session())->startSecureSession();
         session_regenerate_id();
-        Utils::deleteOldTmpFiles();
+        if (!isset($_SESSION['deleteTmp']) || $_SESSION['deleteTmp'] < strtotime('today')) {
+            Utils::deleteOldTmpFiles();
+            $_SESSION['deleteTmp'] = strtotime('today');
+        }
     }
 }

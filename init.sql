@@ -7,11 +7,9 @@
 -- Server version: 10.4.20-MariaDB
 -- PHP Version: 7.3.29
 
-SET
-SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
-SET
-time_zone = "+00:00";
+SET time_zone = "+00:00";
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -21,8 +19,7 @@ DROP DATABASE `biosounds`;
 --
 -- Database: `biosounds`
 --
-CREATE
-DATABASE IF NOT EXISTS `biosounds` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+CREATE DATABASE IF NOT EXISTS `biosounds` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 USE `biosounds`;
 
 SELECT concat('DROP TABLE IF EXISTS ', table_name, ';')
@@ -35,17 +32,21 @@ WHERE table_schema = 'biosounds';
 --
 CREATE TABLE `index_log`
 (
-    `log_id`        int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `recording_id`  int(11) NOT NULL,
-    `user_id`       int(11) NOT NULL,
-    `index_id`      int(11) NOT NULL,
-    `minTime`       varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `maxTime`       varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `minFrequency`  varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `maxFrequency`  varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `value`         varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `param`         varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `creation_date` timestamp NOT NULL                   DEFAULT current_timestamp()
+    `log_id`            int(11) NOT NULL,
+    `recording_id`      int(11) NOT NULL,
+    `user_id`           int(11) NOT NULL,
+    `index_id`          int(11) NOT NULL,
+    `version`           varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `min_time`          varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `max_time`          varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `min_frequency`     varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `max_frequency`     varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `variable_type`     varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `variable_order`    int(11) NOT NULL,
+    `variable_name`     varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `variable_value`    varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `creation_date`     timestamp NOT NULL                  DEFAULT current_timestamp(),
+     INDEX `log_id`(`log_id` ASC, `recording_id` ASC, `index_id` ASC) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
@@ -457,6 +458,23 @@ CREATE TABLE `iucn_get`
     `pid`         int(11) NOT NULL,
     `name`        varchar(100) COLLATE utf8_unicode_ci NOT NULL,
     `level`       int(1) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Table structure for queue
+--
+CREATE TABLE `queue`
+(
+    `queue_id`      int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `type`  varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+    `user_id` int(11) NOT NULL,
+    `completed` int(11) NOT NULL default 0,
+    `total` int(11) NOT NULL default 0,
+    `status` int(11) NOT NULL default 0,
+    `start_time` datetime,
+    `stop_time` datetime,
+    `error`  text COLLATE utf8_unicode_ci,
+    `warning`  text COLLATE utf8_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --

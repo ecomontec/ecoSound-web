@@ -1,11 +1,14 @@
 let uploadDir = Math.floor(Math.random() * (10000000 - 100000) + 100000);
-
+var isUploading = false;
+var closeButtonClicked = false;
 $("#file-uploader").pluploadQueue({
     runtimes: 'html5',
     url: baseUrl + '/scripts/uploaded.php?dir=' + uploadDir,
     max_file_size: '1000mb',
     chunk_size: '1mb',
     unique_names: false,
+    multiple_queues: true,
+    prevent_duplicates: true,
     filters: {
         max_file_size: '1000mb',
         mime_types: [
@@ -14,10 +17,13 @@ $("#file-uploader").pluploadQueue({
     },
     init: {
         UploadComplete: function (up) {
-            $("#save_button").toggleDisabled();
+            $("#save_button").prop("disabled", false);
+            isUploading = false;
+            $('.loading').hide()
         },
         Error: function (up, args) {
-            showAlert("Error uploading files.");
+            showAlert(args.message.replace(/\.([^\.]*)$/, ": $1") + args.file.name);
+            $('.loading').hide()
         },
         FilesAdded: function (up, files) {
             plupload.each(files, function (file) {
@@ -27,34 +33,52 @@ $("#file-uploader").pluploadQueue({
                     showAlert('File name: ' + file.name + ' too long. Maximum: 150 characters. File was skipped.', true);
                 }
             });
+            if (up.files.length > 0) {
+                isUploading = true;
+                document.querySelector('.plupload_start').click();
+                $('#uploadForm').collapse('show');
+                $("#save_button").prop("disabled", true);
+            }
+            $('.loading').hide()
         }
+    }
+});
+
+$('#closeButton').click(function () {
+    closeButtonClicked = true;
+});
+
+$(window).on('beforeunload', function (event) {
+    if (!closeButtonClicked && isUploading) {
+        var confirmationMessage = 'Leaving this page will abort the ongoing upload. Abort?';
+        (event || window.event).returnValue = confirmationMessage;
+        return confirmationMessage;
     }
 });
 
 $('#uploadForm')
     .submit(function (e) {
-        $('#save_button').toggleDisabled();
         let values = new FormData($(this)[0]);
-        values["colID"] = $("#collection").val();
-
+        let entries = Array.from(values.entries());
+        $("#save_button").prop("disabled", true);
+        $('.card-body input').prop('disabled', true);
+        $('.card-body select').prop('disabled', true);
+        $('.plupload_add').hide();
+        for (let pair of entries) {
+            if (pair[0].includes("file-uploader") && pair[0] != 'file-uploader_count') {
+                values.delete(pair[0]);
+            }
+        }
         postRequest(
             baseUrl + '/api/file/upload/' + uploadDir,
             values,
             true,
             true,
-            function () {
-                $('#hiddenForm').toggle();
+            function (response) {
                 $('#upload_btn').toggle();
-            }
-        );
+            })
         e.preventDefault();
     })
-    .on('show.bs.collapse', function () {
-        $("#metaData").hide();
-    })
-    .on('hide.bs.collapse', function () {
-        $("#metaData").show();
-    });
 
 $("#reference").change(function (e) {
     let referenceFields = $('.js-reference-field');
@@ -65,6 +89,7 @@ $("#reference").change(function (e) {
 
 $("#from-file").change(function (e) {
     let fileFields = $('.js-file-field');
+    fileFields.val('')
     fileFields.prop('disabled', !fileFields.prop('disabled'));
     fileFields.prop('required', !fileFields.prop('required'));
 });
@@ -106,8 +131,7 @@ $(function () {
             success: function (result) {
                 if (result.message == 'Upload success.') {
                     location.reload();
-                }
-                else{
+                } else {
                     showAlert(result.message)
                     $('#metaDataFile').val('')
                     toggleLoading();

@@ -99,13 +99,13 @@
             </div>
             <div>
                 <a href="#" class="js-open-maad-modal">
-                    <i class="sum mt-3"></i>
+                    <i class="svg-sum mt-3"></i>
                     <strong>Alpha acoustic indices</strong>
                 </a>
             </div>
             <div>
                 <a href="#" class="js-open-tf-modal">
-                    <i class="fa-solid fa-gears mt-3"></i>
+                    <i class="svg-model mt-3"></i>
                     <strong>AI models</strong>
                 </a>
             </div>
@@ -153,7 +153,7 @@
                         </button>
                         <a href="{{ baseUrl }}/recording/maad" class="js-maad-modal btn btn-outline-primary">
                             <i class="fa-solid fa-check"></i>
-                            Submit
+                            Compute
                         </a>
                     </div>
                 </div>
@@ -245,10 +245,10 @@
                     }
                 })
                 data = {
-                    'minTime': $('input[name=minTimeView]').val(),
-                    'maxTime': $('input[name=maxTimeView]').val(),
-                    'minFrequency': $('input[name=minFreqView]').val(),
-                    'maxFrequency': $('input[name=maxFreqView]').val(),
+                    'min_time': $('input[name=minTimeView]').val(),
+                    'max_time': $('input[name=maxTimeView]').val(),
+                    'min_frequency': $('input[name=minFreqView]').val(),
+                    'max_frequency': $('input[name=maxFreqView]').val(),
                     'collection_id': $('input[name=collection_id]').val(),
                     'recording_id': $('input[name=recording_id]').val(),
                     'filename': soundFilePath,

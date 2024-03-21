@@ -10,6 +10,7 @@ use BioSounds\Entity\Recording;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\IndexLogProvider;
+use BioSounds\Provider\IndexTypeProvider;
 use BioSounds\Provider\LabelAssociationProvider;
 use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\RecordingProvider;
@@ -68,6 +69,7 @@ class RecordingController extends BaseController
             'microphones' => (new Microphone())->getBasicList(),
             'license' => (new License())->getBasicList(),
             'models' => (new RecordingProvider())->getModel(),
+            'indexs' => (new IndexTypeProvider())->getList(),
         ]);
     }
 
@@ -162,31 +164,32 @@ class RecordingController extends BaseController
         $recordingProvider = new RecordingProvider();
         $indexLogProvider = new indexLogProvider();
         $labelAssociationProvider = new LabelAssociationProvider();
-        $recording = $recordingProvider->get($id);
+        $recordings = $recordingProvider->get($id);
+        foreach ($recordings as $recording) {
+            $fileName = $recording[Recording::FILENAME];
+            $colId = $recording[Recording::COL_ID];
+            $dirID = $recording[Recording::DIRECTORY];
 
-        $fileName = $recording[Recording::FILENAME];
-        $colId = $recording[Recording::COL_ID];
-        $dirID = $recording[Recording::DIRECTORY];
+            $soundsDir = "sounds/sounds/$colId/$dirID/";
+            $imagesDir = "sounds/images/$colId/$dirID/";
 
-        $soundsDir = "sounds/sounds/$colId/$dirID/";
-        $imagesDir = "sounds/images/$colId/$dirID/";
-
-        if (file_exists($soundsDir . $fileName)) {
-            unlink($soundsDir . $fileName);
-        }
-
-        //Check if there are images
-        $images = (new SpectrogramProvider())->getListInRecording($id);
-
-        foreach ($images as $image) {
-            if (file_exists($imagesDir . $image->getFilename())) {
-                unlink($imagesDir . $image->getFilename());
+            if (file_exists($soundsDir . $fileName)) {
+                unlink($soundsDir . $fileName);
             }
-        }
 
-        $wavFileName = substr($fileName, 0, strrpos($fileName, '.')) . '.wav';
-        if (is_file($soundsDir . $wavFileName)) {
-            unlink($soundsDir . $wavFileName);
+            //Check if there are images
+            $images = (new SpectrogramProvider())->getListInRecording($id);
+
+            foreach ($images as $image) {
+                if (file_exists($imagesDir . $image->getFilename())) {
+                    unlink($imagesDir . $image->getFilename());
+                }
+            }
+
+            $wavFileName = substr($fileName, 0, strrpos($fileName, '.')) . '.wav';
+            if (is_file($soundsDir . $wavFileName)) {
+                unlink($soundsDir . $wavFileName);
+            }
         }
 
         $labelAssociationProvider->delete($id);
@@ -280,14 +283,86 @@ class RecordingController extends BaseController
         if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
         }
-        $this->queueService = new RabbitQueueService();
-        foreach ($_POST as $data) {
-            $this->queueService->model($data);
+        $recordings = (new RecordingProvider())->get($_POST['id']);
+        $para = json_decode($_POST['data']);
+        $data = [];
+        if ($para->creator_type == 'BirdNET-Analyzer') {
+            foreach ($recordings as $recording) {
+                $data[] = [
+                    'creator_type' => $para->creator_type,
+                    'collection_id' => $recording['col_id'],
+                    'recording_id' => $recording['recording_id'],
+                    'filename' => $recording['filename'],
+                    'recording_directory' => $recording['directory'],
+                    'lat' => $recording['latitude_WGS84_dd_dddd'],
+                    'lon' => $recording['longitude_WGS84_dd_dddd'],
+                    'file_date' => $recording['file_date'],
+                    'sensitivity' => $para->sensitivity,
+                    'min_conf' => $para->min_conf,
+                    'overlap' => $para->overlap,
+                    'sf_thresh' => $para->sf_thresh,
+                    'max_freq' => $recording['sampling_rate'] / 2,
+                    'user_id' => Auth::getUserID(),
+                ];
+            }
+        } elseif ($para->creator_type == 'batdetect2') {
+            {
+                foreach ($recordings as $recording) {
+                    $data[] = [
+                        'creator_type' => $para->creator_type,
+                        'collection_id' => $recording['col_id'],
+                        'recording_id' => $recording['recording_id'],
+                        'filename' => $recording['filename'],
+                        'recording_directory' => $recording['directory'],
+                        'file_date' => $recording['file_date'],
+                        'detection_threshold' => $para->detection_threshold,
+                        'user_id' => Auth::getUserID(),
+                    ];
+                }
+            }
         }
+        $this->queueService = new RabbitQueueService();
+        $this->queueService->queue(json_encode($data), 'AI model', count($data));
         $this->queueService->closeConnection();
         return json_encode([
             'errorCode' => 0,
             'message' => 'Models successfully.'
+        ]);
+    }
+
+    public function maad()
+    {
+        if (!Auth::isUserLogged()) {
+            throw new ForbiddenException();
+        }
+        $recordings = (new RecordingProvider())->get($_POST['id']);
+        $para = json_decode($_POST['data']);
+        $data = [];
+        foreach ($para as $p) {
+            foreach ($recordings as $recording) {
+                $data[] = [
+                    'min_time' => 0,
+                    'max_time' => $recording['duration'],
+                    'min_frequency' => 1,
+                    'max_frequency' => $recording['sampling_rate'] / 2,
+                    'collection_id' => $recording['col_id'],
+                    'recording_id' => $recording['recording_id'],
+                    'directory' => $recording['directory'],
+                    'filename' => $recording['filename'],
+                    'index_id' => $p->index_id,
+                    'index' => $p->index,
+                    'channel' => $recording['channel_num'],
+                    'param' => $p->param,
+                    'user_id' => Auth::getUserID(),
+                ];
+            }
+        }
+        $this->queueService = new RabbitQueueService();
+        $this->queueService->queue(json_encode($data), 'index analysis', count($data));
+        $this->queueService->closeConnection();
+        return json_encode([
+            'errorCode' => 0,
+            'message' => 'Alpha acoustic indices successfully.'
         ]);
     }
 }

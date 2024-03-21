@@ -2,12 +2,8 @@
 <script src="{{ baseUrl }}/assets/js/vis-data.min.js"></script>
 <script src="{{ baseUrl }}/assets/js/vis-timeline-graph2d.min.js"></script>
 <link rel="stylesheet" href="{{ baseUrl }}/assets/css/vis-timeline-graph2d.min.css">
-<style>
-
-</style>
 <div id="visualization"></div>
 <script>
-
     var tl_container = document.getElementById("visualization");
     var tl_groups = []
     var tl_arr = []
@@ -38,10 +34,12 @@
     {% endfor %}
 
     var tl_options = {
-        stack: true,
-        maxHeight: 800,
+        maxHeight: 1000,
         min: "{{ min }}",
         max: "{{ max }}",
+        cluster: {
+            maxItems: 1,
+        },
         order: function (a, b) {
             if (b.start - a.start == 0) {
                 return b.order.localeCompare(a.order)
@@ -50,6 +48,45 @@
         },
     };
     var timeline = new vis.Timeline(tl_container, tl_items, tl_groups, tl_options);
+    $(document).ready(function () {
+        $('.vis-item').on('mouseover', function () {
+            $(this).find('.vis-item-overflow').css('overflow', 'visible')
+        });
+        $('.vis-item').on('mouseout', function () {
+            if (!$(this).hasClass('vis-selected')) {
+                $(this).find('.vis-item-overflow').css('overflow', 'hidden')
+            }
+        });
+        timeline.on('select', function () {
+            $('.vis-item').each(function () {
+                if ($(this).hasClass('vis-selected')) {
+                    $(this).find('.vis-item-overflow').css('overflow', 'visible')
+                } else {
+                    $(this).find('.vis-item-overflow').css('overflow', 'hidden')
+                }
+            });
+        });
+
+        var prevRange = timeline.getWindow();
+        var click_item
+        $('#visualization').on('click', '.vis-cluster', function () {
+            console.log($(this).width() / $('.vis-itemset').width())
+            if ($(this).width() / $('.vis-itemset').width() < 0.96 && $(this).width() / $('.vis-itemset').width() > 0.95) {
+                timeline.setOptions({cluster: false});
+                click_item = $(this)
+            }
+        })
+        timeline.on('rangechanged', function () {
+            var currentRange = timeline.getWindow();
+            if (typeof click_item !== 'undefined' && click_item.width() / $('.vis-itemset').width() < 0.96) {
+                if (currentRange.end - currentRange.start > prevRange.end - prevRange.start) {
+                    timeline.setOptions({cluster: true});
+                }
+            }
+            prevRange = currentRange;
+        });
+
+    });
 </script>
 
 

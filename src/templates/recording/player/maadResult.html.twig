@@ -12,7 +12,7 @@
                 {% if not result=='' %}
                     <div class="form-inline">
                         <div class="col-form-label-sm">
-                            <label>( {{ param|split('@')[0]|split('?')[1] }} {{ minTime }}-{{ maxTime }}s {{ minFrequency }}-{{ maxFrequency }}Hz )</label>
+                            <label>( {{ param|split('@')[0]|split('?')[1] }} {{ min_time }}-{{ max_time }}s {{ min_frequency }}-{{ max_frequency }}Hz )</label>
                         </div>
                     </div>
                 {% endif %}
@@ -32,10 +32,10 @@
                         </div>
                         <input type="hidden" name="recording_id" value="{{ recording_id }}">
                         <input type="hidden" name="index_id" value="{{ index_id }}">
-                        <input type="hidden" name="minTime" value="{{ minTime }}">
-                        <input type="hidden" name="maxTime" value="{{ maxTime }}">
-                        <input type="hidden" name="minFrequency" value="{{ minFrequency }}">
-                        <input type="hidden" name="maxFrequency" value="{{ maxFrequency }}">
+                        <input type="hidden" name="min_time" value="{{ min_time }}">
+                        <input type="hidden" name="max_time" value="{{ max_time }}">
+                        <input type="hidden" name="min_frequency" value="{{ min_frequency }}">
+                        <input type="hidden" name="max_frequency" value="{{ max_frequency }}">
                         <input type="hidden" name="value" value="{{ result }}">
                         <input type="hidden" name="param" value="{{ param }}">
                     </form>

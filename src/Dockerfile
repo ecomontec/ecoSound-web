@@ -17,7 +17,7 @@ RUN composer install --no-plugins --no-scripts --optimize-autoloader --no-dev --
 RUN apt-get install -y python && curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py && python get-pip.py && pip install numpy
 RUN apt-get install -y python3.9 && apt-get install -y python3-pip
 RUN pip3 install scikit-maad && pip3 install matplotlib && pip3 install tensorflow && pip3 install librosa && pip3 install batdetect2
-RUN apt-get install -y python-dev python-setuptools libsndfile1-dev libasound2-dev imagemagick montage sox lame ffmpeg
+RUN apt-get install -y python-dev python-setuptools libsndfile1-dev libasound2-dev imagemagick montage sox lame ffmpeg libsox-fmt-mp3
 RUN chown -R www-data:www-data /var/www/html/sounds /var/www/html/tmp /var/www/html/cache
 RUN chmod +x /var/www/html/bin/svt.py
 RUN chmod +x /var/www/html/bin/getMaad.py

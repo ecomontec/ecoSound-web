@@ -14,6 +14,7 @@ use BioSounds\Presenter\FrequencyScalePresenter;
 use BioSounds\Presenter\RecordingPresenter;
 use BioSounds\Presenter\TagPresenter;
 use BioSounds\Provider\CollectionProvider;
+use BioSounds\Provider\IndexLogProvider;
 use BioSounds\Provider\IndexTypeProvider;
 use BioSounds\Provider\LabelAssociationProvider;
 use BioSounds\Provider\LabelProvider;
@@ -80,7 +81,7 @@ class RecordingController extends BaseController
             $this->fftSize = $recording->getUserRecordingFft(Auth::getUserID(), $id);
         }
         $this->recordingId = $id;
-        $recordingData = (new RecordingProvider())->get($this->recordingId);
+        $recordingData = (new RecordingProvider())->get($this->recordingId)[0];
 
         //TODO: Remove when recording is an Entity. Add to it.
         $recordingData['collection'] = (new CollectionProvider())->get($recordingData[Recording::COL_ID]);
@@ -528,10 +529,10 @@ class RecordingController extends BaseController
         $str = 'python3 ' . ABSOLUTE_DIR . 'bin/getMaad.py' .
             ' -f ' . ABSOLUTE_DIR . 'tmp/' . implode('.', explode('.', explode('/tmp/', $data['filename'])[1], -1)) .
             ' --ch ' . ($data['channel'] == 2 ? 'right' : 'left') .
-            ' --mint ' . $data['minTime'] .
-            ' --maxt ' . $data['maxTime'] .
-            ' --minf ' . $data['minFrequency'] .
-            ' --maxf ' . $data['maxFrequency'];
+            ' --mint ' . $data['min_time'] .
+            ' --maxt ' . $data['max_time'] .
+            ' --minf ' . $data['min_frequency'] .
+            ' --maxf ' . $data['max_frequency'];
         if ($data['index'] != '') {
             $str = $str . ' --it ' . $data['index'];
         }
@@ -558,10 +559,10 @@ class RecordingController extends BaseController
                         'result' => $result,
                         'recording_id' => $data['recording_id'],
                         'index_id' => $data['index_id'],
-                        'minTime' => $data['minTime'],
-                        'maxTime' => $data['maxTime'],
-                        'minFrequency' => $data['minFrequency'],
-                        'maxFrequency' => $data['maxFrequency'],
+                        'min_time' => $data['min_time'],
+                        'max_time' => $data['max_time'],
+                        'min_frequency' => $data['min_frequency'],
+                        'max_frequency' => $data['max_frequency'],
                         'param' => substr('Channel?' . $channel . '@' . $data['param'], 0, -1),
                     ])
                 ]);
@@ -577,6 +578,83 @@ class RecordingController extends BaseController
         }
     }
 
+    public function maads($data, $id)
+    {
+        $str = 'python3 ' . ABSOLUTE_DIR . 'bin/getMaad.py' .
+            ' -f ' . ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . '/' . $data['directory'] . '/' . explode('.', $data['filename'], -1)[0] .
+            ' --ch ' . ($data['channel'] == 2 ? 'right' : 'left') .
+            ' --mint ' . $data['mint_ime'] .
+            ' --maxt ' . $data['max_time'] .
+            ' --minf ' . $data['min_frequency'] .
+            ' --maxf ' . $data['max_frequency'];
+        if ($data['index'] != '') {
+            $str = $str . ' --it ' . $data['index'];
+        }
+        if ($data['param'] != '') {
+            $str = $str . ' --pa ' . substr($data['param'], 0, -1);
+        }
+        exec($str . " 2>&1", $out, $status);
+
+        $versionOutput = shell_exec("pip3 show scikit-maad");
+        $versionLines = explode("\n", $versionOutput);
+
+        foreach ($versionLines as $line) {
+            if (strpos($line, "Version:") !== false) {
+                $index['version'] = trim(str_replace("Version:", "", $line));
+                break;
+            }
+        }
+        $index['log_id'] = $id;
+        $index['recording_id'] = $data['recording_id'];
+        $index['user_id'] = $data['user_id'];
+        $index['index_id'] = $data['index_id'];
+        $index['min_time'] = $data['min_time'];
+        $index['max_time'] = $data['max_time'];
+        $index['min_frequency'] = $data['min_frequency'];
+        $index['max_frequency'] = $data['max_frequency'];
+        if ($data['channel_num'] == 1) {
+            $channel = 'Mono';
+        } elseif ($data['channel'] == 2) {
+            $channel = 'Right';
+        } else {
+            $channel = 'Left';
+        }
+        if ($status == 0 && $out[count($out) - 1] != "0") {
+            $result = $out[count($out) - 1];
+            if ($data['index'] != '') {
+                $arr = explode("!", $result);
+                foreach ($arr as $k => $v) {
+                    $name = explode("?", $v)[0];
+                    $value = explode("?", $v)[1];
+                    $index['variable_type'] = 'output';
+                    $index['variable_order'] = $k + 1;
+                    $index['variable_name'] = $name;
+                    $index['variable_value'] = $value;
+                    (new IndexLog())->insert($index);
+                }
+            }
+        } else {
+            $index['variable_type'] = 'output';
+            $index['variable_order'] = 1;
+            $index['variable_name'] = 'Invalid Parameter';
+            $index['variable_value'] = '';
+            (new IndexLog())->insert($index);
+        }
+        $arr = explode("@", substr('Channel?' . $channel . '@' . $data['param'], 0, -1));
+        foreach ($arr as $k => $v) {
+            $name = explode("?", $v)[0];
+            $value = explode("?", $v)[1];
+            $index['variable_type'] = 'input';
+            $index['variable_order'] = $k + 1;
+            $index['variable_name'] = $name;
+            $index['variable_value'] = $value;
+            (new IndexLog())->insert($index);
+        }
+        return json_encode([
+            'errorCode' => 0,
+            'message' => 'Index saved successfully.'
+        ]);
+    }
 
     public function saveLabel()
     {
@@ -608,14 +686,41 @@ class RecordingController extends BaseController
         if (!Auth::isUserLogged()) {
             throw new NotAuthenticatedException();
         }
-
         $data = [];
         $data['user_id'] = Auth::getUserLoggedID();
+        $data['log_id'] = (new IndexLogProvider())->getId();
+        $versionOutput = shell_exec("pip3 show scikit-maad");
+        $versionLines = explode("\n", $versionOutput);
 
-        foreach ($_POST as $key => $value) {
-            $data[$key] = $value;
+        foreach ($versionLines as $line) {
+            if (strpos($line, "Version:") !== false) {
+                $data['version'] = trim(str_replace("Version:", "", $line));
+                break;
+            }
         }
-        (new IndexLog())->insert($data);
+        foreach ($_POST as $key => $value) {
+            if ($key != 'param' && $key != 'value') {
+                $data[$key] = $value;
+            }
+        }
+        foreach (explode("@", $_POST['param']) as $k => $v) {
+            $name = explode("?", $v)[0];
+            $value = explode("?", $v)[1];
+            $data['variable_type'] = 'input';
+            $data['variable_order'] = $k + 1;
+            $data['variable_name'] = $name;
+            $data['variable_value'] = $value;
+            (new IndexLog())->insert($data);
+        }
+        foreach (explode("!", $_POST['value']) as $k => $v) {
+            $name = explode("?", $v)[0];
+            $value = explode("?", $v)[1];
+            $data['variable_type'] = 'output';
+            $data['variable_order'] = $k + 1;
+            $data['variable_name'] = $name;
+            $data['variable_value'] = $value;
+            (new IndexLog())->insert($data);
+        }
         return json_encode([
             'errorCode' => 0,
             'message' => 'Index saved successfully.'
@@ -634,7 +739,7 @@ class RecordingController extends BaseController
         $j = 0;
         $str = 'python3 ' . ABSOLUTE_DIR . 'BirdNET-Analyzer/analyze.py' .
             ' --i ' . ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['filename'] .
-            ' --o ' . ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['recording_id'] . '-' . $data['user_id'] . ".csv" .
+            ' --o ' . ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv" .
             ' --rtype "csv"';
         if ($data['lat'] != '') {
             $str = $str . ' --lat ' . $data['lat'];
@@ -659,7 +764,7 @@ class RecordingController extends BaseController
         }
         exec($str . " 2>&1", $out, $status);
         if ($status == 0) {
-            $handle = fopen(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['recording_id'] . '-' . $data['user_id'] . ".csv", "rb");
+            $handle = fopen(ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv", "rb");
             $result = [];
             while (!feof($handle)) {
                 $d = fgetcsv($handle);
@@ -717,6 +822,7 @@ class RecordingController extends BaseController
                 }
             }
             (new TagProvider())->insertArr($list);
+            unlink(ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv");
         }
         return json_encode([
             'errorCode' => 0,
@@ -734,13 +840,13 @@ class RecordingController extends BaseController
         }
         $i = 0;
         $j = 0;
-        if (!file_exists(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'])) {
-            mkdir(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'], 0777, true);
+        $soundPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . "/sounds";
+        if (!file_exists($soundPath)) {
+            mkdir($soundPath, 0777, true);
         }
-        copy(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav', ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . '/' . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav');
-        $str = 'batdetect2 detect ' .
-            ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . ' ' .
-            ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . ' ';
+        copy(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav', $soundPath . '/' . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav');
+        $resultPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'];
+        $str = 'batdetect2 detect ' . $soundPath . ' ' . $resultPath . ' ';
         if ($data['detection_threshold'] != 'undefined' && $data['detection_threshold'] != '') {
             $str = $str . $data['detection_threshold'];
         } else {
@@ -759,8 +865,8 @@ class RecordingController extends BaseController
         }
 
         if ($status == 0) {
-            if (file_exists(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav' . ".csv")) {
-                $handle = fopen(ABSOLUTE_DIR . 'tmp/' . explode('/', explode('/tmp/', $data['temp'])[1])[0] . "/" . $data['user_id'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav' . ".csv", "rb");
+            if (file_exists($resultPath . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav' . ".csv")) {
+                $handle = fopen($resultPath . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav' . ".csv", "rb");
                 $result = [];
                 while (!feof($handle)) {
                     $d = fgetcsv($handle);
@@ -807,17 +913,20 @@ class RecordingController extends BaseController
                 }
                 (new TagProvider())->insertArr($list);
             } else {
+                Utils::deleteDirContents($resultPath);
                 return json_encode([
                     'errorCode' => 0,
                     'message' => "Batdetect2 $version found 0 detections. 0 tags were inserted.",
                 ]);
             }
         }
+        Utils::deleteDirContents($resultPath);
         return json_encode([
             'errorCode' => 0,
             'message' => "Batdetect2 $version found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. $i tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
         ]);
     }
+
     private function checkPermissions(): bool
     {
         if (!Auth::isUserLogged()) {

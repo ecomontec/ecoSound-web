@@ -68,13 +68,11 @@ class IndexLogController extends BaseController
         array_splice($colArr, 2, 0, 'recording');
         array_splice($colArr, 4, 0, 'user');
         array_splice($colArr, 6, 0, 'index');
+
         $Als[] = $colArr;
         $List = (new IndexLogProvider())->getIndexLog();
 
         foreach ($List as $Item) {
-            $Item['value'] = str_replace('!', ' ', str_replace('?', ': ', $Item['value']));
-            $Item['param'] = str_replace('@', ' ', str_replace('?', ': ', $Item['param']));
-
             $valueToMove = $Item['recordingName'] == null ? '' : $Item['recordingName'];
             unset($Item['recordingName']);
             array_splice($Item, 2, 0, $valueToMove);

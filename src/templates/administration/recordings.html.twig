@@ -37,8 +37,12 @@
                 <i class="fas fa-eye"></i>
                 View
             </button>
+            <button id="maads" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#maads" disabled>
+                <i class="svg-sum"></i>
+                Acoustic Index Analysis
+            </button>
             <button id="models" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#models" disabled>
-                <i class="fa-solid fa-gears"></i>
+                <i class="svg-model"></i>
                 Models
             </button>
             <button id="download" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#download" disabled>
@@ -50,11 +54,11 @@
                 Delete
             </button>
             <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" id="metaData" type="button" data-toggle="dropdown" aria-expanded="false">
-                <span class="fas fa-upload"></span>
-                Upload
+                <span class="fas fa-plus"></span>
+                Add
             </button>
             <div class="dropdown-menu">
-                <a class="dropdown-item" type="button" id="uploadButton" data-toggle="collapse" data-target="#uploadForm"><i class="fas fa-file-audio"></i> Upload Recordings</a>
+                <a class="dropdown-item" type="button" id="uploadButton"><i class="fas fa-file-audio"></i> Upload Recordings</a>
                 <a class="dropdown-item" type="button" id="metaDataButton"><i class="fa-solid fa-file-arrow-up"></i> Upload Meta-data</a>
                 <a class="dropdown-item" type="button" id="viewInstructions"><i class="fa-solid fa-circle-info"></i> Meta-data Instructions</a>
             </div>
@@ -101,7 +105,7 @@
                     <div>
                         <div class="form-group">
                             <input id="delete_id" type="hidden">
-                            <label>Deleting <b class="text-danger" id="delete_name"></b> will also delete the <b class="text-danger" id="count"></b> tags inside and cannot be reversed!</label>
+                            <label style=" width: 100%;max-height: 70vh;overflow: auto">Deleting <b class="text-danger" id="delete_name"></b> will also delete the <b class="text-danger" id="count"></b> tags inside and cannot be reversed!</label>
                         </div>
                     </div>
                 </div>
@@ -171,6 +175,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
+                    <div id="tf-info"></div>
                     <button id="js-close-button" type="button" class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
                         <i class="fas fa-times"></i>
                         Close
@@ -178,6 +183,41 @@
                     <a id='model-btn' class="js-tf-modal btn btn-outline-primary">
                         <i class="fa-solid fa-check"></i>
                         Submit
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-maad" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title maad-title">Acoustic Index Analysis</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body ml-3">
+                    <div>
+                        <div class="form-group">
+                            <select id="maad" name="maad_id" class=" mb-3" data-selected-text-format="count" multiple required>
+                                {% for index in indexs %}
+                                    <option value="{{ index.indexId }}">{{ index.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div id="maad-box" style="max-height: 600px;overflow: auto"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div id="maad-info"></div>
+                    <button id="js-close-button" type="button" class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
+                    <a href="#" class="js-maad-modal btn btn-outline-primary">
+                        <i class="fa-solid fa-check"></i>
+                        Compute & Save
                     </a>
                 </div>
             </div>
@@ -193,7 +233,8 @@
 
         <script src="{{ baseUrl }}/assets/plupload/js/plupload.full.min.js" defer></script>
         <script src="{{ baseUrl }}/assets/plupload/js/jquery.plupload.queue.min.js" defer></script>
-        <script src="{{ baseUrl }}/templates/administration/js/upload.js" defer></script>
+        <script src="{{ baseUrl }}/templates/administration/js/upload.js?v=1.2" defer></script>
+        <script src="{{ baseUrl }}/assets/js/bootstrap-select.js" defer></script>
 
     {% endblock %}
 
@@ -228,6 +269,7 @@
                     "bAutoWidth": false,
                     "scrollX": true,
                 });
+                $('#maad').selectpicker('refresh');
                 if (table.state.loaded()) {
                     $('#search').val(table.state.loaded().search.search);
                 }
@@ -259,8 +301,15 @@
             });
             document.addEventListener("DOMContentLoaded", function (event) {
                 $("#uploadButton").click(function (e) {
-                    $("#metaData").toggle();
-                    $('#uploadForm').hidden = false;
+                    document.querySelector('#file-uploader_browse').click();
+                });
+
+                $('#file-uploader').on('change', 'input[type=file]', function (event) {
+                    toggleLoading()
+                });
+
+                $('#uploadForm').collapse('hide').on('hide.bs.collapse', function () {
+                    location.reload();
                 });
 
                 $("#uploadForm").on('shown.bs.collapse', function () {
@@ -354,9 +403,35 @@
                     window.location.href = '{{ baseUrl }}/api/admin/recordingManager/download';
                 });
                 $('#models').on('click', function () {
+                    let count = 0
+                    $('.js-checkbox:checked').each(function () {
+                        if ($(this).data('type') == 'audio data') {
+                            count = count + 1
+                        }
+                    });
+                    if (count == 0) {
+                        showAlert('Select at least one audio recording.');
+                        e.preventDefault();
+                        return
+                    }
                     $('#modal-tf').modal('show');
+                    $('#modal-tf').find('#tf-info').html('<small>Launch job for ' + $('.js-checkbox:checked').length + ' recordings?</small>')
                 })
-
+                $('#maads').on('click', function () {
+                    let count = 0
+                    $('.js-checkbox:checked').each(function () {
+                        if ($(this).data('type') == 'audio data') {
+                            count = count + 1
+                        }
+                    });
+                    if (count == 0) {
+                        showAlert('Select at least one audio recording.');
+                        e.preventDefault();
+                        return
+                    }
+                    $('#modal-maad').modal('show');
+                    $('#modal-maad').find('#maad-info').html('<small>Launch job for ' + $('.js-checkbox:checked').length + ' recordings?</small>')
+                })
                 $(document).on('click', '#recordingsExport', function () {
                     window.location.href = '{{ baseUrl }}/api/admin/recordingManager/export/' + $('#colId').val();
                 });
@@ -364,56 +439,30 @@
                 $(".js-tf-modal").click(function (e) {
                     let data = []
                     let arr = []
-                    let name = []
-                    let lat, lon
+                    let id = [];
                     $('.js-checkbox:checked').each(function () {
-                        let id = $(this).closest('tr').find('[name="itemID"]').val()
-                        if ($('#tf').val() == 1) {
-                            if ($('#site_id' + id).find('option:selected').attr('data-lon') == undefined || $('#site_id' + id).find('option:selected').attr('data-lat') == undefined || $('#file_date' + id).val() == "") {
-                                lat = ''
-                                lon = ''
-                            } else {
-                                lat = $('#site_id' + id).find('option:selected').attr('data-lat')
-                                lon = $('#site_id' + id).find('option:selected').attr('data-lon')
-                            }
-                            arr = {
-                                'collection_id': $('#colId').val(),
-                                'recording_id': id,
-                                'filename': $('#name_' + id).val(),
-                                'creator_type': $("#tf option:selected").text(),
-                                'recording_directory': $('#directory' + id).val(),
-                                'lat': lat,
-                                'lon': lon,
-                                'file_date': $('#file_date' + id).val(),
-                                'sensitivity': $("#sensitivity").val(),
-                                'min_conf': $("#min_conf").val(),
-                                'overlap': $("#overlap").val(),
-                                'sf_thresh': $("#sf_thresh").val(),
-                                'temp': $("#path" + id).val(),
-                                'max_freq': $("#max_freq" + id).val(),
-                                'user_id': '{{ user_id }}',
-                            };
-                        } else if ($('#tf').val() == 2) {
-                            arr = {
-                                'collection_id': $('#colId').val(),
-                                'recording_id': id,
-                                'filename': $('#name_' + id).val(),
-                                'creator_type': $("#tf option:selected").text(),
-                                'recording_directory': $('#directory' + id).val(),
-                                'file_date': $('#file_date' + id).val(),
-                                'detection_threshold': $("#detection_threshold").val(),
-                                'temp': $("#path" + id).val(),
-                                'user_id': '{{ user_id }}',
-                            };
-                        }
-                        name.push($('#name_' + $(this).data('id')).val())
-                        arr = JSON.stringify(arr)
-                        data.push(arr)
+                        id.push($(this).closest('tr').find('[name="itemID"]').val());
                     });
-                    name = name.join(', ')
-                    postRequest('{{ baseUrl }}/api/admin/recordingManager/model', data, false, false, function () {
+                    id = id.join(',')
+                    if ($('#tf').val() == 1) {
+                        arr = {
+                            'sensitivity': $("#sensitivity").val(),
+                            'min_conf': $("#min_conf").val(),
+                            'overlap': $("#overlap").val(),
+                            'sf_thresh': $("#sf_thresh").val(),
+                            'creator_type': $("#tf option:selected").text(),
+                        };
+                    } else if ($('#tf').val() == 2) {
+                        arr = {
+                            'detection_threshold': $("#detection_threshold").val(),
+                            'creator_type': $("#tf option:selected").text(),
+                        };
+                    }
+                    arr = JSON.stringify(arr)
+                    data.push(arr)
+                    postRequest('{{ baseUrl }}/api/admin/recordingManager/model', {'id': id, 'data': data}, false, false, function () {
                         $('#modal-tf').modal('hide')
-                        showAlert("Model running on " + name + " in background.")
+                        showAlert("Job added to your queue - check status under corresponding tab")
                     });
                     e.preventDefault();
                 });
@@ -426,7 +475,7 @@
                         }
                     });
                     if (count == 0) {
-                        showAlert('Select at least one audio data.');
+                        showAlert('Select at least one audio recording.');
                     }
                     e.preventDefault();
                 })
@@ -439,7 +488,7 @@
                         }
                     });
                     if (count == 0) {
-                        showAlert('Select at least one audio data.');
+                        showAlert('Select at least one audio recording.');
                     }
                     e.preventDefault();
                 })
@@ -462,6 +511,75 @@
                         $("#modal-div").modal('show');
                     })
                 })
+                $('#maad').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+                    var selectedOption = $(this).find('option').eq(clickedIndex);
+                    var value = selectedOption.val();
+                    if (isSelected) {
+                        $('#maad-box').append($('#js' + value).text());
+                    } else {
+                        $('#maad' + value).remove();
+                    }
+                });
+                $(".js-maad-modal").click(function (e) {
+                    if ($('#maad-box').text() == '') {
+                        showAlert('Select at least one index.')
+                        e.preventDefault();
+                        return
+                    }
+                    let data = []
+                    let param = {}
+                    let id = []
+                    let arr = []
+                    $('.param').each(function () {
+                        if ($(this).val() != '') {
+                            param[$(this).data('id')] = (param[$(this).data('id')] ? param[$(this).data('id')] : '') + $(this).attr('id') + '?' + $(this).val() + '@'
+                        }
+                    })
+                    $('.js-checkbox:checked').each(function () {
+                        if ($(this).data('type') == 'audio data') {
+                            id.push($(this).data('id'));
+                        }
+                    });
+                    id = id.join(',')
+                    $('#maad option:selected').each(function () {
+                        arr = {
+                            'index_id': $(this).val(),
+                            'index': $(this).text(),
+                            'param': param[$(this).val()],
+                        };
+                        data.push(arr)
+                    })
+                    data = JSON.stringify(data)
+                    postRequest('{{ baseUrl }}/api/admin/recordingManager/maad', {'id': id, 'data': data}, false, false, function () {
+                        $('#modal-maad').modal('hide')
+                        showAlert("Job added to your queue - check status under corresponding tab")
+                    });
+                });
             });
         </script>
+        {% for index in indexs %}
+            <script id="js{{ index.indexId }}" type="text/html">
+                <div id="maad{{ index.indexId }}" class="border mt-3 mr-3">
+                    <div class="m-4">
+                        <div class="col-form-label">
+                            <h4>{{ index.name }}</h4>
+                            <strong>Description:</strong>
+                            <a class="col-form-label" href="{{ index.URL }}" target="_blank" title="Documentation"> <i class="fa fa-book"></i></a>
+                            <div class="col-form-label-sm">{{ index.description }}</div>
+                        </div>
+                        {% if index.param is not null and index.param != '' %}
+                            {% for p in index.param|split('!') %}
+                                <div class="form-inline">
+                                    <label class="ml-1 col-form-label-sm" for="{{ p|split('|')[0] }}">{{ p|split('|')[0] }}</label>
+                                </div>
+                                <div class="form-group form-inline">
+                                    <input id="{{ p|split('|')[0] }}" name="{{ p|split('|')[0] }}" class="form-control form-control-sm param" data-id="{{ index.indexId }}" type="text">
+                                    <label class="ml-2 col-form-label-sm">default: {{ p|split('|')[1] }}</label>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </script>
+        {% endfor %}
     {% endblock %}

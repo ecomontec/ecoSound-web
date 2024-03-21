@@ -63,8 +63,8 @@ class Utils
     public static function generateSoundFileSelection(
         string $originalFilePath,
         string $destinationFilePath,
-        int $startTime,
-        int $durationTime
+        int    $startTime,
+        int    $durationTime
     )
     {
         $command = 'sox ' . $originalFilePath . ' ' . $destinationFilePath . ' ';
@@ -81,8 +81,8 @@ class Utils
     public static function filterFrequenciesSound(
         string $originalFilePath,
         string $destinationFilePath,
-        int $minimumFrequency,
-        int $maximumFrequency
+        int    $minimumFrequency,
+        int    $maximumFrequency
     )
     {
         $command = 'sox ' . $originalFilePath . ' ' . $destinationFilePath . ' ';
@@ -236,7 +236,7 @@ class Utils
         foreach ($files as $file) {
             if (is_dir($dir . $file)) {
                 self::deleteOldFiles($dir . $file . "/", $days);
-                if ($now - filemtime($dir . $file) >= 60 * 60 * 24 * $days)
+                if ($now - filemtime($dir . $file) >= 60 * 60 * 24 * $days && empty($dir . $file))
                     rmdir($dir . $file);
             } else {
                 if ($now - filemtime($dir . $file) >= 60 * 60 * 24 * $days)

@@ -10445,16 +10445,65 @@ readers do not read off random characters that represent icons */
     content: url("../webfonts/arrow-peak-hover.svg");
 }
 
-.sum {
+.js-open-tf-modal .svg-model {
+    width: 16px;
+    content: url("../webfonts/model.svg");
+}
+
+.js-open-tf-modal .svg-model:hover {
+    content: url("../webfonts/model-hover.svg");
+}
+
+.js-open-tf-modal:hover .svg-model {
+    content: url("../webfonts/model-hover.svg");
+}
+
+#models[disabled] .svg-model {
+    height: 12px;
+    content: url("../webfonts/model.svg");
+}
+
+#models:not([disabled]) .svg-model {
+    height: 12px;
+    content: url("../webfonts/model-hover.svg");
+}
+
+#models[disabled] .svg-model:hover {
+    content: url("../webfonts/model.svg");
+}
+
+#models:not([disabled]) .svg-model:hover {
+    content: url("../webfonts/model-hover.svg");
+}
+
+.svg-sum {
     height: 16px;
     content: url("../webfonts/sum.svg");
 }
 
-.sum:hover {
+.svg-sum:hover {
     content: url("../webfonts/sum-hover.svg");
 }
 
-.js-open-maad-modal:hover .sum {
+.js-open-maad-modal:hover .svg-sum {
+    content: url("../webfonts/sum-hover.svg");
+}
+
+#maads[disabled] .svg-sum {
+    height: 12px;
+    content: url("../webfonts/sum.svg");
+}
+
+#maads:not([disabled]) .svg-sum {
+    height: 12px;
+    content: url("../webfonts/sum-hover.svg");
+}
+
+#maads[disabled] .svg-sum:hover {
+    content: url("../webfonts/sum.svg");
+}
+
+#maads:not([disabled]) .svg-sum:hover {
     content: url("../webfonts/sum-hover.svg");
 }
 

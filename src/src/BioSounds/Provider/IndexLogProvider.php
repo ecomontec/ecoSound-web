@@ -17,8 +17,6 @@ class IndexLogProvider extends AbstractProvider
      */
     public function getList(): array
     {
-        $list = [];
-
         $sql = "SELECT i.*,r.`name` AS recordingName,u.`name` AS userName,it.`name` AS indexName FROM index_log i 
             LEFT JOIN recording r ON r.recording_id = i.recording_id
             LEFT JOIN user u ON u.user_id = i.user_id
@@ -28,26 +26,15 @@ class IndexLogProvider extends AbstractProvider
         }
         $sql = $sql . " ORDER BY i.log_id";
         $this->database->prepareQuery($sql);
-        if (!empty($result = $this->database->executeSelect())) {
-            foreach ($result as $indexLog) {
-                $list[] = (new IndexLog())
-                    ->setLogId($indexLog['log_id'])
-                    ->setRecordingId($indexLog['recording_id'])
-                    ->setRecordingName($indexLog['recordingName'])
-                    ->setUserId($indexLog['user_id'])
-                    ->setUserName($indexLog['userName'])
-                    ->setIndexId($indexLog['index_id'])
-                    ->setIndexName($indexLog['indexName'])
-                    ->setMinTime($indexLog['minTime'])
-                    ->setMaxTime($indexLog['maxTime'])
-                    ->setMinFrequency($indexLog['minFrequency'])
-                    ->setMaxFrequency($indexLog['maxFrequency'])
-                    ->setValue($indexLog['value'])
-                    ->setParam($indexLog['param'])
-                    ->setDate($indexLog['creation_date']);
-            }
-        }
-        return $list;
+        return $this->database->executeSelect();
+    }
+
+    public function getId(): int
+    {
+
+        $sql = "SELECT IFNULL(MAX(log_id), 0) + 1 AS log_id FROM index_log";
+        $this->database->prepareQuery($sql);
+        return $this->database->executeSelect()[0]['log_id'];
     }
 
     /**
@@ -78,14 +65,14 @@ class IndexLogProvider extends AbstractProvider
     {
         $sql = "SELECT i.*,r.`name` AS recordingName,u.`name` AS userName,it.`name` AS indexName FROM index_log i 
             LEFT JOIN recording r ON r.recording_id = i.recording_id
-            LEFT JOIN user u ON u.user_id = i.user_id
+            LEFT JOIN `user` u ON u.user_id = i.user_id
             LEFT JOIN index_type it ON it.index_id = i.index_id ";
         if (!Auth::isUserAdmin()) {
             $sql = $sql . ' WHERE i.user_id = ' . Auth::getUserLoggedID();
         }
         if ($search) {
             $sql .= Auth::isUserAdmin() ? ' WHERE ' : ' AND ';
-            $sql .= " CONCAT(IFNULL(i.log_id,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(it.name,''), IFNULL(i.minTime,''), IFNULL(i.maxTime,''), IFNULL(i.minFrequency,''), IFNULL(i.maxFrequency,''), IFNULL(i.param,''), IFNULL(i.value,''), IFNULL(i.creation_date,'')) LIKE '%$search%' ";
+            $sql .= " CONCAT(IFNULL(i.log_id,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(it.name,''), IFNULL(i.min_time,''), IFNULL(i.max_time,''), IFNULL(i.min_frequency,''), IFNULL(i.max_frequency,''), IFNULL(i.variable_type,''), IFNULL(i.variable_order,''), IFNULL(i.variable_name,''), IFNULL(i.variable_value,''), IFNULL(i.creation_date,''), IFNULL(i.version,'')) LIKE '%$search%' ";
         }
         $this->database->prepareQuery($sql);
         $count = count($this->database->executeSelect());
@@ -97,35 +84,36 @@ class IndexLogProvider extends AbstractProvider
         $arr = [];
         $sql = "SELECT i.*,r.`name` AS recordingName,u.`name` AS userName,it.`name` AS indexName FROM index_log i 
             LEFT JOIN recording r ON r.recording_id = i.recording_id
-            LEFT JOIN user u ON u.user_id = i.user_id
+            LEFT JOIN `user` u ON u.user_id = i.user_id
             LEFT JOIN index_type it ON it.index_id = i.index_id ";
         if (!Auth::isUserAdmin()) {
             $sql = $sql . ' WHERE i.user_id = ' . Auth::getUserLoggedID();
         }
         if ($search) {
             $sql .= Auth::isUserAdmin() ? ' WHERE ' : ' AND ';
-            $sql .= " CONCAT(IFNULL(i.log_id,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(it.name,''), IFNULL(i.minTime,''), IFNULL(i.maxTime,''), IFNULL(i.minFrequency,''), IFNULL(i.maxFrequency,''), IFNULL(i.param,''), IFNULL(i.value,''), IFNULL(i.creation_date,'')) LIKE '%$search%' ";
+            $sql .= " CONCAT(IFNULL(i.log_id,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(it.name,''), IFNULL(i.min_time,''), IFNULL(i.max_time,''), IFNULL(i.min_frequency,''), IFNULL(i.max_frequency,''), IFNULL(i.variable_type,''), IFNULL(i.variable_order,''), IFNULL(i.variable_name,''), IFNULL(i.variable_value,''), IFNULL(i.creation_date,''), IFNULL(i.version,'')) LIKE '%$search%' ";
         }
-        $a = ['', 'i.log_id', 'r.name', 'u.name', 'it.name', 'i.minTime', 'i.maxTime', 'i.minFrequency', 'i.maxFrequency', 'i.param', 'i.value', 'i.creation_date'];
-        $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
+        $a = ['', 'i.log_id', 'r.name', 'u.name', 'it.name', 'i.version', 'i.min_time', 'i.max_time', 'i.min_frequency', 'i.max_frequency', 'i.variable_type', 'i.variable_order', 'i.variable_name', 'i.variable_value', 'i.creation_date'];
+        $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start ";
+
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
         if (count($result)) {
             foreach ($result as $key => $value) {
-                $arr[$key][] = "<input type='checkbox' class='js-checkbox'data-id='$value[log_id]' name='cb[$value[log_id]]' id='cb[$value[log_id]]'>";
+                $arr[$key][] = "<input type='checkbox' class='js-checkbox'data-id='$value[log_id]' data-recording='$value[recording_id]' data-index='$value[index_id]' name='cb[$value[log_id]]' id='cb[$value[log_id]]'>";
                 $arr[$key][] = $value['log_id'];
                 $arr[$key][] = $value['recordingName'];
                 $arr[$key][] = $value['userName'];
                 $arr[$key][] = str_replace('_', ' ', $value['indexName']);
-                $arr[$key][] = $value['minTime'];
-                $arr[$key][] = $value['maxTime'];
-                $arr[$key][] = $value['minFrequency'];
-                $arr[$key][] = $value['maxFrequency'];
-                $arr[$key][] = str_replace('@', ' ', str_replace('?', ':', $value['param']));
-                $arr[$key][] = implode(' ', array_map(function ($v) {
-                    $parts = explode('?', $v);
-                    return $parts[0] . ': ' . number_format(floatval($parts[1]), 2, '.', ',');
-                }, explode('!', $value['value'])));;
+                $arr[$key][] = $value['version'];
+                $arr[$key][] = $value['min_time'];
+                $arr[$key][] = $value['max_time'];
+                $arr[$key][] = $value['min_frequency'];
+                $arr[$key][] = $value['max_frequency'];
+                $arr[$key][] = $value['variable_type'];
+                $arr[$key][] = $value['variable_order'];
+                $arr[$key][] = $value['variable_name'];
+                $arr[$key][] = $value['variable_value'];
                 $arr[$key][] = $value['creation_date'];
             }
         }
@@ -134,7 +122,7 @@ class IndexLogProvider extends AbstractProvider
 
     public function delete(string $id): void
     {
-        $this->database->prepareQuery("DELETE FROM index_log WHERE log_id IN ($id)");
+        $this->database->prepareQuery("DELETE FROM index_log WHERE (log_id,recording_id,index_id) IN ($id)");
         $this->database->executeDelete();
     }
 }
