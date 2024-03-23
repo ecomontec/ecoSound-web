@@ -23,7 +23,7 @@
     <script>
         const baseUrl = '{{ baseUrl }}';
         const error = '{{ error }}';
-        const regenerate_timeout = '{{ regenerate_timeout }}';
+        var regenerate_timeout = '{{ regenerate_timeout }}';
         {% if isUserLogged %}
         html = '<ul class="navbar-nav ml-auto">' +
             '<li class="navbar-item">' +
@@ -53,12 +53,23 @@
             }
         })
         var t = window.setInterval(function () {
-            if (Date.parse(new Date()) / 1000 > parseInt(regenerate_timeout) + 1800) {
-                window.clearInterval(t)
-                $('#navbarCollapse').empty()
-                $('#navbarCollapse').append(html)
+            if (Date.parse(new Date()) / 1000 > parseInt(regenerate_timeout) + 120) {
+                $.ajax({
+                    url: '{{ baseUrl }}/login/getSession',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        if (!data) {
+                            window.clearInterval(t);
+                            $('#navbarCollapse').empty();
+                            $('#navbarCollapse').append(html);
+                        } else {
+                            regenerate_timeout = parseInt(data);
+                        }
+                    },
+                });
             }
-        }, 1000)
+        }, 5000);
         {% endif %}
     </script>
 {% endblock %}
