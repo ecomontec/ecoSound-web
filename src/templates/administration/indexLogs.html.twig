@@ -84,7 +84,12 @@
                 "serverSide": true,
                 "ajax": {
                     "url": '{{ baseUrl }}/admin/indexLogMgr/getListByPage/{{ projectId }}/{{ colId }}',
-                    "type": 'POST'
+                    "type": 'POST',
+                    "error": function (xhr, error, thrown) {
+                        if (xhr.status == 404 || xhr.status == 500) {
+                            location.reload();
+                        }
+                    }
                 },
                 "dom": 'lrtip',
                 "stateSave": true,

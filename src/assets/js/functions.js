@@ -290,11 +290,8 @@ $(document).keydown(function (event) {
     }
 });
 $('.js-all-checkbox').change(function () {
-    if ($(this).prop('checked')) {
-        $('.js-checkbox').prop('checked', true)
-    } else {
-        $('.js-checkbox').prop('checked', false)
-    }
+    var isChecked = $(this).prop('checked');
+    $('.js-checkbox').prop('checked', isChecked).trigger('change');
     checkboxChange()
 });
 

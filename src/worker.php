@@ -42,7 +42,9 @@ $callback = function ($msg) use ($config) {
             if ($result['status'] == '2') {
                 $arr['status'] = 0;
             }
-            if ($result['status'] == '-2') {
+            if ($result['error'] == 'being cancelled.') {
+                $result['status'] = -2;
+                $result['error'] = '';
                 $result['stop_time'] = date('Y-m-d H:i:s');
                 (new Queue())->update($result);
                 $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
