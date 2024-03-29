@@ -11,7 +11,7 @@
             </div>
             <button id="deletion" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#deletion" disabled>
                 <i class="fas fa-square"></i>
-                Abort
+                Clear
             </button>
             <button id="queuesExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#queuesExport" aria-expanded="false" aria-controls="queuesExport">
                 <i class="fa fa-file-csv"></i>
@@ -62,7 +62,6 @@
                     </button>
                     <button id="js-delete-button" type="button" class="btn btn-outline-danger">
                         <i class="fas fa-square"></i>
-                        Abort
                     </button>
                 </div>
             </div>
@@ -72,12 +71,34 @@
 {% block header %}
     {{ parent() }}
     <script>
+        var cannel_btn = '';
+        var clear_btn = '';
+        var btn = '';
         var checkboxState = {};
         $(document).ready(function () {
             $('#queuesTable').show()
             $('#queuesTable').on('change', '.js-checkbox', function () {
                 var id = $(this).data('id');
                 checkboxState[id] = $(this).prop('checked');
+                cannel_btn = '';
+                clear_btn = '';
+                $.each(checkboxState, function (id, checked) {
+                    if (checked) {
+                        var status = $('#queuesTable .js-checkbox[data-id="' + id + '"]').closest('td').nextAll('td').eq(3).text()
+                        if (status == 'ongoing' || status == 'pending') {
+                            cannel_btn = 'Cannel';
+                        } else {
+                            clear_btn = 'Clear';
+                        }
+                        if (cannel_btn && clear_btn) {
+                            btn = cannel_btn + '/' + clear_btn
+                        } else {
+                            btn = cannel_btn + clear_btn
+                        }
+                        $('#deletion').html('<i class="fas fa-square"></i> ' + btn)
+                        $('#js-delete-button').html('<i class="fas fa-square"></i> ' + btn)
+                    }
+                });
             });
             let table = $('#queuesTable').DataTable({
                 "processing": true,
@@ -86,7 +107,7 @@
                     "url": '{{ baseUrl }}/api/admin/queueMgr/getListByPage',
                     "type": 'POST',
                     "error": function (xhr, error, thrown) {
-                        if (xhr.status == 404 || xhr.status == 500) {
+                        if (xhr.status == 400 || xhr.status == 404 || xhr.status == 500) {
                             location.reload();
                         }
                     }
@@ -133,11 +154,12 @@
 
         $(function () {
             'use strict';
+
             $('button[name="table-btn"][data-target="#deletion"]').click(function (e) {
                 if ($('.js-checkbox:checked').length > 1) {
-                    $('#delete_info').html("Are you sure you want to abort these <b class=\"text-danger\" >" + $('.js-checkbox:checked').length + "</b> entries?")
+                    $('#delete_info').html("Are you sure you want to " + btn.toLowerCase() + " these <b class=\"text-danger\" >" + $('.js-checkbox:checked').length + "</b> entries?")
                 } else {
-                    $('#delete_info').html("Are you sure you want to abort this entry?")
+                    $('#delete_info').html("Are you sure you want to " + btn.toLowerCase() + " this entry?")
                 }
                 $("#modal-div").modal('show');
             })

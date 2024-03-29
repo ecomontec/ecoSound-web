@@ -116,7 +116,7 @@
                     "url": '{{ baseUrl }}/admin/tagMgr/getListByPage/{{ colId }}',
                     "type": 'POST',
                     "error": function (xhr, error, thrown) {
-                        if (xhr.status == 404 || xhr.status == 500) {
+                        if (xhr.status == 400 || xhr.status == 404 ||xhr.status == 500) {
                             location.reload();
                         }
                     }
