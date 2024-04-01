@@ -29,7 +29,7 @@ class FileService
     const FILE_EXISTS_MESSAGE = 'File %s not inserted. It already exists in the system.';
     const DATE_FORMAT = '%d-%d-%d';
     const TIME_FORMAT = '%d:%d:%d';
-    const DATE_TIME_PATTERN = '/(19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])_(0\d|1\d|2[0-3])([0-5]\d)([0-5]\d)/';
+    const DATE_TIME_PATTERN = '/(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})/';
 
     /**
      * @var Recording

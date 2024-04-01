@@ -71,7 +71,7 @@
 {% block header %}
     {{ parent() }}
     <script>
-        var cannel_btn = '';
+        var cancel_btn = '';
         var clear_btn = '';
         var btn = '';
         var checkboxState = {};
@@ -80,20 +80,20 @@
             $('#queuesTable').on('change', '.js-checkbox', function () {
                 var id = $(this).data('id');
                 checkboxState[id] = $(this).prop('checked');
-                cannel_btn = '';
+                cancel_btn = '';
                 clear_btn = '';
                 $.each(checkboxState, function (id, checked) {
                     if (checked) {
                         var status = $('#queuesTable .js-checkbox[data-id="' + id + '"]').closest('td').nextAll('td').eq(3).text()
                         if (status == 'ongoing' || status == 'pending') {
-                            cannel_btn = 'Cannel';
+                            cancel_btn = 'Cancel';
                         } else {
                             clear_btn = 'Clear';
                         }
-                        if (cannel_btn && clear_btn) {
-                            btn = cannel_btn + '/' + clear_btn
+                        if (cancel_btn && clear_btn) {
+                            btn = cancel_btn + '/' + clear_btn
                         } else {
-                            btn = cannel_btn + clear_btn
+                            btn = cancel_btn + clear_btn
                         }
                         $('#deletion').html('<i class="fas fa-square"></i> ' + btn)
                         $('#js-delete-button').html('<i class="fas fa-square"></i> ' + btn)

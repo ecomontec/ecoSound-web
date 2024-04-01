@@ -32,7 +32,15 @@ class Session
         session_name($session_name);
         session_start();
 
-        session_regenerate_id(true);
-        $_SESSION['regenerate_timeout'] = time();
+        if (!isset($_SESSION['regenerate_timeout'])) {
+            session_regenerate_id(true);
+            $_SESSION['regenerate_timeout'] = time();
+        }
+
+        // Regenerate session ID every five minutes:
+        if ($_SESSION['regenerate_timeout'] < time() - 360) {
+            session_regenerate_id(true);
+            $_SESSION['regenerate_timeout'] = time();
+        }
     }
 }
