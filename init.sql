@@ -88,6 +88,8 @@ CREATE TABLE `collection`
     `note`          text COLLATE utf8_unicode_ci                  DEFAULT NULL,
     `view`          enum('gallery','list','timeline') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'gallery',
     `sphere`        varchar(100) COLLATE utf8_unicode_ci          DEFAULT NULL,
+    `recording_url` varchar(255) COLLATE utf8_unicode_ci          DEFAULT NULL,
+    `project_url`   varchar(255) COLLATE utf8_unicode_ci          DEFAULT NULL,
     `public_access` tinyint(1) NOT NULL DEFAULT 0,
     `public_tags`   tinyint(1) NOT NULL DEFAULT 0,
     `creation_date` timestamp                            NOT NULL DEFAULT current_timestamp()

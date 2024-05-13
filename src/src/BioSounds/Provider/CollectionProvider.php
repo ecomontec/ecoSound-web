@@ -35,6 +35,8 @@ class CollectionProvider extends AbstractProvider
                 ->setDoi($item['doi'])
                 ->setNote($item['note'])
                 ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
+                ->setRecordingUrl($item['recording_url'])
+                ->setProjectUrl($item['project_url'])
                 ->setProject($item['project_id'])
                 ->setCreationDate($item['creation_date'])
                 ->setPublicAccess($item['public_access'])
@@ -63,6 +65,8 @@ class CollectionProvider extends AbstractProvider
                 ->setDoi($item['doi'])
                 ->setNote($item['note'])
                 ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
+                ->setRecordingUrl($item['recording_url'])
+                ->setProjectUrl($item['project_url'])
                 ->setProject($item['project_id'])
                 ->setCreationDate($item['creation_date'])
                 ->setPublicAccess($item['public_access'])
@@ -95,6 +99,8 @@ class CollectionProvider extends AbstractProvider
             ->setDoi($result['doi'])
             ->setNote($result['note'])
             ->setSphere($result['sphere'] == null ? '' : $result['sphere'])
+            ->setRecordingUrl($result['recording_url'])
+            ->setProjectUrl($result['project_url'])
             ->setProject($result['project_id'])
             ->setCreationDate($result['creation_date'])
             ->setPublicAccess($result['public_access'])
@@ -125,8 +131,9 @@ class CollectionProvider extends AbstractProvider
                 ->setDoi($item['doi'])
                 ->setNote($item['note'])
                 ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
+                ->setRecordingUrl($item['recording_url'])
+                ->setProjectUrl($item['project_url'])
                 ->setProject($item['project_id'])
-                ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
                 ->setCreationDate($item['creation_date'])
                 ->setPublicAccess($item['public_access'])
                 ->setPublicTags($item['public_tags'])
@@ -149,6 +156,8 @@ class CollectionProvider extends AbstractProvider
                 ->setDoi($item['doi'])
                 ->setNote($item['note'])
                 ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
+                ->setRecordingUrl($item['recording_url'])
+                ->setProjectUrl($item['project_url'])
                 ->setProject($item['project_id'])
                 ->setCreationDate($item['creation_date'])
                 ->setPublicAccess($item['public_access'])
@@ -179,6 +188,8 @@ class CollectionProvider extends AbstractProvider
                 ->setDoi($item['doi'])
                 ->setNote($item['note'])
                 ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
+                ->setRecordingUrl($item['recording_url'])
+                ->setProjectUrl($item['project_url'])
                 ->setProject($item['project_id'])
                 ->setCreationDate($item['creation_date'])
                 ->setPublicAccess($item['public_access'])
@@ -204,6 +215,8 @@ class CollectionProvider extends AbstractProvider
                 ->setDoi($item['doi'])
                 ->setNote($item['note'])
                 ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
+                ->setRecordingUrl($item['recording_url'])
+                ->setProjectUrl($item['project_url'])
                 ->setProject($item['project_id'])
                 ->setCreationDate($item['creation_date'])
                 ->setPublicAccess($item['public_access'])
@@ -229,6 +242,8 @@ class CollectionProvider extends AbstractProvider
                 ->setDoi($item['doi'])
                 ->setNote($item['note'])
                 ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
+                ->setRecordingUrl($item['recording_url'])
+                ->setProjectUrl($item['project_url'])
                 ->setProject($item['project_id'])
                 ->setCreationDate($item['creation_date'])
                 ->setPublicAccess($item['public_access'])
@@ -297,6 +312,8 @@ class CollectionProvider extends AbstractProvider
                             <option value='biosphere' " . ($value['sphere'] == 'biosphere' ? 'selected' : '') . ">biosphere</option>
                             <option value='anthroposphere' " . ($value['sphere'] == 'anthroposphere' ? 'selected' : '') . ">anthroposphere</option>
                         </select>";
+                $arr[$key][] = "<input type='url' class='form-control form-control-sm' name='recording_url' value='$value[recording_url]'>";
+                $arr[$key][] = "<input type='url' class='form-control form-control-sm' name='project_url' value='$value[project_url]'>";
                 $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='note' value='$value[note]'>";
                 $arr[$key][] = $value['creation_date'];
                 $arr[$key][] = "<select id='view' name='view' class='form-control form-control-sm' required>;

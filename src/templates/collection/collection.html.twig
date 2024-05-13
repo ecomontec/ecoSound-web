@@ -55,6 +55,14 @@
                     <strong>Description:</strong>
                     {{ collection.note }}
                 {% endif %}
+                {% if collection.recordingUrl is not empty %}
+                    <strong>Recording URL: </strong>
+                    <a href="{{ collection.recordingUrl }}" target="_blank">{{ collection.recordingUrl }}</a>
+                {% endif %}
+                {% if collection.projectUrl is not empty %}
+                    <strong>Project URL: </strong>
+                    <a href="{{ collection.projectUrl }}" target="_blank">{{ collection.projectUrl }}</a>
+                {% endif %}
             </div>
         </div>
         {% include display == 'list' ? 'collection/views/list.html.twig' : display == 'gallery' ? 'collection/views/gallery.html.twig' : 'collection/views/timeline.html.twig' %}
