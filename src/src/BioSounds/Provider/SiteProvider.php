@@ -108,8 +108,13 @@ class SiteProvider extends AbstractProvider
         $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
+        $iho = (new SiteProvider())->getIHO();
         if (count($result)) {
             foreach ($result as $key => $value) {
+                $str_iho = '';
+                foreach ($iho as $i) {
+                    $str_iho .= "<option value='$i[NAME]' " . ($i['NAME'] == $value['iho'] ? 'selected' : '') . ">$i[NAME]</option>";
+                }
                 $arr[$key][] = "<input type='checkbox' class='js-checkbox'data-id='$value[site_id]' data-name='$value[name]' name='cb[$value[site_id]]' id='cb[$value[site_id]]'>";
                 $arr[$key][] = "$value[site_id]<input type='hidden' name='steId' value='$value[site_id]'><input id='project$value[site_id]' type='hidden' name='project_id' value='$projectId'>";
                 $arr[$key][] = "<input type='text' class='form-control form-control-sm' style='width:100px;' id='$value[site_id]' name='name' value='$value[name]'><small id='siteValid$value[site_id]' class='text-danger'></small>";
@@ -120,6 +125,7 @@ class SiteProvider extends AbstractProvider
                 $arr[$key][] = "<select id='gadm0_$value[site_id]' name='gadm0' style='width:120px;' class='form-control form-control-sm'><option value='$value[gadm0]' selected>$value[gadm0]</option></select><small id='areaValid$value[site_id]' class='text-danger'></small>";
                 $arr[$key][] = "<select id='gadm1_$value[site_id]' name='gadm1' style='width:120px;' class='form-control form-control-sm' " . ($value['gadm0'] == '' ? 'disabled' : '') . "><option value='$value[gadm1]' selected>$value[gadm1]</option></select>";
                 $arr[$key][] = "<select id='gadm2_$value[site_id]' name='gadm2' style='width:120px;' class='form-control form-control-sm' " . ($value['gadm1'] == '' ? 'disabled' : '') . "><option value='$value[gadm2]' selected>$value[gadm2]</option></select>";
+                $arr[$key][] = "<select id='iho_$value[site_id]' name='iho' style='width:120px;' class='form-control form-control-sm'><option value='$value[iho]' selected>$value[iho]</option>$str_iho</select>";
                 $arr[$key][] = "<select id='realm_$value[site_id]' name='realm_id' style='width:120px;' class='form-control form-control-sm'><option value='$value[realm_id]'>$value[realm]</option></select>";
                 $arr[$key][] = "<select id='biome_$value[site_id]' name='biome_id' class='form-control form-control-sm' style='width:120px;' " . ($value['realm_id'] == '' ? 'disabled' : '') . "><option value='$value[biome_id]' selected>$value[biome]</option></select>";
                 $arr[$key][] = "<select id='functionalType_$value[site_id]' name='functional_type_id' class='form-control form-control-sm' style='width:120px;' " . ($value['biome_id'] == '' ? 'disabled' : '') . "><option value='$value[functional_type_id]' selected>$value[functional_type]</option></select>";
@@ -153,6 +159,7 @@ class SiteProvider extends AbstractProvider
             ->setGadm0($result['gadm0'])
             ->setGadm1($result['gadm1'])
             ->setGadm2($result['gadm2'])
+            ->setIHO($result['iho'])
             ->setRealm($result['realm_id'])
             ->setBiome($result['biome_id'])
             ->setFunctionalType($result['functional_type_id']);
@@ -169,6 +176,13 @@ class SiteProvider extends AbstractProvider
     {
         $this->database->prepareQuery('SELECT x,y FROM adm_' . $level . ' WHERE name = "' . $name . '"');
         return $this->database->executeSelect()[0];
+    }
+
+    public function getIHO()
+    {
+        $this->database->prepareQuery('SELECT `NAME` FROM world_seas ORDER BY `NAME`');
+        $data = $this->database->executeSelect();
+        return $data;
     }
 
     /**

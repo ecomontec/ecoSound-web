@@ -62,6 +62,12 @@
                     Site:
                     <small>{{ item.recording.siteName }}</small>
                 </h6>
+                {% if item.recording.iho is not empty %}
+                    <h6>
+                        IHO:
+                        <small>{{ item.recording.iho }}</small>
+                    </h6>
+                {% endif %}
                 <h6>
                     License:
                     <small>{{ item.recording.licenseName }}</small>

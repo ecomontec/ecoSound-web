@@ -172,6 +172,7 @@ class Recording
     private $startDate;
     private $endDate;
     private $path;
+    private $iho;
 
     /**
      * @return int
@@ -903,6 +904,25 @@ class Recording
     }
 
     /**
+     * @return null|string
+     */
+    public function getIHO(): ?string
+    {
+        return $this->iho;
+    }
+
+
+    /**
+     * @param null|string $iho
+     * @return Recording
+     */
+    public function setIHO(?string $iho): Recording
+    {
+        $this->iho = $iho;
+        return $this;
+    }
+
+    /**
      * @param array $values
      * @return $this
      */
@@ -947,6 +967,7 @@ class Recording
         $this->setStartDate($values['start_date']);
         $this->setEndDate($values['end_date']);
         $this->setPath($values['path']);
+        $this->setIHO($values['iho']);
         return $this;
     }
 }
