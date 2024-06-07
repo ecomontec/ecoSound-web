@@ -108,6 +108,6 @@ $(function () {
     });
 
     $('#recordingForm').on('submit', function () {
-        toggleLoading();
+        $('.loading-grey').toggle();
     });
 });

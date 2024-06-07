@@ -216,7 +216,7 @@ class RecordingController extends BaseController
         header('Accept-Ranges:bytes');
         header('Content-Disposition: attachment; filename=' . $file_name);
 
-        $tagAls[] = array('recording_start', 'duration_s', 'sampling_rate', 'name', 'bit_rate', 'channel_number');
+        $tagAls[] = array('recording_start', 'duration_s', 'sampling_rate', 'name', 'bit_rate', 'channel_number', 'duty_cycle_recording', 'duty_cycle_period');
 
         foreach ($tagAls as $line) {
             fputcsv($fp, $line);

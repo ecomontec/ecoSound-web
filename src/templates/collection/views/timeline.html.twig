@@ -3,6 +3,37 @@
 <script src="{{ baseUrl }}/assets/js/vis-timeline-graph2d.min.js"></script>
 <link rel="stylesheet" href="{{ baseUrl }}/assets/css/vis-timeline-graph2d.min.css">
 <div id="visualization"></div>
+<style>
+    {% set css = [] %}
+    {% for item in list %}
+    {% if item.recording.dutyCycleRecording and item.recording.dutyCyclePeriod %}
+    {% set key = item.recording.dutyCycleRecording ~ '-' ~ item.recording.dutyCyclePeriod %}
+    {% if key not in css %}
+    .duty-cycle-{{ item.recording.dutyCycleRecording }}-{{ item.recording.dutyCyclePeriod }} {
+        background: repeating-linear-gradient(
+        90deg,
+        #d5ddf6,
+        #d5ddf6 {{ (item.recording.dutyCycleRecording/item.recording.dutyCyclePeriod)*100/10 }}%,
+        #ffffff {{ (item.recording.dutyCycleRecording/item.recording.dutyCyclePeriod)*100/10 }}%,
+        #ffffff 10%
+        );
+    }
+
+    .duty-cycle-{{ item.recording.dutyCycleRecording }}-{{ item.recording.dutyCyclePeriod }}.vis-selected {
+        background: repeating-linear-gradient(
+        90deg,
+        #fff785,
+        #fff785 {{ (item.recording.dutyCycleRecording/item.recording.dutyCyclePeriod)*100/10 }}%,
+        #ffffff {{ (item.recording.dutyCycleRecording/item.recording.dutyCyclePeriod)*100/10 }}%,
+        #ffffff 10%
+        );
+    }
+
+    {% set css = css|merge([item.recording.dutyCycleRecording,]) %}
+    {% endif %}
+    {% endif %}
+    {% endfor %}
+</style>
 <script>
     var tl_container = document.getElementById("visualization");
     var tl_groups = []
@@ -12,14 +43,21 @@
         {
             id: {{ item.recording.id }},
             {% if item.recording.data_type=='meta-data' %}
+            {% if item.recording.dutyCycleRecording and item.recording.dutyCyclePeriod %}
+            content: "meta-recording (no audio) sampling rate: {{ item.recording.samplingRate }}, duty cycle: {{ item.recording.dutyCycleRecording }}/{{ item.recording.dutyCyclePeriod }}",
+            {% else %}
             content: "meta-recording (no audio) sampling rate: {{ item.recording.samplingRate }}",
+            {% endif %}
             {% else %}
             content: "<a href='{{ baseUrl }}/recording/show/{{ item.recording.id }}' target='_blank'>{{ item.recording.name }}</a>",
             {% endif %}
             start: "{{ item.recording.startDate }}",
             end: "{{ item.recording.endDate }}",
             group: {{ item.recording.site?item.recording.site:0 }},
-            order: "{{ item.recording.name }}"
+            order: "{{ item.recording.name }}",
+            {% if item.recording.dutyCycleRecording and item.recording.dutyCyclePeriod %}
+            className: "duty-cycle-{{ item.recording.dutyCycleRecording }}-{{ item.recording.dutyCyclePeriod }}",
+            {% endif %}
         },
         {% endfor %}
     ]);

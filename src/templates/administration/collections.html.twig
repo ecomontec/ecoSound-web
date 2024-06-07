@@ -9,7 +9,7 @@
             <div class="form-inline">
                 <form id="projectForm" class="form-inline col-8" action="{{ baseUrl }}/admin/collections">
                     <label for="projectId">Project</label>
-                    <select id="projectId" name="projectId" class="form-control form-control-sm ml-3">
+                    <select id="projectId" name="projectId" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
                         {% for project in projects %}
                             <option value="{{ project.id }}" {{ project.id == projectId ? 'selected' }}>
                                 {{ project.name }}
@@ -135,6 +135,7 @@
             $('#search').on('input', () => {
                 table.search($('#search').val()).draw();
             });
+            $('.sphere').selectpicker('refresh');
         });
 
 
@@ -154,7 +155,6 @@
                     }
                 });
             });
-
             $('#js-delete-button').click(function () {
                 toggleLoading();
                 deleteRequest('{{ baseUrl }}/api/admin/collectionMgr/delete/' + $('#delete_id').val(), [], true, false, function () {

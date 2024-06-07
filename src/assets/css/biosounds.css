@@ -47,6 +47,17 @@ nav.menu .navbar-nav .nav-link {
     height: 4rem;
 }
 
+.loading-grey {
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    position: absolute;
+    background-color: white;
+    z-index: 90000000;
+    opacity: .9;
+}
+
 /*--------*/
 
 #alertBox {
@@ -360,12 +371,13 @@ div .active a {
 }
 
 .dataTables_length {
-    margin-left: 18px; !important;
-}
-.dataTables_length option{
-    background-color: #FFFFFF; !important;
+    margin-left: 18px !important;
 }
 
-.txt-primary{
-    color: #51895C;!important;
+.dataTables_length option {
+    background-color: #FFFFFF !important;
+}
+
+.txt-primary {
+    color: #51895C !important;
 }

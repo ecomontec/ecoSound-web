@@ -173,6 +173,8 @@ class Recording
     private $endDate;
     private $path;
     private $iho;
+    private $duty_cycle_recording;
+    private $duty_cycle_period;
 
     /**
      * @return int
@@ -923,6 +925,42 @@ class Recording
     }
 
     /**
+     * @return null|int
+     */
+    public function getDutyCycleRecording(): ?int
+    {
+        return $this->duty_cycle_recording;
+    }
+
+    /**
+     * @param null|int $duty_cycle_recording
+     * @return Recording
+     */
+    public function setDutyCycleRecording(?int $duty_cycle_recording): Recording
+    {
+        $this->duty_cycle_recording = $duty_cycle_recording;
+        return $this;
+    }
+
+    /**
+     * @return null|int
+     */
+    public function getDutyCyclePeriod(): ?int
+    {
+        return $this->duty_cycle_period;
+    }
+
+    /**
+     * @param null|int $duty_cycle_period
+     * @return Recording
+     */
+    public function setDutyCyclePeriod(?int $duty_cycle_period): Recording
+    {
+        $this->duty_cycle_period = $duty_cycle_period;
+        return $this;
+    }
+
+    /**
      * @param array $values
      * @return $this
      */
@@ -968,6 +1006,8 @@ class Recording
         $this->setEndDate($values['end_date']);
         $this->setPath($values['path']);
         $this->setIHO($values['iho']);
+        $this->setDutyCycleRecording($values['duty_cycle_recording']);
+        $this->setDutyCyclePeriod($values['duty_cycle_period']);
         return $this;
     }
 }

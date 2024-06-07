@@ -1,7 +1,6 @@
 {% extends 'administration/admin.html.twig' %}
 
 {% block admin_content %}
-    <link rel="stylesheet" href="{{ baseUrl }}/assets/css/bootstrap-select.css">
     <div class="card mb-3" id="tagsList">
         <div class="card-header border-light bg-white text-right">
             <div class="form-inline">
@@ -105,7 +104,6 @@
 {% endblock %}
 {% block header %}
     {{ parent() }}
-    <script src="{{ baseUrl }}/assets/js/bootstrap-select.js" defer></script>
     <script>
         $(document).ready(function () {
             $('#tagsTable').show()

@@ -302,7 +302,7 @@ class CollectionProvider extends AbstractProvider
                 $arr[$key][] = "<input type='text' class='form-control form-control-sm' id='$value[collection_id]' name='name' value='$value[name]'><small id='collectionValid$value[collection_id]' class='text-danger'></small>";
                 $arr[$key][] = $value['username'];
                 $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='doi' value='$value[doi]'>";
-                $arr[$key][] = "<select id='sphere' name='sphere' class='form-control form-control-sm'>
+                $arr[$key][] = "<select name='sphere' class='form-control form-control-sm sphere' data-live-search='true'>
                             <option></option>
                             <option value='hydrosphere' " . ($value['sphere'] == 'hydrosphere' ? 'selected' : '') . ">hydrosphere</option>
                             <option value='cryosphere' " . ($value['sphere'] == 'cryosphere' ? 'selected' : '') . ">cryosphere</option>
@@ -316,7 +316,7 @@ class CollectionProvider extends AbstractProvider
                 $arr[$key][] = "<input type='url' class='form-control form-control-sm' name='project_url' value='$value[project_url]'>";
                 $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='note' value='$value[note]'>";
                 $arr[$key][] = $value['creation_date'];
-                $arr[$key][] = "<select id='view' name='view' class='form-control form-control-sm' required>;
+                $arr[$key][] = "<select name='view' class='form-control form-control-sm' required>;
                             <option value='gallery' " . ($value['view'] == 'gallery' ? 'selected' : '') . ">gallery</option>
                             <option value='list' " . ($value['view'] == 'list' ? 'selected' : '') . ">list</option>
                             <option value='timeline' " . ($value['view'] == 'timeline' ? 'selected' : '') . ">timeline</option>

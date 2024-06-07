@@ -1,5 +1,6 @@
 <div class="row">
     <div id="player_box" class="col-9">
+        <div class="loading-grey"></div>
         <div id="myCanvas" class="canvas">
             {% include 'recording/player/tagBoxes.html.twig' with {'tags': player.tags, 'show_tags': player.isShowTags} %}
             <div id="playerCursor" class="player-line"></div>
@@ -193,6 +194,7 @@
             </div>
         </div>
         <script>
+            $(".loading").css("opacity", "0");
             $(document).ready(function () {
                 $('#tf').change(function () {
                     let html = ''
@@ -272,7 +274,7 @@
                         }
                     }
                 }
-                toggleLoading();
+                $('.loading-grey').toggle();
                 if ($('#tf').val() == 1) {
                     data = {
                         'collection_id': $('input[name=collection_id]').val(),
@@ -318,10 +320,10 @@
                         if(result.message.indexOf('found 0 detections.') === -1){
                             location.reload()
                         }
-                        toggleLoading();
+                        $('.loading-grey').toggle();
                     })
                     .fail(function (response) {
-                        toggleLoading();
+                        $('.loading-grey').toggle();
                         if (!response.responseJSON) {
                             showAlert('Error ' + response.message);
                             return;
@@ -338,7 +340,7 @@
             $().ready(function () {
                 $("#tag_{{ open }}").click()
                 $('#open').val(0)
-                toggleLoading();
+                $('.loading-grey').toggle();
             })
         </script>
     {% endif %}

@@ -31,6 +31,7 @@ use Symfony\Component\Process\Process;
 
 class RecordingController extends BaseController
 {
+    const SECTION_TITLE = 'Recording';
     const DEFAULT_TAG_COLOR = '#FFFFFF';
     const SOUND_PATH = 'sounds/sounds/%s/%s/%s';
     const IMAGE_SOUND_PATH = 'sounds/images/%s/%s/%s';
@@ -75,11 +76,9 @@ class RecordingController extends BaseController
         if (empty($id)) {
             throw new \Exception(ERROR_EMPTY_ID);
         }
+        $isAccessed = $this->checkPermissions();
+        $isAccessed &= $this->isAccessible();
 
-        $recording = new RecordingFft();
-        if ($recording->getUserRecordingFft(Auth::getUserID(), $id)) {
-            $this->fftSize = $recording->getUserRecordingFft(Auth::getUserID(), $id);
-        }
         $this->recordingId = $id;
         $recordingData = (new RecordingProvider())->get($this->recordingId)[0];
 
@@ -87,26 +86,29 @@ class RecordingController extends BaseController
         $recordingData['collection'] = (new CollectionProvider())->get($recordingData[Recording::COL_ID]);
 
         $this->colId = $recordingData[Recording::COL_ID];
-        $isAccessed = $this->checkPermissions();
-        $isAccessed &= $this->isAccessible();
+
         $this->collection = (new CollectionProvider())->get($this->colId);
-
-        $this->recordingPresenter->setRecording($recordingData);
-
-        if (isset($_POST['showTags'])) {
-            $this->recordingPresenter->setShowTags(filter_var($_POST['showTags'], FILTER_VALIDATE_BOOLEAN));
-        }
-
-        if (isset($_POST['continuous_play'])) {
-            $this->recordingPresenter->setContinuousPlay(
-                filter_var($_POST['continuous_play'], FILTER_VALIDATE_BOOLEAN)
-            );
-        }
-        if (isset($_POST['estimateDistID'])) {
-            $this->recordingPresenter->setEstimateDistID(filter_var($_POST['estimateDistID'], FILTER_VALIDATE_INT));
-        }
-        $this->setCanvas($recordingData);
         if ($isAccessed || $this->collection->getPublicAccess()) {
+            $recording = new RecordingFft();
+            if ($recording->getUserRecordingFft(Auth::getUserID(), $id)) {
+                $this->fftSize = $recording->getUserRecordingFft(Auth::getUserID(), $id);
+            }
+
+            $this->recordingPresenter->setRecording($recordingData);
+
+            if (isset($_POST['showTags'])) {
+                $this->recordingPresenter->setShowTags(filter_var($_POST['showTags'], FILTER_VALIDATE_BOOLEAN));
+            }
+
+            if (isset($_POST['continuous_play'])) {
+                $this->recordingPresenter->setContinuousPlay(
+                    filter_var($_POST['continuous_play'], FILTER_VALIDATE_BOOLEAN)
+                );
+            }
+            if (isset($_POST['estimateDistID'])) {
+                $this->recordingPresenter->setEstimateDistID(filter_var($_POST['estimateDistID'], FILTER_VALIDATE_INT));
+            }
+            $this->setCanvas($recordingData);
             return $this->twig->render('recording/recording.html.twig', [
                 'project' => (new ProjectProvider())->get($this->recordingPresenter->getRecording()['collection']->getProject()),
                 'player' => $this->recordingPresenter,

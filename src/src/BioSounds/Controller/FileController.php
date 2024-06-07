@@ -78,6 +78,18 @@ class FileController
                         'message' => 'Row ' . $i . ' column 6 data format error.',
                     ]);
                 }
+                if (strlen($d[6]) && !filter_var($d[6], FILTER_SANITIZE_NUMBER_INT)) {
+                    return json_encode([
+                        'error_code' => 0,
+                        'message' => 'Row ' . $i . ' column 7 data format error.',
+                    ]);
+                }
+                if (strlen($d[7]) && !filter_var($d[7], FILTER_SANITIZE_NUMBER_INT)) {
+                    return json_encode([
+                        'error_code' => 0,
+                        'message' => 'Row ' . $i . ' column 8 data format error.',
+                    ]);
+                }
             }
             $i++;
         }
@@ -92,6 +104,8 @@ class FileController
             isset($d[3]) ? $arr['name'] = $d[3] : '';
             isset($d[4]) ? $arr['bitrate'] = $d[4] : '';
             isset($d[5]) ? $arr['channel_num'] = $d[5] : '';
+            isset($d[6]) ? $arr['duty_cycle_recording'] = $d[6] : '';
+            isset($d[7]) ? $arr['duty_cycle_period'] = $d[7] : '';
             $arr['data_type'] = 'meta-data';
             $arr['creation_date'] = date('Y-m-d H:i:s', time());
             (new RecordingProvider())->insert($arr);
