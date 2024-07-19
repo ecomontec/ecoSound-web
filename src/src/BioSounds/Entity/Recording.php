@@ -175,6 +175,9 @@ class Recording
     private $iho;
     private $duty_cycle_recording;
     private $duty_cycle_period;
+    private $realmId;
+    private $biomeId;
+    private $functionalTypeId;
 
     /**
      * @return int
@@ -739,6 +742,24 @@ class Recording
     }
 
     /**
+     * @return int
+     */
+    public function getRealmId(): ?int
+    {
+        return $this->realmId;
+    }
+
+    /**
+     * @param null|int $realmId
+     * @return Recording
+     */
+    public function setRealmId(?int $realmId): Recording
+    {
+        $this->realmId = $realmId;
+        return $this;
+    }
+
+    /**
      * @return string
      */
     public function getBiomeName(): ?string
@@ -757,6 +778,24 @@ class Recording
     }
 
     /**
+     * @return int
+     */
+    public function getBiomeId(): ?int
+    {
+        return $this->biomeId;
+    }
+
+    /**
+     * @param null|int $biomeId
+     * @return Recording
+     */
+    public function setBiomeId(?int $biomeId): Recording
+    {
+        $this->biomeId = $biomeId;
+        return $this;
+    }
+
+    /**
      * @return string
      */
     public function getFunctionalTypeName(): ?string
@@ -771,6 +810,24 @@ class Recording
     public function setFunctionalTypeName(?string $functionalTypeName): Recording
     {
         $this->functionalTypeName = $functionalTypeName;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getFunctionalTypeId(): ?int
+    {
+        return $this->functionalTypeId;
+    }
+
+    /**
+     * @param null|int $functionalTypeId
+     * @return Recording
+     */
+    public function setFunctionalTypeId(?int $functionalTypeId): Recording
+    {
+        $this->functionalTypeId = $functionalTypeId;
         return $this;
     }
 
@@ -997,6 +1054,9 @@ class Recording
         $this->setRealmName($values['realm']);
         $this->setBiomeName($values['biome']);
         $this->setFunctionalTypeName($values['functionalType']);
+        $this->setRealmId($values['realm_id']);
+        $this->setBiomeId($values['biome_id']);
+        $this->setFunctionalTypeId($values['functionalType_id']);
         $this->setLongitude($values['longitude']);
         $this->setLatitude($values['latitude']);
         $this->setType($values['type']);

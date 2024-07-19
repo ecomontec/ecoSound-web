@@ -86,8 +86,8 @@
 {% block header %}
     {{ parent() }}
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ==" crossorigin=""/>
-    <link rel="stylesheet" href="{{ baseUrl }}/assets/css/MarkerCluster.css">
-    <link rel="stylesheet" href="{{ baseUrl }}/assets/css/MarkerCluster.Default.css">
+    <link rel="stylesheet" href="{{ baseUrl }}/assets/css/Leaflet.DonutCluster.css">
+    <link rel="stylesheet" href="{{ baseUrl }}/assets/css/L.Control.Layers.Tree.css">
 {% endblock %}
 
 {% block scripts %}
@@ -95,47 +95,176 @@
     <script src="{{ baseUrl }}/assets/js/leaflet-src.js"></script>
     <script src="{{ baseUrl }}/assets/js/leaflet.markercluster-src.js"></script>
     <script src="{{ baseUrl }}/assets/js/leaflet.featuregroup.subgroup-src.js"></script>
+    <script src="{{ baseUrl }}/assets/js/Leaflet.DonutCluster.js"></script>
+    <script src="{{ baseUrl }}/assets/js/L.Control.Layers.Tree.js"></script>
     <script>
+
         {% if leaflet.arr %}
         var tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             minZoom: 1,
             maxZoom: 18,
         })
+        var order = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K']
         var map = L.map('map', {center: [{{ leaflet.latitude_center }}, {{ leaflet.longitude_center }}], zoom:{{ leaflet.count==1?10:5 }}, layers: [tiles], worldCopyJump: true})
-        var mcg = L.markerClusterGroup()
-        var groupAll = L.featureGroup.subGroup(mcg)
+        var mcg = L.DonutCluster(
+            {chunkedLoading: true}, {
+                key: 'realm',
+                order: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'],
+                title: {
+                    A: 'Terrestrial',
+                    B: 'Freshwater',
+                    C: 'Subterranean',
+                    D: 'Marine',
+                    E: 'Marine-Terrestrial',
+                    F: 'Subterranean-Freshwater',
+                    G: 'Terrestrial-Freshwater',
+                    H: 'Subterranean-Marine',
+                    I: 'Marine-Freshwater-Terrestrial',
+                    J: 'Freshwater-Marine',
+                    K: 'Other'
+                },
+                arcColorDict: {
+                    A: '#00FF00',
+                    B: '#00FFFF',
+                    C: '#FFFF00',
+                    D: '#0000FF',
+                    E: '#008080',
+                    F: '#80FF80',
+                    G: '#00FF80',
+                    H: '#808080',
+                    I: '#00AAAA',
+                    J: '#0080FF',
+                    K: '#000000'
+                },
+            })
+        var collections = []
+        var groupAll = L.featureGroup.subGroup(mcg).addTo(map)
         {% for collection in collections %}
-        var group{{ collection.id }} = L.featureGroup.subGroup(mcg)
+        collections['{{ collection.name }}'] = '{{ collection.id }}';
         {% endfor %}
-        var control = L.control.layers({
-            "Show All": groupAll,
-            {% for collection in collections %}
-            "{{ collection.name }}": group{{ collection.id }},
-            {% endfor %}
-        }, null, {collapse: false})
-        var marker
-        mcg.addTo(map)
-        {% for a in leaflet.arr %}
-        {% if a[4] is not null %}
-        {% set v= a[4]|split(',') %}
-        {% for value in v %}
-        if (typeof group{{ value }} != 'undefined') {
-            marker = L.marker([{{ a[2] }}, {{ a[3] }}], {id: '{{ a[0] }}', alt: "1"});
-            marker.bindPopup('<input type="hidden" value="{{ a[0] }}site_id"><b>{{ a[1] }}</b>'.replaceAll('!br!', '<br>'), {
-                closeOnClick: false,
-                maxHeight: 140,
-                maxWidth: 99999,
-            });
-            marker.addTo(group{{ value }})
-        }
-        {% endfor %}
-        marker.addTo(groupAll)
+        var baseTree = {
+            label: 'Collections',
+            noShow: true,
+            children: [
+                {
+                    label: 'Collections',
+                    children: [
+                        {label: 'Show All', layer: groupAll},
+                        {% for collection in collections %}
+                        {label: '{{ collection.name }}', layer: L.featureGroup.subGroup(mcg)},
+                        {% endfor %}
+                    ]
+                },
+            ]
+        };
+        var ctl = L.control.layers.tree(baseTree, null, {
+            namedToggle: true,
+            collapsed: true,
+            selectorBack: true,
+        }).addTo(map);
+        var arr = {{ leaflet.arr|json_encode|raw }};
+        map.on('baselayerchange', function (eventLayer) {
+            mcg.clearLayers();
+            var realm = []
+            var CustomIcon = []
+            var list = []
+            var data = {
+                label: 'Realms',
+                selectAllCheckbox: true,
+                children: [],
+            }
+            for (var i = 0; i < arr.length; i++) {
+                var c = arr[i][4].split(',')
+                if (c.includes(collections[eventLayer.layer._layersTreeName]) || eventLayer.layer._layersTreeName == 'Show All') {
+                    var result = arr[i][6] === null ? 10 : arr[i][6] - 1;
+                    CustomIcon[arr[i][6]] = L.divIcon({
+                        className: 'custom-marker' + arr[i][6],
+                        html: '<div></div>',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 12]
+                    });
+                    var marker = L.marker([arr[i][2], arr[i][3]], {
+                        icon: CustomIcon[arr[i][6]],
+                        id: arr[i][0],
+                        alt: "1",
+                        realm: order[result],
+                    });
+                    marker.bindPopup('<input type="hidden" value="' + arr[i][0] + 'site_id"><b>' + arr[i][1] + '</b>'.replaceAll('!br!', '<br>'), {
+                        closeOnClick: false,
+                        maxHeight: 140,
+                        maxWidth: 99999,
+                    });
+                    if (arr[i][6] != null) {
+                        if ($.inArray(arr[i][6], list) === -1) {
+                            data.children[arr[i][6]] = ({
+                                label: arr[i][5],
+                                selectAllCheckbox: true,
+                                children: [],
+                            });
+                            list.push(arr[i][6])
+                        }
+                        if (arr[i][8] != null) {
+                            if ($.inArray(arr[i][8], list) === -1) {
+                                data.children[arr[i][6]].children[arr[i][8]] = ({
+                                    label: arr[i][7],
+                                    selectAllCheckbox: true,
+                                    children: [],
+                                });
+                                list.push(arr[i][8])
+                            }
+                            if (arr[i][10] != null) {
+                                if (!realm[arr[i][10]]) {
+                                    realm[arr[i][10]] = L.featureGroup.subGroup(mcg).addTo(map)
+                                }
+                                if ($.inArray(arr[i][10], list) === -1) {
+                                    data.children[arr[i][6]].children[arr[i][8]].children[arr[i][10]] = ({
+                                        label: arr[i][9],
+                                        layer: realm[arr[i][10]],
+                                    });
+                                    marker.addTo(realm[arr[i][10]]);
+                                    list.push(arr[i][10])
+                                }
+                            } else {
+                                if (!realm[arr[i][8]]) {
+                                    realm[arr[i][8]] = L.featureGroup.subGroup(mcg).addTo(map)
+                                    data.children[arr[i][6]].children[arr[i][8]].children[999] = ({
+                                        label: 'No selected',
+                                        layer: realm[arr[i][8]],
+                                    });
+                                }
+                                marker.addTo(realm[arr[i][8]]);
+                            }
+                        } else {
+                            if (!realm[arr[i][6]]) {
+                                realm[arr[i][6]] = L.featureGroup.subGroup(mcg).addTo(map)
+                                data.children[arr[i][6]].children[999] = ({
+                                    label: 'No selected',
+                                    layer: realm[arr[i][6]],
+                                });
+                            }
+                            marker.addTo(realm[arr[i][6]]);
+                        }
+                    } else {
+                        if (!realm[999]) {
+                            realm[999] = L.featureGroup.subGroup(mcg).addTo(map)
+                            data.children[999] = ({
+                                label: 'Others',
+                                layer: realm[999],
+                            });
+                        }
+                        marker.addTo(realm[999]);
+                    }
+                }
+            }
+            ctl.setOverlayTree(data).collapseTree(false).expandSelected(false);
+            mcg.addTo(map);
+            map.fitBounds(mcg.getBounds());
+        });
+        map.fire('baselayerchange', {
+            name: 'Show All',
+            layer: groupAll,
+        });
         {% endif %}
-        {% endfor %}
-        groupAll.addTo(map)
-        control.addTo(map)
-        {% endif %}
-        map.fitBounds(groupAll.getBounds());
 
         $("#btn_map").click(function () {
             $("#map").toggle()
@@ -144,7 +273,6 @@
                 $("#btn_map").text('Show Map')
             } else {
                 $("#btn_map").text('Hide Map')
-
             }
         });
         $(document).ready(function () {
@@ -157,15 +285,6 @@
             }
         })
 
-        $(".leaflet-control-layers-selector").change(function () {
-            var str = $(".leaflet-control-layers-selector:checked").next().text().replace(' ', '');
-            $.each(control._layers, function (i, l) {
-                if (decodeHtml(l.name) == str) {
-                    map.fitBounds(l.layer.getBounds());
-                }
-            });
-        });
-
         function decodeHtml(str) {
             var map =
                 {
@@ -177,7 +296,6 @@
                 };
             return str.replace(/&amp;|&lt;|&gt;|&quot;|&#039;/g, function (m) {
                 return map[m];
-
             });
         }
     </script>

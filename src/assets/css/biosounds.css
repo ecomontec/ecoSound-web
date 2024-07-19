@@ -381,3 +381,47 @@ div .active a {
 .txt-primary {
     color: #51895C !important;
 }
+
+.custom-marker1 {
+    background-image: url("../images/marker-icon1.png") ;
+}
+
+.custom-marker2 {
+    background-image: url("../images/marker-icon2.png") ;
+}
+
+.custom-marker3 {
+    background-image: url("../images/marker-icon3.png") ;
+}
+
+.custom-marker4 {
+    background-image: url("../images/marker-icon4.png") ;
+}
+
+.custom-marker5 {
+    background-image: url("../images/marker-icon5.png") ;
+}
+
+.custom-marker6 {
+    background-image: url("../images/marker-icon6.png") ;
+}
+
+.custom-marker7 {
+    background-image: url("../images/marker-icon7.png") ;
+}
+
+.custom-marker8 {
+    background-image: url("../images/marker-icon8.png") ;
+}
+
+.custom-marker9 {
+    background-image: url("../images/marker-icon9.png") ;
+}
+
+.custom-marker10 {
+    background-image: url("../images/marker-icon10.png") ;
+}
+
+.custom-markernull {
+    background-image: url("../images/marker-icon.png") ;
+}

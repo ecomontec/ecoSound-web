@@ -4,6 +4,7 @@ namespace BioSounds\Controller;
 
 use BioSounds\Entity\Collection;
 
+use BioSounds\Entity\IucnGet;
 use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\RecordingProvider;
@@ -200,6 +201,12 @@ class CollectionController extends BaseController
                         $sites = $site;
                     }
                     $array[$i][5] = 1;
+                    $array[$i][6] = $r->getRealmName();
+                    $array[$i][7] = $r->getRealmId();
+                    $array[$i][8] = $r->getBiomeName();
+                    $array[$i][9] = $r->getBiomeId();
+                    $array[$i][10] = $r->getFunctionalTypeName();
+                    $array[$i][11] = $r->getFunctionalTypeId();
                     $i = $i + 1;
                 }
             } else if ($site != null) {
@@ -269,7 +276,7 @@ class CollectionController extends BaseController
             if (strlen($site['x']) > 0 && strlen($site['y']) > 0) {
                 $latitude[] = $site['y'];
                 $longitude[] = $site['x'];
-                $array[] = [$site['site_id'], $site['name'], $site['y'], $site['x'], $site['collection']];
+                $array[] = [$site['site_id'], $site['name'], $site['y'], $site['x'], $site['collection'], $site['realm'], $site['realm_id'], $site['biome'], $site['biome_id'], $site['functional_type'], $site['functional_type_id']];
             }
         }
         $max = 0;

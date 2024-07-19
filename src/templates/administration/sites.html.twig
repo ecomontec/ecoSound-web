@@ -7,7 +7,7 @@
             <div class="form-inline">
                 <form id="projectForm" class="form-inline col-8" action="{{ baseUrl }}/admin/sites">
                     <label for="projectId">Project</label>
-                    <select id="projectId" name="projectId" class="form-control form-control-sm ml-3">
+                    <select id="projectId" name="projectId" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
                         {% for project in projects %}
                             <option value="{{ project.id }}" {{ project.id == projectId ? 'selected' }}>
                                 {{ project.name }}
@@ -15,7 +15,7 @@
                         {% endfor %}
                     </select>
                     <label for="collectionId" class="ml-3">Collection</label>
-                    <select id="collectionId" name="collectionId" class="form-control form-control-sm ml-3">
+                    <select id="collectionId" name="collectionId" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
                         <option></option>
                         {% for collection in collections %}
                             <option value="{{ collection.id }}" {{ collection.id == collectionId ? 'selected' }}>

@@ -74,8 +74,9 @@
     {{ parent() }}
     <link rel="stylesheet" href="{{ baseUrl }}/templates/collection/css/smallPlayer.css"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ==" crossorigin=""/>
-    <link rel="stylesheet" href="{{ baseUrl }}/assets/css/MarkerCluster.css">
-    <link rel="stylesheet" href="{{ baseUrl }}/assets/css/MarkerCluster.Default.css">{% endblock %}
+    <link rel="stylesheet" href="{{ baseUrl }}/assets/css/Leaflet.DonutCluster.css">
+    <link rel="stylesheet" href="{{ baseUrl }}/assets/css/L.Control.Layers.Tree.css">
+{% endblock %}
 {% block scripts %}
     {{ parent() }}
     <script>
@@ -85,32 +86,186 @@
     <script src="{{ baseUrl }}/assets/js/leaflet-src.js"></script>
     <script src="{{ baseUrl }}/assets/js/leaflet.markercluster-src.js"></script>
     <script src="{{ baseUrl }}/assets/js/leaflet.featuregroup.subgroup-src.js"></script>
+    <script src="{{ baseUrl }}/assets/js/Leaflet.DonutCluster.js"></script>
+    <script src="{{ baseUrl }}/assets/js/L.Control.Layers.Tree.js"></script>
     <script>
         {% if leaflet.arr %}
-        var map = L.map('map', {worldCopyJump: true}).setView([{{ leaflet.latitude_center }}, {{ leaflet.longitude_center }}],  {{ leaflet.count==1?10:5 }});
-        var markers = L.markerClusterGroup();
-        var markerArray = []
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        var tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             minZoom: 1,
             maxZoom: 18,
+        })
+        var order = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K']
+        var map = L.map('map', {center: [{{ leaflet.latitude_center }}, {{ leaflet.longitude_center }}], zoom:{{ leaflet.count==1?10:5 }}, layers: [tiles], worldCopyJump: true})
+        var mcg = L.DonutCluster(
+            {chunkedLoading: true}, {
+                key: 'realm',
+                sumField: 'count',
+                order: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'],
+                title: {
+                    A: 'Terrestrial',
+                    B: 'Freshwater',
+                    C: 'Subterranean',
+                    D: 'Marine',
+                    E: 'Marine-Terrestrial',
+                    F: 'Subterranean-Freshwater',
+                    G: 'Terrestrial-Freshwater',
+                    H: 'Subterranean-Marine',
+                    I: 'Marine-Freshwater-Terrestrial',
+                    J: 'Freshwater-Marine',
+                    K: 'Other'
+                },
+                arcColorDict: {
+                    A: '#00FF00',
+                    B: '#00FFFF',
+                    C: '#FFFF00',
+                    D: '#0000FF',
+                    E: '#008080',
+                    F: '#80FF80',
+                    G: '#00FF80',
+                    H: '#808080',
+                    I: '#00AAAA',
+                    J: '#0080FF',
+                    K: '#000000'
+                },
+            })
+        var markers = L.markerClusterGroup();
+        var realm = []
+        var CustomIcon = []
+        var list=[]
+        var data = {
+            label: 'Realms',
+            selectAllCheckbox: true,
+            children: [],
+        }
+        var arr = {{ leaflet.arr|json_encode|raw }};
+        for (var i = 0; i < arr.length; i++) {
+            var result = arr[i][7] === null ? 10 : arr[i][7] - 1;
+            CustomIcon[arr[i][7]] = L.divIcon({
+                className: 'custom-marker' + arr[i][7],
+                html: '<div class="marker-cluster-text text-center"><br><br><br>' + arr[i][5] + '</div>',
+                iconSize: [25, 41],
+                iconAnchor: [12, 12]
+            });
+            var marker = L.marker([arr[i][2], arr[i][3]], {
+                icon: CustomIcon[arr[i][7]],
+                id: arr[i][0],
+                alt: "1",
+                count: arr[i][5],
+                realm: order[result],
+            });
+            marker.bindPopup('<input type="hidden" value="' + arr[i][0] + 'site_id"><b>' + arr[i][1] + '</b>'.replaceAll('!br!', '<br>'), {
+                closeOnClick: false,
+                maxHeight: 140,
+                maxWidth: 99999,
+            });
+            if (arr[i][7] != null) {
+                if ($.inArray(arr[i][7], list) === -1) {
+                    data.children[arr[i][7]] = ({
+                        label: arr[i][6],
+                        selectAllCheckbox: true,
+                        children: [],
+                    });
+                    list.push(arr[i][7])
+                }
+                if (arr[i][9] != null) {
+                    if ($.inArray(arr[i][9], list) === -1) {
+                        data.children[arr[i][7]].children[arr[i][9]] = ({
+                            label: arr[i][8],
+                            selectAllCheckbox: true,
+                            children: [],
+                        });
+                        list.push(arr[i][9])
+                    }
+                    if (arr[i][11] != null) {
+                        if (!realm[arr[i][11]]) {
+                            realm[arr[i][11]] = L.featureGroup.subGroup(mcg).addTo(map)
+                        }
+                        if ($.inArray(arr[i][11], list) === -1) {
+                            data.children[arr[i][7]].children[arr[i][9]].children[arr[i][11]] = ({
+                                label: arr[i][10],
+                                layer: realm[arr[i][11]],
+                            });
+                            marker.addTo(realm[arr[i][11]]);
+                            list.push(arr[i][11])
+                        }
+                    } else {
+                        if (!realm[arr[i][9]]) {
+                            realm[arr[i][9]] = L.featureGroup.subGroup(mcg).addTo(map)
+                            data.children[arr[i][7]].children[arr[i][9]].children[999] = ({
+                                label: 'No selected',
+                                layer: realm[arr[i][9]],
+                            });
+                        }
+                        marker.addTo(realm[arr[i][9]]);
+                    }
+                } else {
+                    if (!realm[arr[i][7]]) {
+                        realm[arr[i][7]] = L.featureGroup.subGroup(mcg).addTo(map)
+                        data.children[arr[i][7]].children[999] = ({
+                            label: 'No selected',
+                            layer: realm[arr[i][7]],
+                        });
+                    }
+                    marker.addTo(realm[arr[i][7]]);
+                }
+            } else {
+                if (!realm[999]) {
+                    realm[999] = L.featureGroup.subGroup(mcg).addTo(map)
+                    data.children[999] = ({
+                        label: 'Others',
+                        layer: realm[999],
+                    });
+                }
+                marker.addTo(realm[999]);
+            }
+        }
+        var ctl = L.control.layers.tree(null, data, {
+            collapsed: true,
+            selectorBack: true,
         }).addTo(map);
-        {% for a in leaflet.arr %}
+        mcg.addTo(map);
+        map.fitBounds(mcg.getBounds());
 
-        var childCount ={{ a[5] }}
-        var myIcon = L.divIcon({html: '<div class="marker-cluster-text"><br><br><br>' + childCount + '</div>', className: 'marker-cluster-number', iconSize: [25, 41]})
-        var marker = L.marker([{{ a[2] }}, {{ a[3] }}], {id: '{{ a[0] }}', alt: '{{ a[5] }}', icon: myIcon});
-
-        marker.bindPopup('<input type="hidden" value="{{ a[0] }}site_id"><b>{{ a[1] }}</b><br>{{ a[4] }}'.replaceAll('!br!', '<br>'), {
-            closeOnClick: false,
-            maxHeight: 140,
-            maxWidth: 99999,
+        map.on('overlayadd', function (e) {
+            var site = null
+            var bounds = map.getBounds();
+            map.eachLayer(function (layer) {
+                if (layer instanceof L.Marker) {
+                    var marker = layer;
+                    if (bounds.contains(marker.getLatLng()) && marker.options.count) {
+                        if (site) {
+                            site = site + ',' + marker.options.id
+                        } else {
+                            site = marker.options.id
+                        }
+                    }
+                }
+            });
+            if (site != $("#sites").val()) {
+                col_js({{ collection.id }}, $("#display_view").val(), site)
+            }
         });
-        markers.addLayer(marker)
-        markerArray.push(marker)
-        {% endfor %}
-        map.addLayer(markers);
-        var group = L.featureGroup(markerArray);
-        map.fitBounds(group.getBounds());
+
+        map.on('overlayremove', function (e) {
+            var site = null
+            var bounds = map.getBounds();
+            map.eachLayer(function (layer) {
+                if (layer instanceof L.Marker) {
+                    var marker = layer;
+                    if (bounds.contains(marker.getLatLng()) && marker.options.count) {
+                        if (site) {
+                            site = site + ',' + marker.options.id
+                        } else {
+                            site = marker.options.id
+                        }
+                    }
+                }
+            });
+            if (site != $("#sites").val()) {
+                col_js({{ collection.id }}, $("#display_view").val(), site)
+            }
+        });
+
         map.on('popupopen', function (e) {
             site = e.popup._content.split('value="')[1].split('site_id">')[0]
             col_js({{ collection.id }}, $("#display_view").val(), site)
@@ -119,40 +274,40 @@
             if ($(".leaflet-popup-close-button").length > 0) {
                 $(".leaflet-popup-close-button")[0].click()
             }
-            site = null
-            North = map.getBounds().getNorth()
-            South = map.getBounds().getSouth()
-            East = map.getBounds().getEast()
-            West = map.getBounds().getWest()
-            {% for a in leaflet.arr %}
-            if (North >={{ a[2] }} && South <= {{ a[2] }} && East >= {{ a[3] }} && West <= {{ a[3] }}) {
-                if (site) {
-                    site = site + ',' +{{ a[0] }}
-                } else {
-                    site ={{ a[0] }}
+            var site = null
+            var bounds = map.getBounds();
+            map.eachLayer(function (layer) {
+                if (layer instanceof L.Marker) {
+                    var marker = layer;
+                    if (bounds.contains(marker.getLatLng()) && marker.options.count) {
+                        if (site) {
+                            site = site + ',' + marker.options.id
+                        } else {
+                            site = marker.options.id
+                        }
+                    }
                 }
-            }
-            {% endfor %}
+            });
             if (site != $("#sites").val()) {
                 col_js({{ collection.id }}, $("#display_view").val(), site)
             }
         })
         $(".leaflet-popup-close-button").click(function () {
-            site = null
-            North = map.getBounds().getNorth()
-            South = map.getBounds().getSouth()
-            East = map.getBounds().getEast()
-            West = map.getBounds().getWest()
-            {% for a in leaflet.arr %}
-            if (North >={{ a[2] }} && South <= {{ a[2] }} && East >= {{ a[3] }} && West <= {{ a[3] }}) {
-                if (site) {
-                    site = site + ',' +{{ a[0] }}
-                } else {
-                    site ={{ a[0] }}
+            var site = null
+            var bounds = map.getBounds();
+            map.eachLayer(function (layer) {
+                if (layer instanceof L.Marker) {
+                    var marker = layer;
+                    if (bounds.contains(marker.getLatLng()) && marker.options.count) {
+                        if (site) {
+                            site = site + ',' + marker.options.id
+                        } else {
+                            site = marker.options.id
+                        }
+                    }
                 }
-            }
-            {% endfor %}
-            if (site != $("#sites")) {
+            });
+            if (site != $("#sites").val()) {
                 col_js({{ collection.id }}, $("#display_view").val(), site)
             }
         })
