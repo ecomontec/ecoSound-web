@@ -112,6 +112,26 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     });
+
+    $(document).on('keydown.autocomplete', '.js-search-autocomplete', function () {
+        $(this).autocomplete({
+            source: function (request, response) {
+                $.post(baseUrl + '/project/search', {term: request.term})
+                    .done(function (data) {
+                        response(JSON.parse(data));
+                    })
+                    .fail(function (response) {
+                        showAlert(JSON.parse(response.responseText).message);
+                        response(null);
+                    });
+            },
+            minLength: 2,
+            select: function (e, ui) {
+                window.open(baseUrl + '/collection/' + ui.item.url + '/' + ui.item.value, '_blank');
+                e.preventDefault();
+            }
+        });
+    });
 });
 
 function showAlert(message) {
@@ -379,3 +399,12 @@ function checkboxChange() {
     }
     return allChecked
 }
+
+$('#btn-search').click(function () {
+    $('#form-search').fadeToggle()
+})
+$(document).ready(function () {
+    if ($(window).width() < 768) {
+        $('#form-search').fadeToggle()
+    }
+});

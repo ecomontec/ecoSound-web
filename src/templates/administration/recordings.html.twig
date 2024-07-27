@@ -33,36 +33,38 @@
                 <input type="file" name="metaDataFile" id="metaDataFile" accept="text/csv" style="display: none">
                 <input type="hidden" name="colId" value="{{ colId }}">
             </form>
-            <button id="viewing" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#viewing" disabled>
+            <button id="viewing" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" data-target="#viewing" disabled>
                 <i class="fas fa-eye"></i>
                 View
             </button>
-            <button id="maads" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#maads" disabled>
+            <button id="maads" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" data-target="#maads" disabled>
                 <i class="svg-sum"></i>
                 Acoustic Index Analysis
             </button>
-            <button id="models" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#models" disabled>
+            <button id="models" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" data-target="#models" disabled>
                 <i class="svg-model"></i>
                 Models
             </button>
-            <button id="download" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#download" disabled>
+            <button id="download" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" data-target="#download" disabled>
                 <i class="fas fa-download"></i>
                 Export
             </button>
-            <button id="deletion" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#deletion" disabled>
+            <button id="deletion" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" data-target="#deletion" disabled>
                 <i class="fas fa-trash"></i>
                 Delete
             </button>
-            <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" id="metaData" type="button" data-toggle="dropdown" aria-expanded="false">
-                <span class="fas fa-plus"></span>
-                Add
-            </button>
-            <div class="dropdown-menu">
-                <a class="dropdown-item" type="button" id="uploadButton"><i class="fas fa-file-audio"></i> Upload Recordings</a>
-                <a class="dropdown-item" type="button" id="metaDataButton"><i class="fa-solid fa-file-arrow-up"></i> Upload Meta-data</a>
-                <a class="dropdown-item" type="button" id="viewInstructions"><i class="fa-solid fa-circle-info"></i> Meta-data Instructions</a>
-            </div>
-            <button id="recordingsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#recordingsExport" aria-expanded="false" aria-controls="recordingsExport">
+            <span class="dropdown">
+                <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" id="metaData" data-toggle="dropdown" aria-expanded="false">
+                    <span class="fas fa-plus"></span>
+                    Add
+                </button>
+                <div class="dropdown-menu" aria-labelledby="metaData" .>
+                    <a class="dropdown-item" type="button" id="uploadButton"><i class="fas fa-file-audio"></i> Upload Recordings</a>
+                    <a class="dropdown-item" type="button" id="metaDataButton"><i class="fa-solid fa-file-arrow-up"></i> Upload Meta-data</a>
+                    <a class="dropdown-item" type="button" id="viewInstructions"><i class="fa-solid fa-circle-info"></i> Meta-data Instructions</a>
+                </div>
+            </span>
+            <button id="recordingsExport" class="btn btn-outline-primary btn-sm mt-2" data-target="#recordingsExport" aria-expanded="false" aria-controls="recordingsExport">
                 <i class="fa fa-file-csv"></i>
                 Save all as CSV
             </button>
@@ -97,7 +99,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title text-danger">Warning</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -110,11 +112,11 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button id="js-close-button" type="button" class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                    <button id="js-close-button" class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
                         <i class="fas fa-times"></i>
                         Close
                     </button>
-                    <button id="js-delete-button" type="button" class="btn btn-outline-danger">
+                    <button id="js-delete-button" class="btn btn-outline-danger">
                         <i class="fas fa-trash-alt"></i>
                         Delete
                     </button>
@@ -127,7 +129,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">View Instructions</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -146,7 +148,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button id="js-close-button" type="button" class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                    <button id="js-close-button" class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
                         <i class="fas fa-times"></i>
                         Close
                     </button>
@@ -159,7 +161,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title maad-title">Classifiers</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -176,7 +178,7 @@
                 </div>
                 <div class="modal-footer">
                     <div id="tf-info"></div>
-                    <button id="js-close-button" type="button" class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                    <button id="js-close-button" class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
                         <i class="fas fa-times"></i>
                         Close
                     </button>
@@ -193,7 +195,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title maad-title">Acoustic Index Analysis</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -211,7 +213,7 @@
                 </div>
                 <div class="modal-footer">
                     <div id="maad-info"></div>
-                    <button id="js-close-button" type="button" class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                    <button id="js-close-button" class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
                         <i class="fas fa-times"></i>
                         Close
                     </button>
@@ -250,7 +252,7 @@
                         "url": '{{ baseUrl }}/admin/recordingManager/getListByPage/{{ projectId }}/{{ colId }}',
                         "type": 'POST',
                         "error": function (xhr, error, thrown) {
-                            if (xhr.status == 400 || xhr.status == 404 ||xhr.status == 500) {
+                            if (xhr.status == 400 || xhr.status == 404 || xhr.status == 500) {
                                 location.reload();
                             }
                         }

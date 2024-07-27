@@ -282,6 +282,13 @@ class User extends AbstractProvider
         return $this->database->executeSelect();
     }
 
+    public function getAll(): array
+    {
+        $sql = 'SELECT * FROM user where active = 1';
+        $this->database->prepareQuery($sql);
+        return $this->database->executeSelect();
+    }
+
     /**
      * @return array
      * @throws \Exception
