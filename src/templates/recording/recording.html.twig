@@ -126,10 +126,15 @@
                 <hr>
                 <input id="playback-rate" class="custom-range js-playback-rate-control" type="range" min="0.05" max="1" step="0.01" value="1">
                 <label for="playback-rate">Speed:<span class="playback-rate-value">1.0</span>x</label>
+                <br>
+                <label class="btn btn-link {{ player.isContinuousPlay ? 'active':'' }}" id="continue-playback" title="Continue playback beyond current frame">
+                    <i class="continue-playback"></i>
+                </label>
             </div>
             <div class="col-10">
                 {% include 'recording/player/player.html.twig' %}
             </div>
+
         </div>
     </div>
 {% endblock %}
@@ -172,6 +177,11 @@
 
         $(function () {
             'use strict';
+
+            if (maxFrequency >= fileFreqMax && minFrequency <= 1 && maxTime >= parseFloat(fileDuration.toFixed(1)) && minTime <= 0) {
+                $('#shift-left').addClass('a-disabled')
+                $('#shift-right').addClass('a-disabled')
+            }
 
             $('#reclabel').on('change', function () {
                 $('#reclabelform').submit();

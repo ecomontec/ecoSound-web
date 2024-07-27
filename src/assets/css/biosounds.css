@@ -109,8 +109,12 @@ nav.menu .navbar-nav .nav-link {
     left: 0;
     position: absolute;
     background-color: white;
-    z-index: 90000000;
+    z-index: 999;
     opacity: .9;
+}
+
+.z-1000 {
+    z-index: 1000;
 }
 
 /*--------*/
@@ -1500,4 +1504,91 @@ li {
     overflow-y: scroll;
     -ms-overflow-style: none;
     scrollbar-width: none;
+}
+
+.arrow-peak {
+    width: 16px;
+    content: url("../webfonts/arrow-peak.svg");
+}
+
+.arrow-peak:hover {
+    content: url("../webfonts/arrow-peak-hover.svg");
+}
+
+.continue-playback {
+    width: 16px;
+    content: url("../webfonts/continue-playback.svg");
+}
+
+.active .continue-playback {
+    content: url("../webfonts/continue-playback-hover.svg");
+}
+
+.js-open-tf-modal .svg-model {
+    width: 16px;
+    content: url("../webfonts/model.svg");
+}
+
+.js-open-tf-modal .svg-model:hover {
+    content: url("../webfonts/model-hover.svg");
+}
+
+.js-open-tf-modal:hover .svg-model {
+    content: url("../webfonts/model-hover.svg");
+}
+
+#models[disabled] .svg-model {
+    height: 12px;
+    content: url("../webfonts/model.svg");
+}
+
+#models:not([disabled]) .svg-model {
+    height: 12px;
+    content: url("../webfonts/model-hover.svg");
+}
+
+#models[disabled] .svg-model:hover {
+    content: url("../webfonts/model.svg");
+}
+
+#models:not([disabled]) .svg-model:hover {
+    content: url("../webfonts/model-hover.svg");
+}
+
+.svg-sum {
+    height: 16px;
+    content: url("../webfonts/sum.svg");
+}
+
+.svg-sum:hover {
+    content: url("../webfonts/sum-hover.svg");
+}
+
+.js-open-maad-modal:hover .svg-sum {
+    content: url("../webfonts/sum-hover.svg");
+}
+
+#maads[disabled] .svg-sum {
+    height: 12px;
+    content: url("../webfonts/sum.svg");
+}
+
+#maads:not([disabled]) .svg-sum {
+    height: 12px;
+    content: url("../webfonts/sum-hover.svg");
+}
+
+#maads[disabled] .svg-sum:hover {
+    content: url("../webfonts/sum.svg");
+}
+
+#maads:not([disabled]) .svg-sum:hover {
+    content: url("../webfonts/sum-hover.svg");
+}
+
+.a-disabled {
+    pointer-events: none;
+    cursor: default;
+    color: gray;
+    text-decoration: none;
 }

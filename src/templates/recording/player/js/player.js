@@ -13,6 +13,11 @@ continuousPlaySelector.change(function () {
     isContinuous = this.checked;
 });
 
+$('#continue-playback').click(function () {
+    $(this).toggleClass('active');
+    $('#btn-playback').click()
+})
+
 $('#stop').click(function () {
     setContinuousPlay(false);
 });
@@ -21,6 +26,8 @@ continuousPlay = function () {
     if (fileDuration > maxTime) {
         $('#x').val(maxTime);
         $('#w').val(maxTime + selectionDuration);
+        $('#y').val($('input[name="minFreqView"]').val())
+        $('#h').val($('input[name="maxFreqView"]').val())
         $('#recordingForm').submit();
     }
 };
