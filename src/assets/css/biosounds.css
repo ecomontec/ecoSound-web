@@ -420,6 +420,17 @@ div .active a {
     content: url('../images/sites_icon.png');
 }
 
+
+.fa-sites2:before {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    background-image: url('../images/sites_icon2.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    content: '';
+}
+
 .progress {
     height: 20px;
     margin-top: 50px;
@@ -1070,7 +1081,7 @@ li {
     color: var(--rr-text-body);
     font-weight: var(--rr-fw-sbold);
     line-height: var(--rr-lh-h5);
-    font-size: 24px;
+    font-size: 20px;
     font-style: normal;
 }
 

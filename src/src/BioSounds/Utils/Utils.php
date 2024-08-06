@@ -54,6 +54,15 @@ class Utils
         return self::executeCommand('soxi -r ' . $filePath);
     }
 
+    public static function resample(string $filePath, string $fileName, int $freq)
+    {
+        $tempFile = $filePath . 'temp_' . $fileName;
+        self::executeCommand("sox $filePath$fileName -r $freq $tempFile");
+        if (file_exists($tempFile)) {
+            rename($tempFile, $filePath . $fileName);
+        }
+    }
+
     /**
      * @param string $originalFilePath
      * @param string $destinationFilePath
@@ -63,8 +72,8 @@ class Utils
     public static function generateSoundFileSelection(
         string $originalFilePath,
         string $destinationFilePath,
-        int    $startTime,
-        int    $durationTime
+        int $startTime,
+        int $durationTime
     )
     {
         $command = 'sox ' . $originalFilePath . ' ' . $destinationFilePath . ' ';
@@ -81,8 +90,8 @@ class Utils
     public static function filterFrequenciesSound(
         string $originalFilePath,
         string $destinationFilePath,
-        int    $minimumFrequency,
-        int    $maximumFrequency
+        int $minimumFrequency,
+        int $maximumFrequency
     )
     {
         $command = 'sox ' . $originalFilePath . ' ' . $destinationFilePath . ' ';

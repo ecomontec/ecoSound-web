@@ -12,9 +12,12 @@ class CollectionProvider extends AbstractProvider
 {
     const TABLE_NAME = "collection";
 
-    public function getCollectionPagesByPermission(int $projectId): array
+    public function getCollectionPagesByPermission(int $projectId, string $sites = null): array
     {
         $sql = "SELECT c.* FROM collection c ";
+        if ($sites) {
+            $sql .= " LEFT JOIN site_collection sc ON c.collection_id = sc.collection_id LEFT JOIN recording r ON c.collection_id = r.col_id ";
+        }
         if (!Auth::isUserLogged()) {
             $sql .= 'WHERE c.public_access = 1 AND c.project_id = :projectId ';
         } elseif (!Auth::isUserAdmin()) {
@@ -22,7 +25,10 @@ class CollectionProvider extends AbstractProvider
         } else {
             $sql .= 'WHERE c.project_id = :projectId ';
         }
-        $sql = $sql . 'ORDER BY c.name ';
+        if ($sites) {
+            $sql .= " AND (sc.site_id in ($sites) OR (r.site_id is null AND r.recording_id is not null)) ";
+        }
+        $sql = $sql . ' GROUP BY c.collection_id,c.project_id,c.name,c.user_id,c.doi,c.note,c.view,c.sphere,c.recording_url,c.project_url,c.public_access,c.public_tags,c.creation_date ORDER BY c.name ';
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect([':projectId' => $projectId]);
 

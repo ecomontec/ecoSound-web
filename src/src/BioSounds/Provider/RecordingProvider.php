@@ -137,21 +137,22 @@ class RecordingProvider extends AbstractProvider
     }
 
     /**
-     * @param int $id
+     * @param string $id
      * @return array
      * @throws \Exception
      */
-    public function getByCollection(int $id): array
+    public function getByCollection(string $id, string $site = null): array
     {
         $query = 'SELECT *, (SELECT filename FROM spectrogram ';
         $query .= 'WHERE ' . Recording::TABLE_NAME . '.' . Recording::ID . ' = spectrogram.recording_id ';
         $query .= 'AND type = \'spectrogram-player\') AS ImageFile ';
         $query .= 'FROM ' . Recording::TABLE_NAME . ' ';
-        $query .= 'WHERE ' . Recording::TABLE_NAME . '.' . Recording::COL_ID . ' = :id';
-
+        $query .= 'WHERE ' . Recording::TABLE_NAME . '.' . Recording::COL_ID . " IN ( $id )";
+        if ($site) {
+            $query .= " AND (recording.site_id IN ( $site ) OR recording.site_id IS NULL) ";
+        }
         $this->database->prepareQuery($query);
-        $result = $this->database->executeSelect([':id' => $id]);
-
+        $result = $this->database->executeSelect();
         return $result;
     }
 

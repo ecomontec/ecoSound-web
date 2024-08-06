@@ -83,6 +83,10 @@ class FileService
         try {
             $list = [];
             while ($fileName = readdir($handle)) {
+                $hash = hash_file('md5', $uploadPath . $fileName);
+                if (strtolower(pathinfo($fileName, PATHINFO_EXTENSION)) === 'wav' && isset($_POST['freq']) && $_POST['freq'] != '' && is_numeric($_POST['freq'])) {
+                    Utils::resample($uploadPath, $fileName, $_POST['freq']);
+                }
                 $fileDate = $date;
                 $fileTime = $time;
                 if ($fileName == '.' || $fileName == '..') {
@@ -111,7 +115,10 @@ class FileService
                     ->setUser(Auth::getUserID())
                     ->setType($type)
                     ->setMedium($medium);
-                $list[] = $this->fileProvider->insert($file);
+                $list[] = [
+                    'id' => $this->fileProvider->insert($file),
+                    'hash' => $hash,
+                ];
             }
             $this->queueService->queue(json_encode($list), 'upload', $request['file-uploader_count']);
         } catch (\Exception $exception) {
@@ -123,16 +130,12 @@ class FileService
         }
     }
 
-    /**
-     * @param int $fileId
-     * @throws \Exception
-     */
-    public function process(int $fileId)
+    public function process($data = null)
     {
         $soundId = null;
         try {
-            if (empty($file = $this->fileProvider->get($fileId))) {
-                throw new FileQueueNotFoundException($fileId);
+            if (empty($file = $this->fileProvider->get($data['id']))) {
+                throw new FileQueueNotFoundException($data['id']);
             }
 
             $file->setStatus(File::STATUS_IN_PROGRESS);
@@ -146,7 +149,7 @@ class FileService
                 throw new FileInvalidException($file->getPath());
             }
             $fileExists = 0;
-            $fileHash = hash_file('md5', $file->getPath());
+            $fileHash = $data['hash'];
             if (!empty($this->recordingProvider->getByHash($fileHash, $file->getCollection()))) {
                 $fileExists = 1;
             }
@@ -256,9 +259,9 @@ class FileService
      * @throws \Exception
      */
     private function updateFileStatus(
-        File   $file,
-        int    $status,
-        int    $recordingId = null,
+        File $file,
+        int $status,
+        int $recordingId = null,
         string $errorMessage = null
     )
     {

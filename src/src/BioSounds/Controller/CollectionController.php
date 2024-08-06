@@ -5,10 +5,12 @@ namespace BioSounds\Controller;
 use BioSounds\Entity\Collection;
 
 use BioSounds\Entity\IucnGet;
+use BioSounds\Entity\User;
 use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\SiteProvider;
+use BioSounds\Provider\TagProvider;
 use BioSounds\Service\RecordingService;
 use BioSounds\Utils\Auth;
 
@@ -41,7 +43,32 @@ class CollectionController extends BaseController
         return $this->twig->render('collection/collections.html.twig', [
             'project' => (new ProjectProvider())->get($projectId),
             'collections' => $collections,
-            'leaflet' => $this->leaflet
+            'leaflet' => $this->leaflet,
+            'recordings' => (new RecordingProvider())->getByCollection(substr($str, 0, strlen($str) - 1)),
+            'users' => (new User())->getUserCount(substr($str, 0, strlen($str) - 1)),
+        ]);
+    }
+
+    /**
+     * @param int $id
+     * @param string|null $sites
+     * @return string
+     * @throws \Exception
+     */
+    public function indexjs(int $projectId, string $site = null)
+    {
+        $str = '';
+        $collections = (new CollectionProvider())->getCollectionPagesByPermission($projectId, $site);
+        foreach ($collections as $collection) {
+            $str .= $collection->getId() . ',';
+        }
+        $sites = (new SiteProvider())->getListWithCollection($projectId, substr($str, 0, strlen($str) - 1), $site);
+        $this->leaflet = $this->getProjectLeaflet($sites);
+        return $this->twig->render('collection/collectionsjs.html.twig', [
+            'project' => (new ProjectProvider())->get($projectId),
+            'collections' => $collections,
+            'leaflet' => $this->leaflet,
+            'recordings' => (new RecordingProvider())->getByCollection(substr($str, 0, strlen($str) - 1), $site)
         ]);
     }
 
@@ -65,16 +92,13 @@ class CollectionController extends BaseController
         $this->leaflet = $this->getLeaflet($this->recordings);
         $max = [];
         $min = [];
-
-        if ($display == 'timeline') {
-            foreach ($this->recordings as $date) {
-                $min[] = $date->getRecording()->getStartDate();
-                $max[] = $date->getRecording()->getEndDate();
-            }
-            $max_date = strtotime(max($max));
-            $min_date = strtotime(min($min));
-            $diff_date = (int)(($max_date - $min_date) / 60 / 60 / 24 * 0.1);
+        $recordings = [];
+        foreach ($this->recordings as $data) {
+            $min[] = $data->getRecording()->getStartDate();
+            $max[] = $data->getRecording()->getEndDate();
+            $recordings[] = $data->getRecording()->getId();
         }
+
         if ($isAccessed || $this->collection->getPublicAccess()) {
             return $this->twig->render('collection/collection.html.twig', [
                 'project' => (new ProjectProvider())->get($this->collection->getProject()),
@@ -83,8 +107,10 @@ class CollectionController extends BaseController
                 'display' => $display,
                 'leaflet' => $this->leaflet,
                 'none_count' => (new RecordingProvider())->getNullCount($id),
-                'min' => count($min) > 0 ? date('Y-m-d H:i:s', strtotime('-1 Day', $min_date)) : 0,
-                'max' => count($max) > 0 ? date('Y-m-d H:i:s', strtotime("+$diff_date Day", $max_date)) : 0,
+                'min' => count($min) > 0 ? date('Y-m-d H:i:s', strtotime('-1 Day', strtotime(min($min)))) : 0,
+                'max' => count($max) > 0 ? date('Y-m-d H:i:s', strtotime('+1 Day', strtotime(max($max)))) : 0,
+                'users' => (new User())->getUserCount($id),
+                'tags' => $recordings ? (new TagProvider())->getTagCount(implode(',', $recordings)) : 0,
             ]);
         } else {
             return $this->twig->render('collection/noaccess.html.twig');
@@ -94,6 +120,7 @@ class CollectionController extends BaseController
     /**
      * @param int $id
      * @param string|null $view
+     * @param string|null $sites
      * @return string
      * @throws \Exception
      */
@@ -109,23 +136,18 @@ class CollectionController extends BaseController
             (Auth::getUserID() == null) ? 0 : Auth::getUserID(),
             $sites
         );
-        $old = (new RecordingService())->getListWithImages(
-            $this->colId,
-            (Auth::getUserID() == null) ? 0 : Auth::getUserID()
-        );
         $this->leaflet = $this->getLeaflet($this->recordings);
         $max = [];
         $min = [];
-        if ($display == 'timeline') {
-            foreach ($this->recordings as $date) {
-                $min[] = $date->getRecording()->getStartDate();
-                $max[] = $date->getRecording()->getEndDate();
-            }
+        $recordings = [];
+        foreach ($this->recordings as $data) {
+            $min[] = $data->getRecording()->getStartDate();
+            $max[] = $data->getRecording()->getEndDate();
+            $recordings[] = $data->getRecording()->getId();
         }
         if ($isAccessed || $this->collection->getPublicAccess()) {
             return $this->twig->render('collection/collectionjs.html.twig', [
                 'project' => (new ProjectProvider())->get($this->collection->getProject()),
-                'old' => $old,
                 'collection' => $this->collection,
                 'list' => $this->recordings,
                 'display' => $display,
@@ -133,6 +155,7 @@ class CollectionController extends BaseController
                 'none_count' => (new RecordingProvider())->getNullCount($id),
                 'min' => count($min) > 0 ? date('Y-m-d H:i:s', strtotime('-1 Day', strtotime(min($min)))) : 0,
                 'max' => count($max) > 0 ? date('Y-m-d H:i:s', strtotime('+1 Day', strtotime(max($max)))) : 0,
+                'tags' => $recordings ? (new TagProvider())->getTagCount(implode(',', $recordings)) : 0,
             ]);
         } else {
             return "No results";
@@ -270,6 +293,7 @@ class CollectionController extends BaseController
     {
         $array = array();
         $arr = array();
+        $sites = '';
         $j = 0;
 
         foreach ($allSites as $site) {
@@ -277,6 +301,11 @@ class CollectionController extends BaseController
                 $latitude[] = $site['y'];
                 $longitude[] = $site['x'];
                 $array[] = [$site['site_id'], $site['name'], $site['y'], $site['x'], $site['collection'], $site['realm'], $site['realm_id'], $site['biome'], $site['biome_id'], $site['functional_type'], $site['functional_type_id']];
+                if ($sites != '') {
+                    $sites = $sites . ',' . $site['site_id'];
+                } else {
+                    $sites = $site['site_id'];
+                }
             }
         }
         $max = 0;
@@ -305,6 +334,7 @@ class CollectionController extends BaseController
             }
             $arr['latitude_center'] = (max($latitude) + min($latitude)) / 2;
             $arr['arr'] = $array;
+            $arr['sites'] = $sites;
             $arr['count'] = count($array);
         }
         return $arr;

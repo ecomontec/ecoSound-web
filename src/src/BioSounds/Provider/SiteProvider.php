@@ -39,9 +39,11 @@ class SiteProvider extends AbstractProvider
      * @return Site[]
      * @throws \Exception
      */
-    public function getListWithCollection(int $projectId, string $collectionId = null, string $order = 'name'): array
+    public function getListWithCollection(int $projectId, string $collectionId = null, string $sites = null, string $order = 'name'): array
     {
+
         $str = ($collectionId == null) ? "" : " AND sc.collection_id IN ($collectionId) ";
+        $str .= ($sites == null) ? "" : " AND sc.site_id IN ($sites) ";
         $sql = "SELECT s.site_id,s.name,sc.collection, IF(longitude_WGS84_dd_dddd IS NOT NULL AND latitude_WGS84_dd_dddd IS NOT NULL,s.longitude_WGS84_dd_dddd,IF(gadm2 IS NOT NULL,a2.x,IF(gadm1 IS NOT NULL,a1.x,IF( gadm0 IS NOT NULL, a0.x, NULL )))) AS x,IF(longitude_WGS84_dd_dddd IS NOT NULL AND latitude_WGS84_dd_dddd IS NOT NULL,s.latitude_WGS84_dd_dddd,IF(gadm2 IS NOT NULL,a2.y,IF(gadm1 IS NOT NULL,a1.y,IF( gadm0 IS NOT NULL, a0.y, NULL )))) AS y,ig1.`name` AS realm,ig1.iucn_get_id AS realm_id,ig2.`name` AS biome,ig2.iucn_get_id AS biome_id,ig3.`name` AS functional_type,ig3.iucn_get_id AS functional_type_id FROM (SELECT sc.site_id,GROUP_CONCAT( sc.collection_id )AS collection FROM site_collection sc LEFT JOIN collection c ON c.collection_id = sc.collection_id WHERE c.project_id = $projectId $str GROUP BY sc.site_id) sc LEFT JOIN site s ON sc.site_id = s.site_id LEFT JOIN adm_2 a2 ON a2.NAME = s.gadm2 LEFT JOIN adm_1 a1 ON a1.NAME = s.gadm1 LEFT JOIN adm_0 a0 ON a0.NAME = s.gadm0 LEFT JOIN iucn_get ig1 ON s.realm_id = ig1.iucn_get_id LEFT JOIN iucn_get ig2 ON s.biome_id = ig2.iucn_get_id LEFT JOIN iucn_get ig3 ON s.functional_type_id = ig3.iucn_get_id";
         $sql .= " GROUP BY sc.site_id,a0.x,a1.x,a2.x,a0.y,a1.y,a2.y ORDER BY $order";
         $this->database->prepareQuery($sql);
@@ -104,7 +106,7 @@ class SiteProvider extends AbstractProvider
             $sql .= " AND CONCAT(IFNULL(s.site_id,''), IFNULL(s.name,''), IFNULL(s.longitude_WGS84_dd_dddd,''), IFNULL(s.latitude_WGS84_dd_dddd,''), IFNULL(s.topography_m,''), IFNULL(s.freshwater_depth_m,''), IFNULL(s.gadm0,''), IFNULL(s.gadm1,''), IFNULL(s.gadm2,''), IFNULL(e1.name,''), IFNULL(e2.name,''), IFNULL(e3.name,'')) LIKE '%$search%' ";
         }
         $sql .= " GROUP BY s.site_id ";
-        $a = ['','s.site_id', 's.name', 's.longitude_WGS84_dd_dddd', 's.latitude_WGS84_dd_dddd', 's.topography_m', 's.freshwater_depth_m', 's.gadm0', 's.gadm1', 's.gadm2', 'e1.name', 'e2.name', 'e3.name'];
+        $a = ['', 's.site_id', 's.name', 's.longitude_WGS84_dd_dddd', 's.latitude_WGS84_dd_dddd', 's.topography_m', 's.freshwater_depth_m', 's.gadm0', 's.gadm1', 's.gadm2', 'e1.name', 'e2.name', 'e3.name'];
         $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();

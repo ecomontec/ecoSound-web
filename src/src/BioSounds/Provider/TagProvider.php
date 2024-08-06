@@ -410,4 +410,13 @@ class TagProvider extends AbstractProvider
         }
         return $arr;
     }
+
+    public function getTagCount($recordings)
+    {
+        $this->database->prepareQuery("SELECT COUNT(tag_id) AS count FROM tag WHERE recording_id IN ($recordings)");
+        if (empty($result = $this->database->executeSelect())) {
+            return null;
+        }
+        return $result[0]['count'];
+    }
 }

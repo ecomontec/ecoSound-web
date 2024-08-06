@@ -156,6 +156,56 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="modal-upload" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Pre-processing</h5>
+                    <button class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body ml-3">
+                    <label>
+                        <input type="checkbox" id="frequencies_cb">
+                        resample recordings
+                    </label>
+                    <br>
+                    <select id="frequencies" class="custom-select col-6" disabled>
+                        <option value="8000">8000</option>
+                        <option value="11025">11025</option>
+                        <option value="16000">16000</option>
+                        <option value="22050">22050</option>
+                        <option value="32000">32000</option>
+                        <option value="44100">44100</option>
+                        <option value="48000">48000</option>
+                        <option value="88200">88200</option>
+                        <option value="96000">96000</option>
+                        <option value="176400">176400</option>
+                        <option value="192000">192000</option>
+                        <option value="352800">352800</option>
+                        <option value="384000">384000</option>
+                        <option value="custom">custom</option>
+                    </select>
+                    <br>
+                    <input id="frequencies_custom" type="number" class="form-control col-6 mt-3" hidden>
+                    <br>
+                    <div class="text-danger">Only the resampled recording will be kept on server. Back up your original files.</div>
+                </div>
+                <div class="modal-footer">
+                    <div id="upload-info"></div>
+                    <button id="js-close-button" class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
+                    <a id='upload-btn' class="js-upload-modal btn btn-outline-primary">
+                        <i class="fa-solid fa-check"></i>
+                        Submit
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="modal fade" id="modal-tf" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -243,6 +293,7 @@
         <script>
             var arr ={{ users|json_encode|raw }};
             var microphones ={{ microphones|json_encode|raw }};
+            var frequencies = null
             $(document).ready(function () {
                 $('#recTable').show()
                 let table = $('#recTable').DataTable({
@@ -305,7 +356,33 @@
                 $("#tf").change();
             });
             document.addEventListener("DOMContentLoaded", function (event) {
+                $('#frequencies_cb').change(function () {
+                    var isDisabled = $("#frequencies").prop("disabled");
+                    $("#frequencies").prop("disabled", !isDisabled);
+                    $("#frequencies_custom").prop("disabled", !isDisabled);
+                })
+
+                $('#frequencies').change(function () {
+                    if ($(this).val() == 'custom') {
+                        $("#frequencies_custom").attr("hidden", false);
+                    } else {
+                        $("#frequencies_custom").attr("hidden", true);
+                    }
+                })
+
                 $("#uploadButton").click(function (e) {
+                    $("#modal-upload").modal('show');
+                });
+
+                $("#upload-btn").click(function (e) {
+                    if (!$("#frequencies_cb").is(":checked")) {
+                        $('#freq').val('');
+                    } else if ($("#frequencies").val() == 'custom') {
+                        $('#freq').val($("#frequencies_custom").val());
+                    } else {
+                        $('#freq').val($("#frequencies").val());
+                    }
+                    $("#modal-upload").modal('hide');
                     document.querySelector('#file-uploader_browse').click();
                 });
 
