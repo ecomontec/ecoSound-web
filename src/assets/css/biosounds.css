@@ -120,7 +120,7 @@ nav.menu .navbar-nav .nav-link {
 /*--------*/
 
 #alertBox {
-    position: absolute;
+    position: fixed;
     top: 65px;
     width: 16%;
     right: 0;

@@ -7,6 +7,7 @@ use BioSounds\Entity\License;
 use BioSounds\Entity\Microphone;
 use BioSounds\Entity\Recorder;
 use BioSounds\Entity\Recording;
+use BioSounds\Entity\User;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\IndexLogProvider;
@@ -19,8 +20,10 @@ use BioSounds\Provider\SiteProvider;
 use BioSounds\Provider\TagProvider;
 use BioSounds\Service\Queue\RabbitQueueService;
 use BioSounds\Utils\Auth;
+use DirectoryIterator;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
+use getID3;
 
 class RecordingController extends BaseController
 {
@@ -364,5 +367,93 @@ class RecordingController extends BaseController
             'errorCode' => 0,
             'message' => 'Alpha acoustic indices successfully.'
         ]);
+    }
+
+    public function getid3($dir, $projectId, $collectionId)
+    {
+        $getID3 = new getID3();
+        $iterator = new DirectoryIterator('tmp/' . $dir);
+        $fileData = [];
+        $arr = [];
+        $sites = (new SiteProvider())->getList($projectId, $collectionId);
+        $recorders = (new Recorder())->getBasicList();
+        $licenses = (new License())->getBasicList();
+        $str_site = '';
+        $str_recorder = '';
+        $str_license = '';
+        foreach ($sites as $site) {
+            $str_site .= "<option value='$site[site_id]' data-lat='$site[latitude_WGS84_dd_dddd]' data-lon='$site[longitude_WGS84_dd_dddd]'>$site[name]</option>";
+        }
+        foreach ($recorders as $recorder) {
+            $str_recorder .= "<option value='$recorder[recorder_id]' data-microphone='$recorder[microphone]'>" . (($recorder['brand'] == null || $recorder['brand'] == '') ? $recorder['model'] : ($recorder['model'] . '|' . $recorder['brand'])) . "</option>";
+        }
+        foreach ($licenses as $license) {
+            $str_license .= "<option value='$license[license_id]'>$license[name]</option>";
+        }
+        foreach ($iterator as $key => $fileInfo) {
+            if ($fileInfo->isFile()) {
+                $filePath = $fileInfo->getPathname();
+                $fileMeta = $getID3->analyze($filePath);
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' style='width:200px;' name='upload_filename' readonly value='$fileMeta[filename]'>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' style='width:200px;' name='upload_name' readonly value='$fileMeta[filename]'>";
+                $arr[$key][] = "<select name='upload_site' style='width:120px;' class='form-control form-control-sm'><option value='0' ></option>$str_site</select>";
+                $arr[$key][] = "<select name='upload_recorder' style='width:250px;' class='form-control form-control-sm' required>  <option selected disabled></option>$str_recorder</select>";
+                $arr[$key][] = "<select name='upload_microphone' style='width:250px;' class='form-control form-control-sm' required disabled></select>";
+                $arr[$key][] = "<select name='upload_license' style='width:140px;' class='form-control form-control-sm'><option value='0'></option>$str_license</select>";
+                $arr[$key][] = "<select name='upload_type' style='width:100px;' class='form-control form-control-sm'>
+                            <option value='0'></option>
+                            <option>Passive</option>
+                            <option>Focal</option>
+                            <option>Enclosure</option>
+                        </select>";
+                $arr[$key][] = "<select name='upload_medium' style='width:80px;' class='form-control form-control-sm'>
+                            <option value='0'></option>
+                            <option>Air</option>
+                            <option>Water</option>
+                        </select>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' style='width:200px;' name='upload_note'>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' style='width:200px;' name='upload_DOI'>";
+                $arr[$key][] = "<input type='date' class='form-control form-control-sm' name='upload_file_date' required>";
+                $arr[$key][] = "<input type='time' class='form-control form-control-sm' name='upload_file_time' min='00:00:00' max='23:59:59' step='1' required>";
+                if ($fileMeta['fileformat'] == 'ogg') {
+                    $arr[$key][] = isset($fileMeta['ogg']['comments']['title']) ? $fileMeta['ogg']['comments']['title'][0] : '';
+                    $arr[$key][] = isset($fileMeta['ogg']['comments']['artist']) ? $fileMeta['ogg']['comments']['artist'][0] : '';
+                    $arr[$key][] = isset($fileMeta['ogg']['comments']['album']) ? $fileMeta['ogg']['comments']['album'][0] : '';
+                    $arr[$key][] = isset($fileMeta['ogg']['comments']['comment']) ? "<div class='upload_comment'>" . $fileMeta['ogg']['comments']['comment'][0] . "</div>" : '';
+                    $arr[$key][] = isset($fileMeta['audio']['channels']) ? $fileMeta['audio']['channels'] : '';
+                    $arr[$key][] = isset($fileMeta['audio']['sample_rate']) ? $fileMeta['audio']['sample_rate'] . ' Hz' : '';
+                    $arr[$key][] = isset($fileMeta['ogg']['bitrate_nominal']) ? (int)$fileMeta['ogg']['bitrate_nominal'] . ' bps' : '';
+                    $arr[$key][] = isset($fileMeta['playtime_seconds']) ? number_format($fileMeta['playtime_seconds'], 1) . ' s' : '';
+                } else if ($fileMeta['fileformat'] == 'wav') {
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['title']) ? $fileMeta['tags']['id3v2']['title'][0] : '';
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['artist']) ? $fileMeta['tags']['id3v2']['artist'][0] : '';
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['album']) ? $fileMeta['tags']['id3v2']['album'][0] : '';
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['comment']) ? "<div class='upload_comment'>" . $fileMeta['tags']['id3v2']['comment'][0] . "</div>" : '';
+                    $arr[$key][] = isset($fileMeta['audio']['channels']) ? $fileMeta['audio']['channels'] : '';
+                    $arr[$key][] = isset($fileMeta['audio']['sample_rate']) ? $fileMeta['audio']['sample_rate'] . ' Hz' : '';
+                    $arr[$key][] = isset($fileMeta['audio']['bitrate']) ? (int)$fileMeta['audio']['bitrate'] . ' bps' : '';
+                    $arr[$key][] = isset($fileMeta['playtime_seconds']) ? number_format($fileMeta['playtime_seconds'], 1) . ' s' : '';
+                } else if ($fileMeta['fileformat'] == 'mp3') {
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['title']) ? $fileMeta['tags']['id3v2']['title'][0] : '';
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['artist']) ? $fileMeta['tags']['id3v2']['artist'][0] : '';
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['album']) ? $fileMeta['tags']['id3v2']['album'][0] : '';
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['comment']) ? "<div class='upload_comment'>" . $fileMeta['tags']['id3v2']['comment'][0] . "</div>" : '';
+                    $arr[$key][] = isset($fileMeta['audio']['channels']) ? $fileMeta['audio']['channels'] : '';
+                    $arr[$key][] = isset($fileMeta['audio']['sample_rate']) ? $fileMeta['audio']['sample_rate'] . ' Hz' : '';
+                    $arr[$key][] = isset($fileMeta['audio']['bitrate']) ? (int)$fileMeta['audio']['bitrate'] . ' bps' : '';
+                    $arr[$key][] = isset($fileMeta['playtime_seconds']) ? number_format($fileMeta['playtime_seconds'], 1) . ' s' : '';
+                } else if ($fileMeta['fileformat'] == 'flac') {
+                    $arr[$key][] = isset($fileMeta['flac']['VORBIS_COMMENT']['comments']['title']) ? $fileMeta['flac']['VORBIS_COMMENT']['comments']['title'][0] : '';
+                    $arr[$key][] = isset($fileMeta['flac']['VORBIS_COMMENT']['comments']['artist']) ? $fileMeta['flac']['VORBIS_COMMENT']['comments']['artist'][0] : '';
+                    $arr[$key][] = isset($fileMeta['flac']['VORBIS_COMMENT']['comments']['album']) ? $fileMeta['flac']['VORBIS_COMMENT']['comments']['album'][0] : '';
+                    $arr[$key][] = isset($fileMeta['flac']['VORBIS_COMMENT']['comments']['comment']) ? "<div class='upload_comment'>" . $fileMeta['flac']['VORBIS_COMMENT']['comments']['comment'][0] . "</div>" : '';
+                    $arr[$key][] = isset($fileMeta['audio']['channels']) ? $fileMeta['audio']['channels'] : '';
+                    $arr[$key][] = isset($fileMeta['audio']['sample_rate']) ? $fileMeta['audio']['sample_rate'] . ' Hz' : '';
+                    $arr[$key][] = isset($fileMeta['audio']['bitrate']) ? (int)$fileMeta['audio']['bitrate'] . ' bps' : '';
+                    $arr[$key][] = isset($fileMeta['playtime_seconds']) ? number_format($fileMeta['playtime_seconds'], 1) . ' s' : '';
+                }
+            }
+        }
+        return json_encode($arr);
     }
 }

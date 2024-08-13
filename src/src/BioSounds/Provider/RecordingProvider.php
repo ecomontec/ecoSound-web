@@ -389,7 +389,6 @@ class RecordingProvider extends AbstractProvider
                 $arr[$key][] = "<input type='text' class='form-control form-control-sm' style='width:200px;' title='DOI' name='DOI' value='$value[DOI]'>";
                 $arr[$key][] = "<input type='date' id='file_date$value[recording_id]' class='form-control form-control-sm' title='Date' name='file_date' value='$value[file_date]'>";
                 $arr[$key][] = "<input type='time' class='form-control form-control-sm' title='Time' name='file_time' min='00:00:00' max='23:59:59' step='1' value='$value[file_time]'>";
-
             }
         }
         return $arr;

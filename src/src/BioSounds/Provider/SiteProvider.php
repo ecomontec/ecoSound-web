@@ -19,7 +19,7 @@ class SiteProvider extends AbstractProvider
      * @return Site[]
      * @throws \Exception
      */
-    public function getList(int $projectId, int $collectionId = null, string $order = 'name'): array
+    public function getList(string $projectId, string $collectionId = null, string $order = 'name'): array
     {
         $sql = "SELECT s.* FROM site s 
                     LEFT JOIN site_collection sc ON sc.site_id = s.site_id

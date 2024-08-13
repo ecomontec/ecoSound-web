@@ -64,63 +64,40 @@ class FileService
      */
     public function upload(array $request, string $uploadPath)
     {
-        $colID = $request['colId'];
-        $site = isset($request['site']) ? $request['site'] : null;
-        $site = $site == 0 ? null : $site;
-        $recorder = $request['recorder'];
-        $microphone = $request['microphone'];
-        $dateFromFile = isset($request['dateFromFile']) ? $request['dateFromFile'] : false;
-        $time = isset($request['time']) ? $request['time'] : '00:00:00';
-        $date = isset($request['date']) ? $request['date'] : '1970-01-01';
-        $doi = isset($request['doi']) && !empty($request['doi']) ? $request['doi'] : null;
-        $license = isset($request['license']) ? $request['license'] : null;
-        $type = isset($request['type']) && !empty($request['type']) ? $request['type'] : null;
-        $medium = isset($request['medium']) && !empty($request['medium']) ? $request['medium'] : null;
-
         if (!is_dir($uploadPath) || !$handle = opendir($uploadPath)) {
             throw new FileNotFoundException($uploadPath);
         }
         try {
             $list = [];
-            while ($fileName = readdir($handle)) {
-                $hash = hash_file('md5', $uploadPath . $fileName);
-                if (strtolower(pathinfo($fileName, PATHINFO_EXTENSION)) === 'wav' && isset($_POST['freq']) && $_POST['freq'] != '' && is_numeric($_POST['freq'])) {
-                    Utils::resample($uploadPath, $fileName, $_POST['freq']);
-                }
-                $fileDate = $date;
-                $fileTime = $time;
-                if ($fileName == '.' || $fileName == '..') {
-                    continue;
-                }
 
-                if ($dateFromFile) {
-                    if (preg_match($this::DATE_TIME_PATTERN, $fileName, $dateTime)) {
-                        $fileDate = sprintf($this::DATE_FORMAT, $dateTime[1], $dateTime[2], $dateTime[3]);
-                        $fileTime = sprintf($this::TIME_FORMAT, $dateTime[4], $dateTime[5], $dateTime[6]);
-                    }
+            for ($i = 1; $i <= $request['count']; $i++) {
+                $hash = hash_file('md5', $uploadPath . $request['filename'][$i]);
+                if (strtolower(pathinfo($request['filename'][$i], PATHINFO_EXTENSION)) === 'wav' && isset($request['freq']) && $request['freq'] != '' && is_numeric($request['freq'])) {
+                    Utils::resample($uploadPath, $request['filename'][$i], $request['freq']);
                 }
-
                 $file = (new File())
-                    ->setPath($uploadPath . $fileName)
-                    ->setDate($fileDate)
-                    ->setTime($fileTime)
-                    ->setCollection($colID)
+                    ->setPath($uploadPath . $request['filename'][$i])
+                    ->setDate($request['file_date'][$i])
+                    ->setTime($request['file_time'][$i])
+                    ->setCollection($request['collection_id'])
                     ->setDirectory(rand(1, 100))
-                    ->setSite($site)
-                    ->setRecorder($recorder)
-                    ->setMicrophone($microphone)
-                    ->setName($fileName)
-                    ->setDoi($doi)
-                    ->setLicense($license)
+                    ->setSite($request['site'][$i])
+                    ->setRecorder((int)$request['recorder'][$i])
+                    ->setMicrophone((int)$request['microphone'][$i])
+                    ->setFilename($request['filename'][$i])
+                    ->setName($request['name'][$i])
+                    ->setNote($request['note'][$i])
+                    ->setDoi($request['DOI'][$i])
+                    ->setLicense($request['license'][$i])
                     ->setUser(Auth::getUserID())
-                    ->setType($type)
-                    ->setMedium($medium);
+                    ->setType($request['type'][$i])
+                    ->setMedium($request['medium'][$i]);
                 $list[] = [
                     'id' => $this->fileProvider->insert($file),
                     'hash' => $hash,
                 ];
             }
-            $this->queueService->queue(json_encode($list), 'upload', $request['file-uploader_count']);
+            $this->queueService->queue(json_encode($list), 'upload', $request['count']);
         } catch (\Exception $exception) {
             Utils::deleteDirContents($uploadPath);
             throw $exception;

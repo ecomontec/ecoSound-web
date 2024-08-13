@@ -282,6 +282,11 @@
         <!-- PUpload -->
         <link rel="stylesheet" href="{{ baseUrl }}/assets/plupload/jquery.plupload.queue.css" media="screen">
 
+        <script>
+            var arr ={{ users|json_encode|raw }};
+            var microphones ={{ microphones|json_encode|raw }};
+            var frequencies = null
+        </script>
         <script src="{{ baseUrl }}/assets/plupload/js/plupload.full.min.js" defer></script>
         <script src="{{ baseUrl }}/assets/plupload/js/jquery.plupload.queue.min.js" defer></script>
         <script src="{{ baseUrl }}/templates/administration/js/upload.js?v=1.2" defer></script>
@@ -291,9 +296,6 @@
     {% block scripts %}
         {{ parent() }}
         <script>
-            var arr ={{ users|json_encode|raw }};
-            var microphones ={{ microphones|json_encode|raw }};
-            var frequencies = null
             $(document).ready(function () {
                 $('#recTable').show()
                 let table = $('#recTable').DataTable({
@@ -434,17 +436,6 @@
                     }
                 });
 
-                $("#recorder").on('change', function () {
-                    $('#microphone').empty()
-                    $('#microphone').removeAttr('disabled')
-                    var microphone = $(this).find('option:selected').attr('data-microphone').split(',')
-                    $('#microphone').append("<option></option>")
-                    for (var key in microphones) {
-                        if ($.inArray(microphones[key]['microphone_id'] += '', microphone) >= 0) {
-                            $('#microphone').append("<option value='" + microphones[key]['microphone_id'] + "'>" + microphones[key]['name'] + "</option>");
-                        }
-                    }
-                });
                 $("select[name='recorder_id']").on('change', function () {
                     var id = $(this).attr('id').split('_')[1]
                     $("#microphone_" + id).empty()

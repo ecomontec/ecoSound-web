@@ -24,7 +24,6 @@ class FileController
         if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
-
         (new FileService())->upload($_POST, 'tmp/' . $uploadDirectory . '/');
 
         return json_encode([

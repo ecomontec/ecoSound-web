@@ -1,89 +1,113 @@
 <form id="uploadForm" method="POST" class="collapse">
-
     <div class="card mb-4">
         <div class="card-body">
             <div class="row">
-                <div class="col-md-7">
+                <div class="col-md-12">
+                    <input type="hidden" id="collection_id" value="{{ colId }}">
+                    <input type="hidden" id="freq" value="">
                     <div id="file-uploader" class="file-uploader">You browser doesn't support native upload.</div>
                 </div>
-                <div class="col-md-5 mt-2">
-                    <div class="row">
-                        <div class="form-group col-md-6">
-                            <label class="col-form-label-sm" for="date">Date (local)</label>
-                            <input id="date" class="form-control form-control-sm  js-file-field" name="date" type="date" required>
-                            <input type="hidden" name="colId" value="{{ colId }}">
-                            <input type="hidden" id="freq" name="freq" value="">
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label class="col-form-label-sm" for="time">Time (local)</label>
-                            <input id="time" class="form-control form-control-sm js-file-field" name="time" type="time" min="00:00:00" max="23:59:59" step="1" required>
-                            <div class="d-flex justify-content-end">
-                                <div>
-                                    <input id="from-file" class="form-check-input" name="dateFromFile" type="checkbox">
-                                    <label class="label" for="from-file"><small>Date and time from filename</small></label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="form-group col-md-6">
-                            <label for="recorder" class="col-form-label-sm">Recorder</label>
-                            <select id="recorder" name="recorder" class="form-control form-control-sm" required>
-                                <option selected disabled></option>
-                                {% for recorder in recorders %}
-                                    <option value="{{ recorder.recorder_id }}" data-microphone="{{ recorder.microphone }}">{{ recorder.model }}{% if recorder.brand!='' or recorder.brand is not null %} | {{ recorder.brand }}{% endif %}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label for="microphone" class="col-form-label-sm">Microphone</label>
-                            <select id="microphone" name="microphone" class="form-control form-control-sm" disabled required></select>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="form-group col-md-6">
-                            <label for="site" class="col-form-label-sm">Site
-                            </label>
-                            <select id="site" name="site" class="form-control form-control-sm">
-                                <option value='null'></option>
-                                {% for site in sites %}
-                                    <option value="{{ site.site_id }}">{{ site.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label for="doi" class="col-form-label-sm">DOI (optional)</label>
-                            <input id="doi" type="text" name="doi" class="form-control form-control-sm"/>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="form-group col-md-6">
-                            <label for="license" class="col-form-label-sm">License
-                            </label>
-                            <select id="license" name="license" class="form-control form-control-sm">
-                                {% for licensed in license %}
-                                    <option value="{{ licensed.license_id }}">{{ licensed.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label for="medium" class="col-form-label-sm">Medium</label>
-                            <select id="medium" name="medium" class="form-control form-control-sm">
-                                <option>Air</option>
-                                <option>Water</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="form-group col-md-6">
-                            <label for="type" class="col-form-label-sm">Recording Type</label>
-                            <select id="type" name="type" class="form-control form-control-sm">
-                                <option value="Passive">Passive (recording from automated sound recorder, no influence on animals, typically omnidirectional microphone)</option>
-                                <option value="Focal">Focal (recording from active search for animals, e.g. with directional microphone during point counts)</option>
-                                <option value="Enclosure">Enclosure (recording from captured animals, movement constrained)</option>
-                            </select>
-                        </div>
-                    </div>
+                <div class="col-md-12">
+                    <table id="upload-table" style="white-space: nowrap;">
+                        <thead>
+                        <tr>
+                            <th>Filename</th>
+                            <th>Name</th>
+                            <th>Site</th>
+                            <th>Recorder <span class="text-danger">*</span></th>
+                            <th>Microphone <span class="text-danger">*</span></th>
+                            <th>License</th>
+                            <th>Recording Type</th>
+                            <th>Medium</th>
+                            <th>Note</th>
+                            <th>DOI (optional)</th>
+                            <th>Date (local) <span class="text-danger">*</span></th>
+                            <th>Time (local) <span class="text-danger">*</span></th>
+                            <th>Title</th>
+                            <th>Artist</th>
+                            <th>Album</th>
+                            <th>Comment</th>
+                            <th>Channel Number</th>
+                            <th>Sampling Rate</th>
+                            <th>Bitrate</th>
+                            <th>Duration</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <th class="border-bottom border-dark">
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="btn-date">Set Date</button>
+                            </th>
+                            <th class="border-bottom border-dark">
+                                <input type="text" id="name" name="name" class="form-control form-control-sm" style='width:200px;' title="Name" placeholder="Sound name prefix">
+                            </th>
+                            <th class="border-bottom border-dark">
+                                <select id="site" name="site" class="form-control form-control-sm" style='width:120px;'>
+                                    <option value='0'></option>
+                                    {% for site in sites %}
+                                        <option value="{{ site.site_id }}">{{ site.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </th>
+                            <th class="border-bottom border-dark">
+                                <select id="recorder" name="recorder" class="form-control form-control-sm" style='width:250px;'>
+                                    <option selected disabled></option>
+                                    {% for recorder in recorders %}
+                                        <option value="{{ recorder.recorder_id }}" data-microphone="{{ recorder.microphone }}">{{ recorder.model }}{% if recorder.brand!='' or recorder.brand is not null %} | {{ recorder.brand }}{% endif %}</option>
+                                    {% endfor %}
+                                </select>
+                            </th>
+                            <th class="border-bottom border-dark">
+                                <select id="microphone" name="microphone" class="form-control form-control-sm" style='width:250px;' disabled></select>
+                            </th>
+                            <th class="border-bottom border-dark">
+                                <select id="license" name="license" class="form-control form-control-sm" style='width:140px;'>
+                                    <option value='0'></option>
+                                    {% for licensed in license %}
+                                        <option value="{{ licensed.license_id }}">{{ licensed.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </th>
+                            <th class="border-bottom border-dark">
+                                <select id="type" name="type" class="form-control form-control-sm" style='width:100px;'>
+                                    <option value='0'></option>
+                                    <option value="Passive">Passive (recording from automated sound recorder, no influence on animals, typically omnidirectional microphone)</option>
+                                    <option value="Focal">Focal (recording from active search for animals, e.g. with directional microphone during point counts)</option>
+                                    <option value="Enclosure">Enclosure (recording from captured animals, movement constrained)</option>
+                                </select>
+                            </th>
+                            <th class="border-bottom border-dark">
+                                <select id="medium" name="medium" class="form-control form-control-sm" style='width:80px;'>
+                                    <option value='0'></option>
+                                    <option>Air</option>
+                                    <option>Water</option>
+                                </select>
+                            </th>
+                            <th class="border-bottom border-dark">
+                                <input id="note" type="text" name="note" class="form-control form-control-sm" style='width:200px;'>
+                            </th>
+                            <th class="border-bottom border-dark">
+                                <input id="doi" type="text" name="doi" class="form-control form-control-sm" style='width:200px;'>
+                            </th>
+                            <th class="border-bottom border-dark">
+                                <input id="date" class="form-control form-control-sm" name="date" type="date">
+                            </th>
+                            <th class="border-bottom border-dark">
+                                <input id="time" class="form-control form-control-sm" name="time" type="time" min="00:00:00" max="23:59:59" step="1">
+                            </th>
+                            <th class="border-bottom border-dark"></th>
+                            <th class="border-bottom border-dark"></th>
+                            <th class="border-bottom border-dark"></th>
+                            <th class="border-bottom border-dark">
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="btn-comment">Set Note</button>
+                            </th>
+                            <th class="border-bottom border-dark"></th>
+                            <th class="border-bottom border-dark"></th>
+                            <th class="border-bottom border-dark"></th>
+                            <th class="border-bottom border-dark"></th>
+                        </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
             <div class="card-footer bg-transparent">

@@ -13,11 +13,10 @@ class FileProvider extends BaseProvider
      */
     public function insert(File $file)
     {
-        $query = 'INSERT INTO file_upload (path, filename, date, time, site_id, collection_id, directory, ';
-        $query .= 'recorder_id, microphone_id, recording_id, user_id, species_id, sound_type_id, subtype, rating, doi, license_id,type,medium) ';
-        $query .= 'VALUES (:path, :filename, :date, :time, :site, :collection, :directory, :recorder, :microphone, ';
-        $query .= ':recording, :user, :species, :soundType, :subtype, :rating, :doi, :license,:type,:medium)';
-
+        $query = 'INSERT INTO file_upload (path, filename,`name`, `date`, `time`, site_id, collection_id, directory, ';
+        $query .= 'recorder_id, microphone_id, recording_id, user_id, species_id, sound_type_id, subtype, rating,note, doi, license_id,type,medium) ';
+        $query .= 'VALUES (:path,:name, :filename, :date, :time, :site, :collection, :directory, :recorder, :microphone, ';
+        $query .= ':recording, :user, :species, :soundType, :subtype, :rating,:note, :doi, :license,:type,:medium)';
         $this->database->prepareQuery($query);
         return $this->database->executeInsert($file->getDatabaseValues());
     }
