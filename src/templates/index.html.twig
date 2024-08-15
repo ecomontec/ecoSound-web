@@ -12,13 +12,14 @@
                                 <div class="col-12">
                                     <div class="banner-content p-relative text-center">
                                         <img src="{{ imagesUrl }}/biosounds_logo_large.png">
-                                        <h2 class="banner-title mt-5"><span class="t-green">Open-source</span> online<br>platform for <span class="t-blue">ecoacoustics</span></h2>
+                                        <h2 class="banner-title mt-5">Open-source online<br>platform for ecoacoustics</h2>
                                         <p class="h5">ecoSound-web is an open-source, online platform for collaboratively archiving and sharing audio recordings,
                                             <br>manually creating and reviewing annotations in soundscapes, analysing target signals in time and frequency, and storing reference recordings for different soniferous taxa.</p>
                                         <div class="banner-home-2-btn-wrapper-2">
-                                            <a href="https://f1000research.com/articles/9-1224/v2" target="_blank" class="rr-btn btn-link btn-hover-white mt-4"><i class="fa-solid fa-f"></i>F1000Research</a>
-                                            <a href="https://github.com/ecomontec/ecoSound-web" target="_blank" class="rr-btn btn-link btn-hover-white mt-4 ml-5 mr-5"><i class="fa-brands fa-github"></i>GitHub</a>
-                                            <a href="https://scholar.google.com/scholar?oi=bibs&hl=en&cites=14252530002819630889,17393714564849497040" target="_blank" class="rr-btn btn-link btn-hover-white mt-4"><i class="fa-brands fa-google-scholar"></i>Google Scholar</a>
+                                            <a href="https://github.com/ecomontec/ecoSound-web" target="_blank" class="rr-btn btn-link btn-hover-white mt-4 ml-3 mr-3"><i class="fa-brands fa-github"></i>GitHub</a>
+                                            <a href="https://f1000research.com/articles/9-1224/v2" target="_blank" class="rr-btn btn-link btn-hover-white mt-4 ml-3 mr-3"><i class="fa-solid fa-f"></i>F1000Research</a>
+                                            <a href="https://scholar.google.com/scholar?oi=bibs&hl=en&cites=14252530002819630889,17393714564849497040" target="_blank" class="rr-btn btn-link btn-hover-white mt-4 ml-3 mr-3"><i class="fa-brands fa-google-scholar"></i>Google Scholar</a>
+                                            <a href="mailto:%20kevin.darras@inrae.fr" class="rr-btn btn-link btn-hover-white mt-4 ml-3 mr-3"><i class="fa-solid fa-envelope"></i>Email</a>
                                         </div>
                                     </div>
                                 </div>
@@ -34,13 +35,14 @@
                                 <div class="col-12">
                                     <div class="banner-content p-relative text-center">
                                         <img src="{{ imagesUrl }}/biosounds_logo_large.png">
-                                        <h2 class="banner-title mt-5"><span class="t-green">Open-source</span> online<br>platform for <span class="t-blue">ecoacoustics</span></h2>
+                                        <h2 class="banner-title mt-5">Open-source online<br>platform for ecoacoustics</h2>
                                         <p class="h5">We are open for collaboration with web engineers and ecologists.
-                                            <br>If you need to use ecoSound-web to annotate your soundscapes, or want to join its development, contact us (kdarras#at#gwdg#dot#de).</p>
+                                            <br>If you need to use ecoSound-web to annotate your soundscapes, or want to join its development, contact us.</p>
                                         <div class="banner-home-2-btn-wrapper-2">
-                                            <a href="https://f1000research.com/articles/9-1224/v2" target="_blank" class="rr-btn btn-link btn-hover-white mt-4"><i class="fa-solid fa-f"></i>F1000Research</a>
-                                            <a href="https://github.com/ecomontec/ecoSound-web" target="_blank" class="rr-btn btn-link btn-hover-white mt-4 ml-5 mr-5"><i class="fa-brands fa-github"></i>GitHub</a>
-                                            <a href="https://scholar.google.com/scholar?oi=bibs&hl=en&cites=14252530002819630889,17393714564849497040" target="_blank" class="rr-btn btn-link btn-hover-white mt-4"><i class="fa-brands fa-google-scholar"></i>Google Scholar</a>
+                                            <a href="https://github.com/ecomontec/ecoSound-web" target="_blank" class="rr-btn btn-link btn-hover-white mt-4 ml-3 mr-3"><i class="fa-brands fa-github"></i>GitHub</a>
+                                            <a href="https://f1000research.com/articles/9-1224/v2" target="_blank" class="rr-btn btn-link btn-hover-white mt-4 ml-3 mr-3"><i class="fa-solid fa-f"></i>F1000Research</a>
+                                            <a href="https://scholar.google.com/scholar?oi=bibs&hl=en&cites=14252530002819630889,17393714564849497040" target="_blank" class="rr-btn btn-link btn-hover-white mt-4 ml-3 mr-3"><i class="fa-brands fa-google-scholar"></i>Google Scholar</a>
+                                            <a href="mailto:%20kevin.darras@inrae.fr" class="rr-btn btn-link btn-hover-white mt-4 ml-3 mr-3"><i class="fa-solid fa-envelope"></i>Email</a>
                                         </div>
                                     </div>
                                 </div>
@@ -200,7 +202,7 @@
                     <div class="swiper project-slide slide-height">
                         <div class="swiper-wrapper">
                             {% set counter = 0 %}
-                            {% for project in my_sounds %}
+                            {% for project in projects %}
                             {% if counter % 5 == 0 %}
                             {% if counter > 0 %}
                             </ul>
@@ -213,18 +215,20 @@
                                 {% endif %}
                                 <li>
                                     <div class="project-three-single-inner">
-                                        <div class="project-three-single-img" style="background-image: url({{ baseUrl }}/sounds/projects/{{ project.picture_id }});"></div>
+                                        <div class="project-three-single-img" style="background-image: url({{ baseUrl }}/sounds/projects/{{ project.pictureId }});"></div>
                                         <div class="bg-overlay"></div>
                                         <div class="project-three-single-content">
                                             <div class="project-small-img">
-                                                {% if project.access>0 or project.permission>0 %}
+                                                {% if project.collection == '1' %}
                                                     <i class="fa-solid fa-unlock-keyhole text-white-50" title="contains public collections"></i>
-                                                {% else %}
+                                                {% elseif project.collection == '0' %}
                                                     <i class="fa-solid fa-lock text-black-50" title="does not contain public collections"></i>
+                                                {% else %}
+                                                    <span>no data available</span>
                                                 {% endif %}
                                             </div>
                                             <h4>{{ project.name }}</h4>
-                                            <div class="description-container text-white">{{ project.description_short|striptags }}</div>
+                                            <div class="description-container text-white">{{ project.descriptionShort|striptags }}</div>
                                         </div>
                                     </div>
                                 </li>
@@ -339,5 +343,5 @@
 
 {% block header %}
     {{ parent() }}
-    <script src="{{ baseUrl }}/templates/js/index.js" defer></script>
+    <script src="{{ baseUrl }}/templates/js/index.js?v=1.1" defer></script>
 {% endblock %}

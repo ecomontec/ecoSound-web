@@ -14,8 +14,10 @@ continuousPlaySelector.change(function () {
 });
 
 $('#continue-playback').click(function () {
-    $(this).toggleClass('active');
-    $('#btn-playback').click()
+    if (!$('#btn-playback').hasClass('active')) {
+        $('#btn-playback').click()
+    }
+    $('#play').click()
 })
 
 $('#stop').click(function () {
@@ -23,9 +25,9 @@ $('#stop').click(function () {
 });
 
 continuousPlay = function () {
-    if (fileDuration > maxTime) {
+    if (fileDuration.toFixed(1) > maxTime) {
         $('#x').val(maxTime);
-        $('#w').val(maxTime + selectionDuration);
+        $('#w').val((maxTime + selectionDuration) > fileDuration.toFixed(1) ? fileDuration.toFixed(1) : (maxTime + selectionDuration));
         $('#y').val($('input[name="minFreqView"]').val())
         $('#h').val($('input[name="maxFreqView"]').val())
         $('#recordingForm').submit();

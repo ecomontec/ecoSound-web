@@ -56,10 +56,10 @@ class Utils
 
     public static function resample(string $filePath, string $fileName, int $freq)
     {
-        $tempFile = $filePath . 'temp_' . $fileName;
-        self::executeCommand("sox $filePath$fileName -r $freq $tempFile");
+        $tempFile = $filePath . '/temp_' . $fileName;
+        self::executeCommand("sox $filePath/$fileName -r $freq $tempFile");
         if (file_exists($tempFile)) {
-            rename($tempFile, $filePath . $fileName);
+            rename($tempFile, $filePath . '/' . $fileName);
         }
     }
 

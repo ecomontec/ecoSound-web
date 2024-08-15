@@ -104,7 +104,7 @@
                                 <h6>Sphere: <small>{{ collection.sphere }}</small></h6>
                             {% endif %}
                             {% if collection.recordingUrl is not empty %}
-                                <h6>Recording URL: <small><a href="{{ collection.recordingUrl }}" target="_blank">{{ collection.recordingUrl }}</a></small></h6>
+                                <h6>External recording URL: <small><a href="{{ collection.recordingUrl }}" target="_blank">{{ collection.recordingUrl }}</a></small></h6>
                             {% endif %}
                             {% if collection.projectUrl is not empty %}
                                 <h6>Project URL: <small><a href="{{ collection.projectUrl }}" target="_blank">{{ collection.projectUrl }}</a></small></h6>
@@ -158,7 +158,7 @@
             maxZoom: 18,
         })
         var order = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K']
-        var map = L.map('map', {center: [{{ leaflet.latitude_center }}, {{ leaflet.longitude_center }}], zoom:{{ leaflet.count==1?10:5 }}, layers: [tiles], worldCopyJump: true})
+        var map = L.map('map', {center: [{{ leaflet.latitude_center }}, {{ leaflet.longitude_center }}], zoom:{{ leaflet.count==1?10:5 }}, layers: [tiles], worldCopyJump: true, scrollWheelZoom: false})
         var mcg = L.DonutCluster(
             {chunkedLoading: true}, {
                 key: 'realm',
@@ -254,20 +254,28 @@
 
         const map_change = throttle(function (event) {
             var site = null
-            var bounds = map.getBounds();
-            map.eachLayer(function (layer) {
+            mcg.eachLayer(function(layer) {
                 if (layer instanceof L.Marker) {
-                    var marker = layer;
-                    if (bounds.contains(marker.getLatLng()) && marker.options.id) {
+                    if (map.getBounds().contains(layer.getLatLng())) {
                         if (site) {
-                            site = site + ',' + marker.options.id
+                            site += ',' + layer.options.id;
                         } else {
-                            site = marker.options.id
+                            site = layer.options.id;
                         }
                     }
+                } else if (layer instanceof L.MarkerCluster) {
+                    layer.getAllChildMarkers().forEach(function(marker) {
+                        if (map.getBounds().contains(marker.getLatLng())) {
+                            if (site) {
+                                site += ',' + marker.options.id;
+                            } else {
+                                site = marker.options.id;
+                            }
+                        }
+                    });
                 }
             });
-            if (site != $("#sites").val()) {
+            if (site != $("#sites").val() && !(site == null && $('#sites').val() == '')) {
                 col_js({{ project.id }}, site)
             }
         }, 500);

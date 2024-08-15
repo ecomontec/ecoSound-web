@@ -180,6 +180,7 @@ class User extends AbstractProvider
 
     public function getUserCount($collection_id)
     {
+        $collection_id = $collection_id ? $collection_id : 0;
         $this->database->prepareQuery("SELECT COUNT(user_id) AS count FROM (SELECT user_id FROM user_permission WHERE collection_id IN ( $collection_id ) UNION All SELECT user_id FROM `user` WHERE role_id = 1)c GROUP BY user_id");
         if (empty($result = $this->database->executeSelect())) {
             return null;

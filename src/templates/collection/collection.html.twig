@@ -25,7 +25,7 @@
                     {% endif %}
                     {% if collection.recordingUrl is not empty %}
                         <div>
-                            <strong>Recording URL: </strong>
+                            <strong>External recording URL: </strong>
                             <a href="{{ collection.recordingUrl }}" target="_blank">{{ collection.recordingUrl }}</a>
                         </div>
                     {% endif %}
@@ -321,20 +321,28 @@
 
         const map_change = throttle(function (event) {
             var site = null
-            var bounds = map.getBounds();
-            map.eachLayer(function (layer) {
+            mcg.eachLayer(function(layer) {
                 if (layer instanceof L.Marker) {
-                    var marker = layer;
-                    if (bounds.contains(marker.getLatLng()) && marker.options.count) {
+                    if (map.getBounds().contains(layer.getLatLng())) {
                         if (site) {
-                            site = site + ',' + marker.options.id
+                            site += ',' + layer.options.id;
                         } else {
-                            site = marker.options.id
+                            site = layer.options.id;
                         }
                     }
+                } else if (layer instanceof L.MarkerCluster) {
+                    layer.getAllChildMarkers().forEach(function(marker) {
+                        if (map.getBounds().contains(marker.getLatLng())) {
+                            if (site) {
+                                site += ',' + marker.options.id;
+                            } else {
+                                site = marker.options.id;
+                            }
+                        }
+                    });
                 }
             });
-            if (site != $("#sites").val()) {
+            if (site != $("#sites").val() && !(site == null && $('#sites').val() == '')) {
                 col_js({{ collection.id }}, $("#display_view").val(), site)
             }
         }, 500);

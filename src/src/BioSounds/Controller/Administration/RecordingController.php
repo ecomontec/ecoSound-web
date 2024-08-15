@@ -20,6 +20,8 @@ use BioSounds\Provider\SiteProvider;
 use BioSounds\Provider\TagProvider;
 use BioSounds\Service\Queue\RabbitQueueService;
 use BioSounds\Utils\Auth;
+use BioSounds\Utils\Utils;
+use Cassandra\Varint;
 use DirectoryIterator;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -369,13 +371,12 @@ class RecordingController extends BaseController
         ]);
     }
 
-    public function getid3($dir, $projectId, $collectionId)
+    public function getid3($dir)
     {
         $getID3 = new getID3();
         $iterator = new DirectoryIterator('tmp/' . $dir);
-        $fileData = [];
         $arr = [];
-        $sites = (new SiteProvider())->getList($projectId, $collectionId);
+        $sites = (new SiteProvider())->getList($_POST['project_id'], $_POST['collection_id']);
         $recorders = (new Recorder())->getBasicList();
         $licenses = (new License())->getBasicList();
         $str_site = '';
@@ -393,6 +394,9 @@ class RecordingController extends BaseController
         foreach ($iterator as $key => $fileInfo) {
             if ($fileInfo->isFile()) {
                 $filePath = $fileInfo->getPathname();
+                if (strtolower(pathinfo($fileInfo->getFilename(), PATHINFO_EXTENSION)) === 'wav' && isset($_POST['freq']) && $_POST['freq'] != '' && is_numeric($_POST['freq'])) {
+                    Utils::resample('tmp/' . $dir, $fileInfo->getFilename(), $_POST['freq']);
+                }
                 $fileMeta = $getID3->analyze($filePath);
                 $arr[$key][] = "<input type='text' class='form-control form-control-sm' style='width:200px;' name='upload_filename' readonly value='$fileMeta[filename]'>";
                 $arr[$key][] = "<input type='text' class='form-control form-control-sm' style='width:200px;' name='upload_name' readonly value='$fileMeta[filename]'>";

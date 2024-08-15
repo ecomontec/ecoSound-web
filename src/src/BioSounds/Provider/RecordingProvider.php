@@ -26,7 +26,7 @@ class RecordingProvider extends AbstractProvider
         $query = 'SELECT recording_id, name, filename, col_id, directory, site_id, ';
         $query .= 'file_size, bitrate, channel_num, DATE_FORMAT(file_date, \'%Y-%m-%d\') ';
         $query .= 'AS file_date, DATE_FORMAT(file_time, \'%H:%i:%s\') AS file_time, sampling_rate, doi, license_id ';
-        $query .= 'FROM recording';
+        $query .= 'FROM recording WHERE data_type="audio data"';
 
         $this->database->prepareQuery($query);
         $result = $this->database->executeSelect();
@@ -143,6 +143,7 @@ class RecordingProvider extends AbstractProvider
      */
     public function getByCollection(string $id, string $site = null): array
     {
+        $id = $id ? $id : '0';
         $query = 'SELECT *, (SELECT filename FROM spectrogram ';
         $query .= 'WHERE ' . Recording::TABLE_NAME . '.' . Recording::ID . ' = spectrogram.recording_id ';
         $query .= 'AND type = \'spectrogram-player\') AS ImageFile ';

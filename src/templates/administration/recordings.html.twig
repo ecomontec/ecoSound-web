@@ -142,7 +142,9 @@
                                 sampling_rate (numeric value in Hz)<br>
                                 name (optional, limited to 40 characters)<br>
                                 bit_rate (optional, integer)<br>
-                                channel_number (optional, integer)<br><br>
+                                channel_number (optional, integer)<br>
+                                duty_cycle_recording (duration of duty-cycled recordings in minutes)<br>
+                                duty_cycle_period (duration of cycle - recording + pause - in minutes)<br><br>
                                 You can download a <a class="text-info" id="metaDemo">template CSV file</a> to fill in your data.</label>
                         </div>
                     </div>
@@ -168,7 +170,7 @@
                 <div class="modal-body ml-3">
                     <label>
                         <input type="checkbox" id="frequencies_cb">
-                        resample recordings
+                        resample recordings (WAV only)
                     </label>
                     <br>
                     <select id="frequencies" class="custom-select col-6" disabled>
@@ -200,7 +202,7 @@
                     </button>
                     <a id='upload-btn' class="js-upload-modal btn btn-outline-primary">
                         <i class="fa-solid fa-check"></i>
-                        Submit
+                        Continue
                     </a>
                 </div>
             </div>
@@ -289,7 +291,7 @@
         </script>
         <script src="{{ baseUrl }}/assets/plupload/js/plupload.full.min.js" defer></script>
         <script src="{{ baseUrl }}/assets/plupload/js/jquery.plupload.queue.min.js" defer></script>
-        <script src="{{ baseUrl }}/templates/administration/js/upload.js?v=1.3" defer></script>
+        <script src="{{ baseUrl }}/templates/administration/js/upload.js?v=1.4" defer></script>
 
     {% endblock %}
 

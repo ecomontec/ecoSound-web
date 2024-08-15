@@ -50,7 +50,7 @@ class Collection extends BaseProvider
     /**
      * @var string
      */
-    private $recording_url;
+    private $external_recording_url;
 
     /**
      * @var string
@@ -208,16 +208,16 @@ class Collection extends BaseProvider
      */
     public function getRecordingUrl(): ?string
     {
-        return $this->recording_url;
+        return $this->external_recording_url;
     }
 
     /**
-     * @param string $recording_url
+     * @param string $external_recording_url
      * @return Collection
      */
-    public function setRecordingUrl(?string $recording_url): Collection
+    public function setRecordingUrl(?string $external_recording_url): Collection
     {
-        $this->recording_url = $recording_url;
+        $this->external_recording_url = $external_recording_url;
         return $this;
     }
 

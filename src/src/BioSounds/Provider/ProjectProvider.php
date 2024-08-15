@@ -13,7 +13,7 @@ class ProjectProvider extends AbstractProvider
 
     public function getList(): array
     {
-        $sql = "SELECT * FROM project WHERE active = 1";
+        $sql = "SELECT p.*,MAX(c.public_access) AS collection FROM project p LEFT JOIN collection c ON p.project_id = c.project_id WHERE p.active = 1 GROUP BY p.project_id";
 
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
@@ -29,7 +29,8 @@ class ProjectProvider extends AbstractProvider
                 ->setCreationDate($item['creation_date'])
                 ->setUrl($item['url'])
                 ->setPictureId($item['picture_id'] ? $item['picture_id'] : '')
-                ->setPublic($item['public']);
+                ->setPublic($item['public'])
+                ->setCollection($item['collection']);
         }
         return $data;
     }

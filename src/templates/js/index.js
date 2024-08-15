@@ -5,10 +5,11 @@ $(function () {
         {
             effect: "fade",
             autoplay: {
-                delay: 4000,
+                delay: 6000,
             },
             autoHeight: true,
             loop: true,
+            speed: 2000,
         }
     );
 

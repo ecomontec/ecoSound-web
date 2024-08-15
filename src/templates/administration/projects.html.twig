@@ -62,7 +62,7 @@
                         "url": '{{ baseUrl }}/admin/projectMgr/getListByPage',
                         "type": 'POST',
                         "error": function (xhr, error, thrown) {
-                            if (xhr.status == 400 || xhr.status == 404 ||xhr.status == 500) {
+                            if (xhr.status == 400 || xhr.status == 404 || xhr.status == 500) {
                                 location.reload();
                             }
                         }
@@ -146,6 +146,12 @@
             });
 
             $('#projectForm').submit(function (e) {
+                var f = $('#picture_id_file')[0].files[0]
+                if (f['size'] > 2048000) {
+                    showAlert('Warning: Maximum image size 2M.');
+                    e.preventDefault();
+                    return;
+                }
                 e.preventDefault();
                 $('#projectValid').text('')
                 if (this.checkValidity() === false) {
@@ -155,7 +161,7 @@
                     postRequest('{{ baseUrl }}/api/admin/projectMgr/save', data, false, false, function (response) {
                         if (response.isValid) {
                             $('#projectValid').text(response.message)
-                            return
+                            return;
                         }
                         location.reload();
                     });

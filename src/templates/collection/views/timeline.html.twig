@@ -28,8 +28,7 @@
         #ffffff 10%
         );
     }
-
-    {% set css = css|merge([item.recording.dutyCycleRecording,]) %}
+    {% set css = css|merge([item.recording.dutyCycleRecording ~ '-' ~ item.recording.dutyCyclePeriod]) %}
     {% endif %}
     {% endif %}
     {% endfor %}

@@ -402,6 +402,7 @@ function checkboxChange() {
 
 $('#btn-search').click(function () {
     $('#form-search').fadeToggle()
+    $('.js-search-autocomplete').focus()
 })
 $(document).ready(function () {
     if ($(window).width() < 768) {

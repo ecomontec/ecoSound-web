@@ -126,10 +126,6 @@
                 <hr>
                 <input id="playback-rate" class="custom-range js-playback-rate-control" type="range" min="0.05" max="1" step="0.01" value="1">
                 <label for="playback-rate">Speed:<span class="playback-rate-value">1.0</span>x</label>
-                <br>
-                <label class="btn btn-link {{ player.isContinuousPlay ? 'active':'' }}" id="continue-playback" title="Continue playback beyond current frame">
-                    <i class="continue-playback"></i>
-                </label>
             </div>
             <div class="col-10">
                 {% include 'recording/player/player.html.twig' %}
@@ -146,8 +142,8 @@
     <script src="{{ baseUrl }}/assets/js/jquery.Jcrop.min.js" defer></script>
     <script src="{{ baseUrl }}/templates/recording/player/js/imageCrop.js?v=1.0" defer></script>
 
-    <script type="module" src="{{ baseUrl }}/templates/recording/player/js/playbackRate.js" defer></script>
-    <script src="{{ baseUrl }}/templates/recording/player/js/player.js?v=1.0" defer></script>
+    <script type="module" src="{{ baseUrl }}/templates/recording/player/js/playbackRate.js?v=1.0" defer></script>
+    <script src="{{ baseUrl }}/templates/recording/player/js/player.js?v=1.1" defer></script>
     <script src="{{ baseUrl }}/templates/recording/player/js/coordinateExport.js?v=1.0" defer></script>
     <script src="{{ baseUrl }}/templates/recording/player/js/tagControls.js" defer></script>
     <script src="{{ baseUrl }}/templates/tag/js/tag.js?v=1.0" defer></script>

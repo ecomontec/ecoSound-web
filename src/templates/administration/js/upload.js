@@ -29,10 +29,15 @@ $("#file-uploader").pluploadQueue({
             $("#save_button").prop("disabled", false);
             isUploading = false;
             $.ajax({
-                url: baseUrl + "/api/admin/recordingManager/getid3/" + uploadDir + "/" + $('#projectId').val() + "/" + $('#colId').val(),
+                url: baseUrl + "/api/admin/recordingManager/getid3/" + uploadDir,
+                method: 'POST',
+                data: {
+                    project_id: $('#projectId').val(),
+                    collection_id: $('#colId').val(),
+                    freq: $('#freq').val()
+                },
                 success: function (data) {
                     if (data) {
-                        $('#upload-table tbody').empty()
                         $.each(data, function (index, item) {
                             uploadTable.row.add(item)
                         })
@@ -90,7 +95,6 @@ $('#uploadForm').submit(function (e) {
         }
     });
     formData.append('collection_id', $('#collection_id').val())
-    formData.append('freq', $('#freq').val())
     formData.append('count', $('#file-uploader_count').val())
     $("#save_button").prop("disabled", true);
     $('.card-body input').prop('disabled', true);
@@ -282,8 +286,6 @@ $(function () {
     })
 
     const DATE_TIME_PATTERN = /(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})/;
-    const DATE_FORMAT = '%04d-%02d-%02d'; // YYYY-MM-DD
-    const TIME_FORMAT = '%02d:%02d:%02d'; // HH:MM:SS
 
     function formatDateTime(fileName) {
         if (fileName) {
@@ -313,19 +315,6 @@ $(function () {
             }
         })
         showAlert('Set date success.')
-        event.preventDefault();
-    })
-
-    $("#upload-table").on('click', '#btn-comment', function (event) {
-        uploadTable.rows().every(function () {
-            var row = $(this.node())
-            var text = row.find('.upload_comment').text()
-            if (text) {
-                $(this.node()).find('[name="upload_note"]').val(text)
-                $(this.node()).find('[name="upload_note"]').addClass('is-valid')
-            }
-        })
-        showAlert('Set note success.')
         event.preventDefault();
     })
 })

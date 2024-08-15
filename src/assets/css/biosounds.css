@@ -715,6 +715,10 @@ li {
     line-height: 90px;
     font-style: normal;
     margin-bottom: 35px;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3),
+    -1px -1px 0 rgba(0, 0, 0, 0.3),
+    1px -1px 0 rgba(0, 0, 0, 0.3),
+    -1px 1px 0 rgba(0, 0, 0, 0.3);
 }
 
 .t-green {
@@ -783,6 +787,10 @@ li {
     line-height: var(--rr-lh-h5);
     font-size: 16px;
     font-style: normal;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3),
+    -1px -1px 0 rgba(0, 0, 0, 0.3),
+    1px -1px 0 rgba(0, 0, 0, 0.3),
+    -1px 1px 0 rgba(0, 0, 0, 0.3);
 }
 
 @media only screen and (min-width: 576px) and (max-width: 768px), (max-width: 575px) {
