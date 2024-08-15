@@ -38,6 +38,10 @@ $("#file-uploader").pluploadQueue({
                 },
                 success: function (data) {
                     if (data) {
+                        var rows = uploadTable.rows().nodes();
+                        for (var i = rows.length - 1; i > 0; i--) {
+                            uploadTable.row(rows[i]).remove().draw();
+                        }
                         $.each(data, function (index, item) {
                             uploadTable.row.add(item)
                         })
