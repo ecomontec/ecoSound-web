@@ -326,7 +326,6 @@ class RecordingProvider extends AbstractProvider
         }
         $a = ['', 'r.recording_id', 'r.data_type', 'r.filename', 'r.name', 'u.name', 's.name', 're.model', 'm.name', 'l.name', 'r.type', 'r.medium', 'r.duty_cycle_recording', 'r.duty_cycle_period', 'r.note', 'r.DOI', 'file_date', 'file_time'];
         $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
-        var_dump($sql);
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
         $users = (new User())->getList();
