@@ -34,7 +34,6 @@ $("#file-uploader").pluploadQueue({
                 data: {
                     project_id: $('#projectId').val(),
                     collection_id: $('#colId').val(),
-                    freq: $('#freq').val()
                 },
                 success: function (data) {
                     if (data) {
@@ -100,6 +99,7 @@ $('#uploadForm').submit(function (e) {
     });
     formData.append('collection_id', $('#collection_id').val())
     formData.append('count', $('#file-uploader_count').val())
+    formData.append('freq', $('#freq').val())
     $("#save_button").prop("disabled", true);
     $('.card-body input').prop('disabled', true);
     $('.card-body select').prop('disabled', true);
@@ -307,6 +307,7 @@ $(function () {
     }
 
     $("#upload-table").on('click', '#btn-date', function (event) {
+        var success = 0
         uploadTable.rows().every(function () {
             var row = $(this.node())
             var filename = row.find('[name="upload_filename"]').val()
@@ -316,9 +317,11 @@ $(function () {
                 $(this.node()).find('[name="upload_file_time"]').val(date.fileTime)
                 $(this.node()).find('[name="upload_file_date"]').addClass('is-valid')
                 $(this.node()).find('[name="upload_file_time"]').addClass('is-valid')
+                success = 1
             }
         })
-        showAlert('Set date success.')
+        success ? showAlert('Set date success.') : showAlert('No date-time found in filename.')
+
         event.preventDefault();
     })
 })

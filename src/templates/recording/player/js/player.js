@@ -14,10 +14,8 @@ continuousPlaySelector.change(function () {
 });
 
 $('#continue-playback').click(function () {
-    if (!$('#btn-playback').hasClass('active')) {
-        $('#btn-playback').click()
-    }
-    $('#play').click()
+    $(this).toggleClass('active');
+    $('#btn-playback').click()
 })
 
 $('#stop').click(function () {
@@ -43,6 +41,16 @@ let setContinuousPlay = function (value) {
         $("label[for='continuous-play']").removeClass('active');
     }
 };
+
+$('#play-dropdown').click(function (event) {
+    event.stopPropagation();
+    $('#dropdown-menu-play').slideToggle();
+    $(this).find('i').toggleClass('fa-caret-down fa-caret-up');
+});
+
+$('#dropdown-menu-play').click(function (event) {
+    event.stopPropagation();
+});
 
 savePlayLog = function () {
     postRequest(

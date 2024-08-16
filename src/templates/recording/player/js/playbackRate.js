@@ -189,11 +189,3 @@ function resetCursor() {
 function moveCursor(time) {
     playerCursor.style.left = (time < 0 ? 0 : time / selectionDuration) * specWidth + 'px';
 }
-
-$('#play-dropdown').on('mouseenter', function () {
-    $(this).find('.dropdown-menu').addClass('show');
-});
-
-$('#play-dropdown').on('mouseleave', function () {
-    $(this).find('.dropdown-menu').removeClass('show');
-});

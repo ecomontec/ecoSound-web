@@ -76,6 +76,7 @@
                     <input type="checkbox" class="js-all-checkbox" name="check-all" id="check-all">
                 </th>
                 <th>#</th>
+                <th>Data type</th>
                 <th>Original Filename</th>
                 <th>Name</th>
                 <th>User</th>
@@ -85,10 +86,17 @@
                 <th>License</th>
                 <th>Recording Type</th>
                 <th>Medium</th>
+                <th>Duty Cycle Recording</th>
+                <th>Duty Cycle Period</th>
                 <th>Note</th>
                 <th>DOI</th>
                 <th>Date</th>
                 <th>Time</th>
+                <th>ID3_Title</th>
+                <th>ID3_Artist</th>
+                <th>ID3_Album</th>
+                <th>ID3_Year</th>
+                <th>ID3_Comment</th>
             </tr>
             </thead>
             <tbody class="form-control-sm js-recording-list"></tbody>
@@ -201,7 +209,7 @@
                         Close
                     </button>
                     <a id='upload-btn' class="js-upload-modal btn btn-outline-primary">
-                        <i class="fa-solid fa-check"></i>
+                        <i class="fa-solid fa-arrow-right"></i>
                         Continue
                     </a>
                 </div>
@@ -291,7 +299,7 @@
         </script>
         <script src="{{ baseUrl }}/assets/plupload/js/plupload.full.min.js" defer></script>
         <script src="{{ baseUrl }}/assets/plupload/js/jquery.plupload.queue.min.js" defer></script>
-        <script src="{{ baseUrl }}/templates/administration/js/upload.js?v=1.4" defer></script>
+        <script src="{{ baseUrl }}/templates/administration/js/upload.js?v=1.5" defer></script>
 
     {% endblock %}
 
@@ -319,7 +327,7 @@
                     "columnDefs": [
                         {
                             "orderable": false,
-                            "targets": [0],
+                            "targets": [0, 18, 19, 20, 21, 22],
                         },
                         {
                             "className": "dt-center",

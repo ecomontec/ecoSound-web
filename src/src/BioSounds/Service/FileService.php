@@ -71,6 +71,9 @@ class FileService
             $list = [];
             for ($i = 1; $i <= $request['count']; $i++) {
                 $hash = hash_file('md5', $uploadPath . $request['filename'][$i]);
+                if (strtolower(pathinfo($request['filename'][$i], PATHINFO_EXTENSION)) === 'wav' && isset($_POST['freq']) && $_POST['freq'] != '' && is_numeric($_POST['freq'])) {
+                    Utils::resample($uploadPath, $request['filename'][$i], $_POST['freq']);
+                }
                 $file = (new File())
                     ->setPath($uploadPath . $request['filename'][$i])
                     ->setDate($request['file_date'][$i])

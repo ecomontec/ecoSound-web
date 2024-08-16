@@ -102,11 +102,11 @@
                     </div>
                 </div>
             </div>
-            <div class="cta-thumb p-relative mt-5">
-                <img class="mt-5" src="{{ imagesUrl }}/ecosound-web_infra.png">
-            </div>
         </div>
     </section>
+    <div class="bg-lightblue">
+        <div class="section-slider-title-wrapper-title text-center t-darkgreen mb-3">Sponsored By</div>
+    </div>
 
     <section class="main-brand-area bg-lightblue border-darkgreen-tb">
         <div class="brand-area mt-5 mb-5">
@@ -156,6 +156,15 @@
                                         <div class="brand-thumb">
                                             <a target="_blank" href="https://www.nfdi4earth.de/">
                                                 <img class="img-fluid" src="{{ projectImagesUrl }}/NFDI4Earth_logo.png" title="NFDI4Earth" alt="NFDI4Earth logo"/>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="swiper-slide">
+                                    <div class="brand-item text-center">
+                                        <div class="brand-thumb">
+                                            <a target="_blank" href="https://www.inrae.fr/en">
+                                                <img class="img-fluid" src="{{ projectImagesUrl }}/inrae.png" title="Inrae" alt="Inrae logo"/>
                                             </a>
                                         </div>
                                     </div>
@@ -214,23 +223,25 @@
                             <ul class="slider-hover-item">
                                 {% endif %}
                                 <li>
-                                    <div class="project-three-single-inner">
-                                        <div class="project-three-single-img" style="background-image: url({{ baseUrl }}/sounds/projects/{{ project.pictureId }});"></div>
-                                        <div class="bg-overlay"></div>
-                                        <div class="project-three-single-content">
-                                            <div class="project-small-img">
-                                                {% if project.collection == '1' %}
-                                                    <i class="fa-solid fa-unlock-keyhole text-white-50" title="contains public collections"></i>
-                                                {% elseif project.collection == '0' %}
-                                                    <i class="fa-solid fa-lock text-black-50" title="does not contain public collections"></i>
-                                                {% else %}
-                                                    <span>no data available</span>
-                                                {% endif %}
+                                    <a href="{{ BaseUrl }}/collection/index/{{ project.id }}">
+                                        <div class="project-three-single-inner">
+                                            <div class="project-three-single-img" style="background-image: url({{ baseUrl }}/sounds/projects/{{ project.pictureId }});"></div>
+                                            <div class="bg-overlay"></div>
+                                            <div class="project-three-single-content">
+                                                <div class="project-small-img">
+                                                    {% if project.collection == '1' %}
+                                                        <i class="fa-solid fa-unlock-keyhole text-white-50" title="contains public collections"></i>
+                                                    {% elseif project.collection == '0' %}
+                                                        <i class="fa-solid fa-lock text-black-50" title="does not contain public collections"></i>
+                                                    {% else %}
+                                                        <span>no data available</span>
+                                                    {% endif %}
+                                                </div>
+                                                <h4>{{ project.name }}</h4>
+                                                <div class="description-container text-white">{{ project.descriptionShort|striptags }}</div>
                                             </div>
-                                            <h4>{{ project.name }}</h4>
-                                            <div class="description-container text-white">{{ project.descriptionShort|striptags }}</div>
                                         </div>
-                                    </div>
+                                    </a>
                                 </li>
                                 {% set counter = counter + 1 %}
                                 {% endfor %}

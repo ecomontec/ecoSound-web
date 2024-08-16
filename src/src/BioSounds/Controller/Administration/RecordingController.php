@@ -129,6 +129,9 @@ class RecordingController extends BaseController
                         case 'select-one':
                             $data[$key] = $value;
                             break;
+                        case 'number':
+                            $data[$key] = $value;
+                            break;
                         case "hidden":
                             $data[$key] = filter_var($value, FILTER_SANITIZE_NUMBER_INT);
                             break;
@@ -394,9 +397,6 @@ class RecordingController extends BaseController
         foreach ($iterator as $key => $fileInfo) {
             if ($fileInfo->isFile()) {
                 $filePath = $fileInfo->getPathname();
-                if (strtolower(pathinfo($fileInfo->getFilename(), PATHINFO_EXTENSION)) === 'wav' && isset($_POST['freq']) && $_POST['freq'] != '' && is_numeric($_POST['freq'])) {
-                    Utils::resample('tmp/' . $dir, $fileInfo->getFilename(), $_POST['freq']);
-                }
                 $fileMeta = $getID3->analyze($filePath);
                 $arr[$key][] = "<input type='text' class='form-control form-control-sm' style='width:200px;' name='upload_filename' readonly value='$fileMeta[filename]'>";
                 $arr[$key][] = "<input type='text' class='form-control form-control-sm' style='width:200px;' name='upload_name' readonly value='$fileMeta[filename]'>";
@@ -423,38 +423,26 @@ class RecordingController extends BaseController
                     $arr[$key][] = isset($fileMeta['ogg']['comments']['title']) ? $fileMeta['ogg']['comments']['title'][0] : '';
                     $arr[$key][] = isset($fileMeta['ogg']['comments']['artist']) ? $fileMeta['ogg']['comments']['artist'][0] : '';
                     $arr[$key][] = isset($fileMeta['ogg']['comments']['album']) ? $fileMeta['ogg']['comments']['album'][0] : '';
-                    $arr[$key][] = isset($fileMeta['ogg']['comments']['comment']) ? "<div class='upload_comment'>" . $fileMeta['ogg']['comments']['comment'][0] . "</div>" : '';
-                    $arr[$key][] = isset($fileMeta['audio']['channels']) ? $fileMeta['audio']['channels'] : '';
-                    $arr[$key][] = isset($fileMeta['audio']['sample_rate']) ? $fileMeta['audio']['sample_rate'] . ' Hz' : '';
-                    $arr[$key][] = isset($fileMeta['ogg']['bitrate_nominal']) ? (int)$fileMeta['ogg']['bitrate_nominal'] . ' bps' : '';
-                    $arr[$key][] = isset($fileMeta['playtime_seconds']) ? number_format($fileMeta['playtime_seconds'], 1) . ' s' : '';
+                    $arr[$key][] = isset($fileMeta['ogg']['comments']['date']) ? $fileMeta['ogg']['comments']['date'][0] : '';
+                    $arr[$key][] = isset($fileMeta['ogg']['comments']['comment']) ? $fileMeta['ogg']['comments']['comment'][0] : '';
                 } else if ($fileMeta['fileformat'] == 'wav') {
                     $arr[$key][] = isset($fileMeta['tags']['id3v2']['title']) ? $fileMeta['tags']['id3v2']['title'][0] : '';
                     $arr[$key][] = isset($fileMeta['tags']['id3v2']['artist']) ? $fileMeta['tags']['id3v2']['artist'][0] : '';
                     $arr[$key][] = isset($fileMeta['tags']['id3v2']['album']) ? $fileMeta['tags']['id3v2']['album'][0] : '';
-                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['comment']) ? "<div class='upload_comment'>" . $fileMeta['tags']['id3v2']['comment'][0] . "</div>" : '';
-                    $arr[$key][] = isset($fileMeta['audio']['channels']) ? $fileMeta['audio']['channels'] : '';
-                    $arr[$key][] = isset($fileMeta['audio']['sample_rate']) ? $fileMeta['audio']['sample_rate'] . ' Hz' : '';
-                    $arr[$key][] = isset($fileMeta['audio']['bitrate']) ? (int)$fileMeta['audio']['bitrate'] . ' bps' : '';
-                    $arr[$key][] = isset($fileMeta['playtime_seconds']) ? number_format($fileMeta['playtime_seconds'], 1) . ' s' : '';
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['year']) ? $fileMeta['tags']['id3v2']['year'][0] : '';
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['comment']) ? $fileMeta['tags']['id3v2']['comment'][0] : '';
                 } else if ($fileMeta['fileformat'] == 'mp3') {
                     $arr[$key][] = isset($fileMeta['tags']['id3v2']['title']) ? $fileMeta['tags']['id3v2']['title'][0] : '';
                     $arr[$key][] = isset($fileMeta['tags']['id3v2']['artist']) ? $fileMeta['tags']['id3v2']['artist'][0] : '';
                     $arr[$key][] = isset($fileMeta['tags']['id3v2']['album']) ? $fileMeta['tags']['id3v2']['album'][0] : '';
-                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['comment']) ? "<div class='upload_comment'>" . $fileMeta['tags']['id3v2']['comment'][0] . "</div>" : '';
-                    $arr[$key][] = isset($fileMeta['audio']['channels']) ? $fileMeta['audio']['channels'] : '';
-                    $arr[$key][] = isset($fileMeta['audio']['sample_rate']) ? $fileMeta['audio']['sample_rate'] . ' Hz' : '';
-                    $arr[$key][] = isset($fileMeta['audio']['bitrate']) ? (int)$fileMeta['audio']['bitrate'] . ' bps' : '';
-                    $arr[$key][] = isset($fileMeta['playtime_seconds']) ? number_format($fileMeta['playtime_seconds'], 1) . ' s' : '';
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['year']) ? $fileMeta['tags']['id3v2']['year'][0] : '';
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['comment']) ? $fileMeta['tags']['id3v2']['comment'][0] : '';
                 } else if ($fileMeta['fileformat'] == 'flac') {
                     $arr[$key][] = isset($fileMeta['flac']['VORBIS_COMMENT']['comments']['title']) ? $fileMeta['flac']['VORBIS_COMMENT']['comments']['title'][0] : '';
                     $arr[$key][] = isset($fileMeta['flac']['VORBIS_COMMENT']['comments']['artist']) ? $fileMeta['flac']['VORBIS_COMMENT']['comments']['artist'][0] : '';
                     $arr[$key][] = isset($fileMeta['flac']['VORBIS_COMMENT']['comments']['album']) ? $fileMeta['flac']['VORBIS_COMMENT']['comments']['album'][0] : '';
-                    $arr[$key][] = isset($fileMeta['flac']['VORBIS_COMMENT']['comments']['comment']) ? "<div class='upload_comment'>" . $fileMeta['flac']['VORBIS_COMMENT']['comments']['comment'][0] . "</div>" : '';
-                    $arr[$key][] = isset($fileMeta['audio']['channels']) ? $fileMeta['audio']['channels'] : '';
-                    $arr[$key][] = isset($fileMeta['audio']['sample_rate']) ? $fileMeta['audio']['sample_rate'] . ' Hz' : '';
-                    $arr[$key][] = isset($fileMeta['audio']['bitrate']) ? (int)$fileMeta['audio']['bitrate'] . ' bps' : '';
-                    $arr[$key][] = isset($fileMeta['playtime_seconds']) ? number_format($fileMeta['playtime_seconds'], 1) . ' s' : '';
+                    $arr[$key][] = isset($fileMeta['flac']['VORBIS_COMMENT']['comments']['date']) ? $fileMeta['flac']['VORBIS_COMMENT']['comments']['date'][0] : '';
+                    $arr[$key][] = isset($fileMeta['flac']['VORBIS_COMMENT']['comments']['comment']) ? $fileMeta['flac']['VORBIS_COMMENT']['comments']['comment'][0] : '';
                 }
             }
         }

@@ -8,12 +8,15 @@
         </div>
         <div class="row no-gutters mt-1">
             <div class="col-auto mr-auto form-inline">
+                <button id="play" class="btn btn-link btn-sm" data-playing="false" role="switch" aria-checked="false">
+                    <i class="fas fa-play"></i>
+                </button>
                 <div class="dropdown" id="play-dropdown">
-                    <button id="play" class="btn btn-link" data-playing="false" role="switch" aria-checked="false">
-                        <i class="fas fa-play"></i>
+                    <button id="dropdown" class="btn btn-link text-dark" data-playing="false" role="switch" aria-checked="false" data-toggle="dropdown">
+                        <i class="fa-solid fa-caret-down"></i>
                     </button>
-                    <div class="dropdown-menu" style="min-width: 30px;top:90%">
-                        <button id="continue-playback" class="btn btn-link active" title="Continue playback beyond current frame">
+                    <div class="dropdown-menu" id="dropdown-menu-play" style="min-width: 30px">
+                        <button id="continue-playback" class="btn btn-link {{ player.isContinuousPlay ? 'active':'' }}" title="Continue playback beyond current frame">
                             <i class="continue-playback"></i>
                         </button>
                     </div>

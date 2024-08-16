@@ -283,7 +283,13 @@ function saveFormList(element, url, callback) {
         }
         if (item.type == 'file') {
             formData.append(item.name, $("#" + item.id)[0].files[0]);
-        } else {
+        } else if (item.type == 'date' || item.type == 'time')
+            if (item.value == "") {
+                return
+            } else {
+                formData.append(item.name + "_" + item.type, value);
+            }
+        else {
             formData.append(item.name + "_" + item.type, value);
         }
     });

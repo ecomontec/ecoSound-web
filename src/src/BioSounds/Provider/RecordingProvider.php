@@ -12,6 +12,7 @@ use BioSounds\Entity\User;
 use BioSounds\Exception\Database\NotFoundException;
 use BioSounds\Controller\BaseController;
 use BioSounds\Utils\Auth;
+use getID3;
 
 class RecordingProvider extends AbstractProvider
 {
@@ -308,7 +309,7 @@ class RecordingProvider extends AbstractProvider
     {
         $sql = "SELECT r.*,u.`name` AS username,s.`name` AS site,re.model,m.`name` AS microphone,l.`name` AS license,DATE_FORMAT(r.file_date, '%Y-%m-%d') AS file_date, DATE_FORMAT(r.file_time, '%H:%i:%s') AS file_time FROM recording r LEFT JOIN user u ON u.user_id = r.user_id LEFT JOIN site s ON s.site_id = r.site_id LEFT JOIN recorder re ON r.recorder_id = re.recorder_id LEFT JOIN microphone m ON r.microphone_id = m.microphone_id LEFT JOIN license l ON r.license_id = l.license_id WHERE col_id = $collectionId";
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.model,''), IFNULL(m.name,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.note,''),IFNULL(r.DOI,''), IFNULL(r.creation_date,'')) LIKE '%$search%' ";
+            $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.data_type), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.model,''), IFNULL(m.name,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.duty_cycle_recording,''), IFNULL(r.duty_cycle_period,''), IFNULL(r.note,''),IFNULL(r.DOI,''), IFNULL(r.creation_date,'')) LIKE '%$search%' ";
         }
         $this->database->prepareQuery($sql);
         $count = count($this->database->executeSelect());
@@ -317,12 +318,13 @@ class RecordingProvider extends AbstractProvider
 
     public function getListByPage(string $projectId, string $collectionId, string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
     {
+        $getID3 = new getID3();
         $arr = [];
-        $sql = "SELECT r.*,u.`name` AS username,s.`name` AS site,re.model,m.`name` AS microphone,l.`name` AS license,DATE_FORMAT(r.file_date, '%Y-%m-%d') AS file_date, DATE_FORMAT(r.file_time, '%H:%i:%s') AS file_time FROM recording r LEFT JOIN user u ON u.user_id = r.user_id LEFT JOIN site s ON s.site_id = r.site_id LEFT JOIN recorder re ON r.recorder_id = re.recorder_id LEFT JOIN microphone m ON r.microphone_id = m.microphone_id LEFT JOIN license l ON r.license_id = l.license_id LEFT JOIN file_upload f ON f.recording_id = r.recording_id WHERE col_id = $collectionId";
+        $sql = "SELECT r.*,u.`name` AS username,s.`name` AS site,re.model,m.`name` AS microphone,l.`name` AS license,DATE_FORMAT(r.file_date, '%Y-%m-%d') AS file_date, DATE_FORMAT(r.file_time, '%H:%i:%s') AS file_time,CONCAT(r.col_id,'/',r.directory,'/',r.filename) AS path FROM recording r LEFT JOIN user u ON u.user_id = r.user_id LEFT JOIN site s ON s.site_id = r.site_id LEFT JOIN recorder re ON r.recorder_id = re.recorder_id LEFT JOIN microphone m ON r.microphone_id = m.microphone_id LEFT JOIN license l ON r.license_id = l.license_id LEFT JOIN file_upload f ON f.recording_id = r.recording_id WHERE col_id = $collectionId";
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.model,''), IFNULL(m.name,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.note,''),IFNULL(r.DOI,''), IFNULL(r.creation_date,'')) LIKE '%$search%' ";
+            $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.data_type), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.model,''), IFNULL(m.name,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.duty_cycle_recording,''), IFNULL(r.duty_cycle_period,''), IFNULL(r.note,''),IFNULL(r.DOI,''), IFNULL(r.creation_date,'')) LIKE '%$search%' ";
         }
-        $a = ['', 'r.recording_id', 'r.filename', 'r.name', 'u.name', 's.name', 're.model', 'm.name', 'l.name', 'r.type', 'r.medium', 'r.note', 'r.DOI', 'file_date', 'file_time'];
+        $a = ['', 'r.recording_id', 'r.data_type', 'r.filename', 'r.name', 'u.name', 's.name', 're.model', 'm.name', 'l.name', 'r.type', 'r.medium', 'r.duty_cycle_recording', 'r.duty_cycle_period', 'r.note', 'r.DOI', 'file_date', 'file_time'];
         $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
@@ -333,6 +335,8 @@ class RecordingProvider extends AbstractProvider
         $licenses = (new License())->getBasicList();
         if (count($result)) {
             foreach ($result as $key => $value) {
+                $filePath = 'sounds/sounds/' . $value['path'];
+                $fileMeta = $getID3->analyze($filePath);
                 $str_user = '';
                 $str_site = '';
                 $str_recorder = '';
@@ -368,6 +372,7 @@ class RecordingProvider extends AbstractProvider
                         <input id='path$value[recording_id]' type='hidden' value='$value[path]' >
                         <input id='max_time$value[recording_id]' type='hidden' value='$value[duration]' >
                         <input id='max_freq$value[recording_id]' type='hidden' value='" . ($value['sampling_rate'] / 2) . "'>";
+                $arr[$key][] = $value['data_type'];
                 $arr[$key][] = $value['filename'];
                 $arr[$key][] = "<input type='text' id='name_$value[recording_id]' class='form-control form-control-sm' style='width:200px;' title='Name' name='name' value='$value[name]'>";
                 $arr[$key][] = "<select id='user_id$value[recording_id]' name='user_id' style='width:120px;' class='form-control form-control-sm'>$str_user</select>";
@@ -386,10 +391,37 @@ class RecordingProvider extends AbstractProvider
                             <option " . ($value['medium'] == 'Air' ? 'selected' : '') . ">Air</option>
                             <option " . ($value['medium'] == 'Water' ? 'selected' : '') . ">Water</option>
                         </select>";
+                $arr[$key][] = ($value['data_type'] == 'audio data') ? '' : "<input type='number' class='form-control form-control-sm' title='Duty cycle recording' name='duty_cycle_recording' value='$value[duty_cycle_recording]'>";
+                $arr[$key][] = ($value['data_type'] == 'audio data') ? '' : "<input type='number' class='form-control form-control-sm' title='Duty cycle period' name='duty_cycle_period' value='$value[duty_cycle_period]'>";
                 $arr[$key][] = "<input type='text' class='form-control form-control-sm' style='width:200px;' title='Note' name='note' value='$value[note]'>";
                 $arr[$key][] = "<input type='text' class='form-control form-control-sm' style='width:200px;' title='DOI' name='DOI' value='$value[DOI]'>";
                 $arr[$key][] = "<input type='date' id='file_date$value[recording_id]' class='form-control form-control-sm' title='Date' name='file_date' value='$value[file_date]'>";
                 $arr[$key][] = "<input type='time' class='form-control form-control-sm' title='Time' name='file_time' min='00:00:00' max='23:59:59' step='1' value='$value[file_time]'>";
+                if ($fileMeta['fileformat'] == 'ogg') {
+                    $arr[$key][] = isset($fileMeta['ogg']['comments']['title']) ? $fileMeta['ogg']['comments']['title'][0] : '';
+                    $arr[$key][] = isset($fileMeta['ogg']['comments']['artist']) ? $fileMeta['ogg']['comments']['artist'][0] : '';
+                    $arr[$key][] = isset($fileMeta['ogg']['comments']['album']) ? $fileMeta['ogg']['comments']['album'][0] : '';
+                    $arr[$key][] = isset($fileMeta['ogg']['comments']['date']) ? $fileMeta['ogg']['comments']['date'][0] : '';
+                    $arr[$key][] = isset($fileMeta['ogg']['comments']['comment']) ? $fileMeta['ogg']['comments']['comment'][0] : '';
+                } else if ($fileMeta['fileformat'] == 'wav') {
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['title']) ? $fileMeta['tags']['id3v2']['title'][0] : '';
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['artist']) ? $fileMeta['tags']['id3v2']['artist'][0] : '';
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['album']) ? $fileMeta['tags']['id3v2']['album'][0] : '';
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['year']) ? $fileMeta['tags']['id3v2']['year'][0] : '';
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['comment']) ? $fileMeta['tags']['id3v2']['comment'][0] : '';
+                } else if ($fileMeta['fileformat'] == 'mp3') {
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['title']) ? $fileMeta['tags']['id3v2']['title'][0] : '';
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['artist']) ? $fileMeta['tags']['id3v2']['artist'][0] : '';
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['album']) ? $fileMeta['tags']['id3v2']['album'][0] : '';
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['year']) ? $fileMeta['tags']['id3v2']['year'][0] : '';
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['comment']) ? $fileMeta['tags']['id3v2']['comment'][0] : '';
+                } else if ($fileMeta['fileformat'] == 'flac') {
+                    $arr[$key][] = isset($fileMeta['flac']['VORBIS_COMMENT']['comments']['title']) ? $fileMeta['flac']['VORBIS_COMMENT']['comments']['title'][0] : '';
+                    $arr[$key][] = isset($fileMeta['flac']['VORBIS_COMMENT']['comments']['artist']) ? $fileMeta['flac']['VORBIS_COMMENT']['comments']['artist'][0] : '';
+                    $arr[$key][] = isset($fileMeta['flac']['VORBIS_COMMENT']['comments']['album']) ? $fileMeta['flac']['VORBIS_COMMENT']['comments']['album'][0] : '';
+                    $arr[$key][] = isset($fileMeta['flac']['VORBIS_COMMENT']['comments']['date']) ? $fileMeta['flac']['VORBIS_COMMENT']['comments']['date'][0] : '';
+                    $arr[$key][] = isset($fileMeta['flac']['VORBIS_COMMENT']['comments']['comment']) ? $fileMeta['flac']['VORBIS_COMMENT']['comments']['comment'][0] : '';
+                }
             }
         }
         return $arr;
