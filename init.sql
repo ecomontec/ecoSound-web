@@ -122,6 +122,7 @@ CREATE TABLE `file_upload`
     `rating`         enum('A','B','C','D','E') COLLATE utf8_unicode_ci DEFAULT NULL,
     `type`           varchar(50) COLLATE utf8_unicode_ci           DEFAULT NULL,
     `medium`         varchar(50) COLLATE utf8_unicode_ci           DEFAULT NULL,
+    `recording_gain`        int(11) DEFAULT NULL,
     `user_id`        int(11) NOT NULL,
     `error`          text COLLATE utf8_unicode_ci                  DEFAULT NULL,
     `creation_date`  timestamp                            NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp ()

@@ -289,6 +289,13 @@ $(function () {
         })
     })
 
+    $("#upload-table").on('change', '#recording_gain', function () {
+        var input_text = $(this).val();
+        uploadTable.rows().every(function () {
+            $(this.node()).find('[name="upload_recording_gain"]').val(input_text)
+        })
+    })
+
     const DATE_TIME_PATTERN = /(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})/;
 
     function formatDateTime(fileName) {

@@ -110,6 +110,7 @@ class File
     private $license;
     private $filename;
     private $note;
+    private $recording_gain;
 
     /**
      * @return null|int
@@ -252,6 +253,24 @@ class File
     public function setMicrophone(int $microphone): File
     {
         $this->microphone = $microphone;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getRecordingGain(): int
+    {
+        return $this->recording_gain;
+    }
+
+    /**
+     * @param int $recording_gain
+     * @return File
+     */
+    public function setRecordingGain(int $recording_gain): File
+    {
+        $this->recording_gain = $recording_gain;
         return $this;
     }
 
@@ -561,6 +580,7 @@ class File
             ':directory' => $this->getDirectory(),
             ':recorder' => $this->getRecorder(),
             ':microphone' => $this->getMicrophone(),
+            ':recording_gain' => $this->getRecordingGain(),
             ':recording' => $this->getRecording(),
             ':user' => $this->getUser(),
             ':species' => $this->getSpecies(),

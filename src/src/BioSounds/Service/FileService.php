@@ -83,6 +83,7 @@ class FileService
                     ->setSite($request['site'][$i])
                     ->setRecorder((int)$request['recorder'][$i])
                     ->setMicrophone((int)$request['microphone'][$i])
+                    ->setRecordingGain((int)$request['recording_gain'][$i])
                     ->setFilename($request['filename'][$i])
                     ->setName($request['name'][$i])
                     ->setNote($request['note'][$i])
@@ -147,6 +148,7 @@ class FileService
                     Recording::SITE_ID => $file->getSite(),
                     Recording::RECORDER_ID => $file->getRecorder(),
                     Recording::MICROPHONE_ID => $file->getMicrophone(),
+                    Recording::RECORDING_GAIN => $file->getRecordingGain(),
                     Recording::FILENAME => $file->getName(),
                     Recording::CHANNEL_NUM => Utils::getFileChannels($wavFilePath),
                     Recording::FILE_SIZE => filesize($wavFilePath),

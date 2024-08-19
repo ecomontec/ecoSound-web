@@ -403,6 +403,7 @@ class RecordingController extends BaseController
                 $arr[$key][] = "<select name='upload_site' style='width:120px;' class='form-control form-control-sm'><option value='0' ></option>$str_site</select>";
                 $arr[$key][] = "<select name='upload_recorder' style='width:250px;' class='form-control form-control-sm' required>  <option selected disabled></option>$str_recorder</select>";
                 $arr[$key][] = "<select name='upload_microphone' style='width:250px;' class='form-control form-control-sm' required disabled></select>";
+                $arr[$key][] = "<input type='number' class='form-control form-control-sm' name='upload_recording_gain' min='1' step='1' required>";
                 $arr[$key][] = "<select name='upload_license' style='width:140px;' class='form-control form-control-sm'><option value='0'></option>$str_license</select>";
                 $arr[$key][] = "<select name='upload_type' style='width:100px;' class='form-control form-control-sm'>
                             <option value='0'></option>
@@ -420,29 +421,29 @@ class RecordingController extends BaseController
                 $arr[$key][] = "<input type='date' class='form-control form-control-sm' name='upload_file_date' required>";
                 $arr[$key][] = "<input type='time' class='form-control form-control-sm' name='upload_file_time' min='00:00:00' max='23:59:59' step='1' required>";
                 if ($fileMeta['fileformat'] == 'ogg') {
-                    $arr[$key][] = isset($fileMeta['ogg']['comments']['title']) ? $fileMeta['ogg']['comments']['title'][0] : '';
-                    $arr[$key][] = isset($fileMeta['ogg']['comments']['artist']) ? $fileMeta['ogg']['comments']['artist'][0] : '';
-                    $arr[$key][] = isset($fileMeta['ogg']['comments']['album']) ? $fileMeta['ogg']['comments']['album'][0] : '';
-                    $arr[$key][] = isset($fileMeta['ogg']['comments']['date']) ? $fileMeta['ogg']['comments']['date'][0] : '';
-                    $arr[$key][] = isset($fileMeta['ogg']['comments']['comment']) ? $fileMeta['ogg']['comments']['comment'][0] : '';
+                    $arr[$key][] = isset($fileMeta['tags']['vorbiscomment']['title']) ? $fileMeta['tags']['vorbiscomment']['title'][0] . ' (Vorbis) ' : '';
+                    $arr[$key][] = isset($fileMeta['tags']['vorbiscomment']['artist']) ? $fileMeta['tags']['vorbiscomment']['artist'][0] . ' (Vorbis) ' : '';
+                    $arr[$key][] = isset($fileMeta['tags']['vorbiscomment']['album']) ? $fileMeta['tags']['vorbiscomment']['album'][0] . ' (Vorbis) ' : '';
+                    $arr[$key][] = isset($fileMeta['tags']['vorbiscomment']['date']) ? $fileMeta['tags']['vorbiscomment']['date'][0] . ' (Vorbis) ' : '';
+                    $arr[$key][] = isset($fileMeta['tags']['vorbiscomment']['comment']) ? $fileMeta['tags']['vorbiscomment']['comment'][0] . ' (Vorbis) ' : '';
                 } else if ($fileMeta['fileformat'] == 'wav') {
-                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['title']) ? $fileMeta['tags']['id3v2']['title'][0] : '';
-                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['artist']) ? $fileMeta['tags']['id3v2']['artist'][0] : '';
-                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['album']) ? $fileMeta['tags']['id3v2']['album'][0] : '';
-                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['year']) ? $fileMeta['tags']['id3v2']['year'][0] : '';
-                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['comment']) ? $fileMeta['tags']['id3v2']['comment'][0] : '';
+                    $arr[$key][] = (isset($fileMeta['tags']['id3v2']['title']) ? $fileMeta['tags']['id3v2']['title'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['riff']['title']) ? $fileMeta['tags']['riff']['title'][0] . ' (Riff) ' : '');
+                    $arr[$key][] = (isset($fileMeta['tags']['id3v2']['artist']) ? $fileMeta['tags']['id3v2']['artist'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['riff']['artist']) ? $fileMeta['tags']['riff']['artist'][0] . ' (Riff) ' : '');
+                    $arr[$key][] = (isset($fileMeta['tags']['id3v2']['album']) ? $fileMeta['tags']['id3v2']['album'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['riff']['product']) ? $fileMeta['tags']['riff']['product'][0] . ' (Riff) ' : '');
+                    $arr[$key][] = (isset($fileMeta['tags']['id3v2']['year']) ? $fileMeta['tags']['id3v2']['year'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['riff']['creationdate']) ? $fileMeta['tags']['riff']['creationdate'][0] . ' (Riff) ' : '');
+                    $arr[$key][] = (isset($fileMeta['tags']['id3v2']['comment']) ? $fileMeta['tags']['id3v2']['comment'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['riff']['comment']) ? $fileMeta['tags']['riff']['comment'][0] . ' (Riff) ' : '');
                 } else if ($fileMeta['fileformat'] == 'mp3') {
-                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['title']) ? $fileMeta['tags']['id3v2']['title'][0] : '';
-                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['artist']) ? $fileMeta['tags']['id3v2']['artist'][0] : '';
-                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['album']) ? $fileMeta['tags']['id3v2']['album'][0] : '';
-                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['year']) ? $fileMeta['tags']['id3v2']['year'][0] : '';
-                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['comment']) ? $fileMeta['tags']['id3v2']['comment'][0] : '';
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['title']) ? $fileMeta['tags']['id3v2']['title'][0] . ' (Id3v2) ' : '';
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['artist']) ? $fileMeta['tags']['id3v2']['artist'][0] . ' (Id3v2) ' : '';
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['album']) ? $fileMeta['tags']['id3v2']['album'][0] . ' (Id3v2) ' : '';
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['year']) ? $fileMeta['tags']['id3v2']['year'][0] . ' (Id3v2) ' : '';
+                    $arr[$key][] = isset($fileMeta['tags']['id3v2']['comment']) ? $fileMeta['tags']['id3v2']['comment'][0] . ' (Id3v2) ' : '';
                 } else if ($fileMeta['fileformat'] == 'flac') {
-                    $arr[$key][] = isset($fileMeta['flac']['VORBIS_COMMENT']['comments']['title']) ? $fileMeta['flac']['VORBIS_COMMENT']['comments']['title'][0] : '';
-                    $arr[$key][] = isset($fileMeta['flac']['VORBIS_COMMENT']['comments']['artist']) ? $fileMeta['flac']['VORBIS_COMMENT']['comments']['artist'][0] : '';
-                    $arr[$key][] = isset($fileMeta['flac']['VORBIS_COMMENT']['comments']['album']) ? $fileMeta['flac']['VORBIS_COMMENT']['comments']['album'][0] : '';
-                    $arr[$key][] = isset($fileMeta['flac']['VORBIS_COMMENT']['comments']['date']) ? $fileMeta['flac']['VORBIS_COMMENT']['comments']['date'][0] : '';
-                    $arr[$key][] = isset($fileMeta['flac']['VORBIS_COMMENT']['comments']['comment']) ? $fileMeta['flac']['VORBIS_COMMENT']['comments']['comment'][0] : '';
+                    $arr[$key][] = (isset($fileMeta['tags']['id3v2']['title']) ? $fileMeta['tags']['id3v2']['title'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['vorbiscomment']['title']) ? $fileMeta['tags']['vorbiscomment']['title'][0] . ' (Vorbis) ' : '');
+                    $arr[$key][] = (isset($fileMeta['tags']['id3v2']['artist']) ? $fileMeta['tags']['id3v2']['artist'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['vorbiscomment']['artist']) ? $fileMeta['tags']['vorbiscomment']['artist'][0] . ' (Vorbis) ' : '');
+                    $arr[$key][] = (isset($fileMeta['tags']['id3v2']['album']) ? $fileMeta['tags']['id3v2']['album'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['vorbiscomment']['album']) ? $fileMeta['tags']['vorbiscomment']['album'][0] . ' (Vorbis) ' : '');
+                    $arr[$key][] = (isset($fileMeta['tags']['id3v2']['year']) ? $fileMeta['tags']['id3v2']['year'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['vorbiscomment']['date']) ? $fileMeta['tags']['vorbiscomment']['date'][0] . ' (Vorbis) ' : '');
+                    $arr[$key][] = (isset($fileMeta['tags']['id3v2']['comment']) ? $fileMeta['tags']['id3v2']['comment'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['vorbiscomment']['comment']) ? $fileMeta['tags']['vorbiscomment']['comment'][0] . ' (Vorbis) ' : '');
                 }
             }
         }

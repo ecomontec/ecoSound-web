@@ -146,11 +146,13 @@
             });
 
             $('#projectForm').submit(function (e) {
-                var f = $('#picture_id_file')[0].files[0]
-                if (f['size'] > 2048000) {
-                    showAlert('Warning: Maximum image size 2M.');
-                    e.preventDefault();
-                    return;
+                var file = $('#picture_id_file')[0].files[0]
+                if (file && file.size) {
+                    if (file.size > 2048000) {
+                        showAlert('Warning: Maximum image size 2M.');
+                        e.preventDefault();
+                        return;
+                    }
                 }
                 e.preventDefault();
                 $('#projectValid').text('')

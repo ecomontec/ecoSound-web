@@ -13,6 +13,7 @@ class Recording
     const MICROPHONE_ID = 'microphone_id';
     const RECORDER_NAME = 'model';
     const MICROPHONE_NAME = 'name';
+    const RECORDING_GAIN = 'recording_gain';
     const DIRECTORY = 'directory';
     const FILE_SIZE = "file_size";
     const NAME = "name";
@@ -178,6 +179,7 @@ class Recording
     private $realmId;
     private $biomeId;
     private $functionalTypeId;
+    private $recording_gain;
 
     /**
      * @return int
@@ -338,6 +340,24 @@ class Recording
     public function setMicrophoneName(?string $microphoneName): Recording
     {
         $this->microphoneName = $microphoneName;
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getRecordingGain(): ?int
+    {
+        return $this->recording_gain;
+    }
+
+    /**
+     * @param int|null $recording_gain
+     * @return Recording
+     */
+    public function setRecordingGain(?int $recording_gain): Recording
+    {
+        $this->recording_gain = $recording_gain;
         return $this;
     }
 
@@ -1034,6 +1054,7 @@ class Recording
         $this->setRecorderName($values['recorderName']);
         $this->setMicrophone($values['microphone_id']);
         $this->setMicrophoneName($values['microphoneName']);
+        $this->setRecordingGain($values['recording_gain']);
         $this->setDataType($values['data_type']);
         $this->setFileName($values['filename']);
         $this->setFileDate($values['file_date']);
