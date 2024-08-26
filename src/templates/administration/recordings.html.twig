@@ -201,7 +201,7 @@
                     <br>
                     <input id="frequencies_custom" type="number" class="form-control col-6 mt-3" hidden>
                     <br>
-                    <div class="text-danger">Only the resampled recording will be kept on server. Back up your original files.</div>
+                    <div class="text-danger custom-text" style="display: none">Only the resampled recording will be stored on the server. The original metadata tags are not passed through to the new files.</div>
                 </div>
                 <div class="modal-footer">
                     <div id="upload-info"></div>
@@ -373,6 +373,11 @@
                     var isDisabled = $("#frequencies").prop("disabled");
                     $("#frequencies").prop("disabled", !isDisabled);
                     $("#frequencies_custom").prop("disabled", !isDisabled);
+                    if (isDisabled) {
+                        $(".custom-text").show();
+                    } else {
+                        $(".custom-text").hide();
+                    }
                 })
 
                 $('#frequencies').change(function () {

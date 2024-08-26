@@ -381,7 +381,7 @@ class RecordingProvider extends AbstractProvider
                 $arr[$key][] = "<select id='site_id$value[recording_id]' name='site_id' style='width:120px;' class='form-control form-control-sm'><option value='0' ></option>$str_site</select>";
                 $arr[$key][] = "<select name='recorder_id' id='recorder_$value[recording_id]' style='width:250px;' class='form-control form-control-sm'><option value='0' ></option>$str_recorder</select>";
                 $arr[$key][] = "<select name='microphone_id' id='microphone_$value[recording_id]' style='width:250px;' class='form-control form-control-sm'><option value='0' ></option>$str_microphone</select>";
-                $arr[$key][] = "<input type='number' class='form-control form-control-sm' name='recording_gain' value='$value[recording_gain]' min='1' step='1' required>";
+                $arr[$key][] = "<input type='number' class='form-control form-control-sm' name='recording_gain' value='$value[recording_gain]' min='1' step='1'>";
                 $arr[$key][] = "<select name='license_id' style='width:140px;' class='form-control form-control-sm'><option value='0'></option>$str_license</select>";
                 $arr[$key][] = "<select name='type' style='width:100px;' class='form-control form-control-sm'>
                             <option value='0'></option>
@@ -408,11 +408,11 @@ class RecordingProvider extends AbstractProvider
                         $arr[$key][] = isset($fileMeta['tags']['vorbiscomment']['date']) ? $fileMeta['tags']['vorbiscomment']['date'][0] . ' (Vorbis) ' : '';
                         $arr[$key][] = isset($fileMeta['tags']['vorbiscomment']['comment']) ? $fileMeta['tags']['vorbiscomment']['comment'][0] . ' (Vorbis) ' : '';
                     } else if ($fileMeta['fileformat'] == 'wav') {
-                        $arr[$key][] = (isset($fileMeta['tags']['id3v2']['title']) ? $fileMeta['tags']['id3v2']['title'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['riff']['title']) ? $fileMeta['tags']['riff']['title'][0] . ' (Riff) ' : '');
-                        $arr[$key][] = (isset($fileMeta['tags']['id3v2']['artist']) ? $fileMeta['tags']['id3v2']['artist'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['riff']['artist']) ? $fileMeta['tags']['riff']['artist'][0] . ' (Riff) ' : '');
-                        $arr[$key][] = (isset($fileMeta['tags']['id3v2']['album']) ? $fileMeta['tags']['id3v2']['album'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['riff']['product']) ? $fileMeta['tags']['riff']['product'][0] . ' (Riff) ' : '');
-                        $arr[$key][] = (isset($fileMeta['tags']['id3v2']['year']) ? $fileMeta['tags']['id3v2']['year'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['riff']['creationdate']) ? $fileMeta['tags']['riff']['creationdate'][0] . ' (Riff) ' : '');
-                        $arr[$key][] = (isset($fileMeta['tags']['id3v2']['comment']) ? $fileMeta['tags']['id3v2']['comment'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['riff']['comment']) ? $fileMeta['tags']['riff']['comment'][0] . ' (Riff) ' : '');
+                        $arr[$key][] = (isset($fileMeta['tags']['id3v2']['title']) ? $fileMeta['tags']['id3v2']['title'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['riff']['title']) ? $fileMeta['tags']['riff']['title'][0] . ' (RIFF) ' : '');
+                        $arr[$key][] = (isset($fileMeta['tags']['id3v2']['artist']) ? $fileMeta['tags']['id3v2']['artist'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['riff']['artist']) ? $fileMeta['tags']['riff']['artist'][0] . ' (RIFF) ' : '');
+                        $arr[$key][] = (isset($fileMeta['tags']['id3v2']['album']) ? $fileMeta['tags']['id3v2']['album'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['riff']['product']) ? $fileMeta['tags']['riff']['product'][0] . ' (RIFF) ' : '');
+                        $arr[$key][] = (isset($fileMeta['tags']['id3v2']['year']) ? $fileMeta['tags']['id3v2']['year'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['riff']['creationdate']) ? $fileMeta['tags']['riff']['creationdate'][0] . ' (RIFF) ' : '');
+                        $arr[$key][] = (isset($fileMeta['tags']['id3v2']['comment']) ? $fileMeta['tags']['id3v2']['comment'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['riff']['comment']) ? $fileMeta['tags']['riff']['comment'][0] . ' (RIFF) ' : '');
                     } else if ($fileMeta['fileformat'] == 'mp3') {
                         $arr[$key][] = isset($fileMeta['tags']['id3v2']['title']) ? $fileMeta['tags']['id3v2']['title'][0] . ' (Id3v2) ' : '';
                         $arr[$key][] = isset($fileMeta['tags']['id3v2']['artist']) ? $fileMeta['tags']['id3v2']['artist'][0] . ' (Id3v2) ' : '';

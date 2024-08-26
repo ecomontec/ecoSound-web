@@ -259,7 +259,7 @@ class File
     /**
      * @return int
      */
-    public function getRecordingGain(): int
+    public function getRecordingGain(): ?int
     {
         return $this->recording_gain;
     }
@@ -268,7 +268,7 @@ class File
      * @param int $recording_gain
      * @return File
      */
-    public function setRecordingGain(int $recording_gain): File
+    public function setRecordingGain(?int $recording_gain): File
     {
         $this->recording_gain = $recording_gain;
         return $this;
