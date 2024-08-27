@@ -21,13 +21,13 @@
                         <div class="dropdown-menu my-sounds">
                             {% for sound in my_sounds %}
                                 {% if (sound.access is null or sound.access==0) and sound.permission %}
-                                    <a class="dropdown-item" href="{{ BaseUrl }}/collection/index/{{ sound.project_id }}">{{ sound.name }}</a>
+                                    <a class="dropdown-item" href="{{ baseUrl }}/collection/index/{{ sound.project_id }}">{{ sound.name }}</a>
                                 {% endif %}
                             {% endfor %}
                             <div class="dropdown-divider" _mstvisible="1"></div>
                             {% for sound in my_sounds %}
                                 {% if sound.access %}
-                                    <a class="dropdown-item" href="{{ BaseUrl }}/collection/index/{{ sound.project_id }}">{{ sound.name }}</a>
+                                    <a class="dropdown-item" href="{{ baseUrl }}/collection/index/{{ sound.project_id }}">{{ sound.name }}</a>
                                 {% endif %}
                             {% endfor %}
                         </div>
