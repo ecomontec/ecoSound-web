@@ -48,8 +48,7 @@ class RecordingProvider extends AbstractProvider
                 ->setChannelNum($item['channel_num'])
                 ->setSamplingRate($item['sampling_rate'])
                 ->setDoi($item['doi'])
-                ->setLicense($item['license_id'])
-                ->setLicenseName($item['license_name']);
+                ->setLicense($item['license_id']);
         }
         return $data;
     }

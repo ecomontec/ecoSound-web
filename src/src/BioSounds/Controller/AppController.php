@@ -47,7 +47,7 @@ class AppController extends BaseClass
                 'projects' => (new ProjectProvider())->getList(),
                 'recordings' => count((new RecordingProvider())->getList()),
                 'users' => count((new User())->getAll()),
-                'tags' => count((new TagProvider())->getAll()),
+                'tags' => (new TagProvider())->getAll(),
             ]);
         }
 

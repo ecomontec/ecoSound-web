@@ -18,7 +18,7 @@ class TagProvider extends AbstractProvider
 
     public function getAll(): array
     {
-        $sql = 'SELECT * FROM tag';
+        $sql = 'SELECT COUNT(*) AS count FROM tag';
         $this->database->prepareQuery($sql);
         return $this->database->executeSelect();
     }
