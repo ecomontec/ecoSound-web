@@ -28,7 +28,7 @@
                         <h6>Sphere: <small>{{ collection.sphere }}</small></h6>
                     {% endif %}
                     {% if collection.recordingUrl is not empty %}
-                        <h6>External recording URL: <small><a href="{{ collection.recordingUrl }}" target="_blank">{{ collection.recordingUrl }}</a></small></h6>
+                        <h6>External recordings URL: <small><a href="{{ collection.recordingUrl }}" target="_blank">{{ collection.recordingUrl }}</a></small></h6>
                     {% endif %}
                     {% if collection.projectUrl is not empty %}
                         <h6>Project URL: <small><a href="{{ collection.projectUrl }}" target="_blank">{{ collection.projectUrl }}</a></small></h6>
@@ -57,6 +57,6 @@
 </script>
 <script>
     $('#count_collection').text('{{ collections|length }}')
-    $('#count_recording').text('{{ recordings|length }}')
+    $('#count_recording').text('{{ recordings }}')
     $('#count_site').text('{{ leaflet.arr|length }}')
 </script>

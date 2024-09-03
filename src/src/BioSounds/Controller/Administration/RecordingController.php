@@ -109,6 +109,13 @@ class RecordingController extends BaseController
             throw new ForbiddenException();
         }
 
+        if (!preg_match('/^[1-9]\d*$/', $_POST['recording_gain_number'])) {
+            return json_encode([
+                'isValid' => 1,
+                'message' => 'Recording gain must be a positive integer.',
+            ]);
+        }
+
         $data = [];
 
         foreach ($_POST as $key => $value) {
@@ -444,6 +451,12 @@ class RecordingController extends BaseController
                     $arr[$key][] = (isset($fileMeta['tags']['id3v2']['album']) ? $fileMeta['tags']['id3v2']['album'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['vorbiscomment']['album']) ? $fileMeta['tags']['vorbiscomment']['album'][0] . ' (Vorbis) ' : '');
                     $arr[$key][] = (isset($fileMeta['tags']['id3v2']['year']) ? $fileMeta['tags']['id3v2']['year'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['vorbiscomment']['date']) ? $fileMeta['tags']['vorbiscomment']['date'][0] . ' (Vorbis) ' : '');
                     $arr[$key][] = (isset($fileMeta['tags']['id3v2']['comment']) ? $fileMeta['tags']['id3v2']['comment'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['vorbiscomment']['comment']) ? $fileMeta['tags']['vorbiscomment']['comment'][0] . ' (Vorbis) ' : '');
+                } else {
+                    $arr[$key][] = '';
+                    $arr[$key][] = '';
+                    $arr[$key][] = '';
+                    $arr[$key][] = '';
+                    $arr[$key][] = '';
                 }
             }
         }

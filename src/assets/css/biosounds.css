@@ -1101,7 +1101,7 @@ li {
     font-family: var(--rr-ff-heading);
     color: var(--rr-heading-primary);
     font-weight: var(--rr-fw-bold);
-    font-size: var(--rr-fs-h2);
+    font-size: var(--rr-fs-h3);
     font-style: normal;
 }
 
@@ -1109,7 +1109,7 @@ li {
     font-family: var(--rr-ff-heading);
     color: var(--rr-heading-primary);
     font-weight: var(--rr-fw-bold);
-    font-size: var(--rr-fs-h2);
+    font-size: var(--rr-fs-h3);
     font-style: normal;
 }
 

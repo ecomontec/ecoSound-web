@@ -45,7 +45,7 @@ class AppController extends BaseClass
             return $this->twig->render('index.html.twig', [
                 'title' => $this->title,
                 'projects' => (new ProjectProvider())->getList(),
-                'recordings' => count((new RecordingProvider())->getList()),
+                'recordings' => (new RecordingProvider())->getCount(),
                 'users' => count((new User())->getAll()),
                 'tags' => (new TagProvider())->getAll(),
             ]);

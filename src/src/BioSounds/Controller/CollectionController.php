@@ -44,7 +44,7 @@ class CollectionController extends BaseController
             'project' => (new ProjectProvider())->get($projectId),
             'collections' => $collections,
             'leaflet' => $this->leaflet,
-            'recordings' => (new RecordingProvider())->getByCollection(substr($str, 0, strlen($str) - 1)),
+            'recordings' => (new RecordingProvider())->getCountByCollection(substr($str, 0, strlen($str) - 1)),
             'users' => (new User())->getUserCount(substr($str, 0, strlen($str) - 1)),
         ]);
     }
@@ -55,9 +55,10 @@ class CollectionController extends BaseController
      * @return string
      * @throws \Exception
      */
-    public function indexjs(int $projectId, string $site = null)
+    public function indexjs(int $projectId)
     {
         $str = '';
+        $site = ($_POST['site'] == '' ? '0 ' : $_POST['site']);
         $collections = (new CollectionProvider())->getCollectionPagesByPermission($projectId, $site);
         foreach ($collections as $collection) {
             $str .= $collection->getId() . ',';
@@ -68,7 +69,7 @@ class CollectionController extends BaseController
             'project' => (new ProjectProvider())->get($projectId),
             'collections' => $collections,
             'leaflet' => $this->leaflet,
-            'recordings' => (new RecordingProvider())->getByCollection(substr($str, 0, strlen($str) - 1), $site)
+            'recordings' => (new RecordingProvider())->getCountByCollection(substr($str, 0, strlen($str) - 1), $site)
         ]);
     }
 
@@ -98,7 +99,6 @@ class CollectionController extends BaseController
             $max[] = $data->getRecording()->getEndDate();
             $recordings[] = $data->getRecording()->getId();
         }
-
         if ($isAccessed || $this->collection->getPublicAccess()) {
             return $this->twig->render('collection/collection.html.twig', [
                 'project' => (new ProjectProvider())->get($this->collection->getProject()),
@@ -124,9 +124,10 @@ class CollectionController extends BaseController
      * @return string
      * @throws \Exception
      */
-    public function showjs(int $id, string $view = null, string $sites = null)
+    public function showjs(int $id, string $view = null)
     {
         $this->colId = $id;
+        $sites = ($_POST['site'] == '' ? '0 ' : $_POST['site']);
         $isAccessed = $this->checkPermissions();
         $isAccessed &= $this->isAccessible();
         $this->collection = (new CollectionProvider())->get($this->colId);

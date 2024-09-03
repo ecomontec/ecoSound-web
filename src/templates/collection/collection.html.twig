@@ -25,7 +25,7 @@
                     {% endif %}
                     {% if collection.recordingUrl is not empty %}
                         <div>
-                            <strong>External recording URL: </strong>
+                            <strong>External recordings URL: </strong>
                             <a href="{{ collection.recordingUrl }}" target="_blank">{{ collection.recordingUrl }}</a>
                         </div>
                     {% endif %}
@@ -73,7 +73,7 @@
                         </div>
                         <div class="cta-box-text ml-auto text-right">
                             <p>Sites</p>
-                            <h3 class="cta-count-title"><span id="count_site">{{ leaflet.arr|length }}</span></h3>
+                            <h3 class="cta-count-title"><span id="count_site">{{ leaflet.arr|length }}</span>/{{ leaflet.arr|length }}</h3>
                         </div>
                     </div>
                 </div>
@@ -84,7 +84,7 @@
                         </div>
                         <div class="cta-box-text ml-auto text-right">
                             <p>Recordings</p>
-                            <h3 class="cta-count-title"><span id="count_recording">{{ list|length }}</span></h3>
+                            <h3 class="cta-count-title"><span id="count_recording">{{ list|length }}</span>/{{ list|length }}</h3>
                         </div>
                     </div>
                 </div>
@@ -95,7 +95,7 @@
                         </div>
                         <div class="cta-box-text ml-auto text-right">
                             <p>Tags</p>
-                            <h3 class="cta-count-title"><span id="count_tag">{{ tags }}</span></h3>
+                            <h3 class="cta-count-title"><span id="count_tag">{{ tags }}</span>/{{ tags }}</h3>
                         </div>
                     </div>
                 </div>
@@ -266,9 +266,9 @@
                                 label: arr[i][10],
                                 layer: realm[arr[i][11]],
                             });
-                            marker.addTo(realm[arr[i][11]]);
                             list.push(arr[i][11])
                         }
+                        marker.addTo(realm[arr[i][11]]);
                     } else {
                         if (!realm[arr[i][9]]) {
                             realm[arr[i][9]] = L.featureGroup.subGroup(mcg).addTo(map)
@@ -321,7 +321,7 @@
 
         const map_change = throttle(function (event) {
             var site = null
-            mcg.eachLayer(function(layer) {
+            mcg.eachLayer(function (layer) {
                 if (layer instanceof L.Marker) {
                     if (map.getBounds().contains(layer.getLatLng())) {
                         if (site) {
@@ -331,7 +331,7 @@
                         }
                     }
                 } else if (layer instanceof L.MarkerCluster) {
-                    layer.getAllChildMarkers().forEach(function(marker) {
+                    layer.getAllChildMarkers().forEach(function (marker) {
                         if (map.getBounds().contains(marker.getLatLng())) {
                             if (site) {
                                 site += ',' + marker.options.id;
@@ -349,7 +349,9 @@
 
         map.on('overlayadd', map_change);
         map.on('overlayremove', map_change)
-        $(".leaflet-popup-close-button").on('click', map_change)
+        $('#map').on('click', '.leaflet-popup-close-button', function () {
+            map_change();
+        });
         map.on('moveend', function () {
             if ($(".leaflet-popup-close-button").length > 0) {
                 $(".leaflet-popup-close-button")[0].click()
@@ -425,12 +427,14 @@
         {% endif %}
 
         function col_js(id, view, site) {
-            url = "{{ baseUrl }}/collection/showjs/" + id + '/' + view
-            if (site != '') {
-                url = url + '/' + site
-            }
+            var url = "{{ baseUrl }}/collection/showjs/" + id;
+            var dataToSend = {
+                site: site
+            };
             $.ajax({
                 url: url,
+                type: 'POST',
+                data: dataToSend,
                 success: function (data) {
                     if (data) {
                         $("#sc-map").nextAll().remove()
@@ -438,7 +442,7 @@
                         $("#sc-map").after(data)
                     }
                 },
-            })
+            });
         }
 
         $('.view').click(function () {

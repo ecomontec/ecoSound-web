@@ -93,11 +93,11 @@
                 <th>DOI</th>
                 <th>Date</th>
                 <th>Time</th>
-                <th>Metadata_Title</th>
-                <th>Metadata_Artist</th>
-                <th>Metadata_Album</th>
-                <th>Metadata_Year</th>
-                <th>Metadata_Comment</th>
+                <th title="Not stored in Database.">Metadata_Title <i class="fa fa-info-circle"></i></th>
+                <th title="Not stored in Database.">Metadata_Artist <i class="fa fa-info-circle"></i></th>
+                <th title="Not stored in Database.">Metadata_Album <i class="fa fa-info-circle"></i></th>
+                <th title="Not stored in Database.">Metadata_Year <i class="fa fa-info-circle"></i></th>
+                <th title="Not stored in Database.">Metadata_Comment <i class="fa fa-info-circle"></i></th>
             </tr>
             </thead>
             <tbody class="form-control-sm js-recording-list"></tbody>
@@ -328,7 +328,7 @@
                     "columnDefs": [
                         {
                             "orderable": false,
-                            "targets": [0, 18, 19, 20, 21, 22],
+                            "targets": [0, 19, 20, 21, 22, 23],
                         },
                         {
                             "className": "dt-center",
@@ -433,7 +433,13 @@
                     if ($(this)[0].className == 'js-checkbox') {
                         return
                     }
-                    saveFormList($(this), 'api/admin/recordingManager/save');
+                    var id = $(this).attr('data-id')
+                    $('#recordingGainValid' + id).text('')
+                    saveFormList($(this),  'api/admin/recordingManager/save', function (response) {
+                        if (response.isValid) {
+                            $('#recordingGainValid' + id).text(response.message)
+                        }
+                    });
                 });
 
                 $("#modal-div").keydown(function (e) {

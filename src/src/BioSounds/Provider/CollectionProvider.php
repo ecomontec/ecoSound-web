@@ -29,6 +29,7 @@ class CollectionProvider extends AbstractProvider
             $sql .= " AND (sc.site_id in ($sites) OR (r.site_id is null AND r.recording_id is not null)) ";
         }
         $sql = $sql . ' GROUP BY c.collection_id,c.project_id,c.name,c.user_id,c.doi,c.note,c.view,c.sphere,c.external_recording_url,c.project_url,c.public_access,c.public_tags,c.creation_date ORDER BY c.name ';
+
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect([':projectId' => $projectId]);
 

@@ -27,7 +27,7 @@ class RecordingProvider extends AbstractProvider
         $query = 'SELECT recording_id, name, filename, col_id, directory, site_id, ';
         $query .= 'file_size, bitrate, channel_num, DATE_FORMAT(file_date, \'%Y-%m-%d\') ';
         $query .= 'AS file_date, DATE_FORMAT(file_time, \'%H:%i:%s\') AS file_time, sampling_rate, doi, license_id ';
-        $query .= 'FROM recording WHERE data_type="audio data"';
+        $query .= 'FROM recording';
 
         $this->database->prepareQuery($query);
         $result = $this->database->executeSelect();
@@ -195,6 +195,33 @@ class RecordingProvider extends AbstractProvider
             throw new \Exception("Recording $id doesn't exist.");
         }
         return (new Recording())->createFromValues($result[0]);
+    }
+
+    public function getCount()
+    {
+        $query = 'SELECT COUNT(*) AS count FROM recording';
+        $this->database->prepareQuery($query);
+        return $this->database->executeSelect()[0]['count'];
+    }
+
+    public function getCountByCollection(string $id, string $site = null)
+    {
+        $query = "SELECT COUNT(*) AS count FROM recording ";
+
+        if ($id != '') {
+            $query .= " WHERE col_id IN ($id) ";
+        } else {
+            $query .= ' WHERE 1=1';
+        }
+        if ($site) {
+            if ($site == 'null') {
+                $query .= " AND (site_id = 0 OR site_id IS NULL)";
+            } else {
+                $query .= " AND (site_id IN ( $site ) OR site_id = 0 OR site_id IS NULL) ";
+            }
+        }
+        $this->database->prepareQuery($query);
+        return $this->database->executeSelect()[0]['count'];
     }
 
     /**
@@ -380,7 +407,7 @@ class RecordingProvider extends AbstractProvider
                 $arr[$key][] = "<select id='site_id$value[recording_id]' name='site_id' style='width:120px;' class='form-control form-control-sm'><option value='0' ></option>$str_site</select>";
                 $arr[$key][] = "<select name='recorder_id' id='recorder_$value[recording_id]' style='width:250px;' class='form-control form-control-sm'><option value='0' ></option>$str_recorder</select>";
                 $arr[$key][] = "<select name='microphone_id' id='microphone_$value[recording_id]' style='width:250px;' class='form-control form-control-sm'><option value='0' ></option>$str_microphone</select>";
-                $arr[$key][] = "<input type='number' class='form-control form-control-sm' name='recording_gain' value='$value[recording_gain]' min='1' step='1'>";
+                $arr[$key][] = "<input type='number' class='form-control form-control-sm' name='recording_gain' data-id='$value[recording_id]' value='$value[recording_gain]' min='1' step='1'><small id='recordingGainValid$value[recording_id]' class='text-danger'></small>";
                 $arr[$key][] = "<select name='license_id' style='width:140px;' class='form-control form-control-sm'><option value='0'></option>$str_license</select>";
                 $arr[$key][] = "<select name='type' style='width:100px;' class='form-control form-control-sm'>
                             <option value='0'></option>
@@ -424,6 +451,12 @@ class RecordingProvider extends AbstractProvider
                         $arr[$key][] = (isset($fileMeta['tags']['id3v2']['album']) ? $fileMeta['tags']['id3v2']['album'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['vorbiscomment']['album']) ? $fileMeta['tags']['vorbiscomment']['album'][0] . ' (Vorbis) ' : '');
                         $arr[$key][] = (isset($fileMeta['tags']['id3v2']['year']) ? $fileMeta['tags']['id3v2']['year'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['vorbiscomment']['date']) ? $fileMeta['tags']['vorbiscomment']['date'][0] . ' (Vorbis) ' : '');
                         $arr[$key][] = (isset($fileMeta['tags']['id3v2']['comment']) ? $fileMeta['tags']['id3v2']['comment'][0] . ' (Id3v2) ' : '') . (isset($fileMeta['tags']['vorbiscomment']['comment']) ? $fileMeta['tags']['vorbiscomment']['comment'][0] . ' (Vorbis) ' : '');
+                    } else {
+                        $arr[$key][] = '';
+                        $arr[$key][] = '';
+                        $arr[$key][] = '';
+                        $arr[$key][] = '';
+                        $arr[$key][] = '';
                     }
                 } else {
                     $arr[$key][] = '';

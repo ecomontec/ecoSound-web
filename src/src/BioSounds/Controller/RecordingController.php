@@ -36,6 +36,7 @@ class RecordingController extends BaseController
     const SOUND_PATH = 'sounds/sounds/%s/%s/%s';
     const IMAGE_SOUND_PATH = 'sounds/images/%s/%s/%s';
 
+    private $colId;
     private $recordingId;
     private $recordingService;
 
@@ -76,8 +77,7 @@ class RecordingController extends BaseController
         if (empty($id)) {
             throw new \Exception(ERROR_EMPTY_ID);
         }
-        $isAccessed = $this->checkPermissions();
-        $isAccessed &= $this->isAccessible();
+
 
         $this->recordingId = $id;
         $recordingData = (new RecordingProvider())->get($this->recordingId)[0];
@@ -86,6 +86,8 @@ class RecordingController extends BaseController
         $recordingData['collection'] = (new CollectionProvider())->get($recordingData[Recording::COL_ID]);
 
         $this->colId = $recordingData[Recording::COL_ID];
+        $isAccessed = $this->checkPermissions();
+        $isAccessed &= $this->isAccessible();
 
         $this->collection = (new CollectionProvider())->get($this->colId);
         if ($isAccessed || $this->collection->getPublicAccess()) {
