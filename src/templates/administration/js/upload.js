@@ -4,6 +4,7 @@ var closeButtonClicked = false;
 var uploadTable = $('#upload-table').DataTable({
     "bAutoWidth": false,
     "scrollX": true,
+    "scrollY": "300px",
     "paging": false,
     "searching": false,
     "info": false,
@@ -60,7 +61,12 @@ $("#file-uploader").pluploadQueue({
                     up.removeFile(file);
                     showAlert('File name: ' + file.name + ' too long. Maximum: 150 characters. File was skipped.', true);
                 }
+                if (up.files.length > 50) {
+                    up.removeFile(file);
+                    showAlert('A maximum of 50 files can be uploaded.', true);
+                }
             });
+
             if (up.files.length > 0) {
                 isUploading = true;
                 document.querySelector('.plupload_start').click();
