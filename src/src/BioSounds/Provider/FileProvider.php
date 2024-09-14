@@ -53,8 +53,7 @@ class FileProvider extends BaseProvider
                 ->setDoi($result['doi'])
                 ->setLicense($result['license_id'])
                 ->setType($result['type'])
-                ->setMedium($result['medium'])
-                ->setNote($result['note']);
+                ->setMedium($result['medium']);
         }
         return null;
     }

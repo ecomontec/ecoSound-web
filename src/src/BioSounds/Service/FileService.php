@@ -190,7 +190,6 @@ class FileService
                     Recording::USER_ID => $file->getUser(),
                     Recording::Type => $file->getType(),
                     Recording::Medium => $file->getMedium(),
-                    Recording::Note=>$file->getNote(),
                 ];
 
                 $sound[Recording::ID] = (new RecordingProvider())->insert($sound);
