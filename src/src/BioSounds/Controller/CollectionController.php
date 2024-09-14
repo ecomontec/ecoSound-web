@@ -128,7 +128,7 @@ class CollectionController extends BaseController
     {
         $this->colId = $id;
         $sites = ($_POST['site'] == '' ? '0 ' : $_POST['site']);
-        $view=$_POST['view  '];
+        $view = $_POST['view'];
         $isAccessed = $this->checkPermissions();
         $isAccessed &= $this->isAccessible();
         $this->collection = (new CollectionProvider())->get($this->colId);
