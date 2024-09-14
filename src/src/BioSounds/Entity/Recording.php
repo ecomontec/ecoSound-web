@@ -34,6 +34,7 @@ class Recording
     const USER_ID = 'user_id';
     const LABEL_ID = "label_id";
     const LABEL_NAME = 'label_name';
+    const Note = 'note';
     /**
      * @var string
      */
