@@ -93,11 +93,11 @@
                 <th>DOI</th>
                 <th>Date</th>
                 <th>Time</th>
-                <th title="Not stored in Database.">Metadata_Title <i class="fa fa-info-circle"></i></th>
-                <th title="Not stored in Database.">Metadata_Artist <i class="fa fa-info-circle"></i></th>
-                <th title="Not stored in Database.">Metadata_Album <i class="fa fa-info-circle"></i></th>
-                <th title="Not stored in Database.">Metadata_Year <i class="fa fa-info-circle"></i></th>
-                <th title="Not stored in Database.">Metadata_Comment <i class="fa fa-info-circle"></i></th>
+                <th title="Metadata tags read from the recording file">Metadata_Title <i class="fa fa-info-circle"></i></th>
+                <th title="Metadata tags read from the recording file">Metadata_Artist <i class="fa fa-info-circle"></i></th>
+                <th title="Metadata tags read from the recording file">Metadata_Album <i class="fa fa-info-circle"></i></th>
+                <th title="Metadata tags read from the recording file">Metadata_Year <i class="fa fa-info-circle"></i></th>
+                <th title="Metadata tags read from the recording file">Metadata_Comment <i class="fa fa-info-circle"></i></th>
             </tr>
             </thead>
             <tbody class="form-control-sm js-recording-list"></tbody>
@@ -300,7 +300,7 @@
         </script>
         <script src="{{ baseUrl }}/assets/plupload/js/plupload.full.min.js" defer></script>
         <script src="{{ baseUrl }}/assets/plupload/js/jquery.plupload.queue.min.js" defer></script>
-        <script src="{{ baseUrl }}/templates/administration/js/upload.js?v=1.5" defer></script>
+        <script src="{{ baseUrl }}/templates/administration/js/upload.js?v=1.5.2" defer></script>
 
     {% endblock %}
 
@@ -457,7 +457,17 @@
                         }
                     }
                 });
-
+                $("#recorder").on('change', function () {
+                    $('#microphone').empty()
+                    $('#microphone').removeAttr('disabled')
+                    var microphone = $(this).find('option:selected').attr('data-microphone').split(',')
+                    $('#microphone').append("<option></option>")
+                    for (var key in microphones) {
+                        if ($.inArray(microphones[key]['microphone_id'] += '', microphone) >= 0) {
+                            $('#microphone').append("<option value='" + microphones[key]['microphone_id'] + "'>" + microphones[key]['name'] + "</option>");
+                        }
+                    }
+                });
                 $("select[name='recorder_id']").on('change', function () {
                     var id = $(this).attr('id').split('_')[1]
                     $("#microphone_" + id).empty()

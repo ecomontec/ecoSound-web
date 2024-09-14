@@ -429,17 +429,25 @@
         function col_js(id, view, site) {
             var url = "{{ baseUrl }}/collection/showjs/" + id;
             var dataToSend = {
-                site: site
+                site: site,
+                view: view,
             };
             $.ajax({
                 url: url,
                 type: 'POST',
                 data: dataToSend,
                 success: function (data) {
-                    if (data) {
+                    if (data == 'No results') {
+                        location.reload();
+                    } else if (data) {
                         $("#sc-map").nextAll().remove()
                         $("#display_view").val(view)
                         $("#sc-map").after(data)
+                    }
+                },
+                error: function (xhr, error, thrown) {
+                    if (xhr.status == 400 || xhr.status == 404 || xhr.status == 500) {
+                        location.reload();
                     }
                 },
             });

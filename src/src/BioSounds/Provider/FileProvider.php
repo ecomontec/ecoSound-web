@@ -34,7 +34,8 @@ class FileProvider extends BaseProvider
             $result = $result[0];
             return (new File())
                 ->setPath($result['path'])
-                ->setName($result['filename'])
+                ->setName($result['name'])
+                ->setFilename($result['filename'])
                 ->setDate($result['date'])
                 ->setTime($result['time'])
                 ->setSite($result['site_id'])

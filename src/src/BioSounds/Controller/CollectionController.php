@@ -124,10 +124,11 @@ class CollectionController extends BaseController
      * @return string
      * @throws \Exception
      */
-    public function showjs(int $id, string $view = null)
+    public function showjs(int $id)
     {
         $this->colId = $id;
         $sites = ($_POST['site'] == '' ? '0 ' : $_POST['site']);
+        $view=$_POST['view  '];
         $isAccessed = $this->checkPermissions();
         $isAccessed &= $this->isAccessible();
         $this->collection = (new CollectionProvider())->get($this->colId);
