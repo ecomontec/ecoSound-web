@@ -48,8 +48,8 @@
 {% endblock %}
 {% block header %}
     {{ parent() }}
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <link rel="stylesheet" href="{{ baseUrl }}/assets/css/quill.snow.css">
+    <script src="{{ baseUrl }}/assets/js/quill.js" defer></script>
     <script>
         $(function () {
             'use strict';
@@ -60,7 +60,12 @@
                     "serverSide": true,
                     "ajax": {
                         "url": '{{ baseUrl }}/admin/projectMgr/getListByPage',
-                        "type": 'POST'
+                        "type": 'POST',
+                        "error": function (xhr, error, thrown) {
+                            if (xhr.status == 400 || xhr.status == 404 || xhr.status == 500) {
+                                location.reload();
+                            }
+                        }
                     },
                     "dom": 'lrtip',
                     "stateSave": true,
@@ -141,6 +146,14 @@
             });
 
             $('#projectForm').submit(function (e) {
+                var file = $('#picture_id_file')[0].files[0]
+                if (file && file.size) {
+                    if (file.size > 2048000) {
+                        showAlert('Warning: Maximum image size 2M.');
+                        e.preventDefault();
+                        return;
+                    }
+                }
                 e.preventDefault();
                 $('#projectValid').text('')
                 if (this.checkValidity() === false) {
@@ -150,7 +163,7 @@
                     postRequest('{{ baseUrl }}/api/admin/projectMgr/save', data, false, false, function (response) {
                         if (response.isValid) {
                             $('#projectValid').text(response.message)
-                            return
+                            return;
                         }
                         location.reload();
                     });

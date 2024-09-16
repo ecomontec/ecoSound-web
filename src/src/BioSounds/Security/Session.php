@@ -38,7 +38,7 @@ class Session
         }
 
         // Regenerate session ID every five minutes:
-        if ($_SESSION['regenerate_timeout'] < time() - 300) {
+        if ($_SESSION['regenerate_timeout'] < time() - 360) {
             session_regenerate_id(true);
             $_SESSION['regenerate_timeout'] = time();
         }

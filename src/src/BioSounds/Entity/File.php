@@ -108,6 +108,9 @@ class File
      * @var int
      */
     private $license;
+    private $filename;
+    private $note;
+    private $recording_gain;
 
     /**
      * @return null|int
@@ -142,6 +145,24 @@ class File
     public function setName($name): File
     {
         $this->name = $name;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFilename(): string
+    {
+        return $this->filename;
+    }
+
+    /**
+     * @param string $filename
+     * @return File
+     */
+    public function setFilename($filename): File
+    {
+        $this->filename = $filename;
         return $this;
     }
 
@@ -232,6 +253,24 @@ class File
     public function setMicrophone(int $microphone): File
     {
         $this->microphone = $microphone;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getRecordingGain(): ?int
+    {
+        return $this->recording_gain;
+    }
+
+    /**
+     * @param int $recording_gain
+     * @return File
+     */
+    public function setRecordingGain(?int $recording_gain): File
+    {
+        $this->recording_gain = $recording_gain;
         return $this;
     }
 
@@ -453,6 +492,25 @@ class File
     }
 
     /**
+     * @return null|string
+     */
+    public function getNote(): ?string
+    {
+        return $this->note;
+    }
+
+
+    /**
+     * @param null|string $note
+     * @return File
+     */
+    public function setNote(?string $note): File
+    {
+        $this->note = $note;
+        return $this;
+    }
+
+    /**
      * @return null|integer
      */
     public function getLicense(): ?int
@@ -513,7 +571,8 @@ class File
     {
         return [
             ':path' => $this->getPath(),
-            ':filename' => $this->getName(),
+            ':filename' => $this->getFilename(),
+            ':name' => $this->getName(),
             ':date' => $this->getDate(),
             ':time' => $this->getTime(),
             ':site' => $this->getSite(),
@@ -521,12 +580,14 @@ class File
             ':directory' => $this->getDirectory(),
             ':recorder' => $this->getRecorder(),
             ':microphone' => $this->getMicrophone(),
+            ':recording_gain' => $this->getRecordingGain(),
             ':recording' => $this->getRecording(),
             ':user' => $this->getUser(),
             ':species' => $this->getSpecies(),
             ':soundType' => $this->getSoundType(),
             ':subtype' => $this->getSubtype(),
             ':rating' => $this->getRating(),
+            ':note' => $this->getNote(),
             ':doi' => $this->getDoi(),
             ':license' => $this->getLicense(),
             ':type' => $this->getType(),

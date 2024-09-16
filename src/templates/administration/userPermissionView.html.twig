@@ -47,8 +47,13 @@
                                         <input id="user_id" type="hidden" value="{{ userId }}">
                                         <input class="js-data-input" type='hidden' data-collection-id="{{ collection.id }}" data-project-id="{{ project.id }}" data-permission-id="{{ collection.permission }}">
                                     </td>
-                                    <td>{{ collection.name }}</td>
+                                    <td>
+                                        {{ collection.name }}
+                                    </td>
                                     <td class="text-center">
+                                        {% if collection.public_access %}
+                                            <input type="checkbox" title="This collection is public" disabled checked>
+                                        {% endif %}
                                         <input class="js-access-checkbox" value="{{ accessId }}" type="checkbox" name="access" data-project-id="{{ project.id }}" hidden
                                                data-collection-id="{{ collection.id }}" {{ collection.permission == manageId ? "checked" }} {{ collection.permission == reviewId ? "checked" }} {{ collection.permission == viewId ? "checked" }} {{ collection.permission == accessId ? "checked" }}>
                                     </td>
@@ -57,8 +62,12 @@
                                                data-collection-id="{{ collection.id }}" {{ collection.permission == manageId ? "checked" }}>
                                     </td>
                                     <td class="text-center">
-                                        <input class="js-view-checkbox" value="{{ viewId }}" type="checkbox" name="view" data-project-id="{{ project.id }}" disabled
-                                               data-collection-id="{{ collection.id }}" {{ collection.permission == manageId ? "checked" }} {{ collection.permission == reviewId ? "checked " }} {{ collection.permission == viewId ? "checked" }}>
+                                        {% if collection.public_tags %}
+                                            <input type="checkbox" title="These collections' tags are public" disabled checked>
+                                        {% else %}
+                                            <input class="js-view-checkbox" value="{{ viewId }}" type="checkbox" name="view" data-project-id="{{ project.id }}" disabled
+                                                   data-collection-id="{{ collection.id }}" {{ collection.permission == manageId ? "checked" }} {{ collection.permission == reviewId ? "checked " }} {{ collection.permission == viewId ? "checked" }}>
+                                        {% endif %}
                                     </td>
                                     <td class="text-center">
                                         <input class="js-review-checkbox" value="{{ reviewId }}" type="checkbox" name="review" data-project-id="{{ project.id }}" disabled

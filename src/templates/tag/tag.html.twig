@@ -1,4 +1,3 @@
-<link rel="stylesheet" href="{{ baseUrl }}/assets/css/bootstrap-select.css">
 <div class="modal fade" id="modal-div" role="dialog" style="overflow:visible">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -160,7 +159,6 @@
         </div>
     </div>
 </div>
-<script src="{{ baseUrl }}/assets/js/bootstrap-select.js" defer></script>
 <script>
     var soundTypes ={{ soundTypes|json_encode|raw }};
     if ($('#modalX').val() && $('#modalX').val()) {
@@ -178,7 +176,7 @@
         $("#phony").val(phony).change()
         $("#sound_id").find("option[value=" + sound_id + "]").prop("selected", true);
         {% endif %}
-        $('#sound_id').selectpicker('refresh');
+        $('.sound_id').selectpicker('refresh');
         $(".btn").css("text-align", "left");
     });
     $("#modal-div").on('shown.bs.modal', function () {

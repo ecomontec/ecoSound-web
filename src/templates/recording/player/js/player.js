@@ -13,14 +13,21 @@ continuousPlaySelector.change(function () {
     isContinuous = this.checked;
 });
 
+$('#continue-playback').click(function () {
+    $(this).toggleClass('active');
+    $('#btn-playback').click()
+})
+
 $('#stop').click(function () {
     setContinuousPlay(false);
 });
 
 continuousPlay = function () {
-    if (fileDuration > maxTime) {
+    if (fileDuration.toFixed(1) > maxTime) {
         $('#x').val(maxTime);
-        $('#w').val(maxTime + selectionDuration);
+        $('#w').val((maxTime + selectionDuration) > fileDuration.toFixed(1) ? fileDuration.toFixed(1) : (maxTime + selectionDuration));
+        $('#y').val($('input[name="minFreqView"]').val())
+        $('#h').val($('input[name="maxFreqView"]').val())
         $('#recordingForm').submit();
     }
 };
@@ -34,6 +41,16 @@ let setContinuousPlay = function (value) {
         $("label[for='continuous-play']").removeClass('active');
     }
 };
+
+$('#play-dropdown').click(function (event) {
+    event.stopPropagation();
+    $('#dropdown-menu-play').slideToggle();
+    $(this).find('i').toggleClass('fa-caret-down fa-caret-up');
+});
+
+$('#dropdown-menu-play').click(function (event) {
+    event.stopPropagation();
+});
 
 savePlayLog = function () {
     postRequest(

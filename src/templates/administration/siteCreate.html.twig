@@ -57,6 +57,17 @@
                     </span>
                 </div>
                 <div class="row">
+                    <div class="form-group col-md-12">
+                        <label for="iho" class="col-form-label-sm">IHO</label>
+                        <select id="iho" name="iho_text" class="form-control form-control-sm">
+                            <option></option>
+                            {% for i in iho %}
+                                <option value="{{ i.NAME }}">{{ i.NAME }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
                     <div class="form-group col-md-4">
                         <label for="gadm0" class="col-form-label-sm">Global Administrative Areas level 0</label>
                         <select id="gadm0" name="gadm0_text" class="form-control form-control-sm">

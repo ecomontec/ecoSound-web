@@ -82,6 +82,17 @@
                                 <option value="Enclosure">Enclosure (recording from captured animals, movement constrained)</option>
                             </select>
                         </div>
+                        <div class="form-group col-md-6">
+                            <label for="recording_gain" class="col-form-label-sm">Recording Gain</label>
+                            <input id="recording_gain" type="number" name="recording_gain" class="form-control form-control-sm" min="0" step="1" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label for="prefix" class="col-form-label-sm">Sound Name Prefix <i class="fa fa-info-circle" title="Name follows file name" data-toggle="tooltip"></i></label>
+                            <input id="prefix" type="text" name="prefix" class="form-control form-control-sm">
+                            <input id="freq" type="hidden" name="freq" class="form-control form-control-sm">
+                        </div>
                     </div>
                 </div>
             </div>

@@ -279,6 +279,24 @@ class Site extends AbstractProvider
     }
 
     /**
+     * @return string
+     */
+    public function getIHO(): ?string
+    {
+        return $this->iho;
+    }
+
+    /**
+     * @param string $iho
+     * @return site
+     */
+    public function setIHO($iho = NULL): Site
+    {
+        $this->iho = $iho;
+        return $this;
+    }
+
+    /**
      * @return int
      */
     public function getRealmId(): ?int

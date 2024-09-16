@@ -29,7 +29,7 @@ class FileService
     const FILE_EXISTS_MESSAGE = 'File %s not inserted. It already exists in the system.';
     const DATE_FORMAT = '%d-%d-%d';
     const TIME_FORMAT = '%d:%d:%d';
-    const DATE_TIME_PATTERN = '/(19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])_(0\d|1\d|2[0-3])([0-5]\d)([0-5]\d)/';
+    const DATE_TIME_PATTERN = '/(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})/';
 
     /**
      * @var Recording
@@ -76,6 +76,9 @@ class FileService
         $license = isset($request['license']) ? $request['license'] : null;
         $type = isset($request['type']) && !empty($request['type']) ? $request['type'] : null;
         $medium = isset($request['medium']) && !empty($request['medium']) ? $request['medium'] : null;
+        $prefix = isset($request['prefix']) && !empty($request['prefix']) ? $request['prefix'] : null;
+        $recording_gain = $request['recording_gain'];
+        $note = isset($request['note']) && !empty($request['note']) ? $request['note'] : null;
 
         if (!is_dir($uploadPath) || !$handle = opendir($uploadPath)) {
             throw new FileNotFoundException($uploadPath);
@@ -88,7 +91,10 @@ class FileService
                 if ($fileName == '.' || $fileName == '..') {
                     continue;
                 }
-
+                $hash = hash_file('md5', $uploadPath . $fileName);
+                if (strtolower(pathinfo($fileName, PATHINFO_EXTENSION)) === 'wav' && isset($request['freq']) && $request['freq'] != '' && is_numeric($request['freq'])) {
+                    Utils::resample($uploadPath, $fileName, $request['freq']);
+                }
                 if ($dateFromFile) {
                     if (preg_match($this::DATE_TIME_PATTERN, $fileName, $dateTime)) {
                         $fileDate = sprintf($this::DATE_FORMAT, $dateTime[1], $dateTime[2], $dateTime[3]);
@@ -105,13 +111,19 @@ class FileService
                     ->setSite($site)
                     ->setRecorder($recorder)
                     ->setMicrophone($microphone)
+                    ->setRecordingGain($recording_gain)
+                    ->setFilename($prefix . $fileName)
                     ->setName($fileName)
                     ->setDoi($doi)
+                    ->setNote($note)
                     ->setLicense($license)
                     ->setUser(Auth::getUserID())
                     ->setType($type)
                     ->setMedium($medium);
-                $list[] = $this->fileProvider->insert($file);
+                $list[] = [
+                    'id' => $this->fileProvider->insert($file),
+                    'hash' => $hash,
+                ];
             }
             $this->queueService->queue(json_encode($list), 'upload', $request['file-uploader_count']);
         } catch (\Exception $exception) {
@@ -123,16 +135,12 @@ class FileService
         }
     }
 
-    /**
-     * @param int $fileId
-     * @throws \Exception
-     */
-    public function process(int $fileId)
+    public function process($data = null)
     {
         $soundId = null;
         try {
-            if (empty($file = $this->fileProvider->get($fileId))) {
-                throw new FileQueueNotFoundException($fileId);
+            if (empty($file = $this->fileProvider->get($data['id']))) {
+                throw new FileQueueNotFoundException($data['id']);
             }
 
             $file->setStatus(File::STATUS_IN_PROGRESS);
@@ -146,7 +154,7 @@ class FileService
                 throw new FileInvalidException($file->getPath());
             }
             $fileExists = 0;
-            $fileHash = hash_file('md5', $file->getPath());
+            $fileHash = $data['hash'];
             if (!empty($this->recordingProvider->getByHash($fileHash, $file->getCollection()))) {
                 $fileExists = 1;
             }
@@ -168,7 +176,8 @@ class FileService
                     Recording::SITE_ID => $file->getSite(),
                     Recording::RECORDER_ID => $file->getRecorder(),
                     Recording::MICROPHONE_ID => $file->getMicrophone(),
-                    Recording::FILENAME => $file->getName(),
+                    Recording::RECORDING_GAIN => $file->getRecordingGain(),
+                    Recording::FILENAME => $file->getFilename(),
                     Recording::CHANNEL_NUM => Utils::getFileChannels($wavFilePath),
                     Recording::FILE_SIZE => filesize($wavFilePath),
                     Recording::SAMPLING_RATE => Utils::getFileSamplingRate($wavFilePath),
@@ -202,7 +211,7 @@ class FileService
                     throw new FolderCreationException($path);
                 }
 
-                if (!rename($file->getPath(), $path . '/' . $file->getName())) {
+                if (!rename($file->getPath(), $path . '/' . $file->getFilename())) {
                     throw new FileCopyException($file->getPath(), $path);
                 }
 
@@ -256,9 +265,9 @@ class FileService
      * @throws \Exception
      */
     private function updateFileStatus(
-        File   $file,
-        int    $status,
-        int    $recordingId = null,
+        File $file,
+        int $status,
+        int $recordingId = null,
         string $errorMessage = null
     )
     {

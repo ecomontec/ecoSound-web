@@ -1,10 +1,5 @@
 <div class="row">
-    <div class="col-md-7">
-        <h2>{{ collection.name }}
-            <small>showing {{ list|length }} of {{ old|length }} recordings {% if none_count > 0 %}({{ none_count }} recordings not geo-referenced){% endif %}</small>
-        </h2>
-    </div>
-    <div class="col-md-5 text-right">
+    <div class="col-12 text-right mb-3">
         <a onclick="col_js({{ collection.id }},'gallery','{{ leaflet.sites }}')" type="button" class="btn btn-outline-primary btn-sm view {{ display == 'gallery' ? 'active' }}" aria-pressed="true">
             <i class="fas fa-th" aria-hidden="true"></i>
             Gallery View
@@ -21,16 +16,9 @@
         <input id="sites" value="{{ leaflet.sites }}" type="hidden">
     </div>
 </div>
-
-<div class="row mt-4">
-    <div class="col-auto mr-auto">
-        {% if collection.note is not empty %}
-            <p>
-                <strong>Description:</strong>
-                {{ collection.note }}
-            </p>
-        {% endif %}
-    </div>
-</div>
-
+<script>
+    $('#count_recording').text('{{ list|length }}')
+    $('#count_site').text('{{ leaflet.arr|length }}')
+    $('#count_tag').text('{{ tags }}')
+</script>
 {% include display == 'list' ? 'collection/views/list.html.twig' : display == 'gallery' ? 'collection/views/gallery.html.twig' : 'collection/views/timeline.html.twig' %}

@@ -12,8 +12,39 @@
                 </li>
                 <li class="breadcrumb-item active" aria-current="page">{{ collection.name }}</li>
             </ul>
+            <div class="row">
+                <div class="col-auto mr-auto">
+                    <div>
+                        <h2>{{ collection.name }}</h2>
+                    </div>
+                    {% if collection.sphere is not empty %}
+                        <div>
+                            <strong>Sphere:</strong>
+                            {{ collection.sphere }}
+                        </div>
+                    {% endif %}
+                    {% if collection.recordingUrl is not empty %}
+                        <div>
+                            <strong>External recordings URL: </strong>
+                            <a href="{{ collection.recordingUrl }}" target="_blank">{{ collection.recordingUrl }}</a>
+                        </div>
+                    {% endif %}
+                    {% if collection.projectUrl is not empty %}
+                        <div>
+                            <strong>Project URL: </strong>
+                            <a href="{{ collection.projectUrl }}" target="_blank">{{ collection.projectUrl }}</a>
+                        </div>
+                    {% endif %}
+                    {% if collection.note is not empty %}
+                        <div>
+                            <strong>Description:</strong>
+                            {{ collection.note }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
             {% if leaflet.arr %}
-                <div class="form-inline">
+                <div class="form-inline mt-3">
                     <h3>Map of recording sites</h3>
                     <button id="btn_map" class="btn btn-outline-primary btn-sm view ml-2 mb-1">Hide Map</button>
                 </div>
@@ -21,14 +52,58 @@
                 <button class="btn btn-outline-secondary btn-sm view mb-3" disabled>No geo-referenced recordings</button>
             {% endif %}
         </nav>
-        <div id="map" {% if leaflet.arr %} style="height: 750px;margin-bottom: 30px;" {% endif %}></div>
-        <div class="row">
-            <div class="col-md-7">
-                <h2>{{ collection.name }}
-                    <small>showing {{ list|length }} of {{ list|length }} recordings {% if none_count > 0 %}({{ none_count }} recording{{ none_count!=1?'s' }} not geo-referenced){% endif %}</small>
-                </h2>
+        <div class="row mb-5" id="sc-map">
+            <div id="map" {% if leaflet.arr %} class="col-lg-6" style="height: 400px" {% endif %} title="Hold down Shift and scroll the mouse wheel to zoom the map."></div>
+            <div id="sc-total" class="form-inline {% if leaflet.arr %} col-lg-6 {% else %} col-lg-12 {% endif %}">
+                <div class="cta-item {% if leaflet.arr %} col-lg-6 {% else %} col-lg-3 {% endif %}">
+                    <div class="cta-box">
+                        <div class="cta-box-icon">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div class="cta-box-text ml-auto text-right">
+                            <p>Users</p>
+                            <h3 class="cta-count-title"><span>{{ users }}</span></h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="cta-item {% if leaflet.arr %} col-lg-6 {% else %} col-lg-3 {% endif %}">
+                    <div class="cta-box">
+                        <div class="cta-box-icon">
+                            <i class="fas fa-sites2"></i>
+                        </div>
+                        <div class="cta-box-text ml-auto text-right">
+                            <p>Sites</p>
+                            <h3 class="cta-count-title"><span id="count_site">{{ leaflet.arr|length }}</span>/{{ leaflet.arr|length }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="cta-item {% if leaflet.arr %} col-lg-6 {% else %} col-lg-3 {% endif %}">
+                    <div class="cta-box">
+                        <div class="cta-box-icon">
+                            <i class="fas fa-compact-disc text-white"></i>
+                        </div>
+                        <div class="cta-box-text ml-auto text-right">
+                            <p>Recordings</p>
+                            <h3 class="cta-count-title"><span id="count_recording">{{ list|length }}</span>/{{ list|length }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="cta-item {% if leaflet.arr %} col-lg-6 {% else %} col-lg-3 {% endif %}">
+                    <div class="cta-box">
+                        <div class="cta-box-icon">
+                            <i class="fa fa-tag text-white"></i>
+                        </div>
+                        <div class="cta-box-text ml-auto text-right">
+                            <p>Tags</p>
+                            <h3 class="cta-count-title"><span id="count_tag">{{ tags }}</span>/{{ tags }}</h3>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-5 text-right">
+        </div>
+
+        <div class="row">
+            <div class="col-12 text-right mb-3">
                 <a onclick="col_js({{ collection.id }},'gallery','{{ leaflet.sites }}')" type="button" class="btn btn-outline-primary btn-sm view {{ display == 'gallery' ? 'active' }}" aria-pressed="true">
                     <i class="fas fa-th" aria-hidden="true"></i>
                     Gallery View
@@ -45,18 +120,6 @@
                 <input id="sites" value="{{ leaflet.sites }}" type="hidden">
             </div>
         </div>
-        <div class="row mt-4">
-            <div class="col-auto mr-auto">
-                {% if collection.sphere is not empty %}
-                    <strong>Sphere:</strong>
-                    {{ collection.sphere }}
-                {% endif %}
-                {% if collection.note is not empty %}
-                    <strong>Description:</strong>
-                    {{ collection.note }}
-                {% endif %}
-            </div>
-        </div>
         {% include display == 'list' ? 'collection/views/list.html.twig' : display == 'gallery' ? 'collection/views/gallery.html.twig' : 'collection/views/timeline.html.twig' %}
     </div>
 {% endblock %}
@@ -65,106 +128,333 @@
 {% block header %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ baseUrl }}/templates/collection/css/smallPlayer.css"/>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ==" crossorigin=""/>
-    <link rel="stylesheet" href="{{ baseUrl }}/assets/css/MarkerCluster.css">
-    <link rel="stylesheet" href="{{ baseUrl }}/assets/css/MarkerCluster.Default.css">{% endblock %}
+    <link rel="stylesheet" href="{{ baseUrl }}/assets/css/leaflet.css"/>
+    <link rel="stylesheet" href="{{ baseUrl }}/assets/css/Leaflet.DonutCluster.css">
+    <link rel="stylesheet" href="{{ baseUrl }}/assets/css/L.Control.Layers.Tree.css">
+    <link rel="stylesheet" href="{{ baseUrl }}/assets/css/leaflet.fullscreen.css"/>
+{% endblock %}
 {% block scripts %}
     {{ parent() }}
     <script>
-        {% include 'collection/js/collection.js' %}
         {% include 'collection/js/smallPlayer.js' %}
     </script>
     <script src="{{ baseUrl }}/assets/js/leaflet-src.js"></script>
     <script src="{{ baseUrl }}/assets/js/leaflet.markercluster-src.js"></script>
     <script src="{{ baseUrl }}/assets/js/leaflet.featuregroup.subgroup-src.js"></script>
+    <script src="{{ baseUrl }}/assets/js/Leaflet.DonutCluster.js"></script>
+    <script src="{{ baseUrl }}/assets/js/L.Control.Layers.Tree.js"></script>
+    <script src="{{ baseUrl }}/assets/js/Leaflet.fullscreen.min.js"></script>
     <script>
+        $('footer').hide()
+
         {% if leaflet.arr %}
-        var map = L.map('map', {worldCopyJump: true}).setView([{{ leaflet.latitude_center }}, {{ leaflet.longitude_center }}],  {{ leaflet.count==1?10:5 }});
-        var markers = L.markerClusterGroup();
-        var markerArray = []
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        var tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             minZoom: 1,
             maxZoom: 18,
-        }).addTo(map);
-        {% for a in leaflet.arr %}
-
-        var childCount ={{ a[5] }}
-        var myIcon = L.divIcon({html: '<div class="marker-cluster-text"><br><br><br>' + childCount + '</div>', className: 'marker-cluster-number', iconSize: [25, 41]})
-        var marker = L.marker([{{ a[2] }}, {{ a[3] }}], {id: '{{ a[0] }}', alt: '{{ a[5] }}', icon: myIcon});
-
-        marker.bindPopup('<input type="hidden" value="{{ a[0] }}site_id"><b>{{ a[1] }}</b><br>{{ a[4] }}'.replaceAll('!br!', '<br>'), {
-            closeOnClick: false,
-            maxHeight: 140,
-            maxWidth: 99999,
-        });
-        markers.addLayer(marker)
-        markerArray.push(marker)
-        {% endfor %}
-        map.addLayer(markers);
-        var group = L.featureGroup(markerArray);
-        map.fitBounds(group.getBounds());
-        map.on('popupopen', function (e) {
-            site = e.popup._content.split('value="')[1].split('site_id">')[0]
-            col_js({{ collection.id }}, $("#display_view").val(), site)
         })
+        var order = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K']
+        var map = L.map('map', {center: [{{ leaflet.latitude_center }}, {{ leaflet.longitude_center }}], zoom:{{ leaflet.count==1?10:5 }}, layers: [tiles], worldCopyJump: true, scrollWheelZoom: false})
+        var mcg = L.DonutCluster(
+            {chunkedLoading: true}, {
+                key: 'realm',
+                sumField: 'count',
+                order: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'],
+                title: {
+                    A: 'Terrestrial',
+                    B: 'Freshwater',
+                    C: 'Subterranean',
+                    D: 'Marine',
+                    E: 'Marine-Terrestrial',
+                    F: 'Subterranean-Freshwater',
+                    G: 'Terrestrial-Freshwater',
+                    H: 'Subterranean-Marine',
+                    I: 'Marine-Freshwater-Terrestrial',
+                    J: 'Freshwater-Marine',
+                    K: 'Other'
+                },
+                arcColorDict: {
+                    A: '#00FF00',
+                    B: '#00FFFF',
+                    C: '#FFFF00',
+                    D: '#0000FF',
+                    E: '#008080',
+                    F: '#80FF80',
+                    G: '#00FF80',
+                    H: '#808080',
+                    I: '#00AAAA',
+                    J: '#0080FF',
+                    K: '#000000'
+                },
+            })
+        var markers = L.markerClusterGroup();
+        var realm = []
+        var CustomIcon = []
+        var list = []
+        var data = {
+            label: 'Realms',
+            selectAllCheckbox: true,
+            children: [],
+        }
+        var arr = {{ leaflet.arr|json_encode|raw }};
+        var customControl = L.Control.extend({
+            options: {
+                position: 'bottomleft',
+            },
+            onAdd: function (map) {
+                var container = L.DomUtil.create('div', 'leaflet-bar');
+                container.innerHTML = '<a id="fullscreen-button" href="#"><i class="fa-solid fa-expand"></i></a>';
+                container.style.backgroundColor = 'white';
+                container.style.padding = '5px';
+
+                L.DomEvent.on(container, 'click', function () {
+                    if (!map.isFullscreen()) {
+                        map.toggleFullscreen();
+                    } else {
+                        map.toggleFullscreen();
+                    }
+                });
+
+                return container;
+            }
+        });
+
+        map.addControl(new customControl());
+        for (var i = 0; i < arr.length; i++) {
+            var result = arr[i][7] === null ? 10 : arr[i][7] - 1;
+            CustomIcon[arr[i][7]] = L.divIcon({
+                className: 'custom-marker' + arr[i][7],
+                html: '<div class="marker-cluster-text text-center"><br><br><br>' + arr[i][5] + '</div>',
+                iconSize: [25, 41],
+                iconAnchor: [12, 12]
+            });
+            var marker = L.marker([arr[i][2], arr[i][3]], {
+                icon: CustomIcon[arr[i][7]],
+                id: arr[i][0],
+                alt: "1",
+                count: arr[i][5],
+                realm: order[result],
+            });
+            marker.bindPopup('<input type="hidden" value="' + arr[i][0] + 'site_id"><b>' + arr[i][1] + '</b>'.replaceAll('!br!', '<br>'), {
+                closeOnClick: false,
+                maxHeight: 140,
+                maxWidth: 99999,
+            });
+            if (arr[i][7] != null) {
+                if ($.inArray(arr[i][7], list) === -1) {
+                    data.children[arr[i][7]] = ({
+                        label: arr[i][6],
+                        selectAllCheckbox: true,
+                        children: [],
+                    });
+                    list.push(arr[i][7])
+                }
+                if (arr[i][9] != null) {
+                    if ($.inArray(arr[i][9], list) === -1) {
+                        data.children[arr[i][7]].children[arr[i][9]] = ({
+                            label: arr[i][8],
+                            selectAllCheckbox: true,
+                            children: [],
+                        });
+                        list.push(arr[i][9])
+                    }
+                    if (arr[i][11] != null) {
+                        if (!realm[arr[i][11]]) {
+                            realm[arr[i][11]] = L.featureGroup.subGroup(mcg).addTo(map)
+                        }
+                        if ($.inArray(arr[i][11], list) === -1) {
+                            data.children[arr[i][7]].children[arr[i][9]].children[arr[i][11]] = ({
+                                label: arr[i][10],
+                                layer: realm[arr[i][11]],
+                            });
+                            list.push(arr[i][11])
+                        }
+                        marker.addTo(realm[arr[i][11]]);
+                    } else {
+                        if (!realm[arr[i][9]]) {
+                            realm[arr[i][9]] = L.featureGroup.subGroup(mcg).addTo(map)
+                            data.children[arr[i][7]].children[arr[i][9]].children[999] = ({
+                                label: 'No selected',
+                                layer: realm[arr[i][9]],
+                            });
+                        }
+                        marker.addTo(realm[arr[i][9]]);
+                    }
+                } else {
+                    if (!realm[arr[i][7]]) {
+                        realm[arr[i][7]] = L.featureGroup.subGroup(mcg).addTo(map)
+                        data.children[arr[i][7]].children[999] = ({
+                            label: 'No selected',
+                            layer: realm[arr[i][7]],
+                        });
+                    }
+                    marker.addTo(realm[arr[i][7]]);
+                }
+            } else {
+                if (!realm[999]) {
+                    realm[999] = L.featureGroup.subGroup(mcg).addTo(map)
+                    data.children[999] = ({
+                        label: 'Others',
+                        layer: realm[999],
+                    });
+                }
+                marker.addTo(realm[999]);
+            }
+        }
+        var ctl = L.control.layers.tree(null, data, {
+            collapsed: true,
+            selectorBack: true,
+        }).addTo(map);
+        mcg.addTo(map);
+        map.fitBounds(mcg.getBounds());
+
+        function throttle(func, wait) {
+            let timeout = null;
+            return function (...args) {
+                if (!timeout) {
+                    timeout = setTimeout(() => {
+                        func.apply(this, args);
+                        timeout = null;
+                    }, wait);
+                }
+            };
+        }
+
+        const map_change = throttle(function (event) {
+            var site = null
+            mcg.eachLayer(function (layer) {
+                if (layer instanceof L.Marker) {
+                    if (map.getBounds().contains(layer.getLatLng())) {
+                        if (site) {
+                            site += ',' + layer.options.id;
+                        } else {
+                            site = layer.options.id;
+                        }
+                    }
+                } else if (layer instanceof L.MarkerCluster) {
+                    layer.getAllChildMarkers().forEach(function (marker) {
+                        if (map.getBounds().contains(marker.getLatLng())) {
+                            if (site) {
+                                site += ',' + marker.options.id;
+                            } else {
+                                site = marker.options.id;
+                            }
+                        }
+                    });
+                }
+            });
+            if (site != $("#sites").val() && !(site == null && $('#sites').val() == '')) {
+                col_js({{ collection.id }}, $("#display_view").val(), site)
+            }
+        }, 500);
+
+        map.on('overlayadd', map_change);
+        map.on('overlayremove', map_change)
+        $('#map').on('click', '.leaflet-popup-close-button', function () {
+            map_change();
+        });
         map.on('moveend', function () {
             if ($(".leaflet-popup-close-button").length > 0) {
                 $(".leaflet-popup-close-button")[0].click()
             }
-            site = null
-            North = map.getBounds().getNorth()
-            South = map.getBounds().getSouth()
-            East = map.getBounds().getEast()
-            West = map.getBounds().getWest()
-            {% for a in leaflet.arr %}
-            if (North >={{ a[2] }} && South <= {{ a[2] }} && East >= {{ a[3] }} && West <= {{ a[3] }}) {
-                if (site) {
-                    site = site + ',' +{{ a[0] }}
+            map_change()
+        })
+        map.on('popupopen', function (e) {
+            var site = e.popup._content.split('value="')[1].split('site_id">')[0]
+            col_js({{ collection.id }}, $("#display_view").val(), site)
+        })
+
+        var isShiftDown = false;
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Shift') {
+                isShiftDown = true;
+            }
+        });
+
+        document.addEventListener('keyup', function (e) {
+            if (e.key === 'Shift') {
+                isShiftDown = false;
+            }
+        });
+
+        map.getContainer().addEventListener('wheel', function (e) {
+            if (isShiftDown) {
+                e.preventDefault();
+                if (e.deltaY > 0) {
+                    map.zoomOut();
                 } else {
-                    site ={{ a[0] }}
+                    map.zoomIn();
                 }
             }
-            {% endfor %}
-            if (site != $("#sites").val()) {
-                col_js({{ collection.id }}, $("#display_view").val(), site)
+        });
+
+        $(document).ready(function () {
+            if ($.cookie('map') == 'Hide Map') {
+                $("#btn_map").text('Show Map')
+                $('#sc-total').removeClass('col-lg-6').addClass('col-lg-12')
+                $('.cta-item').removeClass('col-lg-6').addClass('col-lg-3')
+                $("#map").hide()
+            } else {
+                $("#btn_map").text('Hide Map')
+                $('#sc-total').removeClass('col-lg-12').addClass('col-lg-6')
+                $('.cta-item').removeClass('col-lg-3').addClass('col-lg-6')
+                $("#map").show()
             }
-        })
-        $(".leaflet-popup-close-button").click(function () {
-            site = null
-            North = map.getBounds().getNorth()
-            South = map.getBounds().getSouth()
-            East = map.getBounds().getEast()
-            West = map.getBounds().getWest()
-            {% for a in leaflet.arr %}
-            if (North >={{ a[2] }} && South <= {{ a[2] }} && East >= {{ a[3] }} && West <= {{ a[3] }}) {
-                if (site) {
-                    site = site + ',' +{{ a[0] }}
-                } else {
-                    site ={{ a[0] }}
-                }
+        });
+
+        $("#btn_map").click(function () {
+            $("#map").toggle()
+            $.cookie('map', $("#btn_map").text(), {expires: 7});
+            if ($("#btn_map").text() == 'Hide Map') {
+                $("#btn_map").text('Show Map')
+                $('#sc-total').removeClass('col-lg-6').addClass('col-lg-12')
+                $('.cta-item').removeClass('col-lg-6').addClass('col-lg-3')
+            } else {
+                $("#btn_map").text('Hide Map')
+                $('#sc-total').removeClass('col-lg-12').addClass('col-lg-6')
+                $('.cta-item').removeClass('col-lg-3').addClass('col-lg-6')
             }
-            {% endfor %}
-            if (site != $("#sites")) {
-                col_js({{ collection.id }}, $("#display_view").val(), site)
+        });
+
+        $('#fullscreen-button').click(function () {
+            if (!map.isFullscreen()) {
+                map.toggleFullscreen();
+            } else {
+                map.toggleFullscreen();
             }
-        })
+        });
+
         {% endif %}
 
         function col_js(id, view, site) {
-            url = "{{ baseUrl }}/collection/showjs/" + id + '/' + view
-            if (site != '') {
-                url = url + '/' + site
-            }
+            var url = "{{ baseUrl }}/collection/showjs/" + id;
+            var dataToSend = {
+                site: site,
+                view: view,
+            };
             $.ajax({
                 url: url,
+                type: 'POST',
+                data: dataToSend,
                 success: function (data) {
-                    if (data) {
-                        $("#map").nextAll().remove()
+                    if (data == 'No results') {
+                        location.reload();
+                    } else if (data) {
+                        $("#sc-map").nextAll().remove()
                         $("#display_view").val(view)
-                        $("#map").after(data)
+                        $("#sc-map").after(data)
                     }
                 },
-            })
+                error: function (xhr, error, thrown) {
+                    if (xhr.status == 400 || xhr.status == 404 || xhr.status == 500) {
+                        location.reload();
+                    }
+                },
+            });
         }
+
+        $('.view').click(function () {
+            $(this).addClass('active');
+        });
     </script>
 {% endblock %}

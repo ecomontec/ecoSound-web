@@ -1,42 +1,358 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    <div class="jumbotron text-center bg-light py-4">
-        <img src="{{ imagesUrl }}/biosounds_logo_large.png" alt="ecoSound">
-        <p class="lead mt-2">Open-source online platform for ecoacoustics</p>
+    <section class="p-relative">
+        <div class="swiper banner-parallax-slider p-relative">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <div class="banner banner-space">
+                        <div class="banner-thumb-bg" data-background="{{ imagesUrl }}swiper_bg1.png"></div>
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="banner-content p-relative text-center">
+                                        <img src="{{ imagesUrl }}/biosounds_logo_large.png">
+                                        <h2 class="banner-title mt-5">Open-source online<br>platform for ecoacoustics</h2>
+                                        <p class="h5">ecoSound-web is an open-source, online platform for collaboratively archiving and sharing audio recordings,
+                                            <br>manually creating and reviewing annotations in soundscapes, analysing target signals in time and frequency, and storing reference recordings for different soniferous taxa.</p>
+                                        <div class="banner-home-2-btn-wrapper-2">
+                                            <a href="https://github.com/ecomontec/ecoSound-web" target="_blank" class="rr-btn btn-link btn-hover-white mt-4 ml-3 mr-3"><i class="fa-brands fa-github"></i>GitHub</a>
+                                            <a href="https://f1000research.com/articles/9-1224/v2" target="_blank" class="rr-btn btn-link btn-hover-white mt-4 ml-3 mr-3"><i class="fa-solid fa-f"></i>F1000Research</a>
+                                            <a href="https://scholar.google.com/scholar?oi=bibs&hl=en&cites=14252530002819630889,17393714564849497040" target="_blank" class="rr-btn btn-link btn-hover-white mt-4 ml-3 mr-3"><i class="fa-brands fa-google-scholar"></i>Google Scholar</a>
+                                            <a href="mailto:%20kevin.darras@inrae.fr" class="rr-btn btn-link btn-hover-white mt-4 ml-3 mr-3"><i class="fa-solid fa-envelope"></i>Email</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="banner banner-space">
+                        <div class="banner-thumb-bg" data-background="{{ imagesUrl }}swiper_bg2.png"></div>
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="banner-content p-relative text-center">
+                                        <img src="{{ imagesUrl }}/biosounds_logo_large.png">
+                                        <h2 class="banner-title mt-5">Open-source online<br>platform for ecoacoustics</h2>
+                                        <p class="h5">We are open for collaboration with web engineers and ecologists.
+                                            <br>If you need to use ecoSound-web to annotate your soundscapes, or want to join its development, contact us.</p>
+                                        <div class="banner-home-2-btn-wrapper-2">
+                                            <a href="https://github.com/ecomontec/ecoSound-web" target="_blank" class="rr-btn btn-link btn-hover-white mt-4 ml-3 mr-3"><i class="fa-brands fa-github"></i>GitHub</a>
+                                            <a href="https://f1000research.com/articles/9-1224/v2" target="_blank" class="rr-btn btn-link btn-hover-white mt-4 ml-3 mr-3"><i class="fa-solid fa-f"></i>F1000Research</a>
+                                            <a href="https://scholar.google.com/scholar?oi=bibs&hl=en&cites=14252530002819630889,17393714564849497040" target="_blank" class="rr-btn btn-link btn-hover-white mt-4 ml-3 mr-3"><i class="fa-brands fa-google-scholar"></i>Google Scholar</a>
+                                            <a href="mailto:%20kevin.darras@inrae.fr" class="rr-btn btn-link btn-hover-white mt-4 ml-3 mr-3"><i class="fa-solid fa-envelope"></i>Email</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-area section-space p-relative bg-lightblue">
+        <div class="container">
+            <div class="col-12 form-inline">
+                <div class="cta-item col-xl-3 col-md-6 mt-5">
+                    <div class="cta-box border-darkgreen light-green">
+                        <div class="cta-box-icon">
+                            <i class="fas fa-user t-lightgreen"></i>
+                        </div>
+                        <div class="cta-box-text ml-auto text-right">
+                            <p>Users</p>
+                            <h3 class="cta-count-title"><span>{{ users }}</span></h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="cta-item col-xl-3 col-md-6 mt-5">
+                    <div class="cta-box border-darkgreen light-green">
+                        <div class="cta-box-icon">
+                            <i class="fas fa-desktop t-lightgreen"></i>
+                        </div>
+                        <div class="cta-box-text ml-auto text-right">
+                            <p>Projects</p>
+                            <h3 class="cta-count-title"><span>{{ projects|length }}</span></h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="cta-item col-xl-3 col-md-6 mt-5">
+                    <div class="cta-box border-darkgreen light-green">
+                        <div class="cta-box-icon">
+                            <i class="fas fa-compact-disc t-lightgreen"></i>
+                        </div>
+                        <div class="cta-box-text ml-auto text-right">
+                            <p>Recordings</p>
+                            <h3 class="cta-count-title"><span>{{ recordings }}</span></h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="cta-item col-xl-3 col-md-6 mt-5">
+                    <div class="cta-box border-darkgreen light-green">
+                        <div class="cta-box-icon">
+                            <i class="fa fa-tag t-lightgreen"></i>
+                        </div>
+                        <div class="cta-box-text ml-auto text-right">
+                            <p>Tags</p>
+                            <h3 class="cta-count-title"><span>{{ tags[0].count }}</span></h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div class="bg-lightblue">
+        <div class="section-slider-title-wrapper-title text-center t-darkgreen mb-3">Sponsored By</div>
     </div>
-    <div class="container mb-5">
-        <p style="text-align: center;">
-            <span>
-                <img src="{{imagesUrl}}/ecosound-web_infra.png">
-            </span>
-        </p>
-        <p class="c0">
-            <span class="c3">ecoSound-web is an open-source, online platform for collaboratively archiving and sharing audio recordings, manually creating and reviewing annotations in soundscapes, analysing target signals in time and frequency, and storing reference recordings for different soniferous taxa.</span>
-        </p>
-        <h1 class="c1" id="h.snyv6571pmgh">
-            <span class="c2">References</span>
-        </h1>
-        <p class="c0">
-            ecoSound-web is on
-            <b>
-                <a href="https://github.com/ecomontec/ecoSound-web">GitHub</a>
-            </b>
-		, published in
-            <b>
-                <a href="https://f1000research.com/articles/9-1224/v2">F1000Research</a>
-            </b>
-            , and cited
-            <b>
-                <a href="https://scholar.google.com/scholar?oi=bibs&hl=en&cites=14252530002819630889,17393714564849497040">here</a>
-            </b>
-            .
-            <h1 class="c1" id="h.snyv6571pmgh">
-		<span class="c2">Collaboration</span>
-            </h1>
-        </p>
-        <p class="c0">
-            <span class="c3">We are open for collaboration with web engineers and ecologists. If you need to use ecoSound-web to annotate your soundscapes, or want to join its development, contact us (kdarras#at#gwdg#dot#de).</span>
-        </p>
-    </p>
-</p></div>{% endblock %}
+
+    <section class="main-brand-area bg-lightblue border-darkgreen-tb">
+        <div class="brand-area mt-5 mb-5">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="swiper brand-active">
+                            <div class="swiper-wrapper">
+                                <div class="swiper-slide">
+                                    <div class="brand-item text-center">
+                                        <div class="brand-thumb">
+                                            <a target="_blank" href="https://www.dfg.de/en/">
+                                                <img class="img-fluid" src="{{ projectImagesUrl }}/dfg_logo.png" title="DFG" alt="DFG">
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="swiper-slide">
+                                    <div class="brand-item text-center">
+                                        <div class="brand-thumb">
+                                            <a target="_blank" href="https://www.uni-goettingen.de/en/74726.html">
+                                                <img class="img-fluid" src="{{ projectImagesUrl }}/fly_bee.png" title="Agroecology" alt="Agroecology logo">
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="swiper-slide">
+                                    <div class="brand-item text-center">
+                                        <div class="brand-thumb">
+                                            <a target="_blank" href="https://en.westlake.edu.cn">
+                                                <img class="img-fluid" src="{{ projectImagesUrl }}/westlake_univ.png" title="WestlakeUniversity" alt="westlake university logo"/>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="swiper-slide">
+                                    <div class="brand-item text-center">
+                                        <div class="brand-thumb">
+                                            <a target="_blank" href="https://www.tomcwanger.com">
+                                                <img class="img-fluid" src="{{ projectImagesUrl }}/sealab_logo.png" title="SEA" alt="SEA logo"/>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="swiper-slide">
+                                    <div class="brand-item text-center">
+                                        <div class="brand-thumb">
+                                            <a target="_blank" href="https://www.nfdi4earth.de/">
+                                                <img class="img-fluid" src="{{ projectImagesUrl }}/NFDI4Earth_logo.png" title="NFDI4Earth" alt="NFDI4Earth logo"/>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="swiper-slide">
+                                    <div class="brand-item text-center">
+                                        <div class="brand-thumb">
+                                            <a target="_blank" href="https://www.inrae.fr/en">
+                                                <img class="img-fluid" src="{{ projectImagesUrl }}/inrae.png" title="Inrae" alt="Inrae logo"/>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-lightblue">
+        <div class="top-bottom banner-wrap light-green mt-5">
+            <div class="container">
+                <div class="section-slider-title">
+                    <div class="section-slider-title-wrapper">
+                        <h6 class="section-slider-title-wrapper-subtitle t-darkgreen">
+                            ecoSound-web
+                        </h6>
+                        <h2 class="section-slider-title-wrapper-title t-darkgreen">Project Showcase</h2>
+                    </div>
+                    <div class="section-slider-title-button">
+                        <div class="d-none d-md-block mb-4">
+                            <button class="section-slider-title-button-right mr-3 project-slider-button-prev">
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+                            <button class="section-slider-title-button-right project-slider-button-next">
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                        <div class="d-block d-md-none mb-4">
+                            <button class="section-slider-title-button-right mr-3 project-slider-button-prev-2">
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+                            <button class="section-slider-title-button-right project-slider-button-next-2">
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="project-row-custom d-none d-md-block mt-5">
+                    <div class="swiper project-slide slide-height">
+                        <div class="swiper-wrapper">
+                            {% set counter = 0 %}
+                            {% for project in projects %}
+                            {% if counter % 5 == 0 %}
+                            {% if counter > 0 %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="swiper-slide p-relative">
+                        <div class="project-three-single">
+                            <ul class="slider-hover-item">
+                                {% endif %}
+                                <li>
+                                    <a href="{{ baseUrl }}/collection/index/{{ project.id }}">
+                                        <div class="project-three-single-inner">
+                                            <div class="project-three-single-img" style="background-image: url({{ baseUrl }}/sounds/projects/{{ project.pictureId }});"></div>
+                                            <div class="bg-overlay"></div>
+                                            <div class="project-three-single-content">
+                                                <div class="project-small-img">
+                                                    {% if project.collection == '1' %}
+                                                        <i class="fa-solid fa-unlock-keyhole text-white-50" title="contains public collections"></i>
+                                                    {% elseif project.collection == '0' %}
+                                                        <i class="fa-solid fa-lock text-black-50" title="does not contain public collections"></i>
+                                                    {% else %}
+                                                        <span>no data available</span>
+                                                    {% endif %}
+                                                </div>
+                                                <h4>{{ project.name }}</h4>
+                                                <div class="description-container text-white">{{ project.descriptionShort|striptags }}</div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                                {% set counter = counter + 1 %}
+                                {% endfor %}
+                                {% if counter > 0 %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="project-row-custom-2 d-block d-md-none">
+            <div class="swiper project-slide-2">
+                <div class="swiper-wrapper">
+                    {% for project in my_sounds %}
+                        <div class="swiper-slide p-relative">
+                            <div class="project-three-single-inner min-vh-72">
+                                <div class="project-three-single-img-1 border-darkgreen" style="background-image: url({{ baseUrl }}/sounds/projects/{{ project.picture_id }});"></div>
+                                <div class="bg-overlay"></div>
+                                <div class="project-three-single-content border-darkgreen">
+                                    <div class="project-small-img">
+                                        {% if project.access>0 or project.permission>0 %}
+                                            <i class="fa-solid fa-unlock-keyhole text-white-50" title="contains public collections"></i>
+                                        {% else %}
+                                            <i class="fa-solid fa-lock text-black-50" title="does not contain public collections"></i>
+                                        {% endif %}
+                                    </div>
+                                    <h4>{{ project.name }}</h4>
+                                    <div class="description-container text-white">{{ project.description_short|striptags }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="main-brand-area bg-lightblue">
+        <div class="brand-area mt-5 mb-5">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="section-slider-title-wrapper-title text-center t-darkgreen mb-5">Powered By</div>
+                        <div class="swiper brand-active1">
+                            <div class="swiper-wrapper">
+                                <div class="swiper-slide">
+                                    <div class="brand-item text-center">
+                                        <div class="brand-thumb">
+                                            <a target="_blank" href="https://scikit-maad.github.io/">
+                                                <img class="img-fluid" src="{{ projectImagesUrl }}/scikit-maad.png">
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="swiper-slide">
+                                    <div class="brand-item text-center">
+                                        <div class="brand-thumb">
+                                            <a target="_blank" href="https://leafletjs.com/">
+                                                <img class="img-fluid" src="{{ projectImagesUrl }}/leaflet.png">
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="swiper-slide">
+                                    <div class="brand-item text-center">
+                                        <div class="brand-thumb">
+                                            <a target="_blank" href="https://github.com/kahst/BirdNET-Analyzer">
+                                                <img class="img-fluid" src="{{ projectImagesUrl }}/BirdNET.png">
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="swiper-slide">
+                                    <div class="brand-item text-center">
+                                        <div class="brand-thumb">
+                                            <a target="_blank" href="https://github.com/macaodha/batdetect2">
+                                                <img class="img-fluid" src="{{ projectImagesUrl }}/bat.png">
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="swiper-slide">
+                                    <div class="brand-item text-center">
+                                        <div class="brand-thumb">
+                                            <a target="_blank" href="https://www.rabbitmq.com/">
+                                                <img class="img-fluid" src="{{ projectImagesUrl }}/rabbitmq.svg">
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="swiper-slide">
+                                    <div class="brand-item text-center">
+                                        <div class="brand-thumb">
+                                            <a target="_blank" href="https://www.plupload.com/">
+                                                <img class="img-fluid" src="{{ projectImagesUrl }}/plupload.png"/>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block header %}
+    {{ parent() }}
+    <script src="{{ baseUrl }}/templates/js/index.js?v=1.1" defer></script>
+{% endblock %}

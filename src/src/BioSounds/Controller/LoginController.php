@@ -33,4 +33,9 @@ class LoginController extends BaseController
         header('Location: ' . APP_URL);
         return true;
     }
+
+    public function getSession()
+    {
+        return $_SESSION['regenerate_timeout'];
+    }
 }

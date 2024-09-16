@@ -30,9 +30,9 @@ class QueueProvider extends AbstractProvider
      */
     public function delete(string $queue_id)
     {
-        $this->database->prepareQuery("UPDATE queue SET error = '-1' WHERE status!=0 AND queue_id IN ($queue_id)");
+        $this->database->prepareQuery("UPDATE queue SET error = '-1' WHERE (status!=0 OR error = 'being cancelled.') AND queue_id IN ($queue_id)");
         $this->database->executeUpdate();
-        $this->database->prepareQuery("UPDATE queue SET status='-2' WHERE status=0 AND queue_id IN ($queue_id)");
+        $this->database->prepareQuery("UPDATE queue SET error = 'being cancelled.' WHERE status=0 AND queue_id IN ($queue_id)");
         return $this->database->executeUpdate();
     }
 
@@ -74,11 +74,7 @@ class QueueProvider extends AbstractProvider
                 if ($value['status'] == '2') {
                     $arr[$key][] = '<div class="text-secondary">pending</div>';
                 } else if ($value['status'] == '-2') {
-                    if ($value['stop_time']) {
-                        $arr[$key][] = '<div class="text-warning">cancelled</div>';
-                    } else {
-                        $arr[$key][] = '<div class="text-dark">being cancelled</div>';
-                    }
+                    $arr[$key][] = '<div class="text-warning">cancelled</div>';
                 } elseif ($value['status'] == '1') {
                     $arr[$key][] = '<div class="text-success">finished</div>';
                 } elseif ($value['status'] == '-1') {

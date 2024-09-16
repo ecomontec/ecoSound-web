@@ -3,9 +3,13 @@
 namespace BioSounds\Controller;
 
 use BioSounds\Classes\BaseClass;
+use BioSounds\Entity\User;
 use BioSounds\Exception\InvalidActionException;
 use BioSounds\Listener\Exception\ApiExceptionListener;
 use BioSounds\Listener\Exception\ExceptionListener;
+use BioSounds\Provider\ProjectProvider;
+use BioSounds\Provider\RecordingProvider;
+use BioSounds\Provider\TagProvider;
 use BioSounds\Utils\Utils;
 use BioSounds\Security\Session as Session;
 use Exception;
@@ -37,10 +41,13 @@ class AppController extends BaseClass
         $slugs = array_filter(explode('/', substr($uri, 1)));
 
         error_log("Oracle database not available!", 0);
-
         if (count($slugs) === 1) {
             return $this->twig->render('index.html.twig', [
                 'title' => $this->title,
+                'projects' => (new ProjectProvider())->getList(),
+                'recordings' => (new RecordingProvider())->getCount(),
+                'users' => count((new User())->getAll()),
+                'tags' => (new TagProvider())->getAll(),
             ]);
         }
 

@@ -55,6 +55,7 @@ class SiteController extends BaseController
             'iucn_gets' => $arr,
             'realms' => (new IucnGet())->getIucnGets(),
             'gadm0' => json_decode($this->gadm()),
+            'iho' => (new SiteProvider())->getIHO(),
         ]);
     }
 

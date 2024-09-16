@@ -7,6 +7,7 @@ use BioSounds\Entity\License;
 use BioSounds\Entity\Microphone;
 use BioSounds\Entity\Recorder;
 use BioSounds\Entity\Recording;
+use BioSounds\Entity\User;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\IndexLogProvider;
@@ -19,8 +20,12 @@ use BioSounds\Provider\SiteProvider;
 use BioSounds\Provider\TagProvider;
 use BioSounds\Service\Queue\RabbitQueueService;
 use BioSounds\Utils\Auth;
+use BioSounds\Utils\Utils;
+use Cassandra\Varint;
+use DirectoryIterator;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
+use getID3;
 
 class RecordingController extends BaseController
 {
@@ -104,6 +109,13 @@ class RecordingController extends BaseController
             throw new ForbiddenException();
         }
 
+        if (!preg_match('/^[0-9]\d*$/', $_POST['recording_gain_number'])) {
+            return json_encode([
+                'isValid' => 1,
+                'message' => 'Recording gain must be a positive integer.',
+            ]);
+        }
+
         $data = [];
 
         foreach ($_POST as $key => $value) {
@@ -123,6 +135,9 @@ class RecordingController extends BaseController
                             break;
                         case 'select-one':
                             $data[$key] = $value;
+                            break;
+                        case 'number':
+                            $data[$key] = ($value == '' ? null : $value);
                             break;
                         case "hidden":
                             $data[$key] = filter_var($value, FILTER_SANITIZE_NUMBER_INT);
@@ -216,7 +231,7 @@ class RecordingController extends BaseController
         header('Accept-Ranges:bytes');
         header('Content-Disposition: attachment; filename=' . $file_name);
 
-        $tagAls[] = array('recording_start', 'duration_s', 'sampling_rate', 'name', 'bit_rate', 'channel_number');
+        $tagAls[] = array('recording_start', 'duration_s', 'sampling_rate', 'name', 'bit_rate', 'channel_number', 'duty_cycle_recording', 'duty_cycle_period');
 
         foreach ($tagAls as $line) {
             fputcsv($fp, $line);

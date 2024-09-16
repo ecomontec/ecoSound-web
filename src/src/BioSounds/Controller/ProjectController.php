@@ -8,6 +8,7 @@ use BioSounds\Utils\Auth;
 class ProjectController extends BaseController
 {
     const SECTION_TITLE = 'Project';
+
     /**
      * @return string
      * @throws \Exception
@@ -16,7 +17,7 @@ class ProjectController extends BaseController
     {
         $projectProvider = new ProjectProvider();
         return $this->twig->render('project.html.twig', [
-            'projects' =>  $projectProvider->getList(),
+            'projects' => $projectProvider->getList(),
         ]);
     }
 
@@ -28,5 +29,29 @@ class ProjectController extends BaseController
     public function gsp()
     {
         return $this->twig->render('gsp.html.twig', ['title' => 'ecoSound-web - Global Soundscapes Project']);
+    }
+
+    public function search(): string
+    {
+        $data = [];
+
+        $terms = isset($_POST['term']) ? $_POST['term'] : null;
+
+        if (!empty($terms)) {
+            $words = preg_split("/[\s,]+/", $terms);
+
+            $result = (new ProjectProvider())->search($words);
+
+            if (!empty($result)) {
+                foreach ($result as $row) {
+                    $data[] = [
+                        'label' => $row['name'] . ' (' . $row['type'] . ')',
+                        'value' => $row['id'],
+                        'url' => $row['url'],
+                    ];
+                }
+            }
+        }
+        return json_encode($data);
     }
 }

@@ -86,11 +86,7 @@ class QueueController extends BaseController
             if ($Item['status'] == '2') {
                 $Item['status'] = 'pending';
             } else if ($Item['status'] == '-2') {
-                if ($Item['stop_time']) {
-                    $Item['status'] = 'cancelled';
-                } else {
-                    $Item['status'] = 'being cancelled';
-                }
+                $Item['status'] = 'cancelled';
             } elseif ($Item['status'] == '1') {
                 $Item['status'] = 'finished';
             } elseif ($Item['status'] == '-1') {
