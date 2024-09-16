@@ -77,7 +77,7 @@ class FileService
         $type = isset($request['type']) && !empty($request['type']) ? $request['type'] : null;
         $medium = isset($request['medium']) && !empty($request['medium']) ? $request['medium'] : null;
         $prefix = isset($request['prefix']) && !empty($request['prefix']) ? $request['prefix'] : null;
-        $recording_gain = isset($request['recording_gain']) && !empty($request['recording_gain']) ? $request['recording_gain'] : null;
+        $recording_gain = $request['recording_gain'];
         $note = isset($request['note']) && !empty($request['note']) ? $request['note'] : null;
 
         if (!is_dir($uploadPath) || !$handle = opendir($uploadPath)) {

@@ -93,11 +93,11 @@
                 <th>DOI</th>
                 <th>Date</th>
                 <th>Time</th>
-                <th title="Metadata tags read from the recording file">Metadata_Title <i class="fa fa-info-circle"></i></th>
-                <th title="Metadata tags read from the recording file">Metadata_Artist <i class="fa fa-info-circle"></i></th>
-                <th title="Metadata tags read from the recording file">Metadata_Album <i class="fa fa-info-circle"></i></th>
-                <th title="Metadata tags read from the recording file">Metadata_Year <i class="fa fa-info-circle"></i></th>
-                <th title="Metadata tags read from the recording file">Metadata_Comment <i class="fa fa-info-circle"></i></th>
+                <th>Metadata_Title <i class="fa fa-info-circle" title="Metadata tags read from the recording file" data-toggle="tooltip"></i></th>
+                <th>Metadata_Artist <i class="fa fa-info-circle" title="Metadata tags read from the recording file" data-toggle="tooltip"></i></th>
+                <th>Metadata_Album <i class="fa fa-info-circle" title="Metadata tags read from the recording file" data-toggle="tooltip"></i></th>
+                <th>Metadata_Year <i class="fa fa-info-circle" title="Metadata tags read from the recording file" data-toggle="tooltip"></i></th>
+                <th>Metadata_Comment <i class="fa fa-info-circle" title="Metadata tags read from the recording file" data-toggle="tooltip"></i></th>
             </tr>
             </thead>
             <tbody class="form-control-sm js-recording-list"></tbody>
@@ -342,6 +342,7 @@
                 if (table.state.loaded()) {
                     $('#search').val(table.state.loaded().search.search);
                 }
+                $('[data-toggle="tooltip"]').tooltip();
                 $('#search').on('input', () => {
                     table.search($('#search').val()).draw();
                 });
@@ -435,7 +436,7 @@
                     }
                     var id = $(this).attr('data-id')
                     $('#recordingGainValid' + id).text('')
-                    saveFormList($(this),  'api/admin/recordingManager/save', function (response) {
+                    saveFormList($(this), 'api/admin/recordingManager/save', function (response) {
                         if (response.isValid) {
                             $('#recordingGainValid' + id).text(response.message)
                         }
@@ -448,7 +449,7 @@
                         event.preventDefault();
                     }
                 });
-                $("select[name='user_id']").on('mouseenter ', function () {
+                $("select[name='user_id']").on('mouseenter', function () {
                     if ($(this)[0].options.length < 2) {
                         for (var key in arr) {
                             if ($(this).val() != arr[key]['user_id']) {
@@ -468,7 +469,7 @@
                         }
                     }
                 });
-                $("select[name='recorder_id']").on('change', function () {
+                $("table").on('change', "select[name='recorder_id']", function () {
                     var id = $(this).attr('id').split('_')[1]
                     $("#microphone_" + id).empty()
                     $("#microphone_" + id).append("<option value='0'></option>");
@@ -479,7 +480,7 @@
                         }
                     }
                 });
-                $("select[name='microphone_id']").on('mouseenter ', function () {
+                $("table").on('mouseenter', "select[name='microphone_id']", function () {
                     if ($(this)[0].options.length < 2) {
                         var id = $(this).attr('id').split('_')[1]
                         if ($('#recorder_' + id).val() != 0) {

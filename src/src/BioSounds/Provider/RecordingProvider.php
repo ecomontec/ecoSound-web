@@ -357,7 +357,6 @@ class RecordingProvider extends AbstractProvider
         $users = (new User())->getList();
         $sites = (new SiteProvider())->getList($projectId, $collectionId);
         $recorders = (new Recorder())->getBasicList();
-        $microphones = (new Microphone())->getBasicList();
         $licenses = (new License())->getBasicList();
         if (count($result)) {
             foreach ($result as $key => $value) {
@@ -378,9 +377,6 @@ class RecordingProvider extends AbstractProvider
                 }
                 foreach ($recorders as $recorder) {
                     $str_recorder .= "<option value='$recorder[recorder_id]'  data-microphone='$recorder[microphone]' " . ($recorder['recorder_id'] == $value['recorder_id'] ? 'selected' : '') . ">" . (($recorder['brand'] == null || $recorder['brand'] == '') ? $recorder['model'] : ($recorder['model'] . '|' . $recorder['brand'])) . "</option>";
-                }
-                foreach ($microphones as $microphone) {
-                    $str_microphone .= "<option value='$microphone[microphone_id]' " . ($microphone['microphone_id'] == $value['microphone_id'] ? 'selected' : '') . ">$microphone[name]</option>";
                 }
                 foreach ($licenses as $license) {
                     $str_license .= "<option value='$license[license_id]' " . ($license['license_id'] == $value['license_id'] ? 'selected' : '') . ">$license[name]</option>";
@@ -406,7 +402,7 @@ class RecordingProvider extends AbstractProvider
                 $arr[$key][] = "<select id='user_id$value[recording_id]' name='user_id' style='width:120px;' class='form-control form-control-sm'>$str_user</select>";
                 $arr[$key][] = "<select id='site_id$value[recording_id]' name='site_id' style='width:120px;' class='form-control form-control-sm'><option value='0' ></option>$str_site</select>";
                 $arr[$key][] = "<select name='recorder_id' id='recorder_$value[recording_id]' style='width:250px;' class='form-control form-control-sm'><option value='0' ></option>$str_recorder</select>";
-                $arr[$key][] = "<select name='microphone_id' id='microphone_$value[recording_id]' style='width:250px;' class='form-control form-control-sm'><option value='0' ></option>$str_microphone</select>";
+                $arr[$key][] = "<select name='microphone_id' id='microphone_$value[recording_id]' style='width:250px;' class='form-control form-control-sm'><option value='$value[microphone_id]' selected>$value[microphone]</option></select>";
                 $arr[$key][] = "<input type='number' class='form-control form-control-sm' name='recording_gain' data-id='$value[recording_id]' value='$value[recording_gain]' min='1' step='1'><small id='recordingGainValid$value[recording_id]' class='text-danger'></small>";
                 $arr[$key][] = "<select name='license_id' style='width:140px;' class='form-control form-control-sm'><option value='0'></option>$str_license</select>";
                 $arr[$key][] = "<select name='type' style='width:100px;' class='form-control form-control-sm'>
