@@ -4,6 +4,7 @@ namespace BioSounds\Classes;
 
 use BioSounds\Entity\Setting;
 use BioSounds\Provider\CollectionProvider;
+use BioSounds\Provider\ProjectProvider;
 use BioSounds\Utils\Auth;
 use BioSounds\Utils\Utils;
 use Exception;
@@ -107,5 +108,6 @@ class BaseClass
         $this->twig->addGlobal('user_id', Auth::getUserID());
         $this->twig->addGlobal('regenerate_timeout', $_SESSION['regenerate_timeout']);
         $this->twig->addGlobal('window_width', $_SESSION['width'] ? $_SESSION['width'] : 870);
+        $this->twig->addGlobal('my_sounds', (new ProjectProvider())->getAllProject());
     }
 }

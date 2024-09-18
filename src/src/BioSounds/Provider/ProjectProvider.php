@@ -13,7 +13,7 @@ class ProjectProvider extends AbstractProvider
 
     public function getList(): array
     {
-        $sql = "SELECT * FROM project WHERE active = 1";
+        $sql = "SELECT p.*,MAX(c.public_access) AS collection FROM project p LEFT JOIN collection c ON p.project_id = c.project_id WHERE p.active = 1 GROUP BY p.project_id";
 
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
@@ -29,9 +29,9 @@ class ProjectProvider extends AbstractProvider
                 ->setCreationDate($item['creation_date'])
                 ->setUrl($item['url'])
                 ->setPictureId($item['picture_id'] ? $item['picture_id'] : '')
-                ->setPublic($item['public']);
+                ->setPublic($item['public'])
+                ->setCollection($item['collection']);
         }
-
         return $data;
     }
 
@@ -70,7 +70,7 @@ class ProjectProvider extends AbstractProvider
             if ($userId == null) {
                 $sql = "SELECT p.* FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = " . Auth::getUserID() . $str . " GROUP BY p.project_id ORDER BY p.project_id";
             } else {
-                $sql = "SELECT p.*,MAX(c.collection_id) AS collection_id,MAX( u2.permission_id ) AS permission_id FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = " . Auth::getUserID() . " LEFT JOIN user_permission u2 ON u2.collection_id = c.collection_id AND u2.user_id = $userId " . $str . " GROUP BY p.project_id ORDER BY p.project_id";
+                $sql = "SELECT p.*,MAX(c.collection_id) AS collection_id,MAX( u2.permission_id ) AS permission_id FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = " . Auth::getUserID() . " LEFT JOIN user_permission u2 ON u2.collection_id = c.collection_id AND u2.user_id = $userId " . $str . " OR c.public_access=1 GROUP BY p.project_id ORDER BY p.project_id";
             }
         }
         $this->database->prepareQuery($sql);
@@ -197,6 +197,20 @@ class ProjectProvider extends AbstractProvider
         return false;
     }
 
+    public function getAllProject(): array
+    {
+        if (!Auth::isUserLogged()) {
+            $sql = "SELECT p.*,MAX(c.public_access) AS access,0 AS permission FROM project p LEFT JOIN collection c ON p.project_id = c.project_id";
+        } elseif (Auth::isUserAdmin()) {
+            $sql = "SELECT p.*,MAX(c.public_access) AS access,1 AS permission FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission up ON up.user_id = " . Auth::getUserID() . " AND up.collection_id = c.collection_id ";
+        } else {
+            $sql = "SELECT p.*,MAX(c.public_access) AS access,MAX(up.permission_id) AS permission FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission up ON up.user_id = " . Auth::getUserID() . " AND up.collection_id = c.collection_id ";
+        }
+        $sql .= " WHERE p.active = 1 GROUP BY p.project_id ";
+        $this->database->prepareQuery($sql);
+        return $this->database->executeSelect();
+    }
+
     public function getProject(): array
     {
         if (Auth::isUserAdmin()) {
@@ -256,5 +270,32 @@ class ProjectProvider extends AbstractProvider
             }
         }
         return $arr;
+    }
+
+    public function search(array $names)
+    {
+        $query = "SELECT * FROM (SELECT project_id AS id,name,'project' AS type,'index' AS url FROM project WHERE active = 1 UNION ALL SELECT collection_id AS id,name,'collection' AS type,'show' AS url  FROM collection)a";
+        $query .= "";
+
+        $fields = [];
+        if (isset($names)) {
+            if (count($names) == 1) {
+                $query .= ' WHERE name LIKE :name ';
+                $fields = [':name' => "%$names[0]%",];
+            } else {
+                $query .= ' WHERE (name LIKE :name1 AND ';
+                $query .= ' name LIKE :name2) ';
+                $fields = [
+                    ':name1' => "%$names[0]%",
+                    ':name2' => "%$names[1]%"
+                ];
+            }
+        }
+        $query .= 'ORDER BY type ASC LIMIT 0,15';
+
+        $this->database->prepareQuery($query);
+        $result = $this->database->executeSelect($fields);
+
+        return $result;
     }
 }

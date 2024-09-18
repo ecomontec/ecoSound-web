@@ -50,6 +50,16 @@ class Collection extends BaseProvider
     /**
      * @var string
      */
+    private $external_recording_url;
+
+    /**
+     * @var string
+     */
+    private $project_url;
+
+    /**
+     * @var string
+     */
     private $view = self::GALLERY_VIEW;
 
     /**
@@ -190,6 +200,42 @@ class Collection extends BaseProvider
     public function setSphere(string $sphere): Collection
     {
         $this->sphere = $sphere;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRecordingUrl(): ?string
+    {
+        return $this->external_recording_url;
+    }
+
+    /**
+     * @param string $external_recording_url
+     * @return Collection
+     */
+    public function setRecordingUrl(?string $external_recording_url): Collection
+    {
+        $this->external_recording_url = $external_recording_url;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getProjectUrl(): ?string
+    {
+        return $this->project_url;
+    }
+
+    /**
+     * @param string $project_url
+     * @return Collection
+     */
+    public function setProjectUrl(?string $project_url): Collection
+    {
+        $this->project_url = $project_url;
         return $this;
     }
 

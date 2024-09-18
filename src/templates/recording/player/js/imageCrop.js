@@ -49,21 +49,21 @@ selectData = function (coordinates) {
 
 
 $(function () {
-    $('.loading').show();
+    $('.loading-grey').show();
     $("#thumbnail").width($(".recording-navigation").width()).height('69px')
     var myJcrop = img_jcrop()
     var resizeTimer = null;
     myJcrop.destroy()
     myJcrop = img_jcrop()
-    $('.loading').hide();
+    $('.loading-grey').hide();
     $(window).resize(function () {
-        $('.loading').show();
+        $('.loading-grey').show();
         $("#thumbnail").width($(".recording-navigation").width()).height('69px')
         if (resizeTimer) clearTimeout(resizeTimer);
         resizeTimer = setTimeout(function () {
             myJcrop.destroy()
             myJcrop = img_jcrop()
-            $('.loading').hide();
+            $('.loading-grey').hide();
         }, 200);
     })
 })

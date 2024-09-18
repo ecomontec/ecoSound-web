@@ -11,6 +11,8 @@ $(function () {
 
         $("#x").val(shiftLeftMin);
         $("#w").val(Math.round(maxTime - (selectionDuration * shiftRate)));
+        $('#y').val($('input[name="minFreqView"]').val())
+        $('#h').val($('input[name="maxFreqView"]').val())
         $("#recordingForm").submit();
 
         e.preventDefault();
@@ -25,6 +27,8 @@ $(function () {
 
         $("#x").val(Math.round(minTime + (selectionDuration * shiftRate)));
         $("#w").val(shiftRightMax);
+        $('#y').val($('input[name="minFreqView"]').val())
+        $('#h').val($('input[name="maxFreqView"]').val())
         $("#recordingForm").submit();
 
         e.preventDefault();
@@ -108,6 +112,6 @@ $(function () {
     });
 
     $('#recordingForm').on('submit', function () {
-        toggleLoading();
+        $('.loading-grey').toggle();
     });
 });

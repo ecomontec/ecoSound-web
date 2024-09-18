@@ -13,6 +13,7 @@ class Recording
     const MICROPHONE_ID = 'microphone_id';
     const RECORDER_NAME = 'model';
     const MICROPHONE_NAME = 'name';
+    const RECORDING_GAIN = 'recording_gain';
     const DIRECTORY = 'directory';
     const FILE_SIZE = "file_size";
     const NAME = "name";
@@ -33,6 +34,7 @@ class Recording
     const USER_ID = 'user_id';
     const LABEL_ID = "label_id";
     const LABEL_NAME = 'label_name';
+    const Note = 'note';
     /**
      * @var string
      */
@@ -172,6 +174,13 @@ class Recording
     private $startDate;
     private $endDate;
     private $path;
+    private $iho;
+    private $duty_cycle_recording;
+    private $duty_cycle_period;
+    private $realmId;
+    private $biomeId;
+    private $functionalTypeId;
+    private $recording_gain;
 
     /**
      * @return int
@@ -332,6 +341,24 @@ class Recording
     public function setMicrophoneName(?string $microphoneName): Recording
     {
         $this->microphoneName = $microphoneName;
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getRecordingGain(): ?int
+    {
+        return $this->recording_gain;
+    }
+
+    /**
+     * @param int|null $recording_gain
+     * @return Recording
+     */
+    public function setRecordingGain(?int $recording_gain): Recording
+    {
+        $this->recording_gain = $recording_gain;
         return $this;
     }
 
@@ -736,6 +763,24 @@ class Recording
     }
 
     /**
+     * @return int
+     */
+    public function getRealmId(): ?int
+    {
+        return $this->realmId;
+    }
+
+    /**
+     * @param null|int $realmId
+     * @return Recording
+     */
+    public function setRealmId(?int $realmId): Recording
+    {
+        $this->realmId = $realmId;
+        return $this;
+    }
+
+    /**
      * @return string
      */
     public function getBiomeName(): ?string
@@ -754,6 +799,24 @@ class Recording
     }
 
     /**
+     * @return int
+     */
+    public function getBiomeId(): ?int
+    {
+        return $this->biomeId;
+    }
+
+    /**
+     * @param null|int $biomeId
+     * @return Recording
+     */
+    public function setBiomeId(?int $biomeId): Recording
+    {
+        $this->biomeId = $biomeId;
+        return $this;
+    }
+
+    /**
      * @return string
      */
     public function getFunctionalTypeName(): ?string
@@ -768,6 +831,24 @@ class Recording
     public function setFunctionalTypeName(?string $functionalTypeName): Recording
     {
         $this->functionalTypeName = $functionalTypeName;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getFunctionalTypeId(): ?int
+    {
+        return $this->functionalTypeId;
+    }
+
+    /**
+     * @param null|int $functionalTypeId
+     * @return Recording
+     */
+    public function setFunctionalTypeId(?int $functionalTypeId): Recording
+    {
+        $this->functionalTypeId = $functionalTypeId;
         return $this;
     }
 
@@ -903,6 +984,61 @@ class Recording
     }
 
     /**
+     * @return null|string
+     */
+    public function getIHO(): ?string
+    {
+        return $this->iho;
+    }
+
+
+    /**
+     * @param null|string $iho
+     * @return Recording
+     */
+    public function setIHO(?string $iho): Recording
+    {
+        $this->iho = $iho;
+        return $this;
+    }
+
+    /**
+     * @return null|int
+     */
+    public function getDutyCycleRecording(): ?int
+    {
+        return $this->duty_cycle_recording;
+    }
+
+    /**
+     * @param null|int $duty_cycle_recording
+     * @return Recording
+     */
+    public function setDutyCycleRecording(?int $duty_cycle_recording): Recording
+    {
+        $this->duty_cycle_recording = $duty_cycle_recording;
+        return $this;
+    }
+
+    /**
+     * @return null|int
+     */
+    public function getDutyCyclePeriod(): ?int
+    {
+        return $this->duty_cycle_period;
+    }
+
+    /**
+     * @param null|int $duty_cycle_period
+     * @return Recording
+     */
+    public function setDutyCyclePeriod(?int $duty_cycle_period): Recording
+    {
+        $this->duty_cycle_period = $duty_cycle_period;
+        return $this;
+    }
+
+    /**
      * @param array $values
      * @return $this
      */
@@ -919,6 +1055,7 @@ class Recording
         $this->setRecorderName($values['recorderName']);
         $this->setMicrophone($values['microphone_id']);
         $this->setMicrophoneName($values['microphoneName']);
+        $this->setRecordingGain($values['recording_gain']);
         $this->setDataType($values['data_type']);
         $this->setFileName($values['filename']);
         $this->setFileDate($values['file_date']);
@@ -939,6 +1076,9 @@ class Recording
         $this->setRealmName($values['realm']);
         $this->setBiomeName($values['biome']);
         $this->setFunctionalTypeName($values['functionalType']);
+        $this->setRealmId($values['realm_id']);
+        $this->setBiomeId($values['biome_id']);
+        $this->setFunctionalTypeId($values['functionalType_id']);
         $this->setLongitude($values['longitude']);
         $this->setLatitude($values['latitude']);
         $this->setType($values['type']);
@@ -947,6 +1087,9 @@ class Recording
         $this->setStartDate($values['start_date']);
         $this->setEndDate($values['end_date']);
         $this->setPath($values['path']);
+        $this->setIHO($values['iho']);
+        $this->setDutyCycleRecording($values['duty_cycle_recording']);
+        $this->setDutyCyclePeriod($values['duty_cycle_period']);
         return $this;
     }
 }

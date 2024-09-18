@@ -1,0 +1,62 @@
+<table id="collectionTable" style="display:none">
+    <input id="sites" value="{{ leaflet.sites }}" type="hidden">
+    <thead class="table-borderless" style="display:none">
+    <tr>
+        <th></th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody class="js-collection-list">
+    {% for collection in collections %}
+        {% if isUserLogged or collection.publicAccess %}
+            <tr style="vertical-align:top;">
+                <td style="width: 45%;border-top: 1px solid #dddddd;">
+                    <h4><a href="{{ baseUrl }}/collection/show/{{ collection.id }}">{{ collection.name }}</a></h4>
+                    <div class="form-inline">
+                        <h6>Author: <small>{{ collection.author }}</small></h6>
+                        {% if collection.orcid %}
+                            <a href="https://orcid.org/{{ collection.orcid }}" target="_blank">
+                                <i class="fa-brands fa-orcid ml-1 mb-2"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                    <h6>DOI: <small>{{ collection.doi }}</small></h6>
+                    <h6>Creation Date (UTC): <small>{{ collection.creationDate }}</small></h6>
+                </td>
+                <td style="width: 55%;border-top: 1px solid #dddddd;">
+                    {% if collection.sphere is not empty %}
+                        <h6>Sphere: <small>{{ collection.sphere }}</small></h6>
+                    {% endif %}
+                    {% if collection.recordingUrl is not empty %}
+                        <h6>External recordings URL: <small><a href="{{ collection.recordingUrl }}" target="_blank">{{ collection.recordingUrl }}</a></small></h6>
+                    {% endif %}
+                    {% if collection.projectUrl is not empty %}
+                        <h6>Project URL: <small><a href="{{ collection.projectUrl }}" target="_blank">{{ collection.projectUrl }}</a></small></h6>
+                    {% endif %}
+                    {% if collection.note is not empty %}
+                        <h6>Description: <small>{{ collection.note }}</small></h6>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endif %}
+    {% endfor %}
+    </tbody>
+</table>
+<script>
+    $(document).ready(function () {
+        $('#collectionTable').DataTable({
+            "pageLength": 8,
+            "lengthChange": false,
+            "stateSave": true,
+            "StateDuration": -1,
+            "order": [[0, 'asc']],
+            "info": false,
+        });
+        $('#collectionTable').show()
+    });
+</script>
+<script>
+    $('#count_collection').text('{{ collections|length }}')
+    $('#count_recording').text('{{ recordings }}')
+    $('#count_site').text('{{ leaflet.arr|length }}')
+</script>

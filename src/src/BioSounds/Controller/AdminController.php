@@ -115,9 +115,9 @@ class AdminController extends BaseController
      * @param int|null $id
      * @return mixed
      */
-    public function recordingManager(string $action, int $id = null, string $str = null)
+    public function recordingManager(string $action, int $id = null, string $str = null, string $str2 = null)
     {
-        return (new RecordingController($this->twig))->$action($id, $str);
+        return (new RecordingController($this->twig))->$action($id, $str, $str2);
     }
 
     /**

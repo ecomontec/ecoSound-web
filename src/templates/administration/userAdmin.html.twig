@@ -5,14 +5,12 @@
         <nav aria-label="breadcrumb">
             <ul class="breadcrumb bg-white mt-4">
                 <li class="breadcrumb-item" aria-current="page">
-                    <a href="{{ baseUrl }}/admin/selfService">Administration</a>
+                    <a href="{{ baseUrl }}/admin/selfService">Dashboard</a>
                 </li>
                 <li class="breadcrumb-item active" aria-current="page">User
                 </li>
             </ul>
         </nav>
-
-
         <div class="row">
             <div class="col-lg-2">
                 <ul class="nav flex-column nav-pills">
@@ -30,6 +28,11 @@
                         <a class="nav-link" href="{{ baseUrl }}/admin/tags">
                             <i class="fa fa-tag pr-1"></i>
                             Tags</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ baseUrl }}/admin/tagReviews">
+                            <i class="fa fa-tags pr-1"></i>
+                            Reviews</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ baseUrl }}/admin/indexLogs">
@@ -72,7 +75,7 @@
 
                                 <td>
                                     <a href="{{ baseUrl }}/UserPermission/view/{{ user.user_id }}" class="js-open-modal"
-                                       title="Collection Privileges" $privhidden>
+                                       data-id="{{ user.user_id }}" title="Collection Privileges" $privhidden>
                                         <i class='fas fa-tasks'></i>
                                     </a>
                                 </td>

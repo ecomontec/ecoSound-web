@@ -130,20 +130,21 @@
             <div class="col-10">
                 {% include 'recording/player/player.html.twig' %}
             </div>
+
         </div>
     </div>
 {% endblock %}
 
 {% block header %}
     {{ parent() }}
-    <script src="{{ baseUrl }}/templates/recording/js/recording.js" defer></script>
+    <script src="{{ baseUrl }}/templates/recording/js/recording.js?v=1.0" defer></script>
 
     <script src="{{ baseUrl }}/assets/js/jquery.Jcrop.min.js" defer></script>
-    <script src="{{ baseUrl }}/templates/recording/player/js/imageCrop.js" defer></script>
+    <script src="{{ baseUrl }}/templates/recording/player/js/imageCrop.js?v=1.0" defer></script>
 
-    <script type="module" src="{{ baseUrl }}/templates/recording/player/js/playbackRate.js" defer></script>
-    <script src="{{ baseUrl }}/templates/recording/player/js/player.js" defer></script>
-    <script src="{{ baseUrl }}/templates/recording/player/js/coordinateExport.js" defer></script>
+    <script type="module" src="{{ baseUrl }}/templates/recording/player/js/playbackRate.js?v=1.1" defer></script>
+    <script src="{{ baseUrl }}/templates/recording/player/js/player.js?v=1.2" defer></script>
+    <script src="{{ baseUrl }}/templates/recording/player/js/coordinateExport.js?v=1.0" defer></script>
     <script src="{{ baseUrl }}/templates/recording/player/js/tagControls.js" defer></script>
     <script src="{{ baseUrl }}/templates/tag/js/tag.js?v=1.0" defer></script>
 {% endblock %}
@@ -172,6 +173,11 @@
 
         $(function () {
             'use strict';
+
+            if (maxFrequency >= fileFreqMax && minFrequency <= 1 && maxTime >= parseFloat(fileDuration.toFixed(1)) && minTime <= 0) {
+                $('#shift-left').addClass('a-disabled')
+                $('#shift-right').addClass('a-disabled')
+            }
 
             $('#reclabel').on('change', function () {
                 $('#reclabelform').submit();

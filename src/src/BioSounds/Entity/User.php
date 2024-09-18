@@ -178,6 +178,16 @@ class User extends AbstractProvider
         return $result[0]["active"] == 1 ? true : false;
     }
 
+    public function getUserCount($collection_id)
+    {
+        $collection_id = $collection_id ? $collection_id : 0;
+        $this->database->prepareQuery("SELECT COUNT(user_id) AS count FROM (SELECT user_id FROM user_permission WHERE collection_id IN ( $collection_id ) UNION All SELECT user_id FROM `user` WHERE role_id = 1)c GROUP BY user_id");
+        if (empty($result = $this->database->executeSelect())) {
+            return null;
+        }
+        return count($result);
+    }
+
     /**
      * @param int $userId
      * @return bool
@@ -279,6 +289,13 @@ class User extends AbstractProvider
     public function getUser(): array
     {
         $this->database->prepareQuery('SELECT * FROM user WHERE role_id = 2');
+        return $this->database->executeSelect();
+    }
+
+    public function getAll(): array
+    {
+        $sql = 'SELECT * FROM user where active = 1';
+        $this->database->prepareQuery($sql);
         return $this->database->executeSelect();
     }
 

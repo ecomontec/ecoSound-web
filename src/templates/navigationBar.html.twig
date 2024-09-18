@@ -1,53 +1,80 @@
 <header>
-    <nav class="navbar navbar-dark navbar-expand-lg menu">
-        <div class="container">
-            <a class='navbar-brand' href="{{ baseUrl }}" title="ecoSound-web">
-                <img src="{{ logoUrl }}" alt="ecoSound-web">
-            </a>
-            <ul class="nav navbar-nav">
-                <li class="navbar-item">
-                    <a class="nav-link" href="{{ baseUrl}}/project/show">Projects</a>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbars" aria-controls="navbars" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class='navbar-brand' href="{{ baseUrl }}" title="ecoSound-web">
+            <span class="d-md-none">ecoSound-web</span>
+            <img src="{{ logoUrl }}" alt="ecoSound-web">
+        </a>
+        <div class="collapse navbar-collapse" id="navbars">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ baseUrl }}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ baseUrl }}/project/show">Projects</a>
                 </li>
                 {% if isUserLogged %}
-                    <li class="navbar-item">
-                        <a class="nav-link" target="_blank" href="{{ guide_url }}">Guide</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-expanded="false">My Sounds</a>
+                        <div class="dropdown-menu my-sounds">
+                            {% for sound in my_sounds %}
+                                {% if (sound.access is null or sound.access==0) and sound.permission %}
+                                    <a class="dropdown-item" href="{{ baseUrl }}/collection/index/{{ sound.project_id }}">{{ sound.name }}</a>
+                                {% endif %}
+                            {% endfor %}
+                            <div class="dropdown-divider" _mstvisible="1"></div>
+                            {% for sound in my_sounds %}
+                                {% if sound.access %}
+                                    <a class="dropdown-item" href="{{ baseUrl }}/collection/index/{{ sound.project_id }}">{{ sound.name }}</a>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
                     </li>
                 {% endif %}
-                <li class="navbar-item">
-                    <a class="nav-link" href="{{baseUrl}}/project/about">About</a>
-                </li>
             </ul>
-            <div class="collapse navbar-collapse" id="navbarCollapse">
-                <ul class="navbar-nav ml-auto">
-                    {% if isUserLogged %}
-                        <li class="navbar-item dropdown">
-                            <a href="#" class="nav-link dropdown-toggle user" data-toggle="dropdown">
-                                <i class="fas fa-user"></i>
-                                {{ username }}
-                            </a>
-                            <div class="dropdown-menu">
-                                {% if isManage %}
-                                    <a href="{{ baseUrl }}/admin/create" class="dropdown-item">Administration</a>
-                                {% else %}
-                                    <a href="{{ baseUrl }}/admin/selfService" class="dropdown-item">Administration</a>
-                                {% endif %}
-                                <div class="divider"></div>
-                                <a href="{{ baseUrl }}/login/logout" class="dropdown-item">Logout</a>
-                            </div>
-                        </li>
-                    {% else %}
-                        <li class="navbar-item">
-                            <a class="nav-link" href="#" data-target="#loginForm" data-toggle="collapse">
-                                <i class="fas fa-sign-in-alt"></i>
-                                Login
-                            </a>
-                        </li>
-                        {% block login %}
-                            {% include 'login/login.html.twig' %}
-                        {% endblock %}
-                    {% endif %}
-                </ul>
-            </div>
+            <div class="dropdown-divider d-md-none" _mstvisible="1"></div>
+            <ul class="navbar-nav ml-auto">
+                {% if isUserLogged %}
+                    <form class="form-inline my-2 my-md-0" id="form-search" style="display: none;">
+                        <input class="form-control js-search-autocomplete" data-type="edit" type="text">
+                    </form>
+                    <li class="nav-item d-none d-md-block">
+                        <a class="nav-link" href="#" id="btn-search"><i class="fa-solid fa-magnifying-glass"></i></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" target="_blank" href="{{ guide_url }}"><i class="fa-solid fa-circle-info"></i>
+                            <span class="d-md-none">Guide</span>
+                        </a>
+                    </li>
+                    <li class="navbar-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle user" data-toggle="dropdown">
+                            <i class="fas fa-user"></i>
+                            {{ username }}
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            {% if isManage %}
+                                <a href="{{ baseUrl }}/admin/create" class="dropdown-item">Dashboard</a>
+                            {% else %}
+                                <a href="{{ baseUrl }}/admin/selfService" class="dropdown-item">Dashboard</a>
+                            {% endif %}
+                            <div class="dropdown-divider" _mstvisible="1"></div>
+                            <a href="{{ baseUrl }}/login/logout" class="dropdown-item">Logout</a>
+                        </div>
+                    </li>
+                {% else %}
+                    <li class="navbar-item">
+                        <a class="nav-link" href="#" data-target="#loginForm" data-toggle="collapse">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Login
+                        </a>
+                    </li>
+                    {% block login %}
+                        {% include 'login/login.html.twig' %}
+                    {% endblock %}
+                {% endif %}
+            </ul>
         </div>
     </nav>
 </header>

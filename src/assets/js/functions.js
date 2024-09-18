@@ -112,6 +112,26 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     });
+
+    $(document).on('keydown.autocomplete', '.js-search-autocomplete', function () {
+        $(this).autocomplete({
+            source: function (request, response) {
+                $.post(baseUrl + '/project/search', {term: request.term})
+                    .done(function (data) {
+                        response(JSON.parse(data));
+                    })
+                    .fail(function (response) {
+                        showAlert(JSON.parse(response.responseText).message);
+                        response(null);
+                    });
+            },
+            minLength: 2,
+            select: function (e, ui) {
+                window.open(baseUrl + '/collection/' + ui.item.url + '/' + ui.item.value, '_blank');
+                e.preventDefault();
+            }
+        });
+    });
 });
 
 function showAlert(message) {
@@ -263,7 +283,13 @@ function saveFormList(element, url, callback) {
         }
         if (item.type == 'file') {
             formData.append(item.name, $("#" + item.id)[0].files[0]);
-        } else {
+        } else if (item.type == 'date' || item.type == 'time')
+            if (item.value == "") {
+                return
+            } else {
+                formData.append(item.name + "_" + item.type, value);
+            }
+        else {
             formData.append(item.name + "_" + item.type, value);
         }
     });
@@ -290,11 +316,8 @@ $(document).keydown(function (event) {
     }
 });
 $('.js-all-checkbox').change(function () {
-    if ($(this).prop('checked')) {
-        $('.js-checkbox').prop('checked', true)
-    } else {
-        $('.js-checkbox').prop('checked', false)
-    }
+    var isChecked = $(this).prop('checked');
+    $('.js-checkbox').prop('checked', isChecked).trigger('change');
     checkboxChange()
 });
 
@@ -382,3 +405,13 @@ function checkboxChange() {
     }
     return allChecked
 }
+
+$('#btn-search').click(function () {
+    $('#form-search').fadeToggle()
+    $('.js-search-autocomplete').focus()
+})
+$(document).ready(function () {
+    if ($(window).width() < 768) {
+        $('#form-search').fadeToggle()
+    }
+});

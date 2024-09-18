@@ -12,9 +12,12 @@ class CollectionProvider extends AbstractProvider
 {
     const TABLE_NAME = "collection";
 
-    public function getCollectionPagesByPermission(int $projectId): array
+    public function getCollectionPagesByPermission(int $projectId, string $sites = null): array
     {
         $sql = "SELECT c.* FROM collection c ";
+        if ($sites) {
+            $sql .= " LEFT JOIN site_collection sc ON c.collection_id = sc.collection_id LEFT JOIN recording r ON c.collection_id = r.col_id ";
+        }
         if (!Auth::isUserLogged()) {
             $sql .= 'WHERE c.public_access = 1 AND c.project_id = :projectId ';
         } elseif (!Auth::isUserAdmin()) {
@@ -22,24 +25,32 @@ class CollectionProvider extends AbstractProvider
         } else {
             $sql .= 'WHERE c.project_id = :projectId ';
         }
-        $sql = $sql . 'ORDER BY c.name ';
+        if ($sites) {
+            $sql .= " AND (sc.site_id in ($sites) OR (r.site_id is null AND r.recording_id is not null)) ";
+        }
+        $sql = $sql . ' GROUP BY c.collection_id,c.project_id,c.name,c.user_id,c.doi,c.note,c.view,c.sphere,c.external_recording_url,c.project_url,c.public_access,c.public_tags,c.creation_date ORDER BY c.name ';
+
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect([':projectId' => $projectId]);
 
         $data = [];
-        foreach ($result as $item) {
-            $data[] = (new Collection())
-                ->setId($item['collection_id'])
-                ->setName($item['name'])
-                ->setUserId($item['user_id'])
-                ->setDoi($item['doi'])
-                ->setNote($item['note'])
-                ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
-                ->setProject($item['project_id'])
-                ->setCreationDate($item['creation_date'])
-                ->setPublicAccess($item['public_access'])
-                ->setPublicTags($item['public_tags'])
-                ->setView($item['view']);
+        if($result){
+            foreach ($result as $item) {
+                $data[] = (new Collection())
+                    ->setId($item['collection_id'])
+                    ->setName($item['name'])
+                    ->setUserId($item['user_id'])
+                    ->setDoi($item['doi'])
+                    ->setNote($item['note'])
+                    ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
+                    ->setRecordingUrl($item['external_recording_url'])
+                    ->setProjectUrl($item['project_url'])
+                    ->setProject($item['project_id'])
+                    ->setCreationDate($item['creation_date'])
+                    ->setPublicAccess($item['public_access'])
+                    ->setPublicTags($item['public_tags'])
+                    ->setView($item['view']);
+            }
         }
         return $data;
     }
@@ -63,6 +74,8 @@ class CollectionProvider extends AbstractProvider
                 ->setDoi($item['doi'])
                 ->setNote($item['note'])
                 ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
+                ->setRecordingUrl($item['external_recording_url'])
+                ->setProjectUrl($item['project_url'])
                 ->setProject($item['project_id'])
                 ->setCreationDate($item['creation_date'])
                 ->setPublicAccess($item['public_access'])
@@ -95,6 +108,8 @@ class CollectionProvider extends AbstractProvider
             ->setDoi($result['doi'])
             ->setNote($result['note'])
             ->setSphere($result['sphere'] == null ? '' : $result['sphere'])
+            ->setRecordingUrl($result['external_recording_url'])
+            ->setProjectUrl($result['project_url'])
             ->setProject($result['project_id'])
             ->setCreationDate($result['creation_date'])
             ->setPublicAccess($result['public_access'])
@@ -125,8 +140,9 @@ class CollectionProvider extends AbstractProvider
                 ->setDoi($item['doi'])
                 ->setNote($item['note'])
                 ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
+                ->setRecordingUrl($item['external_recording_url'])
+                ->setProjectUrl($item['project_url'])
                 ->setProject($item['project_id'])
-                ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
                 ->setCreationDate($item['creation_date'])
                 ->setPublicAccess($item['public_access'])
                 ->setPublicTags($item['public_tags'])
@@ -149,6 +165,8 @@ class CollectionProvider extends AbstractProvider
                 ->setDoi($item['doi'])
                 ->setNote($item['note'])
                 ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
+                ->setRecordingUrl($item['external_recording_url'])
+                ->setProjectUrl($item['project_url'])
                 ->setProject($item['project_id'])
                 ->setCreationDate($item['creation_date'])
                 ->setPublicAccess($item['public_access'])
@@ -179,6 +197,8 @@ class CollectionProvider extends AbstractProvider
                 ->setDoi($item['doi'])
                 ->setNote($item['note'])
                 ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
+                ->setRecordingUrl($item['external_recording_url'])
+                ->setProjectUrl($item['project_url'])
                 ->setProject($item['project_id'])
                 ->setCreationDate($item['creation_date'])
                 ->setPublicAccess($item['public_access'])
@@ -204,6 +224,8 @@ class CollectionProvider extends AbstractProvider
                 ->setDoi($item['doi'])
                 ->setNote($item['note'])
                 ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
+                ->setRecordingUrl($item['external_recording_url'])
+                ->setProjectUrl($item['project_url'])
                 ->setProject($item['project_id'])
                 ->setCreationDate($item['creation_date'])
                 ->setPublicAccess($item['public_access'])
@@ -229,6 +251,8 @@ class CollectionProvider extends AbstractProvider
                 ->setDoi($item['doi'])
                 ->setNote($item['note'])
                 ->setSphere($item['sphere'] == null ? '' : $item['sphere'])
+                ->setRecordingUrl($item['external_recording_url'])
+                ->setProjectUrl($item['project_url'])
                 ->setProject($item['project_id'])
                 ->setCreationDate($item['creation_date'])
                 ->setPublicAccess($item['public_access'])
@@ -287,7 +311,7 @@ class CollectionProvider extends AbstractProvider
                 $arr[$key][] = "<input type='text' class='form-control form-control-sm' id='$value[collection_id]' name='name' value='$value[name]'><small id='collectionValid$value[collection_id]' class='text-danger'></small>";
                 $arr[$key][] = $value['username'];
                 $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='doi' value='$value[doi]'>";
-                $arr[$key][] = "<select id='sphere' name='sphere' class='form-control form-control-sm'>
+                $arr[$key][] = "<select name='sphere' class='form-control form-control-sm sphere' data-live-search='true'>
                             <option></option>
                             <option value='hydrosphere' " . ($value['sphere'] == 'hydrosphere' ? 'selected' : '') . ">hydrosphere</option>
                             <option value='cryosphere' " . ($value['sphere'] == 'cryosphere' ? 'selected' : '') . ">cryosphere</option>
@@ -297,9 +321,11 @@ class CollectionProvider extends AbstractProvider
                             <option value='biosphere' " . ($value['sphere'] == 'biosphere' ? 'selected' : '') . ">biosphere</option>
                             <option value='anthroposphere' " . ($value['sphere'] == 'anthroposphere' ? 'selected' : '') . ">anthroposphere</option>
                         </select>";
+                $arr[$key][] = "<input type='url' class='form-control form-control-sm' name='external_recording_url' value='$value[external_recording_url]'>";
+                $arr[$key][] = "<input type='url' class='form-control form-control-sm' name='project_url' value='$value[project_url]'>";
                 $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='note' value='$value[note]'>";
                 $arr[$key][] = $value['creation_date'];
-                $arr[$key][] = "<select id='view' name='view' class='form-control form-control-sm' required>;
+                $arr[$key][] = "<select name='view' class='form-control form-control-sm' required>;
                             <option value='gallery' " . ($value['view'] == 'gallery' ? 'selected' : '') . ">gallery</option>
                             <option value='list' " . ($value['view'] == 'list' ? 'selected' : '') . ">list</option>
                             <option value='timeline' " . ($value['view'] == 'timeline' ? 'selected' : '') . ">timeline</option>

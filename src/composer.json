@@ -1,6 +1,5 @@
 {
   "name": "BioSounds",
-
   "require": {
     "php": "^7.2",
     "twig/twig": "^2.0",
@@ -8,9 +7,9 @@
     "symfony/process": "^4.3",
     "php-amqplib/php-amqplib": "^2.9",
     "ext-pdo": "*",
-    "ext-sqlite3": "*"
+    "ext-sqlite3": "*",
+    "james-heinrich/getid3": "^1.9"
   },
-
   "autoload": {
     "psr-4": {
       "BioSounds\\": "src/BioSounds"
