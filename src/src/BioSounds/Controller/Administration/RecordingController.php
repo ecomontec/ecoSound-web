@@ -112,7 +112,7 @@ class RecordingController extends BaseController
         if (!preg_match('/^[0-9]\d*$/', $_POST['recording_gain_number'])) {
             return json_encode([
                 'isValid' => 1,
-                'message' => 'Recording gain must be a positive integer.',
+                'message' => 'Recording gain cannot be a negative integer.',
             ]);
         }
 
