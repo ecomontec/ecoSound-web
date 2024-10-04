@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/386189518.svg)](https://zenodo.org/badge/latestdoi/386189518)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13889948.svg)](https://zenodo.org/records/13889948)
 
 # ecoSound-web
 
