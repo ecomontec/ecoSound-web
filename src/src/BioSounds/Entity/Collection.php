@@ -121,6 +121,12 @@ class Collection extends BaseProvider
         return $orcid;
     }
 
+    public function getEmail(): ?string
+    {
+        $orcid = (new User())->getEmail($this->user_id);
+        return $orcid;
+    }
+
     /**
      * @param int $user_id
      * @return Collection

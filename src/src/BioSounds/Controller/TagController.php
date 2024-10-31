@@ -60,7 +60,7 @@ class TagController extends BaseController
                 'tag' => $tag,
                 'displayDeleteButton' => 'hidden',
                 'recordingName' => isset($_POST['recording_name']) ? $_POST['recording_name'] : null,
-                'phonys' => (new SoundProvider())->get(),
+                'soundscape_components' => (new SoundProvider())->get(),
                 'soundTypes' => (new SoundProvider())->getAll(),
                 'edit' => 0,
             ]),
@@ -126,7 +126,7 @@ class TagController extends BaseController
                 'disableTagForm' => !Auth::isManage() && !$isUserTagOwner,
                 'reviewPanel' => (new TagReviewController($this->twig))->show($tagId, $isReviewGranted || $isManageGranted),
                 'animalSoundTypes' => (new SoundTypeProvider())->getList($tag->getTaxonClass(), $tag->getTaxonOrder()),
-                'phonys' => (new SoundProvider())->get(),
+                'soundscape_components' => (new SoundProvider())->get(),
                 'soundTypes' => (new SoundProvider())->getAll(),
                 'edit' => 1,
                 'previous' => $previous,
@@ -159,14 +159,14 @@ class TagController extends BaseController
         if ($data['species_id'] == '') {
             $data[Tag::SPECIES_ID] = null;
         }
-        if ($data['phony'] != "biophony") {
+        if ($data['soundscape_component'] != "biophony") {
             $data['species_id'] = null;
             $data['uncertain'] = null;
             $data['animal_sound_type'] = null;
             $data['distance_not_estimable'] = null;
             $data['sound_distance_m'] = null;
         }
-        unset($data[Tag::PHONY]);
+        unset($data[Tag::SOUNDSCAPE_COMPONENT]);
         if (isset($data[Tag::ID]) && !empty($data[Tag::ID])) {
             (new TagProvider())->update($data);
             return json_encode([

@@ -14,13 +14,17 @@
                     <table id="user-perm" class="table table-sm table-hover" style="white-space: nowrap;">
                         <thead class="table-borderless">
                         <tr>
-                            <th></th>
-                            <th>#</th>
-                            <th>Name</th>
-                            <th>Access</th>
-                            <th>Manage</th>
-                            <th>View tags</th>
-                            <th>Review tags</th>
+                            <th rowspan="2"></th>
+                            <th rowspan="2">#</th>
+                            <th rowspan="2">Name</th>
+                            <th colspan="2" class="text-center">Recordings</th>
+                            <th colspan="2" class="text-center">Tags</th>
+                        </tr>
+                        <tr>
+                            <th class="text-center">Access <i class="fa fa-info-circle" title="access recordings for navigation, tagging, and analysis" data-toggle="tooltip"></i></th>
+                            <th class="text-center">Manage <i class="fa fa-info-circle" title="upload and delete recordings, edit their metadata in dashboard" data-toggle="tooltip"></i></th>
+                            <th class="text-center">View <i class="fa fa-info-circle" title="access tags of other users in player" data-toggle="tooltip"></i></th>
+                            <th class="text-center">Review <i class="fa fa-info-circle" title="review tags of other users" data-toggle="tooltip"></i></th>
                         </tr>
                         </thead>
                         <tbody>
@@ -30,14 +34,17 @@
                                 <td>{{ project.id }}</td>
                                 <td>{{ project.name }}</td>
                                 <td class="text-center">
-                                    <input class="js-access-checkbox" value="{{ accessId }}" type="checkbox" name="access"
-                                           data-project-id="{{ project.id }}" {{ project.permission == accessId ? "checked" }} {{ project.permission < accessId and project.permission > 0  ? "checked" }} {{ project.permission == manageId ? "checked" }} disabled>
+                                    <input class="access-checkbox project-checkbox" value="{{ accessId }}" type="checkbox" name="access" data-project="{{ project.id }}" disabled>
                                 </td>
                                 <td class="text-center">
-                                    <input class="js-manage-checkbox" value="{{ manageId }}" type="checkbox" name="manage" data-project="{{ project.id }}" {{ project.permission == manageId ? "checked" }} disabled>
+                                    <input class="manage-checkbox project-checkbox" value="{{ manageId }}" type="checkbox" name="manage" data-project="{{ project.id }}" disabled>
                                 </td>
-                                <td></td>
-                                <td></td>
+                                <td class="text-center">
+                                    <input class="view-checkbox project-checkbox" value="{{ viewId }}" type="checkbox" name="view" data-project="{{ project.id }}" disabled>
+                                </td>
+                                <td class="text-center">
+                                    <input class="review-checkbox project-checkbox" value="{{ reviewId }}" type="checkbox" name="review" data-project="{{ project.id }}" disabled>
+                                </td>
                             </tr>
                             {% for collection in project.collections %}
                                 <tr class="data_collection data{{ project.id }}" style="font-size: .875rem;background-color: #f1f1f1">
@@ -45,33 +52,34 @@
                                     <td>
                                         {{ collection.id }}
                                         <input id="user_id" type="hidden" value="{{ userId }}">
-                                        <input class="js-data-input" type='hidden' data-collection-id="{{ collection.id }}" data-project-id="{{ project.id }}" data-permission-id="{{ collection.permission }}">
+                                        <input class="js-data-input" type='hidden' data-collection-id="{{ collection.id }}" data-project="{{ project.id }}" data-permission-id="{{ collection.permission }}">
                                     </td>
                                     <td>
                                         {{ collection.name }}
                                     </td>
                                     <td class="text-center">
                                         {% if collection.public_access %}
-                                            <input type="checkbox" title="This collection is public" disabled checked>
+                                            <input class="js-access-checkbox" data-project="{{ project.id }}" name="access" type="checkbox" title="This collection is public" disabled checked>
+                                        {% else %}
+                                            <input class="js-access-checkbox" value="{{ accessId }}" type="checkbox" name="access" data-project="{{ project.id }}" data-collection-id="{{ collection.id }}"
+                                                   disabled {{ collection.permission == manageId ? "checked" }} {{ collection.permission == reviewId ? "checked" }} {{ collection.permission == viewId ? "checked" }} {{ collection.permission == accessId ? "checked" }}>
                                         {% endif %}
-                                        <input class="js-access-checkbox" value="{{ accessId }}" type="checkbox" name="access" data-project-id="{{ project.id }}" hidden
-                                               data-collection-id="{{ collection.id }}" {{ collection.permission == manageId ? "checked" }} {{ collection.permission == reviewId ? "checked" }} {{ collection.permission == viewId ? "checked" }} {{ collection.permission == accessId ? "checked" }}>
                                     </td>
                                     <td class="text-center">
-                                        <input class="js-manage-checkbox" value="{{ manageId }}" type="checkbox" name="manage" data-project-id="{{ project.id }}" hidden
-                                               data-collection-id="{{ collection.id }}" {{ collection.permission == manageId ? "checked" }}>
+                                        <input class="js-manage-checkbox" value="{{ manageId }}" type="checkbox" name="manage" data-project="{{ project.id }}" data-collection-id="{{ collection.id }}"
+                                               disabled {{ collection.permission == manageId ? "checked" }}>
                                     </td>
                                     <td class="text-center">
                                         {% if collection.public_tags %}
-                                            <input type="checkbox" title="These collections' tags are public" disabled checked>
+                                            <input class="js-view-checkbox" data-project="{{ project.id }}" name="view" type="checkbox" title="These collections' tags are public" disabled checked>
                                         {% else %}
-                                            <input class="js-view-checkbox" value="{{ viewId }}" type="checkbox" name="view" data-project-id="{{ project.id }}" disabled
-                                                   data-collection-id="{{ collection.id }}" {{ collection.permission == manageId ? "checked" }} {{ collection.permission == reviewId ? "checked " }} {{ collection.permission == viewId ? "checked" }}>
+                                            <input class="js-view-checkbox" value="{{ viewId }}" type="checkbox" name="view" data-project="{{ project.id }}" data-collection-id="{{ collection.id }}"
+                                                   disabled {{ collection.permission == manageId ? "checked" }} {{ collection.permission == reviewId ? "checked " }} {{ collection.permission == viewId ? "checked" }}>
                                         {% endif %}
                                     </td>
                                     <td class="text-center">
-                                        <input class="js-review-checkbox" value="{{ reviewId }}" type="checkbox" name="review" data-project-id="{{ project.id }}" disabled
-                                               data-collection-id="{{ collection.id }}" {{ collection.permission == manageId ? "checked" }} {{ collection.permission == reviewId ? "checked" }}>
+                                        <input class="js-review-checkbox" value="{{ reviewId }}" type="checkbox" name="review" data-project="{{ project.id }}" data-collection-id="{{ collection.id }}"
+                                               disabled {{ collection.permission == manageId ? "checked" }} {{ collection.permission == reviewId ? "checked" }}>
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -86,6 +94,17 @@
 <script>
     $(document).ready(function () {
         $(".data_collection").hide()
+        $('[data-toggle="tooltip"]').tooltip();
+        $('table#user-perm tbody tr .project-checkbox').each(function (i) {
+            var name = $(this).attr('name')
+            if ($('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]').length == $('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]:checked').length && $('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]:checked').length > 0) {
+                $('.' + name + '-checkbox[data-project="' + $(this).data('project') + '"]').prop({checked: true, indeterminate: false});
+            } else if ($('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]').length != $('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]:checked').length && $('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]:checked').length > 0) {
+                $('.' + name + '-checkbox[data-project="' + $(this).data('project') + '"]').prop({checked: false, indeterminate: true});
+            } else {
+                $('.' + name + '-checkbox[data-project="' + $(this).data('project') + '"]').prop({checked: false, indeterminate: false});
+            }
+        });
     });
     $(".btn-fa").click(function (e) {
         if ($(this).hasClass('fa-plus')) {

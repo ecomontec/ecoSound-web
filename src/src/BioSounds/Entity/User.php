@@ -133,6 +133,15 @@ class User extends AbstractProvider
         return $result[0]['orcid'];
     }
 
+    public function getEmail(int $userId): ?string
+    {
+        $this->database->prepareQuery('SELECT email FROM user WHERE user_id = :userId');
+        if (empty($result = $this->database->executeSelect([":userId" => $userId]))) {
+            return null;
+        }
+        return $result[0]['email'];
+    }
+
     /**
      * @param int $userId
      * @return string|null

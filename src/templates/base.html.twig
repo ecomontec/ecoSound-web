@@ -17,10 +17,51 @@
 {% block body %}{% endblock %}
 
 <div id="modalWindows"></div>
-
+<div id="cookieConsent" class="cookie-consent">
+    <p>By clicking “Accept All”, you agree to the storing of cookies on your device to enhance site navigation, analyze site usage, and personalize content. <a href="/project/cookie_policy" target="_blank">Privacy Policy</a>.</p>
+    <button class="btn btn-outline-primary acceptCookies">Accept All</button>
+    <button class="btn btn-outline-primary declineCookies">Refuse All</button>
+    <button class="btn btn-outline-primary btn-cookie">Manage Cookies</button>
+</div>
+{% include 'cookie.html.twig' %}
 {% block footer %}{% include 'footer.html.twig' %}{% endblock %}
 {% block scripts %}
     <script>
+        window.addEventListener('load', function () {
+            if (!$.cookie('cookieConsent')) {
+                document.getElementById('cookieConsent').style.display = 'block';
+            }
+            if ($.cookie('cookieConsent') == 'accepted') {
+                $('#cb_functional_cookies').prop('checked', true);
+            }
+
+            $('.acceptCookies').on('click', function () {
+                $.cookie('cookieConsent', 'accepted', {path: '/', expires: 364});
+                document.getElementById('cookieConsent').style.display = 'none';
+                $('#modal-cookie').modal('hide')
+            });
+
+            $('.declineCookies').on('click', function () {
+                $.cookie('cookieConsent', 'declined', {path: '/', expires: 364});
+                document.getElementById('cookieConsent').style.display = 'none';
+                $('#modal-cookie').modal('hide')
+            });
+
+            $('.confirmCookies').on('click', function () {
+                if ($('#cb_functional_cookies')) {
+                    $.cookie('cookieConsent', 'accepted', {path: '/', expires: 364});
+                } else {
+                    $.cookie('cookieConsent', 'declined', {path: '/', expires: 364});
+                }
+                document.getElementById('cookieConsent').style.display = 'none';
+                $('#modal-cookie').modal('hide')
+            });
+
+            $('.btn-cookie').on('click', function () {
+                $('#modal-cookie').modal('toggle')
+            });
+        });
+
         const baseUrl = '{{ baseUrl }}';
         const error = '{{ error }}';
         var regenerate_timeout = '{{ regenerate_timeout }}';
@@ -68,7 +109,7 @@
                         }
                     },
                     error: function (xhr, error, thrown) {
-                        if (xhr.status == 400 || xhr.status == 404 ||xhr.status == 500) {
+                        if (xhr.status == 400 || xhr.status == 404 || xhr.status == 500) {
                             location.reload();
                         }
                     },

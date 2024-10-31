@@ -157,14 +157,17 @@ class RecordingController extends BaseController
      */
     private function setCanvas($recordingData)
     {
-        $fileName = explode('.', $recordingData[Recording::FILENAME]);
+        $fileInfo = pathinfo($recordingData[Recording::FILENAME]);
+        $fileName = $fileInfo['filename'];
+        $extension = $fileInfo['extension'];
+
         $imageFilePath = null;
 
         $originalMp3FilePath = sprintf(
             $this::SOUND_PATH,
             $recordingData[Recording::COL_ID],
             $recordingData[Recording::DIRECTORY],
-            $fileName[0] . '.mp3'
+            $fileName . '.mp3'
         );
         $originalSoundFilePath = sprintf(
             $this::SOUND_PATH,
@@ -176,7 +179,7 @@ class RecordingController extends BaseController
             $this::SOUND_PATH,
             $recordingData[Recording::COL_ID],
             $recordingData[Recording::DIRECTORY],
-            $fileName[0] . '.wav'
+            $fileName . '.wav'
         );
 
         if (!empty($recordingData['ImageFile'])) {
@@ -224,7 +227,7 @@ class RecordingController extends BaseController
         if ($recording->getUserRecordingFft(Auth::getUserID(), $recordingData[Recording::ID])) {
             $recording_fft = $recording->getUserRecordingFft(Auth::getUserID(), $recordingData[Recording::ID]);
         }
-        $selectedFileName = $fileName[0] . '_' . $minFrequency . '-' . $maxFrequency . '_' . $minTime . '-'
+        $selectedFileName = $fileName . '_' . $minFrequency . '-' . $maxFrequency . '_' . $minTime . '-'
             . $maxTime . '_' . $this->fft . '_' . $this->recordingPresenter->getChannel();
 
         if (!file_exists($originalWavFilePath)) {
@@ -246,14 +249,14 @@ class RecordingController extends BaseController
         $spectrogramImagePath = 'tmp/' . $randomID . '/' . $selectedFileName . '.png';
         //$soundFileView =  'tmp/' . $randomID .'/'. $selectedFileName . '.mp3';
         $zoomedFilePlayer = 'tmp/' . $randomID . '/' . $selectedFileName . '.ogg';
-        $zoomedFilePath = 'tmp/' . $randomID . '/' . $selectedFileName . '.' . $fileName[1];
+        $zoomedFilePath = 'tmp/' . $randomID . '/' . $selectedFileName . '.' . $extension;
 
         /* If spectrogram doesn't exist, generate */
         if (!file_exists($zoomedFilePlayer)) {
             $durationTime = round(($maxTime - $minTime) * $samplingRate); //Set to number of samples
             $startTime = round($minTime * $samplingRate); //Set to number of samples
             //$tempPath = 'tmp/' . $randomID .'/';
-            $selectionFilePath = $filter ? 'tmp/1.' . $selectedFileName . '.' . $fileName[1] : $zoomedFilePath;
+            $selectionFilePath = $filter ? 'tmp/1.' . $selectedFileName . '.' . $extension : $zoomedFilePath;
 
             if ($minTime != 0 || $maxTime != $duration) {
                 Utils::generateSoundFileSelection(
@@ -436,10 +439,10 @@ class RecordingController extends BaseController
                 $tagTimeMin = $tag->getMinTime();
                 $tagFreqMin = $tag->getMinFrequency();
                 $tagFreqMax = $tag->getMaxFrequency();
-                $tagStyle = empty($tag->getCallDistance()) && empty($tag->isDistanceNotEstimable()) && $tag->getPhony() == 'biophony' ? 'tag-orange' : '';
+                $tagStyle = empty($tag->getCallDistance()) && empty($tag->isDistanceNotEstimable()) && $tag->getSoundscapeComponent() == 'soundscape_component' ? 'tag-orange' : '';
                 $tagStyle = empty($tag->getReviewNumber()) ? $tagStyle . ' tag-dashed' : $tagStyle;
                 $tagSoundType = $tag->getSoundType();
-                $tagPhony = $tag->getPhony();
+                $tagSoundscapeComponent = $tag->getSoundscapeComponent();
                 if (empty($userTagColor = $user->getTagColor($tag->getUser()))) {
                     $userTagColor = self::DEFAULT_TAG_COLOR;
                 }
@@ -481,7 +484,7 @@ class RecordingController extends BaseController
                         ->setStyle($tagStyle)
                         ->setColor($userTagColor)
                         ->setSoundType($tagSoundType)
-                        ->setPhony($tagPhony)
+                        ->setSoundscapeComponent($tagSoundscapeComponent)
                         ->setPublic($public);
                     $i--;
                 }
@@ -587,7 +590,7 @@ class RecordingController extends BaseController
         $str = 'python3 ' . ABSOLUTE_DIR . 'bin/getMaad.py' .
             ' -f ' . ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . '/' . $data['directory'] . '/' . explode('.', $data['filename'], -1)[0] .
             ' --ch ' . ($data['channel'] == 2 ? 'right' : 'left') .
-            ' --mint ' . $data['mint_ime'] .
+            ' --mint ' . $data['min_time'] .
             ' --maxt ' . $data['max_time'] .
             ' --minf ' . $data['min_frequency'] .
             ' --maxf ' . $data['max_frequency'];

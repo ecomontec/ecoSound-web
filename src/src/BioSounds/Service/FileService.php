@@ -181,7 +181,7 @@ class FileService
                     Recording::CHANNEL_NUM => Utils::getFileChannels($wavFilePath),
                     Recording::FILE_SIZE => filesize($wavFilePath),
                     Recording::SAMPLING_RATE => Utils::getFileSamplingRate($wavFilePath),
-                    Recording::BITRATE => Utils::getFileBitRate($wavFilePath),
+                    Recording::BITDEPTH => Utils::getFileBitdepth($wavFilePath),
                     Recording::NAME => $file->getName(),
                     Recording::DURATION => floatval(Utils::getFileDuration($wavFilePath)),
                     Recording::MD5_HASH => $fileHash,

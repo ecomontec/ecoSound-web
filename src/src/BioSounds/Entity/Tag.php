@@ -21,7 +21,7 @@ class Tag extends BaseProvider
     const NUMBER_INDIVIDUALS = "individuals";
     const COMMENTS = "comments";
     const TYPE = 'animal_sound_type';
-    const PHONY = 'phony';
+    const SOUNDSCAPE_COMPONENT = 'soundscape_component';
     const SOUND_ID = 'sound_id';
 
     /**
@@ -131,7 +131,7 @@ class Tag extends BaseProvider
     private $creationDate;
     private $taxon_class;
     private $taxon_order;
-    private $phony;
+    private $soundscape_component;
     private $sound_type;
 
     /**
@@ -623,18 +623,18 @@ class Tag extends BaseProvider
     /**
      * @return string|null
      */
-    public function getPhony(): ?string
+    public function getSoundscapeComponent(): ?string
     {
-        return $this->phony;
+        return $this->soundscape_component;
     }
 
     /**
-     * @param string|null $phony
+     * @param string|null $soundscape_component
      * @return Tag
      */
-    public function setPhony(?string $phony): Tag
+    public function setSoundscapeComponent(?string $soundscape_component): Tag
     {
-        $this->phony = $phony;
+        $this->soundscape_component = $soundscape_component;
         return $this;
     }
 
@@ -738,7 +738,7 @@ class Tag extends BaseProvider
         $this->setTaxonOrder(isset($values['taxon_order']) ? $values['taxon_order'] : null);
         $this->setTaxonClass(isset($values['class']) ? $values['class'] : null);
         $this->setSoundId(isset($values['sound_id']) ? $values['sound_id'] : null);
-        $this->setPhony(isset($values['phony']) ? $values['phony'] : null);
+        $this->setSoundscapeComponent(isset($values['soundscape_component']) ? $values['soundscape_component'] : null);
         $this->setSoundType(isset($values['sound_type']) ? $values['sound_type'] : null);
         $this->setPublicTags($values['public_tags']);
         $this->setCreatorType(isset($values['creator_type']) ? $values['creator_type'] : null);

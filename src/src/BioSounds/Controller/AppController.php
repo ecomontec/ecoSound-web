@@ -40,7 +40,6 @@ class AppController extends BaseClass
         $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $slugs = array_filter(explode('/', substr($uri, 1)));
 
-        error_log("Oracle database not available!", 0);
         if (count($slugs) === 1) {
             return $this->twig->render('index.html.twig', [
                 'title' => $this->title,

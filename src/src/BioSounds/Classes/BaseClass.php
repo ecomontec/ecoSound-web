@@ -96,6 +96,7 @@ class BaseClass
         $this->twig->addGlobal('projectImagesUrl', PROJECT_IMAGES_URL);
         $this->twig->addGlobal('licenseImagesUrl', LICENSE_IMAGES_URL);
         $this->twig->addGlobal('baseUrl', APP_URL);
+        $this->twig->addGlobal('Host', $_SERVER['HTTP_HOST']);
         $this->twig->addGlobal('project_name', Utils::getSetting(Setting::PROJECT_NAME));
         $this->twig->addGlobal('project_description', Utils::getSetting(Setting::PROJECT_DESCRIPTION));
         $this->twig->addGlobal('projectLicense', Utils::getSetting(Setting::FILES_LICENSE));
@@ -107,7 +108,7 @@ class BaseClass
         $this->twig->addGlobal('isManage', Auth::isManage());
         $this->twig->addGlobal('user_id', Auth::getUserID());
         $this->twig->addGlobal('regenerate_timeout', $_SESSION['regenerate_timeout']);
-        $this->twig->addGlobal('window_width', $_SESSION['width'] ? $_SESSION['width'] : 870);
+        $this->twig->addGlobal('window_width', isset($_SESSION['width']) ? $_SESSION['width'] : 870);
         $this->twig->addGlobal('my_sounds', (new ProjectProvider())->getAllProject());
     }
 }

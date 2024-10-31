@@ -25,7 +25,7 @@ class RecordingProvider extends AbstractProvider
     public function getList(): array
     {
         $query = 'SELECT recording_id, name, filename, col_id, directory, site_id, ';
-        $query .= 'file_size, bitrate, channel_num, DATE_FORMAT(file_date, \'%Y-%m-%d\') ';
+        $query .= 'file_size, bitdepth, channel_num, DATE_FORMAT(file_date, \'%Y-%m-%d\') ';
         $query .= 'AS file_date, DATE_FORMAT(file_time, \'%H:%i:%s\') AS file_time, sampling_rate, doi, license_id ';
         $query .= 'FROM recording';
 
@@ -44,7 +44,7 @@ class RecordingProvider extends AbstractProvider
                 ->setFileDate($item['file_date'])
                 ->setFileTime($item['file_time'])
                 ->setFileSize($item['file_size'])
-                ->setBitrate($item['bitrate'])
+                ->setBitdepth($item['bitdepth'])
                 ->setChannelNum($item['channel_num'])
                 ->setSamplingRate($item['sampling_rate'])
                 ->setDoi($item['doi'])
@@ -68,7 +68,7 @@ class RecordingProvider extends AbstractProvider
         ];
 
         $query = 'SELECT recording.recording_id,recording.data_type,site.iho,recording.duty_cycle_recording,recording.duty_cycle_period, recording.name,recording.sampling_rate, recording.filename, col_id, recording.directory, recording.site_id, recording.user_id,recorder.model AS recorderName,recorder.brand AS brand,recorder.recorder_id,microphone.name AS microphoneName,microphone.microphone_id,';
-        $query .= 'recording.type, recording.medium, recording.note, user.name AS user_name,  file_size, bitrate, channel_num, duration, site.name as site_name, license.license_id, license.name as license_name, ';
+        $query .= 'recording.type, recording.medium, recording.note, user.name AS user_name,  file_size, bitdepth, channel_num, duration, site.name as site_name, license.license_id, license.name as license_name, ';
         $query .= 'lba.label_id, lba.name as label_name,e1.`name` as realm,e2.`name` as biome,e3.`name` as functionalType,e1.`iucn_get_id` as realm_id,e2.`iucn_get_id` as biome_id,e3.`iucn_get_id` as functionalType_id,site.longitude_WGS84_dd_dddd AS longitude,site.latitude_WGS84_dd_dddd AS latitude,';
         $query .= "CONCAT(file_date,' ', file_time) AS start_date,DATE_FORMAT(DATE_ADD(STR_TO_DATE(CONCAT(file_date ,' ',file_time),'%Y-%m-%d %H:%i:%S'),INTERVAL duration second),'%Y-%m-%d %H:%i:%s') AS end_date,";
         $query .= 'DATE_FORMAT(file_date, \'%Y-%m-%d\') AS file_date, ';

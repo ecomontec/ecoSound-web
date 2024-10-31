@@ -60,7 +60,7 @@ class RecordingController extends BaseController
             $projectId = $projects[0]->getId();
         }
         $collections = (new CollectionProvider())->getByProject($projectId, Auth::getUserID());
-        if (empty($colId)) {
+        if (empty($colId) && $collections) {
             $colId = $collections[0]->getId();
         }
         $userSites = (new SiteProvider())->getList($projectId, $colId);
@@ -80,6 +80,7 @@ class RecordingController extends BaseController
 
     public function getListByPage($projectId = null, $collectionId = null)
     {
+        $collectionId = isset($collectionId) ? $collectionId : 'NULL';
         $total = count((new RecordingProvider())->getRecording($collectionId));
         $start = $_POST['start'];
         $length = $_POST['length'];

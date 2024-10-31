@@ -151,20 +151,29 @@ document.addEventListener('DOMContentLoaded', function () {
                         $('#' + $('input[name=tag_id]').val()).removeClass('tag-dashed');
                     })
                 }
-
-                if (!closeModalTagForm && readyToClose) {
-                    showAlert("Saved successfully.")
-                    $("#x").val($("input[name='minTimeView']").val());
-                    $("#w").val($("input[name='maxTimeView']").val());
-                    $("#y").val($("input[name='minFreqView']").val());
-                    $("#h").val($("input[name='maxFreqView']").val());
-                    $("#open").val($("input[name='tag_id']").val());
-                    $("#modalX").val($('#modal-div').offset().left)
-                    $("#modalY").val($('#modal-div').offset().top)
-                    $("#recordingForm").submit();
-                }
             }
 
+            const buttonText = $('#saveButton').text();
+            if (buttonText.includes('Close')) {
+                $('#modal-div').modal('hide');
+                showAlert("Saved successfully.")
+            } else if (buttonText.includes('Next')) {
+                $('#btn-next').click()
+                if($('#btn-next').hasClass('btn-secondary')){
+                    showAlert("Saved successfully, this is the last tag.")
+                }else{
+                    showAlert("Saved successfully.")
+                }
+            } else if (buttonText.includes('Previous')) {
+                $('#btn-previous').click()
+                if($('#btn-previous').hasClass('btn-secondary')){
+                    showAlert("Saved successfully, this is the first tag.")
+                }else{
+                    showAlert("Saved successfully.")
+                }
+            }else{
+                showAlert("Saved successfully.")
+            }
             this.classList.add('was-validated');
             e.preventDefault();
         });
@@ -182,8 +191,8 @@ document.addEventListener('DOMContentLoaded', function () {
         let createTag = function (tagId) {
             let speciesName = $('#speciesName').val();
             let soundType = $('#sound_id').find("option:selected").text();
-            let phony = $('#phony').val();
-            let tagName = speciesName ? speciesName : soundType ? soundType : phony
+            let soundscape_component = $('#soundscape_component').val();
+            let tagName = speciesName ? speciesName : soundType ? soundType : soundscape_component
 
             let newTag = "<div class='tag-controls tag-dashed' id='" + tagId + "' style='z-index:800; border-color: white; left: ";
             newTag += left + "px; top: " + top + "px; height: " + height + "px; width: " + width + "px;'></div>";
@@ -192,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function () {
             newTag += "<a href='" + baseUrl + "/tag/edit/" + tagId + "' class='btn btn-outline-primary btn-sm js-tag' title='Edit tag'>";
             newTag += "<i class='fas fa-edit' aria-hidden='true'></i></a>";
             newTag += "<a href='#' onclick='return false;' class='btn btn-outline-primary btn-sm zoom-tag' title='Zoom tag'><i class='fas fa-search' aria-hidden='true'></i></a>";
-            if (phony == "biophony") {
+            if (soundscape_component == "biophony") {
                 newTag += "<a href='#' onclick='return false;' id='est_" + tagId + "' type='button' class='btn btn-outline-primary btn-sm estimate-distance' title='Estimate call distance'><i class='fas fa-bullhorn' aria-hidden='true'></i></a>";
             }
             newTag += "</div></div></div>";
@@ -206,14 +215,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
             let speciesName = $('#speciesName').val();
             let soundType = $('#sound_id').find("option:selected").text();
-            let phony = $('#phony').val();
-            let tagName = speciesName ? speciesName : soundType ? soundType : phony
+            let soundscape_component = $('#soundscape_component').val();
+            let tagName = speciesName ? speciesName : soundType ? soundType : soundscape_component
 
             let tagElement = $('#' + tagId);
 
             tagElement.removeClass('tag-orange');
 
-            if (!callDistance && !distanceNotEstimable && phony == 'biophony') {
+            if (!callDistance && !distanceNotEstimable && soundscape_component == 'biophony') {
                 tagElement.addClass('tag-orange');
             }
 

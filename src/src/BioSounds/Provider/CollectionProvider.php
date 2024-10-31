@@ -126,9 +126,9 @@ class CollectionProvider extends AbstractProvider
     public function getByProject(int $project_id, ?int $user_id): ?array
     {
         if ($user_id == null) {
-            $this->database->prepareQuery("SELECT c.* FROM collection c WHERE c.project_id = $project_id");
+            $this->database->prepareQuery("SELECT c.* FROM collection c WHERE c.project_id = $project_id ORDER BY c.name");
         } else {
-            $this->database->prepareQuery("SELECT c.*,u.permission_id FROM collection c LEFT JOIN user_permission u ON u.collection_id = c.collection_id AND u.user_id = $user_id WHERE c.project_id = $project_id");
+            $this->database->prepareQuery("SELECT c.*,u.permission_id FROM collection c LEFT JOIN user_permission u ON u.collection_id = c.collection_id AND u.user_id = $user_id WHERE c.project_id = $project_id ORDER BY c.name");
         }
         $results = $this->database->executeSelect();
         $data = [];

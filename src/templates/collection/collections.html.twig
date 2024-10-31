@@ -89,12 +89,13 @@
                         <td style="width: 45%;border-top: 1px solid #dddddd;">
                             <h4><a href="{{ baseUrl }}/collection/show/{{ collection.id }}">{{ collection.name }}</a></h4>
                             <div class="form-inline">
-                                <h6>Author: <small>{{ collection.author }}</small></h6>
-                                {% if collection.orcid %}
-                                    <a href="https://orcid.org/{{ collection.orcid }}" target="_blank">
-                                        <i class="fa-brands fa-orcid ml-1 mb-2"></i>
-                                    </a>
-                                {% endif %}
+                                <a type="button" data-toggle="popover" data-original-title="<b>Author Info</b>" data-placement="left" data-content=
+                                "<i class='fa-solid fa-user'></i> {{ collection.author }}
+                                {% if collection.orcid %}<br><i class='fa-brands fa-orcid'></i> <a href='https://orcid.org/{{ collection.orcid }}' target='_blank'>{{ collection.orcid }}</a>{% endif %}
+                                {% if collection.email %}<br><i class='fa-solid fa-envelope'></i> <a href='mailto:{{ collection.email }}'>{{ collection.email }}</a>{% endif %}"
+                                   data-html="true" aria-describedby="popover">
+                                    <h6>Author: <small>{{ collection.author }}<i class="ml-1 fa-regular fa-id-card"></i></small></h6>
+                                </a>
                             </div>
                             <h6>DOI: <small>{{ collection.doi }}</small></h6>
                             <h6>Creation Date (UTC): <small>{{ collection.creationDate }}</small></h6>
@@ -439,11 +440,14 @@
                 $('.cta-item').removeClass('col-lg-3').addClass('col-lg-6')
                 $("#map").show()
             }
+            $('[data-toggle="popover"]').popover()
         });
 
         $("#btn_map").click(function () {
             $("#map").toggle()
-            $.cookie('map', $("#btn_map").text(), {expires: 7});
+            if ($.cookie('cookieConsent') == 'accepted') {
+                $.cookie('map', $("#btn_map").text(), {path: '/', expires: 364});
+            }
             if ($("#btn_map").text() == 'Hide Map') {
                 $("#btn_map").text('Show Map')
                 $('#sc-total').removeClass('col-lg-6').addClass('col-lg-12')
