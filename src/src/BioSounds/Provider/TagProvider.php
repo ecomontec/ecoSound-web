@@ -313,7 +313,7 @@ class TagProvider extends AbstractProvider
             LEFT JOIN user u ON u.user_id = t.user_id
             LEFT JOIN sound ON sound.sound_id = t.sound_id
             LEFT JOIN sound_type st ON st.sound_type_id = t.animal_sound_type WHERE c.collection_id = $collectionId ";
-        if (!Auth::isManage()) {
+        if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
             $sql .= " AND t.user_id = " . Auth::getUserID();
         }
         $sql .= ' ORDER BY t.tag_id';
@@ -331,7 +331,7 @@ class TagProvider extends AbstractProvider
             LEFT JOIN sound ON sound.sound_id = t.sound_id
             LEFT JOIN sound_type st ON st.sound_type_id = t.animal_sound_type 
             WHERE c.collection_id = $collectionId ";
-        if (!Auth::isManage()) {
+        if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
             $sql .= " AND t.user_id = " . Auth::getUserID();
         }
         if ($search) {
@@ -354,7 +354,7 @@ class TagProvider extends AbstractProvider
             LEFT JOIN sound ON sound.sound_id = t.sound_id
             LEFT JOIN sound_type st ON st.sound_type_id = t.animal_sound_type 
             WHERE c.collection_id = $collectionId ";
-        if (!Auth::isManage()) {
+        if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
             $sql .= " AND t.user_id = " . Auth::getUserID();
         }
         if ($search) {

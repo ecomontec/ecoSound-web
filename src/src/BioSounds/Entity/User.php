@@ -220,16 +220,54 @@ class User extends AbstractProvider
      * @return bool
      * @throws \Exception
      */
-    public function isManage(int $userId): bool
+    public function isManage(int $userId, ?int $collection_id = null): bool
     {
-        $this->database->prepareQuery(
-            'SELECT count(*) AS result FROM user u LEFT JOIN user_permission p ON u.user_id = p.user_id WHERE p.user_id = :userId AND permission_id = 4'
-        );
+        $sql = 'SELECT count(*) AS result FROM user u LEFT JOIN user_permission p ON u.user_id = p.user_id WHERE p.user_id = :userId AND permission_id = 4';
 
+        if ($collection_id) {
+            $sql .= " AND p.collection_id = $collection_id ";
+        }
+        $this->database->prepareQuery($sql);
         if (empty($result = $this->database->executeSelect([":userId" => $userId]))) {
             throw new \Exception("User $userId doesn't exist.");
         }
         return ($result[0]["result"] ? true : false);
+    }
+
+    public function isProjectManage(int $userId, int $project_id): bool
+    {
+        if (Auth::isUserAdmin()) {
+            return true;
+        }
+        $this->database->prepareQuery("SELECT COUNT(*) AS count FROM collection WHERE project_id = :project_id");
+        $result = $this->database->executeSelect([":project_id" => $project_id]);
+        $max_count = $result[0]["count"];
+        $this->database->prepareQuery('SELECT COUNT(*) AS count FROM user_permission WHERE user_id = :userId AND permission_id = 4 AND collection_id IN (SELECT collection_id FROM collection WHERE project_id = :project_id)');
+        $result = $this->database->executeSelect([":userId" => $userId, ":project_id" => $project_id]);
+        $count = $result[0]["count"];
+        return ($max_count == $count + 1 ? true : false);
+    }
+
+    public function isProjectManageByCollection(int $userId, int $collection_id): bool
+    {
+        $this->database->prepareQuery("SELECT COUNT(*) AS count FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id)");
+        $result = $this->database->executeSelect([":collection_id" => $collection_id]);
+        $max_count = $result[0]["count"];
+        $this->database->prepareQuery('SELECT COUNT(*) AS count FROM user_permission WHERE user_id = :userId AND permission_id = 4 AND collection_id IN (SELECT collection_id FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id))');
+        $result = $this->database->executeSelect([":userId" => $userId, ":collection_id" => $collection_id]);
+        $count = $result[0]["count"];
+        return ($max_count == $count + 1 ? true : false);
+    }
+
+    public function isAllView(int $userId, int $collection_id, int $permission_id): bool
+    {
+        $this->database->prepareQuery("SELECT COUNT(*) AS count FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id)");
+        $result = $this->database->executeSelect([":collection_id" => $collection_id]);
+        $max_count = $result[0]["count"];
+        $this->database->prepareQuery('SELECT COUNT(*) AS count FROM user_permission WHERE user_id = :userId AND permission_id >= :permission_id AND collection_id IN (SELECT collection_id FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id))');
+        $result = $this->database->executeSelect([":userId" => $userId, ":permission_id" => $permission_id, ":collection_id" => $collection_id]);
+        $count = $result[0]["count"];
+        return ($max_count == $count + 1 ? true : false);
     }
 
     /**

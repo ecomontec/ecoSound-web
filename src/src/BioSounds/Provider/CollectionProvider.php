@@ -34,7 +34,7 @@ class CollectionProvider extends AbstractProvider
         $result = $this->database->executeSelect([':projectId' => $projectId]);
 
         $data = [];
-        if($result){
+        if ($result) {
             foreach ($result as $item) {
                 $data[] = (new Collection())
                     ->setId($item['collection_id'])
@@ -123,12 +123,16 @@ class CollectionProvider extends AbstractProvider
      * @return Collection|null
      * @throws \Exception
      */
-    public function getByProject(int $project_id, ?int $user_id): ?array
+    public function getByProject(int $project_id, ?string $user_id): ?array
     {
         if ($user_id == null) {
-            $this->database->prepareQuery("SELECT c.* FROM collection c WHERE c.project_id = $project_id ORDER BY c.name");
-        } else {
+            $this->database->prepareQuery("SELECT c.* FROM collection c LEFT JOIN user_permission u ON c.collection_id = u.collection_id AND u.user_id = " . Auth::getUserLoggedID() . " WHERE c.project_id = $project_id  AND u.permission_id = 4 GROUP BY c.collection_id ORDER BY c.name");
+        } else if (Auth::isUserAdmin()) {
             $this->database->prepareQuery("SELECT c.*,u.permission_id FROM collection c LEFT JOIN user_permission u ON u.collection_id = c.collection_id AND u.user_id = $user_id WHERE c.project_id = $project_id ORDER BY c.name");
+        } else if (Auth::getUserID() == $user_id) {
+            $this->database->prepareQuery("SELECT c.*,u.permission_id FROM collection c LEFT JOIN user_permission u ON u.collection_id = c.collection_id AND u.user_id = $user_id AND permission_id > 0 WHERE c.project_id = $project_id AND (u.permission_id is not null OR c.public_access = 1) ORDER BY c.name");
+        } else {
+            $this->database->prepareQuery("SELECT c.*,u.permission_id FROM collection c LEFT JOIN user_permission u ON u.collection_id = c.collection_id AND u.user_id = $user_id LEFT JOIN user_permission u2 ON c.collection_id = u2.collection_id AND u2.user_id = " . Auth::getUserLoggedID() . " WHERE c.project_id = $project_id  AND u2.permission_id = 4 GROUP BY c.collection_id ORDER BY c.name");
         }
         $results = $this->database->executeSelect();
         $data = [];
@@ -277,33 +281,33 @@ class CollectionProvider extends AbstractProvider
 
     public function getCollection(string $projectId): array
     {
-        $sql = "SELECT c.*,u.name as username FROM collection c LEFT JOIN user_permission up ON up.collection_id = c.collection_id AND up.user_id = :user_id LEFT JOIN user u ON u.user_id = c.user_id  WHERE c.project_id = :project_id ";
+        $sql = "SELECT c.*,u.name as username FROM collection c LEFT JOIN user_permission up ON up.collection_id = c.collection_id AND up.user_id = :user_id LEFT JOIN user u ON u.user_id = c.user_id  WHERE c.project_id = :project_id AND (up.permission_id = 4 OR (SELECT IF(role_id = 1,1,0) FROM user WHERE user_id = :user_id1))";
         $this->database->prepareQuery($sql);
-        return $this->database->executeSelect([':project_id' => $projectId, ':user_id' => Auth::getUserID()]);
+        return $this->database->executeSelect([':project_id' => $projectId, ':user_id' => Auth::getUserID(), ':user_id1' => Auth::getUserID()]);
     }
 
     public function getFilterCount(string $projectId, string $search): int
     {
-        $sql = "SELECT c.*,up.permission_id,u.name as username FROM collection c LEFT JOIN user_permission up ON up.collection_id = c.collection_id AND up.user_id = :user_id LEFT JOIN user u ON u.user_id = c.user_id  WHERE c.project_id = :project_id ";
+        $sql = "SELECT c.*,up.permission_id,u.name as username FROM collection c LEFT JOIN user_permission up ON up.collection_id = c.collection_id AND up.user_id = :user_id LEFT JOIN user u ON u.user_id = c.user_id  WHERE c.project_id = :project_id AND (up.permission_id = 4 OR (SELECT IF(role_id = 1,1,0) FROM user WHERE user_id = :user_id1))";
         if ($search) {
             $sql .= " AND CONCAT(IFNULL(c.collection_id,''), IFNULL(c.name,''), IFNULL(u.name,''), IFNULL(c.doi,''), IFNULL(c.sphere,''), IFNULL(c.note,''), IFNULL(c.creation_date,''), IFNULL(c.view,'')) LIKE '%$search%' ";
         }
         $this->database->prepareQuery($sql);
-        $count = count($this->database->executeSelect([':project_id' => $projectId, ':user_id' => Auth::getUserID()]));
+        $count = count($this->database->executeSelect([':project_id' => $projectId, ':user_id' => Auth::getUserID(), ':user_id1' => Auth::getUserID()]));
         return $count;
     }
 
     public function getListByPage(string $projectId, string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
     {
         $arr = [];
-        $sql = "SELECT c.*,up.permission_id,u.name as username FROM collection c LEFT JOIN user_permission up ON up.collection_id = c.collection_id AND up.user_id = :user_id LEFT JOIN user u ON u.user_id = c.user_id  WHERE c.project_id = :project_id ";
+        $sql = "SELECT c.*,up.permission_id,u.name as username FROM collection c LEFT JOIN user_permission up ON up.collection_id = c.collection_id AND up.user_id = :user_id LEFT JOIN user u ON u.user_id = c.user_id  WHERE c.project_id = :project_id AND (up.permission_id = 4 OR (SELECT IF(role_id = 1,1,0) FROM user WHERE user_id = :user_id1))";
         if ($search) {
             $sql .= " AND CONCAT(IFNULL(c.collection_id,''), IFNULL(c.name,''), IFNULL(u.name,''), IFNULL(c.doi,''), IFNULL(c.sphere,''), IFNULL(c.note,''), IFNULL(c.creation_date,''), IFNULL(c.view,'')) LIKE '%$search%' ";
         }
         $a = ['', 'c.collection_id', 'c.name', 'u.name', 'c.doi', 'c.sphere', 'c.note', 'c.creation_date', 'c.view', 'c.public_access', 'c.public_tags'];
         $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
         $this->database->prepareQuery($sql);
-        $result = $this->database->executeSelect([':project_id' => $projectId, ':user_id' => Auth::getUserID()]);
+        $result = $this->database->executeSelect([':project_id' => $projectId, ':user_id' => Auth::getUserID(), ':user_id1' => Auth::getUserID()]);
         if (count($result)) {
             foreach ($result as $key => $value) {
                 $arr[$key][] = "<input type='checkbox' class='js-checkbox'data-id='$value[collection_id]' data-name='$value[name]' name='cb[$value[collection_id]]' id='cb[$value[collection_id]]'>";

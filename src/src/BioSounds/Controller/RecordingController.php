@@ -126,6 +126,7 @@ class RecordingController extends BaseController
                 'modalX' => $_POST['modalX'],
                 'modalY' => $_POST['modalY'],
                 'models' => (new RecordingProvider())->getModel(),
+                'username' => (Auth::getUserID() ? (new User)->getFullName(Auth::getUserID()) : ''),
             ]);
         } else {
             return $this->twig->render('collection/noaccess.html.twig');

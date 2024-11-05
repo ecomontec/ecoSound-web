@@ -149,6 +149,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (reviewStatus.val()) {
                     postRequest(baseUrl + '/api/tagReview/save', new FormData($(this)[0]), false, false, function () {
                         $('#' + $('input[name=tag_id]').val()).removeClass('tag-dashed');
+                        $('#reviewForm .row').hide()
+                        $('#reviewForm .form-group').hide()
+                        var review_text = ''
+                        if (reviewStatus.val() == 1) {
+                            review_text = 'Accepted'
+                        } else if (reviewStatus.val() == 2) {
+                            review_text = 'Corrected'
+                        } else if (reviewStatus.val() == 3) {
+                            review_text = 'Rejected'
+                        } else if (reviewStatus.val() == 4) {
+                            review_text = 'Uncertain'
+                        }
+                        var row = '<tr><td class="form-control-sm">' + username + '</td><td class="form-control-sm">' + review_text + '</td><td class="form-control-sm">' + $('#reviewSpeciesName').val() + '</td><td class="form-control-sm">' + new Date().toLocaleDateString('en-GB') + '</td></tr>'
+                        $('.review-table tbody').append(row)
+                        reviewStatus.val('')
                     })
                 }
             }
@@ -159,19 +174,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 showAlert("Saved successfully.")
             } else if (buttonText.includes('Next')) {
                 $('#btn-next').click()
-                if($('#btn-next').hasClass('btn-secondary')){
+                if ($('#btn-next').hasClass('btn-secondary')) {
                     showAlert("Saved successfully, this is the last tag.")
-                }else{
+                } else {
                     showAlert("Saved successfully.")
                 }
             } else if (buttonText.includes('Previous')) {
                 $('#btn-previous').click()
-                if($('#btn-previous').hasClass('btn-secondary')){
+                if ($('#btn-previous').hasClass('btn-secondary')) {
                     showAlert("Saved successfully, this is the first tag.")
-                }else{
+                } else {
                     showAlert("Saved successfully.")
                 }
-            }else{
+            } else {
                 showAlert("Saved successfully.")
             }
             this.classList.add('was-validated');

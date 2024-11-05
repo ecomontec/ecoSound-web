@@ -30,7 +30,7 @@
                         <tbody>
                         {% for project in projects %}
                             <tr>
-                                <td><a href="#"><i class="fa fa-plus btn-fa" data-project="{{ project.id }}"></i></a></td>
+                                <td>{% if project.collections|length > 0 %}<a href="#"><i class="fa fa-plus btn-fa" data-project="{{ project.id }}"></i></a>{% endif %}</td>
                                 <td>{{ project.id }}</td>
                                 <td>{{ project.name }}</td>
                                 <td class="text-center">

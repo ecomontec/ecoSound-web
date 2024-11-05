@@ -41,7 +41,7 @@ class SiteController extends BaseController
         if (empty($projectId)) {
             $projectId = $projects[0]->getId();
         }
-        $collections = (new CollectionProvider())->getByProject($projectId, Auth::getUserID());
+        $collections = (new CollectionProvider())->getByProject($projectId, 0);
         $arr = [];
         $iucn_gets = (new IucnGet())->getAllIucnGets();
         foreach ($iucn_gets as $iucn_get) {
