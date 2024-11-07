@@ -53,9 +53,12 @@ document.addEventListener('DOMContentLoaded', function () {
                         createTag(tagId);
                     }
                     updateTag(tagId);
-
                     if (closeModalTagForm === true) {
                         showAlert("Saved successfully.")
+                    }
+
+                    if (reviewForm.length) {
+                        reviewForm.submit();
                     }
                 });
             }
@@ -83,9 +86,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
             tagForm.submit();
 
-            if (reviewForm.length) {
-                reviewForm.submit();
-            }
             if ($("#edit").length == 0 || $("#edit").val() == 0) {
                 $('#modal-div').modal('hide');
             }
@@ -164,31 +164,31 @@ document.addEventListener('DOMContentLoaded', function () {
                         var row = '<tr><td class="form-control-sm">' + username + '</td><td class="form-control-sm">' + review_text + '</td><td class="form-control-sm">' + $('#reviewSpeciesName').val() + '</td><td class="form-control-sm">' + new Date().toLocaleDateString('en-GB') + '</td></tr>'
                         $('.review-table tbody').append(row)
                         reviewStatus.val('')
+                        const buttonText = $('#saveButton').text();
+                        if (buttonText.includes('Close')) {
+                            $('#modal-div').modal('hide');
+                            showAlert("Saved successfully.")
+                        } else if (buttonText.includes('Next')) {
+                            $('#btn-next').click()
+                            if ($('#btn-next').hasClass('btn-secondary')) {
+                                showAlert("Saved successfully, this is the last tag.")
+                            } else {
+                                showAlert("Saved successfully.")
+                            }
+                        } else if (buttonText.includes('Previous')) {
+                            $('#btn-previous').click()
+                            if ($('#btn-previous').hasClass('btn-secondary')) {
+                                showAlert("Saved successfully, this is the first tag.")
+                            } else {
+                                showAlert("Saved successfully.")
+                            }
+                        } else {
+                            showAlert("Saved successfully.")
+                        }
                     })
                 }
             }
 
-            const buttonText = $('#saveButton').text();
-            if (buttonText.includes('Close')) {
-                $('#modal-div').modal('hide');
-                showAlert("Saved successfully.")
-            } else if (buttonText.includes('Next')) {
-                $('#btn-next').click()
-                if ($('#btn-next').hasClass('btn-secondary')) {
-                    showAlert("Saved successfully, this is the last tag.")
-                } else {
-                    showAlert("Saved successfully.")
-                }
-            } else if (buttonText.includes('Previous')) {
-                $('#btn-previous').click()
-                if ($('#btn-previous').hasClass('btn-secondary')) {
-                    showAlert("Saved successfully, this is the first tag.")
-                } else {
-                    showAlert("Saved successfully.")
-                }
-            } else {
-                showAlert("Saved successfully.")
-            }
             this.classList.add('was-validated');
             e.preventDefault();
         });

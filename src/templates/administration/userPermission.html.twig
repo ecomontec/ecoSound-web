@@ -37,7 +37,7 @@
                                     <input class="access-checkbox project-checkbox" value="{{ accessId }}" type="checkbox" name="access" data-project="{{ project.id }}" {{ project.collections|length?'':'disabled' }}>
                                 </td>
                                 <td class="text-center">
-                                    <input class="manage-checkbox project-checkbox" value="{{ manageId }}" type="checkbox" name="manage" data-project="{{ project.id }}" {{ project.collections|length?'':'disabled' }} {{ not is_admin ? 'hidden' }}>
+                                    <input class="manage-checkbox project-checkbox" value="{{ manageId }}" type="checkbox" name="manage" data-project="{{ project.id }}" {{ project.collections|length?'':'disabled' }}>
                                 </td>
                                 <td class="text-center">
                                     <input class="view-checkbox project-checkbox" value="{{ viewId }}" type="checkbox" name="view" data-project="{{ project.id }}" {{ project.collections|length?'':'disabled' }}>
@@ -68,7 +68,7 @@
                                     </td>
                                     <td class="text-center">
                                         <input class="js-manage-checkbox" value="{{ manageId }}" type="checkbox" name="manage" data-project="{{ project.id }}" data-collection-id="{{ collection.id }}"
-                                                {{ collection.permission == manageId ? "checked" }} {{ not is_admin ? 'hidden' }}>
+                                                {{ collection.permission == manageId ? "checked" }}>
                                     </td>
                                     <td class="text-center">
                                         {% if collection.public_tags %}
