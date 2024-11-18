@@ -248,13 +248,13 @@ class User extends AbstractProvider
         return ($max_count == $count ? true : false);
     }
 
-    public function isAllView(int $userId, int $collection_id, int $permission_id): bool
+    public function isAllView(int $userId, int $collection_id): bool
     {
         $this->database->prepareQuery("SELECT COUNT(*) AS count FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id)");
         $result = $this->database->executeSelect([":collection_id" => $collection_id]);
         $max_count = $result[0]["count"];
-        $this->database->prepareQuery('SELECT COUNT(*) AS count FROM user_permission WHERE user_id = :userId AND permission_id >= :permission_id AND collection_id IN (SELECT collection_id FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id))');
-        $result = $this->database->executeSelect([":userId" => $userId, ":permission_id" => $permission_id, ":collection_id" => $collection_id]);
+        $this->database->prepareQuery('SELECT COUNT(*) AS count FROM user_permission WHERE user_id = :userId AND permission_id <= 4 AND collection_id IN (SELECT collection_id FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id))');
+        $result = $this->database->executeSelect([":userId" => $userId, ":collection_id" => $collection_id]);
         $count = $result[0]["count"];
         return ($max_count == $count + 1 ? true : false);
     }
