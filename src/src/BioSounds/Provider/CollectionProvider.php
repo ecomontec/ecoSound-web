@@ -126,7 +126,7 @@ class CollectionProvider extends AbstractProvider
     public function getByProject(int $project_id, ?string $user_id): ?array
     {
         if ($user_id == null) {
-            $this->database->prepareQuery("SELECT c.* FROM collection c LEFT JOIN user_permission u ON c.collection_id = u.collection_id AND u.user_id = " . Auth::getUserLoggedID() . " WHERE c.project_id = $project_id  AND u.permission_id = 4 GROUP BY c.collection_id ORDER BY c.name");
+            $this->database->prepareQuery("SELECT c.* FROM collection c LEFT JOIN user_permission u ON c.collection_id = u.collection_id AND u.user_id = " . Auth::getUserLoggedID() . " WHERE c.project_id = $project_id " . (Auth::isUserAdmin() ? '' : " AND u.permission_id = 4 ") . " GROUP BY c.collection_id ORDER BY c.name");
         } else if (Auth::isUserAdmin()) {
             $this->database->prepareQuery("SELECT c.*,u.permission_id FROM collection c LEFT JOIN user_permission u ON u.collection_id = c.collection_id AND u.user_id = $user_id WHERE c.project_id = $project_id ORDER BY c.name");
         } else if (Auth::getUserID() == $user_id) {

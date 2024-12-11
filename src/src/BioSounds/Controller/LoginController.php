@@ -23,7 +23,6 @@ class LoginController extends BaseController
                     header('Location: ' . APP_URL);
                 }
             }
-            exit;
         }
         if (!Auth::isUserLogged()) {
             throw new AuthenticationException();

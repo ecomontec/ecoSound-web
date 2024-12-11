@@ -26,11 +26,19 @@
                             Settings</a>
                     </li>
                     {% if isManage %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ baseUrl }}/admin/users">
-                                <i class="fas fa-user pr-1"></i>
-                                Users</a>
-                        </li>
+                        {% if is_project_manage %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ baseUrl }}/admin/users">
+                                    <i class="fas fa-user pr-1"></i>
+                                    Users</a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ baseUrl }}/admin/selfService">
+                                    <i class="fas fa-user pr-1"></i>
+                                    User</a>
+                            </li>
+                        {% endif %}
                         {% if is_admin %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ baseUrl }}/admin/projects">
@@ -76,11 +84,11 @@
                             Index Logs</a>
                     </li>
                     {% if isManage %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ baseUrl }}/admin/queues">
-                            <i class="fa-solid fa-list-ol pr-1"></i>
-                            Queue</a>
-                    </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ baseUrl }}/admin/queues">
+                                <i class="fa-solid fa-list-ol pr-1"></i>
+                                Queue</a>
+                        </li>
                     {% endif %}
                 </ul>
             </div>

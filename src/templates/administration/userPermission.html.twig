@@ -63,7 +63,7 @@
                                             <input class="js-access-checkbox public" type="checkbox" name="access" data-project="{{ project.id }}" data-collection-id="{{ collection.id }}" title="This collection is public" disabled checked>
                                         {% else %}
                                             <input class="js-access-checkbox" value="{{ accessId }}" type="checkbox" name="access" data-project="{{ project.id }}" data-collection-id="{{ collection.id }}"
-                                                    {{ collection.permission == manageId ? "checked disabled" }} {{ collection.permission == reviewId ? "checked disabled" }} {{ collection.permission == viewId ? "checked disabled" }} {{ collection.permission == accessId ? "checked" }}>
+                                                    {{ collection.permission == manageId ? "checked" }} {{ collection.permission == reviewId ? "checked" }} {{ collection.permission == viewId ? "checked" }} {{ collection.permission == accessId ? "checked" }}>
                                         {% endif %}
                                     </td>
                                     <td class="text-center">
@@ -75,12 +75,12 @@
                                             <input class="js-view-checkbox public" type="checkbox" name="view" data-project="{{ project.id }}" data-collection-id="{{ collection.id }}" title="These collections' tags are public" disabled checked>
                                         {% else %}
                                             <input class="js-view-checkbox" value="{{ viewId }}" type="checkbox" name="view" data-project="{{ project.id }}" data-collection-id="{{ collection.id }}"
-                                                    {{ collection.permission == manageId ? "checked disabled" }} {{ collection.permission == reviewId ? "checked disabled" }} {{ collection.permission == viewId ? "checked" }}>
+                                                    {{ collection.permission == manageId ? "checked" }} {{ collection.permission == reviewId ? "checked" }} {{ collection.permission == viewId ? "checked" }}>
                                         {% endif %}
                                     </td>
                                     <td class="text-center">
                                         <input class="js-review-checkbox" value="{{ reviewId }}" type="checkbox" name="review" data-project="{{ project.id }}" data-collection-id="{{ collection.id }}"
-                                                {{ collection.permission == manageId ? "checked disabled" }} {{ collection.permission == reviewId ? "checked" }}>
+                                                {{ collection.permission == manageId ? "checked" }} {{ collection.permission == reviewId ? "checked" }}>
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -105,18 +105,10 @@
         $('[data-toggle="tooltip"]').tooltip();
         $('table#user-perm tbody tr .project-checkbox').each(function (i) {
             var name = $(this).attr('name')
-            if ($('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]').length == $('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]:checked').length && $('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]:checked').length > 0) {
+            if ($('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]').length == $('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"].public').length && $('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]:checked').length > 0) {
                 $('.' + name + '-checkbox[data-project="' + $(this).data('project') + '"]').prop({checked: true, indeterminate: false});
-                if (name == 'view') {
-                    $('.access-checkbox[data-project="' + $(this).data('project') + '"]').prop('disabled', true);
-                } else if (name == 'review') {
-                    $('.access-checkbox[data-project="' + $(this).data('project') + '"]').prop('disabled', true);
-                    $('.view-checkbox[data-project="' + $(this).data('project') + '"]').prop('disabled', true);
-                } else if (name == 'manage') {
-                    $('.access-checkbox[data-project="' + $(this).data('project') + '"]').prop('disabled', true);
-                    $('.view-checkbox[data-project="' + $(this).data('project') + '"]').prop('disabled', true);
-                    $('.review-checkbox[data-project="' + $(this).data('project') + '"]').prop('disabled', true);
-                }
+            } else if ($('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]').length == $('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]:checked').length && $('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]:checked').length > 0) {
+                $('.' + name + '-checkbox[data-project="' + $(this).data('project') + '"]').prop({checked: true, indeterminate: false});
             } else if ($('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]').length != $('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]:checked').length && $('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]:checked').length > 0) {
                 $('.' + name + '-checkbox[data-project="' + $(this).data('project') + '"]').prop({checked: false, indeterminate: true});
             } else {
@@ -138,54 +130,45 @@
                 type = 'collection-id'
             }
             $('.js-data-input[data-' + type + '="' + $(this).data(type) + '"]').attr('data-permission-id', checked ? $(this).val() : 0);
-            if (name == 'view') {
+            if (name == 'access') {
+                $('.js-view-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('checked', false);
+                $('.view-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('checked', false);
+                $('.js-review-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('checked', false);
+                $('.review-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('checked', false);
+                $('.js-manage-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('checked', false);
+                $('.manage-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('checked', false);
+            } else if (name == 'view') {
                 $('.js-access-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('checked', checked);
-                $('.js-access-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('disabled', checked);
                 $('.access-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('checked', checked);
-                $('.access-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('disabled', checked);
+                $('.js-review-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('checked', false);
+                $('.review-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('checked', false);
+                $('.js-manage-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('checked', false);
+                $('.manage-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('checked', false);
             } else if (name == 'review') {
                 $('.js-access-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('checked', checked);
-                $('.js-access-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('disabled', checked);
                 $('.access-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('checked', checked);
-                $('.access-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('disabled', checked);
                 $('.js-view-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('checked', checked);
-                $('.js-view-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('disabled', checked);
                 $('.view-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('checked', checked);
-                $('.view-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('disabled', checked);
+                $('.js-manage-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('checked', false);
+                $('.manage-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('checked', false);
             } else if (name == 'manage') {
                 $('.js-access-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('checked', checked);
-                $('.js-access-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('disabled', checked);
                 $('.access-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('checked', checked);
-                $('.access-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('disabled', checked);
                 $('.js-view-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('checked', checked);
-                $('.js-view-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('disabled', checked);
                 $('.view-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('checked', checked);
-                $('.view-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('disabled', checked);
                 $('.js-review-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('checked', checked);
-                $('.js-review-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('disabled', checked);
                 $('.review-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('checked', checked);
-                $('.review-checkbox[data-' + type + '="' + $(this).data(type) + '"]:not(.public)').prop('disabled', checked);
             }
             $('table#user-perm tbody tr .project-checkbox[data-project="' + $(this).data('project') + '"]').each(function (i) {
                 var name = $(this).attr('name')
-                if ($('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]').length == $('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]:checked').length && $('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]:checked').length > 0) {
+                if ($('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]').length == $('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"].public').length && $('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]:checked').length > 0) {
                     $('.' + name + '-checkbox[data-project="' + $(this).data('project') + '"]').prop({checked: true, indeterminate: false});
-                    if (name == 'view') {
-                        $('.access-checkbox[data-project="' + $(this).data('project') + '"]').prop('disabled', true);
-                    } else if (name == 'review') {
-                        $('.access-checkbox[data-project="' + $(this).data('project') + '"]').prop('disabled', true);
-                        $('.view-checkbox[data-project="' + $(this).data('project') + '"]').prop('disabled', true);
-                    } else if (name == 'manage') {
-                        $('.access-checkbox[data-project="' + $(this).data('project') + '"]').prop('disabled', true);
-                        $('.view-checkbox[data-project="' + $(this).data('project') + '"]').prop('disabled', true);
-                        $('.review-checkbox[data-project="' + $(this).data('project') + '"]').prop('disabled', true);
-                    }
+                } else if ($('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]').length == $('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]:checked').length && $('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]:checked').length > 0) {
+                    $('.' + name + '-checkbox[data-project="' + $(this).data('project') + '"]').prop({checked: true, indeterminate: false});
                 } else if ($('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]').length != $('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]:checked').length && $('.js-' + name + '-checkbox[data-project="' + $(this).data('project') + '"]:checked').length > 0) {
                     $('.' + name + '-checkbox[data-project="' + $(this).data('project') + '"]').prop({checked: false, indeterminate: true});
-                    $('.' + name + '-checkbox[data-project="' + $(this).data('project') + '"]').prop('disabled', false);
                 } else {
                     $('.' + name + '-checkbox[data-project="' + $(this).data('project') + '"]').prop({checked: false, indeterminate: false});
-                    $('.' + name + '-checkbox[data-project="' + $(this).data('project') + '"]').prop('disabled', false);
                 }
             });
         });

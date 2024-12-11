@@ -66,7 +66,7 @@ class ProjectProvider extends AbstractProvider
                 $sql = "SELECT p.*,MAX(c.collection_id) AS collection_id,MAX( u.permission_id ) AS permission_id FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u ON u.collection_id = c.collection_id AND u.user_id = $userId GROUP BY p.project_id ORDER BY p.name";
             }
         } else {
-            $str = $disalbe ? ' WHERE u1.permission_id = 4 ' : ' WHERE u1.permission_id IS NOT NULL OR c.public_access=1 ';
+            $str = $disalbe ? ' WHERE u1.permission_id = 4 ' : ' WHERE u1.permission_id IS NOT NULL OR c.public_access = 1 ';
             if ($userId == null) {
                 $sql = "SELECT p.* FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = " . Auth::getUserID() . $str . " GROUP BY p.project_id ORDER BY p.name";
             } else {

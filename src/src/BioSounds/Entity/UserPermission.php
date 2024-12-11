@@ -91,12 +91,12 @@ class UserPermission extends BaseProvider
         return $this->database->executeDelete([':colId' => $colId]);
     }
 
-    public function updatePermission($collection_id)
+    public function updatePermission($collection_id, $project_id)
     {
         $this->database->prepareQuery("SELECT user_id FROM user_permission WHERE collection_id IN (SELECT collection_id FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = $collection_id)) GROUP BY user_id");
         $result = $this->database->executeSelect();
         foreach ($result as $r) {
-            if ((new User)->isProjectManage($r['user_id'], $collection_id)) {
+            if ((new User)->isProjectManageCreate($r['user_id'], $project_id)) {
                 $this->database->prepareQuery("INSERT INTO user_permission (user_id, collection_id, permission_id) VALUES (" . $r['user_id'] . "," . $collection_id . "," . 4 . ")");
                 $this->database->executeInsert();
             } else if ((new User)->isAllView($r['user_id'], $collection_id)) {

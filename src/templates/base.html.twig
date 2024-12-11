@@ -36,22 +36,22 @@
             }
 
             $('.acceptCookies').on('click', function () {
-                $.cookie('cookieConsent', 'accepted', {path: '/', expires: 364});
+                $.cookie('cookieConsent', 'accepted', {path: '/', expires: 180});
                 document.getElementById('cookieConsent').style.display = 'none';
                 $('#modal-cookie').modal('hide')
             });
 
             $('.declineCookies').on('click', function () {
-                $.cookie('cookieConsent', 'declined', {path: '/', expires: 364});
+                $.cookie('cookieConsent', 'declined', {path: '/', expires: 180});
                 document.getElementById('cookieConsent').style.display = 'none';
                 $('#modal-cookie').modal('hide')
             });
 
             $('.confirmCookies').on('click', function () {
                 if ($('#cb_functional_cookies')) {
-                    $.cookie('cookieConsent', 'accepted', {path: '/', expires: 364});
+                    $.cookie('cookieConsent', 'accepted', {path: '/', expires: 180});
                 } else {
-                    $.cookie('cookieConsent', 'declined', {path: '/', expires: 364});
+                    $.cookie('cookieConsent', 'declined', {path: '/', expires: 180});
                 }
                 document.getElementById('cookieConsent').style.display = 'none';
                 $('#modal-cookie').modal('hide')

@@ -3,7 +3,7 @@
 namespace BioSounds\Classes;
 
 use BioSounds\Entity\Setting;
-use BioSounds\Provider\CollectionProvider;
+use BioSounds\Entity\User;
 use BioSounds\Provider\ProjectProvider;
 use BioSounds\Utils\Auth;
 use BioSounds\Utils\Utils;
@@ -105,6 +105,7 @@ class BaseClass
         $this->twig->addGlobal('isUserLogged', Auth::isUserLogged());
         $this->twig->addGlobal('username', Auth::getUserName());
         $this->twig->addGlobal('is_admin', Auth::isUserAdmin());
+        $this->twig->addGlobal('is_project_manage', (new User())->isProjectManage());
         $this->twig->addGlobal('isManage', Auth::isManage());
         $this->twig->addGlobal('user_id', Auth::getUserID());
         $this->twig->addGlobal('regenerate_timeout', $_SESSION['regenerate_timeout']);

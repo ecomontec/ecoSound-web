@@ -60,6 +60,27 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (reviewForm.length) {
                         reviewForm.submit();
                     }
+                    const buttonText = $('#saveButton').text();
+                    if (buttonText.includes('Close')) {
+                        $('#modal-div').modal('hide');
+                        showAlert("Saved successfully.")
+                    } else if (buttonText.includes('Next')) {
+                        $('#btn-next').click()
+                        if ($('#btn-next').hasClass('btn-secondary')) {
+                            showAlert("Saved successfully, this is the last tag.")
+                        } else {
+                            showAlert("Saved successfully.")
+                        }
+                    } else if (buttonText.includes('Previous')) {
+                        $('#btn-previous').click()
+                        if ($('#btn-previous').hasClass('btn-secondary')) {
+                            showAlert("Saved successfully, this is the first tag.")
+                        } else {
+                            showAlert("Saved successfully.")
+                        }
+                    } else {
+                        showAlert("Saved successfully.")
+                    }
                 });
             }
             this.classList.add('was-validated');
@@ -126,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function () {
             $('#reviewSpeciesName').prop('disabled', true);
             $('.js-species-id[data-type=review]').val('');
             $('#review_status').val(3);
-            $('#state').html('Deleted');
+            $('#state').html('Rejected');
             e.preventDefault();
         });
 
@@ -164,27 +185,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         var row = '<tr><td class="form-control-sm">' + username + '</td><td class="form-control-sm">' + review_text + '</td><td class="form-control-sm">' + $('#reviewSpeciesName').val() + '</td><td class="form-control-sm">' + new Date().toLocaleDateString('en-GB') + '</td></tr>'
                         $('.review-table tbody').append(row)
                         reviewStatus.val('')
-                        const buttonText = $('#saveButton').text();
-                        if (buttonText.includes('Close')) {
-                            $('#modal-div').modal('hide');
-                            showAlert("Saved successfully.")
-                        } else if (buttonText.includes('Next')) {
-                            $('#btn-next').click()
-                            if ($('#btn-next').hasClass('btn-secondary')) {
-                                showAlert("Saved successfully, this is the last tag.")
-                            } else {
-                                showAlert("Saved successfully.")
-                            }
-                        } else if (buttonText.includes('Previous')) {
-                            $('#btn-previous').click()
-                            if ($('#btn-previous').hasClass('btn-secondary')) {
-                                showAlert("Saved successfully, this is the first tag.")
-                            } else {
-                                showAlert("Saved successfully.")
-                            }
-                        } else {
-                            showAlert("Saved successfully.")
-                        }
                     })
                 }
             }

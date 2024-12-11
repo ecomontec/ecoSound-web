@@ -354,7 +354,7 @@ class RecordingProvider extends AbstractProvider
         $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
-        $users = (new User())->getList();
+        $users = (new User())->getUserList();
         $sites = (new SiteProvider())->getList($projectId, $collectionId);
         $recorders = (new Recorder())->getBasicList();
         $licenses = (new License())->getBasicList();

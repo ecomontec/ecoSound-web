@@ -43,7 +43,7 @@ class CollectionController extends BaseController
         return $this->twig->render('administration/collections.html.twig', [
             'projects' => $projects,
             'projectId' => $projectId,
-            'isProjectManage' => (new User())->isProjectManage(Auth::getUserLoggedID(), $projectId)
+            'isProjectManage' => (new User())->isProjectManageByProject(Auth::getUserLoggedID(), $projectId)
         ]);
     }
 
@@ -102,7 +102,7 @@ class CollectionController extends BaseController
             ]);
         } else {
             $id = $collProvider->insertColl($data);
-            (new UserPermission())->updatePermission($id);
+            (new UserPermission())->updatePermission($id, $data['project_id']);
             (new SiteCollection())->insertByCollection($data['project_id'], $id);
             return json_encode([
                 'errorCode' => 0,
