@@ -34,6 +34,9 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
 
             if ($("#tagForm :input").prop('disabled') === true) {
+                if (reviewForm.length) {
+                    reviewForm.submit();
+                }
                 return;
             }
 

@@ -99,7 +99,13 @@ class UserPermission extends BaseProvider
             if ((new User)->isProjectManageCreate($r['user_id'], $project_id)) {
                 $this->database->prepareQuery("INSERT INTO user_permission (user_id, collection_id, permission_id) VALUES (" . $r['user_id'] . "," . $collection_id . "," . 4 . ")");
                 $this->database->executeInsert();
+            } else if ((new User)->isAllReview($r['user_id'], $collection_id)) {
+                $this->database->prepareQuery("INSERT INTO user_permission (user_id, collection_id, permission_id) VALUES (" . $r['user_id'] . "," . $collection_id . "," . 2 . ")");
+                $this->database->executeInsert();
             } else if ((new User)->isAllView($r['user_id'], $collection_id)) {
+                $this->database->prepareQuery("INSERT INTO user_permission (user_id, collection_id, permission_id) VALUES (" . $r['user_id'] . "," . $collection_id . "," . 1 . ")");
+                $this->database->executeInsert();
+            } else if ((new User)->isAllAccess($r['user_id'], $collection_id)) {
                 $this->database->prepareQuery("INSERT INTO user_permission (user_id, collection_id, permission_id) VALUES (" . $r['user_id'] . "," . $collection_id . "," . 3 . ")");
                 $this->database->executeInsert();
             }

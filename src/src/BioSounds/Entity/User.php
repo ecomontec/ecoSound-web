@@ -272,12 +272,34 @@ class User extends AbstractProvider
         return ($max_count == $count + 1 ? true : false);
     }
 
-    public function isAllView(int $userId, int $collection_id): bool
+    public function isAllAccess(int $userId, int $collection_id): bool
     {
         $this->database->prepareQuery("SELECT COUNT(*) AS count FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id)");
         $result = $this->database->executeSelect([":collection_id" => $collection_id]);
         $max_count = $result[0]["count"];
         $this->database->prepareQuery('SELECT COUNT(*) AS count FROM user_permission up RIGHT JOIN collection c ON c.collection_id = up.collection_id WHERE (up.user_id = :userId AND up.permission_id <= 4 AND up.collection_id IN (SELECT collection_id FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id))) OR ( c.public_access = 1 AND c.project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id2))');
+        $result = $this->database->executeSelect([":userId" => $userId, ":collection_id" => $collection_id, ":collection_id2" => $collection_id]);
+        $count = $result[0]["count"];
+        return ($max_count == $count + 1 ? true : false);
+    }
+
+    public function isAllView(int $userId, int $collection_id): bool
+    {
+        $this->database->prepareQuery("SELECT COUNT(*) AS count FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id)");
+        $result = $this->database->executeSelect([":collection_id" => $collection_id]);
+        $max_count = $result[0]["count"];
+        $this->database->prepareQuery('SELECT COUNT(*) AS count FROM user_permission up RIGHT JOIN collection c ON c.collection_id = up.collection_id WHERE (up.user_id = :userId AND up.permission_id IN (1,2,4) AND up.collection_id IN (SELECT collection_id FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id))) OR ( c.public_access = 1 AND c.project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id2))');
+        $result = $this->database->executeSelect([":userId" => $userId, ":collection_id" => $collection_id, ":collection_id2" => $collection_id]);
+        $count = $result[0]["count"];
+        return ($max_count == $count + 1 ? true : false);
+    }
+
+    public function isAllReview(int $userId, int $collection_id): bool
+    {
+        $this->database->prepareQuery("SELECT COUNT(*) AS count FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id)");
+        $result = $this->database->executeSelect([":collection_id" => $collection_id]);
+        $max_count = $result[0]["count"];
+        $this->database->prepareQuery('SELECT COUNT(*) AS count FROM user_permission up RIGHT JOIN collection c ON c.collection_id = up.collection_id WHERE (up.user_id = :userId AND up.permission_id IN (2,4) AND up.collection_id IN (SELECT collection_id FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id))) OR ( c.public_access = 1 AND c.project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id2))');
         $result = $this->database->executeSelect([":userId" => $userId, ":collection_id" => $collection_id, ":collection_id2" => $collection_id]);
         $count = $result[0]["count"];
         return ($max_count == $count + 1 ? true : false);
