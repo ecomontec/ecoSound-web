@@ -13,18 +13,22 @@ class LoginController extends BaseController
      */
     public function login(): bool
     {
-        $userName = strtolower($_POST["username"]);
-        $password = $_POST["password"];
-        if (Auth::login($userName, $password)) {
-            if ($_SERVER['HTTP_REFERER']) {
-                header('Location: ' . $_SERVER['HTTP_REFERER']);
-            } else {
-                header('Location: ' . APP_URL);
+        if (isset($_POST["username"]) && isset($_POST["password"])) {
+            $userName = strtolower($_POST["username"]);
+            $password = $_POST["password"];
+            if (Auth::login($userName, $password)) {
+                if ($_SERVER['HTTP_REFERER']) {
+                    header('Location: ' . $_SERVER['HTTP_REFERER']);
+                } else {
+                    header('Location: ' . APP_URL);
+                }
             }
-            return true;
         }
-
-        throw new AuthenticationException();
+        if (!Auth::isUserLogged()) {
+            throw new AuthenticationException();
+        } else {
+            header('Location: ' . APP_URL);
+        }
     }
 
     public function logout(): bool

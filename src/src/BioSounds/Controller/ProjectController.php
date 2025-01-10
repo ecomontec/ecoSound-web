@@ -54,4 +54,9 @@ class ProjectController extends BaseController
         }
         return json_encode($data);
     }
+
+    public function cookie_policy()
+    {
+        return $this->twig->render('cookie_policy.html.twig');
+    }
 }

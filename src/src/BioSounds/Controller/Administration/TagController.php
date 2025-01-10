@@ -50,7 +50,7 @@ class TagController extends BaseController
                 $projectId = $projects[0]->getId();
             }
             $collections = (new CollectionProvider())->getByProject($projectId, Auth::getUserID());
-            if (empty($colId)) {
+            if (empty($colId) && $collections) {
                 $colId = $collections[0]->getId();
             }
         }
@@ -67,7 +67,7 @@ class TagController extends BaseController
             'collections' => $collections,
             'animal_sound_types' => $arr,
             'soundTypes' => (new SoundProvider())->getAll(),
-            'phonys' => (new SoundProvider())->get(),
+            'soundscape_components' => (new SoundProvider())->get(),
         ]);
     }
 
@@ -114,8 +114,8 @@ class TagController extends BaseController
             $colArr[] = $column['COLUMN_NAME'];
         }
 
-        array_splice($colArr, 2, 0, 'phony');
-        array_splice($colArr, 3, 0, 'sound_type');
+        array_splice($colArr, 2, 0, 'soundscape component');
+        array_splice($colArr, 3, 0, 'sound type');
         array_splice($colArr, 5, 0, 'recording');
         array_splice($colArr, 7, 0, 'user');
         array_splice($colArr, 15, 0, 'species');
@@ -127,8 +127,8 @@ class TagController extends BaseController
             unset($Item['TaxonOrder']);
             unset($Item['TaxonClass']);
 
-            $valueToMove = $Item['phony'] == null ? '' : $Item['phony'];
-            unset($Item['phony']);
+            $valueToMove = $Item['soundscape_component'] == null ? '' : $Item['soundscape_component'];
+            unset($Item['soundscape_component']);
             array_splice($Item, 2, 0, $valueToMove);
             $valueToMove = $Item['sound_type'] == null ? '' : $Item['sound_type'];
             unset($Item['sound_type']);
@@ -182,14 +182,14 @@ class TagController extends BaseController
         if ($data['species_id'] == '') {
             $data['species_id'] = null;
         }
-        if ($data['phony'] != "biophony") {
+        if ($data['soundscape_component'] != "biophony") {
             $data['species_id'] = null;
             $data['uncertain'] = null;
             $data['animal_sound_type'] = null;
             $data['distance_not_estimable'] = null;
             $data['sound_distance_m'] = null;
         }
-        unset($data['phony']);
+        unset($data['soundscape_component']);
         $tagProvider->update($data);
         return json_encode([
             'errorCode' => 0,

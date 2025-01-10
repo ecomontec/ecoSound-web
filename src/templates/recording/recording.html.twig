@@ -142,11 +142,11 @@
     <script src="{{ baseUrl }}/assets/js/jquery.Jcrop.min.js" defer></script>
     <script src="{{ baseUrl }}/templates/recording/player/js/imageCrop.js?v=1.0" defer></script>
 
-    <script type="module" src="{{ baseUrl }}/templates/recording/player/js/playbackRate.js?v=1.1" defer></script>
-    <script src="{{ baseUrl }}/templates/recording/player/js/player.js?v=1.2" defer></script>
-    <script src="{{ baseUrl }}/templates/recording/player/js/coordinateExport.js?v=1.0" defer></script>
+    <script type="module" src="{{ baseUrl }}/templates/recording/player/js/playbackRate.js?v=1.2" defer></script>
+    <script src="{{ baseUrl }}/templates/recording/player/js/player.js?v=1.3" defer></script>
+    <script src="{{ baseUrl }}/templates/recording/player/js/coordinateExport.js?v=1.1" defer></script>
     <script src="{{ baseUrl }}/templates/recording/player/js/tagControls.js" defer></script>
-    <script src="{{ baseUrl }}/templates/tag/js/tag.js?v=1.0" defer></script>
+    <script src="{{ baseUrl }}/templates/tag/js/tag.js?v=1.2" defer></script>
 {% endblock %}
 
 {% block scripts %}
@@ -167,9 +167,11 @@
 
         let recordingId = {{ player.recording.recording_id }};
         let userId = {{ player.user }};
+        let username = '{{ username }}';
         var frequency = {{ player.recording.sampling_rate }};
         var channelNum = {{ player.recording.channel_num }};
         var soundFilePath = '{{ player.filePath }}';
+        var playStartTime = null;
 
         $(function () {
             'use strict';

@@ -59,22 +59,29 @@ class ProjectProvider extends AbstractProvider
 
     public function getWithPermission($userId = null, int $disalbe = 1): array
     {
-        if (Auth::isUserAdmin()) {
+        $isAdmin = Auth::isUserAdmin();
+        $currentUserId = Auth::getUserID();
+        $params = [];
+        if ($isAdmin) {
             if ($userId == null) {
-                $sql = "SELECT p.* FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u ON u.collection_id = c.collection_id GROUP BY p.project_id ORDER BY p.project_id";
+                $sql = "SELECT p.* FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u ON u.collection_id = c.collection_id GROUP BY p.project_id ORDER BY p.name";
             } else {
-                $sql = "SELECT p.*,MAX(c.collection_id) AS collection_id,MAX( u.permission_id ) AS permission_id FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u ON u.collection_id = c.collection_id AND u.user_id = $userId GROUP BY p.project_id ORDER BY p.project_id";
+                $sql = "SELECT p.*,MAX(c.collection_id) AS collection_id,MAX( u.permission_id ) AS permission_id FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u ON u.collection_id = c.collection_id AND u.user_id = :userId GROUP BY p.project_id ORDER BY p.name";
+                $params[':userId'] = $userId;
             }
         } else {
-            $str = $disalbe ? ' WHERE u1.permission_id = 4 ' : ' WHERE u1.permission_id IS NOT NULL';
+            $str = $disalbe ? ' WHERE u1.permission_id = 4 ' : ' WHERE u1.permission_id IS NOT NULL OR c.public_access = 1 ';
             if ($userId == null) {
-                $sql = "SELECT p.* FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = " . Auth::getUserID() . $str . " GROUP BY p.project_id ORDER BY p.project_id";
+                $sql = "SELECT p.* FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = :currentUserId $str GROUP BY p.project_id ORDER BY p.name";
+                $params[':currentUserId'] = $currentUserId;
             } else {
-                $sql = "SELECT p.*,MAX(c.collection_id) AS collection_id,MAX( u2.permission_id ) AS permission_id FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = " . Auth::getUserID() . " LEFT JOIN user_permission u2 ON u2.collection_id = c.collection_id AND u2.user_id = $userId " . $str . " OR c.public_access=1 GROUP BY p.project_id ORDER BY p.project_id";
+                $sql = "SELECT p.*,MAX(c.collection_id) AS collection_id,MAX( u2.permission_id ) AS permission_id FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = :currentUserId LEFT JOIN user_permission u2 ON u2.collection_id = c.collection_id AND u2.user_id = :userId $str GROUP BY p.project_id ORDER BY p.name";
+                $params[':currentUserId'] = $currentUserId;
+                $params[':userId'] = $userId;
             }
         }
         $this->database->prepareQuery($sql);
-        $result = $this->database->executeSelect();
+        $result = $this->database->executeSelect($params);
 
         $data = [];
         foreach ($result as $item) {
@@ -100,11 +107,13 @@ class ProjectProvider extends AbstractProvider
     {
         if (Auth::isUserAdmin()) {
             $sql = "SELECT p.* FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN site_collection sc ON sc.collection_id = c.collection_id GROUP BY p.project_id ORDER BY p.project_id";
+            $this->database->prepareQuery($sql);
+            $result = $this->database->executeSelect();
         } else {
-            $sql = "SELECT p.* FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN site_collection sc ON sc.collection_id = c.collection_id LEFT JOIN user_permission u ON u.collection_id = c.collection_id WHERE u.permission_id = 4 AND u.user_id = $userId GROUP BY p.project_id ORDER BY p.project_id";
+            $sql = "SELECT p.* FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN site_collection sc ON sc.collection_id = c.collection_id LEFT JOIN user_permission u ON u.collection_id = c.collection_id WHERE u.permission_id = 4 AND u.user_id = :userId GROUP BY p.project_id ORDER BY p.project_id";
+            $this->database->prepareQuery($sql);
+            $result = $this->database->executeSelect([':userId' => $userId]);
         }
-        $this->database->prepareQuery($sql);
-        $result = $this->database->executeSelect();
 
         $data = [];
         foreach ($result as $item) {
@@ -185,12 +194,16 @@ class ProjectProvider extends AbstractProvider
 
     public function isValid($str, $project_id)
     {
-        $sql = "SELECT * FROM project WHERE `name` = '$str'";
+        $sql = "SELECT * FROM project WHERE `name` = :str";
         if (isset($project_id)) {
-            $sql = $sql . " and project_id != $project_id";
+            $sql = $sql . " and project_id != :project_id";
         }
         $this->database->prepareQuery($sql);
-        $result = $this->database->executeSelect();
+        $params = [':str' => $str];
+        if (isset($project_id)) {
+            $params[':project_id'] = $project_id;
+        }
+        $result = $this->database->executeSelect($params);
         if (count($result) > 0) {
             return true;
         }
@@ -199,28 +212,32 @@ class ProjectProvider extends AbstractProvider
 
     public function getAllProject(): array
     {
+        $params = [];
         if (!Auth::isUserLogged()) {
             $sql = "SELECT p.*,MAX(c.public_access) AS access,0 AS permission FROM project p LEFT JOIN collection c ON p.project_id = c.project_id";
         } elseif (Auth::isUserAdmin()) {
-            $sql = "SELECT p.*,MAX(c.public_access) AS access,1 AS permission FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission up ON up.user_id = " . Auth::getUserID() . " AND up.collection_id = c.collection_id ";
+            $sql = "SELECT p.*,MAX(c.public_access) AS access,1 AS permission FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission up ON up.user_id = :user_id AND up.collection_id = c.collection_id ";
+            $params = [':user_id' => Auth::getUserID()];
         } else {
-            $sql = "SELECT p.*,MAX(c.public_access) AS access,MAX(up.permission_id) AS permission FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission up ON up.user_id = " . Auth::getUserID() . " AND up.collection_id = c.collection_id ";
+            $sql = "SELECT p.*,MAX(c.public_access) AS access,MAX(up.permission_id) AS permission FROM project p LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission up ON up.user_id = :user_id AND up.collection_id = c.collection_id ";
+            $params = [':user_id' => Auth::getUserID()];
         }
         $sql .= " WHERE p.active = 1 GROUP BY p.project_id ";
         $this->database->prepareQuery($sql);
-        return $this->database->executeSelect();
+        return $this->database->executeSelect($params);
     }
 
     public function getProject(): array
     {
         if (Auth::isUserAdmin()) {
-            $sql = "SELECT p.*,u.name AS username,MAX(c.collection_id) AS collection_id,MAX( u1.permission_id ) AS permission_id FROM project p LEFT JOIN user u ON p.creator_id = u.user_id LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = :userId ";
+            $sql = "SELECT p.*,u.name AS username,MAX(c.collection_id) AS collection_id,MAX( u1.permission_id ) AS permission_id FROM project p LEFT JOIN user u ON p.creator_id = u.user_id LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = :userId GROUP BY p.project_id ";
+            $this->database->prepareQuery($sql);
+            return $this->database->executeSelect([':userId' => Auth::getUserID()]);
         } else {
-            $sql = "SELECT p.*,u.name AS username,MAX(c.collection_id) AS collection_id,MAX( u2.permission_id ) AS permission_id FROM project p LEFT JOIN user u ON p.creator_id = u.user_id LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = " . Auth::getUserID() . " LEFT JOIN user_permission u2 ON u2.collection_id = c.collection_id AND u2.user_id = :userId  WHERE u1.permission_id = 4 ";
+            $sql = "SELECT p.*,u.name AS username,MAX(c.collection_id) AS collection_id,MAX( u2.permission_id ) AS permission_id FROM project p LEFT JOIN user u ON p.creator_id = u.user_id LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = :currentUserId LEFT JOIN user_permission u2 ON u2.collection_id = c.collection_id AND u2.user_id = :userId  WHERE u1.permission_id = 4 GROUP BY p.project_id ";
+            $this->database->prepareQuery($sql);
+            return $this->database->executeSelect([':currentUserId' => Auth::getUserID(), ':userId' => Auth::getUserID()]);
         }
-        $sql .= " GROUP BY p.project_id ";
-        $this->database->prepareQuery($sql);
-        return $this->database->executeSelect([':userId' => Auth::getUserID()]);
     }
 
     public function getFilterCount(string $search): int
@@ -228,35 +245,56 @@ class ProjectProvider extends AbstractProvider
         if (Auth::isUserAdmin()) {
             $sql = "SELECT p.*,u.name AS username,MAX(c.collection_id) AS collection_id,MAX( u1.permission_id ) AS permission_id FROM project p LEFT JOIN user u ON p.creator_id = u.user_id LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = :userId ";
         } else {
-            $sql = "SELECT p.*,u.name AS username,MAX(c.collection_id) AS collection_id,MAX( u2.permission_id ) AS permission_id FROM project p LEFT JOIN user u ON p.creator_id = u.user_id LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = " . Auth::getUserID() . " LEFT JOIN user_permission u2 ON u2.collection_id = c.collection_id AND u2.user_id = :userId  WHERE u1.permission_id = 4 ";
+            $sql = "SELECT p.*,u.name AS username,MAX(c.collection_id) AS collection_id,MAX( u2.permission_id ) AS permission_id FROM project p LEFT JOIN user u ON p.creator_id = u.user_id LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = :currentUserId LEFT JOIN user_permission u2 ON u2.collection_id = c.collection_id AND u2.user_id = :userId  WHERE u1.permission_id = 4 ";
         }
         if ($search) {
             $sql .= (Auth::isUserAdmin() ? ' WHERE ' : ' AND ');
-            $sql .= " CONCAT(IFNULL(p.project_id,''), IFNULL(p.name,''), IFNULL(u.name,''), IFNULL(p.url,''), IFNULL(p.creation_date,'')) LIKE '%$search%' ";
+            $sql .= " CONCAT(IFNULL(p.project_id,''), IFNULL(p.name,''), IFNULL(u.name,''), IFNULL(p.url,''), IFNULL(p.creation_date,'')) LIKE :search ";
         }
         $sql .= " GROUP BY p.project_id ";
         $this->database->prepareQuery($sql);
-        $count = count($this->database->executeSelect([':userId' => Auth::getUserID()]));
+        $params = [
+            ':userId' => Auth::getUserID(),
+        ];
+        if ($search) {
+            $params[':search'] = '%' . $search . '%';
+        }
+        if (!Auth::isUserAdmin()) {
+            $params[':currentUserId'] = Auth::getUserID();
+        }
+        $count = count($this->database->executeSelect($params));
         return $count;
     }
 
     public function getListByPage(string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
     {
         $arr = [];
+        $dir = ($dir === 'asc' || $dir === 'desc') ? $dir : 'asc';
         if (Auth::isUserAdmin()) {
             $sql = "SELECT p.*,u.name AS username,MAX(c.collection_id) AS collection_id,MAX( u1.permission_id ) AS permission_id FROM project p LEFT JOIN user u ON p.creator_id = u.user_id LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = :userId ";
         } else {
-            $sql = "SELECT p.*,u.name AS username,MAX(c.collection_id) AS collection_id,MAX( u2.permission_id ) AS permission_id FROM project p LEFT JOIN user u ON p.creator_id = u.user_id LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = " . Auth::getUserID() . " LEFT JOIN user_permission u2 ON u2.collection_id = c.collection_id AND u2.user_id = :userId  WHERE u1.permission_id = 4 ";
+            $sql = "SELECT p.*,u.name AS username,MAX(c.collection_id) AS collection_id,MAX( u2.permission_id ) AS permission_id FROM project p LEFT JOIN user u ON p.creator_id = u.user_id LEFT JOIN collection c ON p.project_id = c.project_id LEFT JOIN user_permission u1 ON u1.collection_id = c.collection_id AND u1.user_id = :currentUserId LEFT JOIN user_permission u2 ON u2.collection_id = c.collection_id AND u2.user_id = :userId  WHERE u1.permission_id = 4 ";
         }
         if ($search) {
             $sql .= Auth::isUserAdmin() ? ' WHERE ' : ' AND ';
-            $sql .= " CONCAT(IFNULL(p.project_id,''), IFNULL(p.name,''), IFNULL(u.name,''), IFNULL(p.url,''), IFNULL(p.creation_date,'')) LIKE '%$search%' ";
+            $sql .= " CONCAT(IFNULL(p.project_id,''), IFNULL(p.name,''), IFNULL(u.name,''), IFNULL(p.url,''), IFNULL(p.creation_date,'')) LIKE :search ";
         }
         $sql .= " GROUP BY p.project_id ";
         $a = ['', 'p.project_id', 'p.name', 'u.name', 'p.url', '', 'p.creation_date', 'p.active'];
-        $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
+        $sql .= " ORDER BY $a[$column] $dir LIMIT :length OFFSET :start";
         $this->database->prepareQuery($sql);
-        $result = $this->database->executeSelect([':userId' => Auth::getUserID()]);
+        $params = [
+            ':length' => $length,
+            ':start' => $start,
+            ':userId' => Auth::getUserID(),
+        ];
+        if ($search) {
+            $params[':search'] = '%' . $search . '%';
+        }
+        if (!Auth::isUserAdmin()) {
+            $params[':currentUserId'] = Auth::getUserID();
+        }
+        $result = $this->database->executeSelect($params);
         if (count($result)) {
             foreach ($result as $key => $value) {
                 $arr[$key][] = "<input type='checkbox' class='js-checkbox'data-id='$value[project_id]' name='cb[$value[project_id]]' id='cb[$value[project_id]]'>";

@@ -404,7 +404,9 @@
 
         $("#btn_map").click(function () {
             $("#map").toggle()
-            $.cookie('map', $("#btn_map").text(), {expires: 7});
+            if ($.cookie('cookieConsent') == 'accepted') {
+                $.cookie('map', $("#btn_map").text(), {path: '/', expires: 180});
+            }
             if ($("#btn_map").text() == 'Hide Map') {
                 $("#btn_map").text('Show Map')
                 $('#sc-total').removeClass('col-lg-6').addClass('col-lg-12')

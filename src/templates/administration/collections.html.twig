@@ -30,10 +30,12 @@
                 <i class="fas fa-trash"></i>
                 Delete
             </button>
-            <button id="collectionFormButton" class="btn btn-outline-primary btn-sm mt-2" type="button" data-toggle="collapse" data-target="#collectionFormSection" aria-expanded="false" aria-controls="collectionFormSection">
-                <i class="fas fa-plus"></i>
-                Add
-            </button>
+            {% if isProjectManage %}
+                <button id="collectionFormButton" class="btn btn-outline-primary btn-sm mt-2" type="button" data-toggle="collapse" data-target="#collectionFormSection" aria-expanded="false" aria-controls="collectionFormSection">
+                    <i class="fas fa-plus"></i>
+                    Add
+                </button>
+            {% endif %}
             <button id="collectionsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#collectionsExport" aria-expanded="false" aria-controls="collectionsExport">
                 <i class="fa fa-file-csv"></i>
                 Save all as CSV
@@ -107,7 +109,7 @@
                     "url": '{{ baseUrl }}/admin/collectionMgr/getListByPage/{{ projectId }}/{{ collectionId }}',
                     "type": 'POST',
                     "error": function (xhr, error, thrown) {
-                        if (xhr.status == 400 || xhr.status == 404 ||xhr.status == 500) {
+                        if (xhr.status == 400 || xhr.status == 404 || xhr.status == 500) {
                             location.reload();
                         }
                     }

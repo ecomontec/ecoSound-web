@@ -101,7 +101,7 @@ class FileController
             $arr['duration'] = $d[1];
             $arr['sampling_rate'] = $d[2];
             isset($d[3]) ? $arr['name'] = $d[3] : '';
-            isset($d[4]) ? $arr['bitrate'] = $d[4] : '';
+            isset($d[4]) ? $arr['bitdepth'] = $d[4] : '';
             isset($d[5]) ? $arr['channel_num'] = $d[5] : '';
             isset($d[6]) ? $arr['duty_cycle_recording'] = $d[6] : '';
             isset($d[7]) ? $arr['duty_cycle_period'] = $d[7] : '';

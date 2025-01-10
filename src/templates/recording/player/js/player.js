@@ -58,7 +58,7 @@ savePlayLog = function () {
         {
             recordingId: recordingId,
             userId: userId,
-            startTime: getCookie('playStartTime'),
+            startTime: playStartTime,
             stopTime: new Date().valueOf() / 1000,
         }
     );

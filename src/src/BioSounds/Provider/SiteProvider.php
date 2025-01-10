@@ -59,7 +59,8 @@ class SiteProvider extends AbstractProvider
                     LEFT JOIN iucn_get e3 ON e3.iucn_get_id = s.functional_type_id 
                     LEFT JOIN site_collection sc ON sc.site_id = s.site_id
                     LEFT JOIN collection c ON c.collection_id = sc.collection_id
-                    WHERE c.project_id = $projectId ";
+                    LEFT JOIN user_permission up ON up.collection_id = c.collection_id
+                    WHERE c.project_id = $projectId AND (up.permission_id = 4 OR (SELECT IF(role_id = 1,1,0) FROM `user` WHERE user_id = " . Auth::getUserLoggedID() . "))";
         if ($collectionId != null && $collectionId != '0') {
             $sql .= " AND c.collection_id = $collectionId ";
         }
@@ -76,7 +77,8 @@ class SiteProvider extends AbstractProvider
                     LEFT JOIN iucn_get e3 ON e3.iucn_get_id = s.functional_type_id 
                     LEFT JOIN site_collection sc ON sc.site_id = s.site_id
                     LEFT JOIN collection c ON c.collection_id = sc.collection_id
-                    WHERE c.project_id = $projectId ";
+                    LEFT JOIN user_permission up ON up.collection_id = c.collection_id
+                    WHERE c.project_id = $projectId AND (up.permission_id = 4 OR (SELECT IF(role_id = 1,1,0) FROM `user` WHERE user_id = " . Auth::getUserLoggedID() . "))";
         if ($collectionId != null && $collectionId != '0') {
             $sql .= " AND c.collection_id = $collectionId ";
         }
@@ -98,7 +100,8 @@ class SiteProvider extends AbstractProvider
                     LEFT JOIN iucn_get e3 ON e3.iucn_get_id = s.functional_type_id 
                     LEFT JOIN site_collection sc ON sc.site_id = s.site_id
                     LEFT JOIN collection c ON c.collection_id = sc.collection_id
-                    WHERE c.project_id = $projectId ";
+                    LEFT JOIN user_permission up ON up.collection_id = c.collection_id
+                    WHERE c.project_id = $projectId AND (up.permission_id = 4 OR (SELECT IF(role_id = 1,1,0) FROM `user` WHERE user_id = " . Auth::getUserLoggedID() . "))";
         if ($collectionId != null && $collectionId != '0') {
             $sql .= " AND c.collection_id = $collectionId ";
         }

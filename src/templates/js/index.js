@@ -18,7 +18,6 @@ $(function () {
         {
             slidesPerView: 1,
             spaceBetween: 30,
-            loop: true,
             navigation: {
                 prevEl: ".project-slider-button-prev",
                 nextEl: ".project-slider-button-next",
@@ -35,7 +34,6 @@ $(function () {
         {
             slidesPerView: 1,
             spaceBetween: 30,
-            loop: true,
             navigation: {
                 prevEl: ".project-slider-button-prev-2",
                 nextEl: ".project-slider-button-next-2",

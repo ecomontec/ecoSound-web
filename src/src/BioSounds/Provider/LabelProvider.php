@@ -24,11 +24,14 @@ class LabelProvider extends BaseProvider
     private function getList(string $userId, string $order = 'name'): array
     {
         $data = [];
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $order)) {
+            $order = 'name';
+        }
         $this->database->prepareQuery(
-            "SELECT * FROM label WHERE creator_id = $userId or type = :type ORDER BY $order"
+            "SELECT * FROM label WHERE creator_id = :userId or type = :type ORDER BY $order"
         );
 
-        $result = $this->database->executeSelect([':type' => Label::DEFAULT_TYPE_PUBLIC]);
+        $result = $this->database->executeSelect(['userId' => $userId, ':type' => Label::DEFAULT_TYPE_PUBLIC]);
 
         foreach ($result as $item) {
             $data[] = (new Label())

@@ -434,11 +434,19 @@
                     if ($(this)[0].className == 'js-checkbox') {
                         return
                     }
-                    var id = $(this).attr('data-id')
+                    var id = $(this).closest('tr').find('.js-checkbox').attr('data-id')
                     $('#recordingGainValid' + id).text('')
                     saveFormList($(this), 'api/admin/recordingManager/save', function (response) {
                         if (response.isValid) {
-                            $('#recordingGainValid' + id).text(response.message)
+                            var table = $('#recTable').DataTable();
+                            var columnIndex = 9;
+                            var targetCell = table.cell(':eq(0)', columnIndex, {page: 'current'}).node();
+                            var scrollBody = $('.dataTables_scrollBody');
+                            var offsetLeft = $(targetCell).position().left;
+                            scrollBody.animate({
+                                scrollLeft: offsetLeft
+                            }, 500);
+                            $('#recordingGainValid' + id).text(response.message);
                         }
                     });
                 });

@@ -44,15 +44,19 @@
                     <small>{{ item.recording.fileTime }}</small>
                 </h6>
                 <div class="form-inline">
-                    <h6>
-                        User:
-                        <small>{{ item.recording.getUserFullName }}</small>
-                    </h6>
-                    {% if collection.orcid %}
-                        <a href="https://orcid.org/{{ collection.orcid }}" target="_blank">
-                            <i class="fa-brands fa-orcid ml-1 mb-2"></i>
+
+                    <div class="form-inline">
+                        <a type="button" data-toggle="popover" data-original-title="<b>Author Info</b>" data-placement="left" data-content=
+                        "<i class='fa-solid fa-user'></i> {{ collection.author }}
+                                {% if collection.orcid %}<br><i class='fa-brands fa-orcid'></i> <a href='https://orcid.org/{{ collection.orcid }}' target='_blank'>{{ collection.orcid }}</a>{% endif %}
+                                {% if collection.email %}<br><i class='fa-solid fa-envelope'></i> <a href='mailto:{{ collection.email }}'>{{ collection.email }}</a>{% endif %}"
+                           data-html="true" aria-describedby="popover">
+                            <h6>
+                                User:
+                                <small>{{ item.recording.getUserFullName }}<i class="ml-1 fa-regular fa-id-card"></i></small>
+                            </h6>
                         </a>
-                    {% endif %}
+                    </div>
                 </div>
                 <h6>
                     DOI:
@@ -166,5 +170,6 @@
             "ordering": false,
         });
         $('#recordingTable').show()
+        $('[data-toggle="popover"]').popover()
     });
 </script>

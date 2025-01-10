@@ -5,6 +5,7 @@ namespace BioSounds\Provider;
 
 
 use BioSounds\Entity\AbstractProvider;
+use BioSounds\Entity\User;
 use BioSounds\Utils\Auth;
 use Cassandra\Varint;
 
@@ -20,7 +21,7 @@ class TagReviewProvider extends AbstractProvider
                 LEFT JOIN `user` u ON u.user_id = tr.user_id
                 LEFT JOIN tag_review_status trs ON trs.tag_review_status_id = tr.tag_review_status_id
                 LEFT JOIN species s ON s.species_id = tr.species_id WHERE r.col_id = $collectionId";
-        if (!Auth::isManage()) {
+        if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
             $sql .= " AND tr.user_id = " . Auth::getUserID();
         }
         $this->database->prepareQuery($sql);
@@ -35,7 +36,7 @@ class TagReviewProvider extends AbstractProvider
                 LEFT JOIN `user` u ON u.user_id = tr.user_id
                 LEFT JOIN tag_review_status trs ON trs.tag_review_status_id = tr.tag_review_status_id
                 LEFT JOIN species s ON s.species_id = tr.species_id WHERE r.col_id = $collectionId";
-        if (!Auth::isManage()) {
+        if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
             $sql .= " AND tr.user_id = " . Auth::getUserID();
         }
         if ($search) {
@@ -62,7 +63,7 @@ class TagReviewProvider extends AbstractProvider
                 LEFT JOIN `user` u ON u.user_id = tr.user_id
                 LEFT JOIN tag_review_status trs ON trs.tag_review_status_id = tr.tag_review_status_id
                 LEFT JOIN species s ON s.species_id = tr.species_id WHERE r.col_id = $collectionId";
-        if (!Auth::isManage()) {
+        if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
             $sql .= " AND tr.user_id = " . Auth::getUserID();
         }
         if ($search) {

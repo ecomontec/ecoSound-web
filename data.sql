@@ -137,7 +137,7 @@ VALUES (1, 'Unknown', '', '', '', '', '', 1,''),
 INSERT INTO `tag_review_status` (`tag_review_status_id`, `name`)
 VALUES (1, 'Accepted'),
        (2, 'Corrected'),
-       (3, 'Deleted'),
+       (3, 'Rejected'),
        (4, 'Uncertain');
 --
 -- Dumping data for table `models`
@@ -343,7 +343,7 @@ VALUES (1, 1);
 --
 -- Dumping data for table `sound`
 --
-INSERT INTO sound (phony, sound_type)
+INSERT INTO sound (soundscape_component, sound_type)
 VALUES ('biophony', 'fish chorus'),
        ('biophony', 'bat swarm'),
        ('biophony', 'insect broadband noise'),

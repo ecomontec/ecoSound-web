@@ -23,7 +23,7 @@ class Recording
     const DURATION = "duration";
     const CHANNEL_NUM = "channel_num";
     const SAMPLING_RATE = "sampling_rate";
-    const BITRATE = 'bitrate';
+    const BITDEPTH  = 'bitdepth';
     const MD5_HASH = 'md5_hash';
     const DOI = "doi";
     const Type = "type";
@@ -133,7 +133,7 @@ class Recording
     /**
      * @var int
      */
-    private $bitrate;
+    private $bitdepth;
 
     /**
      * TODO: this should be property 'sound', when using an ORM
@@ -571,18 +571,18 @@ class Recording
     /**
      * @return int
      */
-    public function getBitrate(): int
+    public function getBitdepth(): int
     {
-        return $this->bitrate;
+        return $this->bitdepth;
     }
 
     /**
-     * @param int $bitrate
+     * @param int $bitdepth
      * @return Recording
      */
-    public function setBitrate(int $bitrate): Recording
+    public function setBitdepth(int $bitdepth): Recording
     {
-        $this->bitrate = $bitrate;
+        $this->bitdepth = $bitdepth;
         return $this;
     }
 
@@ -1061,7 +1061,7 @@ class Recording
         $this->setFileDate($values['file_date']);
         $this->setFileTime($values['file_time']);
         $this->setFileSize($values['file_size']);
-        $this->setBitrate($values['bitrate']);
+        $this->setBitdepth($values['bitdepth']);
         $this->setChannelNum($values['channel_num']);
         $this->setSamplingRate($values['sampling_rate']);
         $this->setDuration($values['duration']);

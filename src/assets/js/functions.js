@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
 
     if (error) {
+        alert(error)
         showAlert(error);
     }
 

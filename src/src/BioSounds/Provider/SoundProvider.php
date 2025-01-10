@@ -8,13 +8,13 @@ class SoundProvider extends BaseProvider
 {
     public function get()
     {
-        $query = 'SELECT phony FROM sound GROUP BY phony';
+        $query = 'SELECT soundscape_component FROM sound GROUP BY soundscape_component';
         $this->database->prepareQuery($query);
         $result = $this->database->executeSelect();
         $data = [];
         foreach ($result as $item) {
             $data[] = (new Sound())
-                ->setPhony($item['phony']);
+                ->setSoundscapeComponent($item['soundscape_component']);
         }
         return $data;
     }

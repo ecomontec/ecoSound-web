@@ -28,9 +28,9 @@ class FileProvider extends BaseProvider
      */
     public function get(int $fileId): ?File
     {
-        $this->database->prepareQuery("SELECT * FROM file_upload WHERE file_upload_id = $fileId");
+        $this->database->prepareQuery("SELECT * FROM file_upload WHERE file_upload_id = :fileId");
 
-        if (!empty($result = $this->database->executeSelect())) {
+        if (!empty($result = $this->database->executeSelect([':fileId' => $fileId]))) {
             $result = $result[0];
             return (new File())
                 ->setPath($result['path'])
@@ -65,15 +65,23 @@ class FileProvider extends BaseProvider
     public function update(File $file)
     {
         $query = 'UPDATE file_upload SET ';
-        $query .= "error = '" . $file->getError() . "', ";
-        $query .= "status = " . $file->getStatus() . " ";
+        $query .= "error = :error, ";
+        $query .= "status = :status ";
 
         if (!empty($file->getRecording())) {
-            $query .= ", recording_id = " . $file->getRecording() . " ";
+            $query .= ", recording_id = :recording_id ";
         }
 
-        $query .= "WHERE file_upload_id = " . $file->getId();
+        $query .= "WHERE file_upload_id = :file_upload_id";
+        $params = [
+            ':error' => $file->getError(),
+            ':status' => $file->getStatus(),
+            ':file_upload_id' => $file->getId()
+        ];
+        if (!empty($file->getRecording())) {
+            $params[':recording_id'] = $file->getRecording();
+        }
         $this->database->prepareQuery($query);
-        $this->database->executeUpdate();
+        $this->database->executeUpdate($params);
     }
 }

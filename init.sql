@@ -196,8 +196,8 @@ CREATE TABLE `recording`
     `data_type`             enum('meta-data','audio data') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'audio data',
     `col_id`                int(11) NOT NULL,
     `directory`             int(11) DEFAULT NULL,
-    `filename`              varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `name`                  varchar(160) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `filename`              varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `name`                  varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
     `user_id`               int(11) DEFAULT NULL,
     `site_id`               int(11) DEFAULT NULL,
     `recorder_id`           int(11) DEFAULT NULL,
@@ -215,7 +215,7 @@ CREATE TABLE `recording`
     `md5_hash`              char(32) COLLATE utf8_unicode_ci     DEFAULT NULL COMMENT 'MD5 hash of the file, to verify that the file has not been changed.',
     `DOI`                   varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
     `sampling_rate`         int(11) NOT NULL DEFAULT 44100,
-    `bitrate`               int(11) DEFAULT NULL DEFAULT 16,
+    `bitdepth`              int(11) DEFAULT NULL DEFAULT 16,
     `channel_num`           int(1) DEFAULT NULL DEFAULT 1,
     `duration`              float     NOT NULL,
     `creation_date`         timestamp NOT NULL                   DEFAULT current_timestamp()
@@ -268,7 +268,7 @@ CREATE TABLE `site`
 CREATE TABLE `sound`
 (
     `sound_id`   int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `phony`      varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `soundscape_component`      varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
     `sound_type` varchar(30) COLLATE utf8_unicode_ci  DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -330,7 +330,7 @@ CREATE TABLE `spectrogram`
 (
     `spectrogram_id` int(11) NOT NULL,
     `recording_id`   int(11) NOT NULL,
-    `filename`       varchar(150) COLLATE utf8_unicode_ci NOT NULL,
+    `filename`       varchar(250) COLLATE utf8_unicode_ci NOT NULL,
     `type`           enum('spectrogram','waveform','spectrogram-small','waveform-small','spectrogram-large','waveform-large','spectrogram-player') COLLATE utf8_unicode_ci NOT NULL,
     `max_frequency`  int(11) DEFAULT NULL,
     `fft`            int(11) NOT NULL DEFAULT 1024

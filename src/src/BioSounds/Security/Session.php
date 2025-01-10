@@ -22,7 +22,7 @@ class Session
 
         // Gets current cookies params.
         $cookieParams = session_get_cookie_params();
-        session_set_cookie_params(1800, $cookieParams['path'], $cookieParams['domain'], $secure, $httpOnly);
+        session_set_cookie_params(0, $cookieParams['path'], $cookieParams['domain'], $secure, $httpOnly);
 
         //No cache for avoiding back button 'document expired' problem
         header("Cache-Control: no cache");
@@ -38,7 +38,7 @@ class Session
         }
 
         // Regenerate session ID every five minutes:
-        if ($_SESSION['regenerate_timeout'] < time() - 360) {
+        if ($_SESSION['regenerate_timeout'] < time() - 300) {
             session_regenerate_id(true);
             $_SESSION['regenerate_timeout'] = time();
         }

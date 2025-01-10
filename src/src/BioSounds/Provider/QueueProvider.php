@@ -18,9 +18,9 @@ class QueueProvider extends AbstractProvider
      */
     public function getList(): array
     {
-        $sql = "SELECT * FROM queue WHERE user_id = " . Auth::getUserLoggedID() . " AND error != '-1'";
+        $sql = "SELECT * FROM queue WHERE user_id = :user_id AND error != '-1'";
         $this->database->prepareQuery($sql);
-        return $this->database->executeSelect();
+        return $this->database->executeSelect([':user_id' => Auth::getUserLoggedID()]);
     }
 
     /**
@@ -30,41 +30,64 @@ class QueueProvider extends AbstractProvider
      */
     public function delete(string $queue_id)
     {
-        $this->database->prepareQuery("UPDATE queue SET error = '-1' WHERE (status!=0 OR error = 'being cancelled.') AND queue_id IN ($queue_id)");
-        $this->database->executeUpdate();
-        $this->database->prepareQuery("UPDATE queue SET error = 'being cancelled.' WHERE status=0 AND queue_id IN ($queue_id)");
-        return $this->database->executeUpdate();
+        $params = [];
+        $ids = explode(',', $queue_id);
+        $placeholders = [];
+        foreach ($ids as $index => $value) {
+            $placeholders[] = ":id$index";
+            $params[":id$index"] = (int)$value;
+        }
+        $id_str = implode(', ', $placeholders);
+        $this->database->prepareQuery("UPDATE queue SET error = '-1' WHERE (status!=0 OR error = 'being cancelled.') AND queue_id IN ($id_str)");
+        $this->database->executeUpdate($params);
+        $this->database->prepareQuery("UPDATE queue SET error = 'being cancelled.' WHERE status=0 AND queue_id IN ($id_str)");
+        return $this->database->executeUpdate($params);
     }
 
     public function getQueue(): array
     {
-        $sql = "SELECT * FROM queue WHERE user_id = " . Auth::getUserLoggedID() . " AND (error != '-1' OR error IS NULL)";
+        $sql = "SELECT * FROM queue WHERE user_id = :user_id AND (error != '-1' OR error IS NULL)";
         $this->database->prepareQuery($sql);
-        return $this->database->executeSelect();
+        return $this->database->executeSelect([':user_id' => Auth::getUserLoggedID()]);
     }
 
     public function getFilterCount(string $search): int
     {
-        $sql = "SELECT * FROM queue WHERE user_id = " . Auth::getUserLoggedID() . " AND (error != '-1' OR error IS NULL)";
+        $sql = "SELECT * FROM queue WHERE user_id = :user_id AND (error != '-1' OR error IS NULL)";
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(queue_id,''), IFNULL(type,''), IFNULL(completed,''), IFNULL(total,''), IFNULL(status,''), IFNULL(start_time,''), IFNULL(stop_time,''), IFNULL(warning,''), IFNULL(error,'')) LIKE '%$search%' ";
+            $sql .= " AND CONCAT(IFNULL(queue_id,''), IFNULL(type,''), IFNULL(completed,''), IFNULL(total,''), IFNULL(status,''), IFNULL(start_time,''), IFNULL(stop_time,''), IFNULL(warning,''), IFNULL(error,'')) LIKE ':search ";
         }
         $this->database->prepareQuery($sql);
-        $count = count($this->database->executeSelect());
+        $params = [
+            ':user_id' => Auth::getUserLoggedID(),
+        ];
+        if ($search) {
+            $params[':search'] = '%' . $search . '%';
+        }
+        $count = count($this->database->executeSelect($params));
         return $count;
     }
 
     public function getListByPage(string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
     {
         $arr = [];
-        $sql = "SELECT * FROM queue WHERE user_id = " . Auth::getUserLoggedID() . " AND (error != '-1' OR error IS NULL)";
+        $dir = ($dir === 'asc' || $dir === 'desc') ? $dir : 'asc';
+        $sql = "SELECT * FROM queue WHERE user_id = :user_id AND (error != '-1' OR error IS NULL)";
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(queue_id,''), IFNULL(type,''), IFNULL(completed,''), IFNULL(total,''), IFNULL(status,''), IFNULL(start_time,''), IFNULL(stop_time,''), IFNULL(warning,''), IFNULL(error,'')) LIKE '%$search%' ";
+            $sql .= " AND CONCAT(IFNULL(queue_id,''), IFNULL(type,''), IFNULL(completed,''), IFNULL(total,''), IFNULL(status,''), IFNULL(start_time,''), IFNULL(stop_time,''), IFNULL(warning,''), IFNULL(error,'')) LIKE :search ";
         }
         $a = ['', 'queue_id', 'type', 'completed', 'total', 'status', 'start_time', 'stop_time', 'warning', 'error'];
-        $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
+        $sql .= " ORDER BY $a[$column] $dir LIMIT :length OFFSET :start";
         $this->database->prepareQuery($sql);
-        $result = $this->database->executeSelect();
+        $params = [
+            ':user_id' => Auth::getUserLoggedID(),
+            ':length' => $length,
+            ':start' => $start,
+        ];
+        if ($search) {
+            $params[':search'] = '%' . $search . '%';
+        }
+        $result = $this->database->executeSelect($params);
         if (count($result)) {
             foreach ($result as $key => $value) {
                 $arr[$key][] = "<input type='checkbox' class='js-checkbox'data-id='$value[queue_id]' name='cb[$value[queue_id]]' id='cb[$value[queue_id]]'>";

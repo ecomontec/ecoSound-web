@@ -77,8 +77,8 @@ playButton.click(function () {
                 getCurrentTime();
             }, 30);
 
-            if (!getCookie('playStartTime')) {
-                document.cookie = "playStartTime=" + new Date().valueOf() / 1000;
+            if (!playStartTime) {
+                playStartTime = new Date().valueOf() / 1000;
             }
             this.dataset.playing = 'true';
             playButton.html('<span class="fas fa-pause"></span>');

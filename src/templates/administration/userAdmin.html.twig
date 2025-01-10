@@ -11,87 +11,214 @@
                 </li>
             </ul>
         </nav>
-        <div class="row">
-            <div class="col-lg-2">
-                <ul class="nav flex-column nav-pills">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ baseUrl }}/admin/settings">
-                            <i class="fas fa-cog pr-1"></i>
-                            Settings</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ baseUrl }}/admin/selfService">
-                            <i class="fas fa-user pr-1"></i>
-                            User</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ baseUrl }}/admin/tags">
-                            <i class="fa fa-tag pr-1"></i>
-                            Tags</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ baseUrl }}/admin/tagReviews">
-                            <i class="fa fa-tags pr-1"></i>
-                            Reviews</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ baseUrl }}/admin/indexLogs">
-                            <i class="fa fa-info-circle pr-1"></i>
-                            Index Logs</a>
-                    </li>
-                </ul>
-            </div>
+        {% if isManage %}
+            <div class="row">
+                <div class="col-lg-2">
+                    <ul class="nav flex-column nav-pills">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ baseUrl }}/admin/settings">
+                                <i class="fas fa-cog pr-1"></i>
+                                Settings</a>
+                        </li>
+                        {% if isManage %}
+                            {% if is_project_manage %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ baseUrl }}/admin/users">
+                                        <i class="fas fa-user pr-1"></i>
+                                        Users</a>
+                                </li>
+                            {% else %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ baseUrl }}/admin/selfService">
+                                        <i class="fas fa-user pr-1"></i>
+                                        User</a>
+                                </li>
+                            {% endif %}
+                            {% if is_admin %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ baseUrl }}/admin/projects">
+                                        <i class="fas fa-desktop pr-1"></i>
+                                        Projects</a>
+                                </li>
+                            {% endif %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ baseUrl }}/admin/collections">
+                                    <i class="fas fa-music pr-1"></i>
+                                    Collections</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ baseUrl }}/admin/recordings">
+                                    <i class="fas fa-compact-disc pr-1"></i>
+                                    Recordings</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ baseUrl }}/admin/sites">
+                                    <i class="fa fa-sites pr-1"></i>
+                                    Sites</a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ baseUrl }}/admin/selfService">
+                                    <i class="fas fa-user pr-1"></i>
+                                    User</a>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ baseUrl }}/admin/tags">
+                                <i class="fa fa-tag pr-1"></i>
+                                Tags</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ baseUrl }}/admin/tagReviews">
+                                <i class="fa fa-tags pr-1"></i>
+                                Reviews</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ baseUrl }}/admin/indexLogs">
+                                <i class="fa fa-info-circle pr-1"></i>
+                                Index Logs</a>
+                        </li>
+                        {% if isManage %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ baseUrl }}/admin/queues">
+                                    <i class="fa-solid fa-list-ol pr-1"></i>
+                                    Queue</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
 
-            <div class="col-lg-10">
-                <div class="card mb-3" id="user">
-                    <div class="card-body">
-                        <table class="table table-sm table-hover">
-                            <thead class="table-borderless">
-                            <tr>
-                                <th scope="col">Name</th>
-                                <th scope="col">Username</th>
-                                <th scope="col">Email</th>
-                                <th scope="col">Role</th>
-                                <th scope="col">Password Reset</th>
-                                <th scope="col">Permissions</th>
-                                <th scope="col">Color</th>
-                            </tr>
-                            </thead>
-                            <tbody class="form-control-sm js-user-self-service">
-                            <tr>
-                                <td>
-                                    {{ user.username }}
-                                    <input type="hidden" name="itemID" value="{{ user.user_id }}">
-                                </td>
-                                <td>{{ user.username }}</td>
-                                <td>{{ user.email }}</td>
-                                <td>{{ role.name }}</td>
-                                <td>
-                                    <a href="{{ baseUrl }}/admin/userMgr/passwordReset" class="js-open-modal"
-                                       data-id="{{ user.user_id }}" title="Reset Password">
-                                        <i class='fas fa-edit'></i>
-                                    </a>
-                                </td>
+                <div class="col-lg-10">
+                    <div class="card mb-3" id="user">
+                        <div class="card-body">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-borderless">
+                                <tr>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Username</th>
+                                    <th scope="col">Email</th>
+                                    <th scope="col">Role</th>
+                                    <th scope="col">Password Reset</th>
+                                    <th scope="col">Permissions</th>
+                                    <th scope="col">Color</th>
+                                </tr>
+                                </thead>
+                                <tbody class="form-control-sm js-user-self-service">
+                                <tr>
+                                    <td>
+                                        {{ user.username }}
+                                        <input type="hidden" name="itemID" value="{{ user.user_id }}">
+                                    </td>
+                                    <td>{{ user.username }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>{{ role.name }}</td>
+                                    <td>
+                                        <a href="{{ baseUrl }}/admin/userMgr/passwordReset" class="js-open-modal"
+                                           data-id="{{ user.user_id }}" title="Reset Password">
+                                            <i class='fas fa-edit'></i>
+                                        </a>
+                                    </td>
 
-                                <td>
-                                    <a href="{{ baseUrl }}/UserPermission/view/{{ user.user_id }}" class="js-open-modal"
-                                       data-id="{{ user.user_id }}" title="Collection Privileges" $privhidden>
-                                        <i class='fas fa-tasks'></i>
-                                    </a>
-                                </td>
+                                    <td>
+                                        <a href="{{ baseUrl }}/UserPermission/view/{{ user.user_id }}" class="js-open-modal"
+                                           data-id="{{ user.user_id }}" title="Collection Privileges" $privhidden>
+                                            <i class='fas fa-tasks'></i>
+                                        </a>
+                                    </td>
 
-                                <td>
-                                    <input type="color" name="color" alt="Tag color"
-                                           value="{{ user.color is empty ? default_color : user.color }}">
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
+                                    <td>
+                                        <input type="color" name="color" alt="Tag color"
+                                               value="{{ user.color is empty ? default_color : user.color }}">
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        {% else %}
+            <div class="row">
+                <div class="col-lg-2">
+                    <ul class="nav flex-column nav-pills">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ baseUrl }}/admin/settings">
+                                <i class="fas fa-cog pr-1"></i>
+                                Settings</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ baseUrl }}/admin/selfService">
+                                <i class="fas fa-user pr-1"></i>
+                                User</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ baseUrl }}/admin/tags">
+                                <i class="fa fa-tag pr-1"></i>
+                                Tags</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ baseUrl }}/admin/tagReviews">
+                                <i class="fa fa-tags pr-1"></i>
+                                Reviews</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ baseUrl }}/admin/indexLogs">
+                                <i class="fa fa-info-circle pr-1"></i>
+                                Index Logs</a>
+                        </li>
+                    </ul>
+                </div>
 
+                <div class="col-lg-10">
+                    <div class="card mb-3" id="user">
+                        <div class="card-body">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-borderless">
+                                <tr>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Username</th>
+                                    <th scope="col">Email</th>
+                                    <th scope="col">Role</th>
+                                    <th scope="col">Password Reset</th>
+                                    <th scope="col">Permissions</th>
+                                    <th scope="col">Color</th>
+                                </tr>
+                                </thead>
+                                <tbody class="form-control-sm js-user-self-service">
+                                <tr>
+                                    <td>
+                                        {{ user.username }}
+                                        <input type="hidden" name="itemID" value="{{ user.user_id }}">
+                                    </td>
+                                    <td>{{ user.username }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>{{ role.name }}</td>
+                                    <td>
+                                        <a href="{{ baseUrl }}/admin/userMgr/passwordReset" class="js-open-modal"
+                                           data-id="{{ user.user_id }}" title="Reset Password">
+                                            <i class='fas fa-edit'></i>
+                                        </a>
+                                    </td>
+
+                                    <td>
+                                        <a href="{{ baseUrl }}/UserPermission/view/{{ user.user_id }}" class="js-open-modal"
+                                           data-id="{{ user.user_id }}" title="Collection Privileges" $privhidden>
+                                            <i class='fas fa-tasks'></i>
+                                        </a>
+                                    </td>
+
+                                    <td>
+                                        <input type="color" name="color" alt="Tag color"
+                                               value="{{ user.color is empty ? default_color : user.color }}">
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
     </div>
 {% endblock %}
 

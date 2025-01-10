@@ -40,7 +40,7 @@ class Utils
      * @param string $filePath
      * @return null|string
      */
-    public static function getFileBitRate(string $filePath)
+    public static function getFileBitdepth(string $filePath)
     {
         return self::executeCommand('soxi -b ' . $filePath);
     }

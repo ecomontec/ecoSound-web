@@ -51,7 +51,7 @@ class TagReviewController extends BaseController
                 $projectId = $projects[0]->getId();
             }
             $collections = (new CollectionProvider())->getByProject($projectId, Auth::getUserID());
-            if (empty($colId)) {
+            if (empty($colId) && $collections) {
                 $colId = $collections[0]->getId();
             }
         }
@@ -174,14 +174,14 @@ class TagReviewController extends BaseController
         if ($data['species_id'] == '') {
             $data['species_id'] = null;
         }
-        if ($data['phony'] != "biophony") {
+        if ($data['soundscape_component'] != "biophony") {
             $data['species_id'] = null;
             $data['uncertain'] = null;
             $data['animal_sound_type'] = null;
             $data['distance_not_estimable'] = null;
             $data['sound_distance_m'] = null;
         }
-        unset($data['phony']);
+        unset($data['soundscape_component']);
         $tagProvider->update($data);
         return json_encode([
             'errorCode' => 0,

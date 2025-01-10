@@ -2,7 +2,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Tag {{ tag.id }} for recording {{ recordingName }} (ID {{ tag.recording }})</h5>
+                <h5 class="modal-title">Tag {{ tag.id }} for recording {% if recordingName|length > 50 %} {{ recordingName|slice(0, 50) ~ '...' }} {% else %} {{ recordingName }} {% endif %} (ID {{ tag.recording }})</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times</span></button>
             </div>
             <div class="modal-body">
@@ -15,20 +15,20 @@
                             <input id="old_call_distance" type="hidden" value="{{ tag.callDistance }}">
                             <input id="edit" type="hidden" value="{{ edit }}">
                             <div class="form-row align-items-center">
-                                <div class="form-group col-auto">
-                                    <label class="col-form-label-sm" for="phony">Phony</label>
-                                    <select id="phony" name="phony" class="custom-select custom-select-sm">
-                                        {% for phony in phonys %}
-                                            <option value="{{ phony.phony }}" {{ phony.phony == tag.phony ? "selected" }}>{{ phony.phony }}</option>
+                                <div class="form-group col-6">
+                                    <label class="col-form-label-sm" for="soundscape_component">Soundscape Component</label>
+                                    <select id="soundscape_component" name="soundscape_component" class="custom-select custom-select-sm">
+                                        {% for soundscape_component in soundscape_components %}
+                                            <option value="{{ soundscape_component.soundscapeComponent }}" {{ soundscape_component.soundscapeComponent == tag.soundscapeComponent ? "selected" }}>{{ soundscape_component.soundscapeComponent }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
-                                <div class="form-group col-4">
+                                <div class="form-group col-6">
                                     <label class="col-form-label-sm" for="sound_id">Sound Type</label>
                                     <select id="sound_id" name="sound_id" data-live-search="true">
                                         {% for soundType in soundTypes %}
-                                            {% if soundType.phony==tag.phony %}
-                                                <option value="{{ soundType.sound_id }}" {{ soundType.sound_id == tag.soundId ? "selected" }}>{{ soundType.sound_type }}</option>
+                                            {% if soundType.soundscapeComponent==tag.soundscapeComponent %}
+                                                <option value="{{ soundType.sound_id }}">{{ soundType.sound_type }}</option>
                                             {% endif %}
                                         {% endfor %}
                                     </select>
@@ -119,7 +119,7 @@
 
                             <div class="form-group">
                                 {% if edit %}
-                                    <div class="col-form-label-sm">Creator Type:{{ tag.creatorType }}{% if tag.confidence %}, Confidence: {{ tag.confidence }} {% endif %}</div>
+                                    <div class="col-form-label-sm">Creator Type: {{ tag.creatorType }}{% if tag.confidence %}, Confidence: {{ tag.confidence }} {% endif %}</div>
                                 {% endif %}
                                 {% if isUserLogged %}
                                     {% if reviewPanel !='' %}
@@ -142,16 +142,40 @@
             </div>
             <div class="modal-footer">
                 {% if edit %}
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-primary" {{ displaySaveButton }} id="saveButton" disabled>
+                            <i class="fas fa-save" aria-hidden="true"></i> Save & Close
+                        </button>
+                        <a class="btn btn-outline-primary dropdown-toggle type-btn" data-toggle="dropdown" {{ displaySaveButton }} aria-haspopup="true" aria-expanded="false">
+                            <i class="la la-angle-down"></i>
+                        </a>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item save-type" href="#">Save & Close</a>
+                            <a class="dropdown-item save-type" href="#">Save & Next Tag</a>
+                            <a class="dropdown-item save-type" href="#">Save & Previous Tag</a>
+                            <a class="dropdown-item save-type" href="#">Save Only</a>
+                        </div>
+                    </div>
                     <a class='btn {{ previous==0?'btn-secondary':'btn-outline-primary' }}' id="btn-previous">
                         <i class="fas fa-arrow-left" aria-hidden="true"></i> Previous
                     </a>
                     <a class='btn {{ next==0?'btn-secondary':'btn-outline-primary' }}' id="btn-next">
                         <i class="fas fa-arrow-right" aria-hidden="true"></i> Next
                     </a>
+                    <script>
+                        var sound_id = $.cookie('save_button');
+                        $('.save-type').click(function () {
+                            if ($.cookie('cookieConsent') == 'accepted') {
+                                $.cookie('save_button', $(this).text(), {path: '/', expires: 180});
+                            }
+                            $('#saveButton').html('<i class="fa fa-save"></i> ' + $(this).text());
+                        })
+                    </script>
+                {% else %}
+                    <button type="button" class="btn btn-outline-primary" {{ displaySaveButton }} id="saveButton">
+                        <i class="fas fa-save" aria-hidden="true"></i> Save
+                    </button>
                 {% endif %}
-                <button type="button" class="btn btn-outline-primary" {{ displaySaveButton }} id="saveButton">
-                    <i class="fas fa-save" aria-hidden="true"></i> Save
-                </button>
                 <button type="button" class="btn btn-outline-danger" {{ displayDeleteButton }} id="deleteButton" data-tag-id="{{ tag.id }}">
                     <i class="fas fa-trash-alt" aria-hidden="true"></i> Delete
                 </button>
@@ -169,15 +193,28 @@
     }
     $(document).ready(function () {
         {% if tag.soundId %}
-        $("#phony").change()
+        $("#soundscape_component").change()
         {% else %}
-        var phony = $.cookie('phony');
+        var soundscape_component = $.cookie('soundscape_component');
         var sound_id = $.cookie('sound_id');
-        $("#phony").val(phony).change()
+        $("#soundscape_component").val(soundscape_component).change()
         $("#sound_id").find("option[value=" + sound_id + "]").prop("selected", true);
         {% endif %}
-        $('.sound_id').selectpicker('refresh');
+        $('#sound_id').selectpicker('refresh');
         $(".btn").css("text-align", "left");
+        $('#tag-panel').on('input', 'input, select', function () {
+            $('#saveButton').removeAttr('disabled');
+            $('.type-btn').removeAttr('disabled');
+        });
+        $('#reviewForm').on('click', 'button', function () {
+            $('#saveButton').removeAttr('disabled');
+            $('.type-btn').removeAttr('disabled');
+        });
+        {% if edit %}
+        if ($.cookie('save_button')) {
+            $('#saveButton').html('<i class="fa fa-save"></i> ' + $.cookie('save_button'));
+        }
+        {% endif %}
     });
     $("#modal-div").on('shown.bs.modal', function () {
         if ($("#animal_sound_type")[0].options.length == 1) {
@@ -185,8 +222,8 @@
         }
         $(this).find('#speciesName').focus();
     });
-    $("#phony").on('change', function () {
-        if ($("#phony").find("option:selected").text() == 'biophony') {
+    $("#soundscape_component").on('change', function () {
+        if ($("#soundscape_component").find("option:selected").text() == 'biophony') {
             $(".biophony").show()
             $("#reference").addClass('pt-5')
         } else {
@@ -194,11 +231,13 @@
             $("#reference").removeClass('pt-5')
         }
         {% if not tag.soundId %}
-        $.cookie('phony', $("#phony").val(), {expires: 7});
+        if ($.cookie('cookieConsent') == 'accepted') {
+            $.cookie('soundscape_component', $("#soundscape_component").val(), {path: '/', expires: 180});
+        }
         {% endif %}
         $('#sound_id').empty()
         for (var key in soundTypes) {
-            if (soundTypes[key]['phony'] == $("#phony").find("option:selected").text()) {
+            if (soundTypes[key]['soundscape_component'] == $("#soundscape_component").find("option:selected").text()) {
                 if (soundTypes[key]['sound_id'] == '{{ tag.soundId }}') {
                     $('#sound_id').append("<option value='" + soundTypes[key]['sound_id'] + "' selected>" + soundTypes[key]['sound_type'] + "</option>");
                 } else {
@@ -210,7 +249,9 @@
     })
     {% if not tag.soundId %}
     $("#sound_id").on('change', function () {
-        $.cookie('sound_id', $("#sound_id").val(), {expires: 7});
+        if ($.cookie('cookieConsent') == 'accepted') {
+            $.cookie('sound_id', $("#sound_id").val(), {path: '/', expires: 180});
+        }
     })
     {% endif %}
     $('#distanceNotEstimable').click(function () {
@@ -220,14 +261,8 @@
             $('#callDistance').val($('#old_call_distance').val())
         }
     });
-    $('.js-tag-btn').on('click', function (e) {
-        $('#modal-div').hide();
-        $('.modal-backdrop').remove();
-        e.preventDefault();
-        requestModal(this.href, {'recording_name': document.getElementsByName('recording_name')[0].value});
-    })
     $("#modal-div").draggable({
-        handle:".modal-header",
+        handle: ".modal-header",
         drag: function () {
             $('.modal-backdrop').remove();
         }

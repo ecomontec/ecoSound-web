@@ -102,12 +102,13 @@ class IucnGet extends AbstractProvider
         return $this;
     }
 
-    public function getIucnGets(int $pid = 0):array
+    public function getIucnGets(int $pid = 0): array
     {
-        $this->database->prepareQuery("SELECT * FROM iucn_get WHERE pid = $pid ORDER BY `name`");
-        return $this->database->executeSelect();
+        $this->database->prepareQuery("SELECT * FROM iucn_get WHERE pid = :pid ORDER BY `name`");
+        return $this->database->executeSelect(['pid' => $pid]);
     }
-    public function getAllIucnGets():array
+
+    public function getAllIucnGets(): array
     {
         $this->database->prepareQuery("SELECT * FROM iucn_get ORDER BY `name`");
         return $this->database->executeSelect();

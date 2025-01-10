@@ -133,6 +133,15 @@ class User extends AbstractProvider
         return $result[0]['orcid'];
     }
 
+    public function getEmail(int $userId): ?string
+    {
+        $this->database->prepareQuery('SELECT email FROM user WHERE user_id = :userId');
+        if (empty($result = $this->database->executeSelect([":userId" => $userId]))) {
+            return null;
+        }
+        return $result[0]['email'];
+    }
+
     /**
      * @param int $userId
      * @return string|null
@@ -181,8 +190,8 @@ class User extends AbstractProvider
     public function getUserCount($collection_id)
     {
         $collection_id = $collection_id ? $collection_id : 0;
-        $this->database->prepareQuery("SELECT COUNT(user_id) AS count FROM (SELECT user_id FROM user_permission WHERE collection_id IN ( $collection_id ) UNION All SELECT user_id FROM `user` WHERE role_id = 1)c GROUP BY user_id");
-        if (empty($result = $this->database->executeSelect())) {
+        $this->database->prepareQuery("SELECT COUNT(user_id) AS count FROM (SELECT user_id FROM user_permission WHERE collection_id IN ( :collection_id ) UNION All SELECT user_id FROM `user` WHERE role_id = 1)c GROUP BY user_id");
+        if (empty($result = $this->database->executeSelect([':collection_id' => $collection_id]))) {
             return null;
         }
         return count($result);
@@ -211,16 +220,89 @@ class User extends AbstractProvider
      * @return bool
      * @throws \Exception
      */
-    public function isManage(int $userId): bool
+    public function isManage(int $userId, ?int $collection_id = null): bool
     {
-        $this->database->prepareQuery(
-            'SELECT count(*) AS result FROM user u LEFT JOIN user_permission p ON u.user_id = p.user_id WHERE p.user_id = :userId AND permission_id = 4'
-        );
+        $sql = 'SELECT count(*) AS result FROM user u LEFT JOIN user_permission p ON u.user_id = p.user_id WHERE p.user_id = :userId AND permission_id = 4';
 
+        if ($collection_id) {
+            $sql .= " AND p.collection_id = $collection_id ";
+        }
+        $this->database->prepareQuery($sql);
         if (empty($result = $this->database->executeSelect([":userId" => $userId]))) {
             throw new \Exception("User $userId doesn't exist.");
         }
         return ($result[0]["result"] ? true : false);
+    }
+
+    public function isProjectManage(): bool
+    {
+        if (Auth::isUserAdmin()) {
+            return true;
+        }
+        $this->database->prepareQuery("SELECT COUNT(*) AS count FROM ( SELECT project_id,COUNT(*) AS count FROM user_permission up LEFT JOIN collection c ON c.collection_id = up.collection_id WHERE up.user_id = :user_id AND permission_id = 4 GROUP BY c.project_id ) a WHERE (a.project_id,a.count) IN ( SELECT c.project_id,COUNT(*) AS count FROM collection c GROUP BY project_id ) ");
+        $result = $this->database->executeSelect([":user_id" => Auth::getUserID()]);
+        return $result[0]["count"] == 0 ? false : true;
+    }
+
+    public function isProjectManageByProject(int $userId, int $project_id): bool
+    {
+        if ((new User())->isUserAdmin($userId)) {
+            return true;
+        }
+        $this->database->prepareQuery("SELECT COUNT(*) AS count FROM collection WHERE project_id = :project_id");
+        $result = $this->database->executeSelect([":project_id" => $project_id]);
+        $max_count = $result[0]["count"];
+        $this->database->prepareQuery('SELECT COUNT(*) AS count FROM user_permission WHERE user_id = :userId AND permission_id = 4 AND collection_id IN (SELECT collection_id FROM collection WHERE project_id = :project_id)');
+        $result = $this->database->executeSelect([":userId" => $userId, ":project_id" => $project_id]);
+        $count = $result[0]["count"];
+        return ($max_count == $count ? true : false);
+    }
+
+    public function isProjectManageCreate(int $userId, int $project_id): bool
+    {
+        if ((new User())->isUserAdmin($userId)) {
+            return true;
+        }
+        $this->database->prepareQuery("SELECT COUNT(*) AS count FROM collection WHERE project_id = :project_id");
+        $result = $this->database->executeSelect([":project_id" => $project_id]);
+        $max_count = $result[0]["count"];
+        $this->database->prepareQuery('SELECT COUNT(*) AS count FROM user_permission WHERE user_id = :userId AND permission_id = 4 AND collection_id IN (SELECT collection_id FROM collection WHERE project_id = :project_id)');
+        $result = $this->database->executeSelect([":userId" => $userId, ":project_id" => $project_id]);
+        $count = $result[0]["count"];
+        return ($max_count == $count + 1 ? true : false);
+    }
+
+    public function isAllAccess(int $userId, int $collection_id): bool
+    {
+        $this->database->prepareQuery("SELECT COUNT(*) AS count FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id)");
+        $result = $this->database->executeSelect([":collection_id" => $collection_id]);
+        $max_count = $result[0]["count"];
+        $this->database->prepareQuery('SELECT COUNT(*) AS count FROM user_permission up RIGHT JOIN collection c ON c.collection_id = up.collection_id WHERE (up.user_id = :userId AND up.permission_id <= 4 AND up.collection_id IN (SELECT collection_id FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id))) OR ( c.public_access = 1 AND c.project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id2))');
+        $result = $this->database->executeSelect([":userId" => $userId, ":collection_id" => $collection_id, ":collection_id2" => $collection_id]);
+        $count = $result[0]["count"];
+        return ($max_count == $count + 1 ? true : false);
+    }
+
+    public function isAllView(int $userId, int $collection_id): bool
+    {
+        $this->database->prepareQuery("SELECT COUNT(*) AS count FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id)");
+        $result = $this->database->executeSelect([":collection_id" => $collection_id]);
+        $max_count = $result[0]["count"];
+        $this->database->prepareQuery('SELECT COUNT(*) AS count FROM user_permission up RIGHT JOIN collection c ON c.collection_id = up.collection_id WHERE (up.user_id = :userId AND up.permission_id IN (1,2,4) AND up.collection_id IN (SELECT collection_id FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id))) OR ( c.public_access = 1 AND c.project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id2))');
+        $result = $this->database->executeSelect([":userId" => $userId, ":collection_id" => $collection_id, ":collection_id2" => $collection_id]);
+        $count = $result[0]["count"];
+        return ($max_count == $count + 1 ? true : false);
+    }
+
+    public function isAllReview(int $userId, int $collection_id): bool
+    {
+        $this->database->prepareQuery("SELECT COUNT(*) AS count FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id)");
+        $result = $this->database->executeSelect([":collection_id" => $collection_id]);
+        $max_count = $result[0]["count"];
+        $this->database->prepareQuery('SELECT COUNT(*) AS count FROM user_permission up RIGHT JOIN collection c ON c.collection_id = up.collection_id WHERE (up.user_id = :userId AND up.permission_id IN (2,4) AND up.collection_id IN (SELECT collection_id FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id))) OR ( c.public_access = 1 AND c.project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id2))');
+        $result = $this->database->executeSelect([":userId" => $userId, ":collection_id" => $collection_id, ":collection_id2" => $collection_id]);
+        $count = $result[0]["count"];
+        return ($max_count == $count + 1 ? true : false);
     }
 
     /**
@@ -257,28 +339,35 @@ class User extends AbstractProvider
      */
     public function getList(): array
     {
-        if (Auth::isUserAdmin()) {
-            $sql = 'SELECT * FROM user ORDER BY `name`';
-        } else {
-            $user_id = Auth::getUserID();
-            $sql = "SELECT u.* FROM user u LEFT JOIN user_permission p ON u.user_id = p.user_id WHERE p.collection_id IN (SELECT collection_id FROM user_permission WHERE user_id = $user_id AND permission_id = 4) GROUP BY u.user_id ORDER BY u.name";
-        }
+        $sql = 'SELECT * FROM user ORDER BY `name`';
         $this->database->prepareQuery($sql);
         return $this->database->executeSelect();
+    }
+
+    public function getUserList(): array
+    {
+        if (Auth::isUserAdmin()) {
+            $sql = 'SELECT * FROM user ORDER BY `name`';
+            $this->database->prepareQuery($sql);
+            $result = $this->database->executeSelect();
+        } else {
+            $sql = "SELECT u.* FROM user u LEFT JOIN user_permission p ON u.user_id = p.user_id WHERE p.collection_id IN (SELECT collection_id FROM user_permission WHERE user_id = :user_id AND permission_id = 4) GROUP BY u.user_id ORDER BY u.name";
+            $this->database->prepareQuery($sql);
+            $result = $this->database->executeSelect([":user_id" => Auth::getUserID()]);
+        }
+        return $result;
     }
 
     public function getManageList(): array
     {
-        $user_id = Auth::getUserID();
-        $sql = "SELECT collection_id FROM user_permission WHERE user_id = $user_id AND permission_id = 4";
+        $sql = "SELECT collection_id FROM user_permission WHERE user_id = :user_id AND permission_id = 4";
         $this->database->prepareQuery($sql);
-        return $this->database->executeSelect();
+        return $this->database->executeSelect([":user_id" => Auth::getUserID()]);
     }
 
     public function getName(): array
     {
-        $this->database->prepareQuery('SELECT user_id,
-       `name` FROM user ORDER BY `name`');
+        $this->database->prepareQuery('SELECT user_id, `name` FROM user ORDER BY `name`');
         return $this->database->executeSelect();
     }
 
@@ -396,11 +485,11 @@ class User extends AbstractProvider
         return $this->database->executeUpdate($values);
     }
 
-    public function isValid($str)
+    public function isValid(string $username)
     {
-        $sql = "SELECT * FROM user WHERE `username` = '$str'";
+        $sql = "SELECT * FROM user WHERE `username` = :username";
         $this->database->prepareQuery($sql);
-        $result = $this->database->executeSelect();
+        $result = $this->database->executeSelect([":username" => $username]);
         if (count($result) > 0) {
             return true;
         }
@@ -412,17 +501,25 @@ class User extends AbstractProvider
         $arr = [];
         $sql = "SELECT * FROM user ";
         $is_admin = Auth::isUserAdmin();
+        $dir = ($dir === 'asc' || $dir === 'desc') ? $dir : 'asc';
         if ($search) {
-            $sql .= " WHERE CONCAT(IFNULL(user_id,''), IFNULL(name,''), IFNULL(username,''), IFNULL(orcid,''), IFNULL(email,'')) LIKE '%$search%' ";
+            $sql .= " WHERE CONCAT(IFNULL(user_id,''), IFNULL(name,''), IFNULL(username,''), IFNULL(orcid,''), IFNULL(email,'')) LIKE :search ";
         }
         if ($is_admin) {
             $a = ['', 'user_id', 'name', 'username', 'orcid', 'email', 'role_id', 'active', 'color'];
         } else {
             $a = ['', 'user_id', 'name', 'username', 'orcid', 'email', 'color'];
         }
-        $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
+        $sql .= " ORDER BY $a[$column] $dir LIMIT :length OFFSET :start";
         $this->database->prepareQuery($sql);
-        $result = $this->database->executeSelect();
+        $params = [
+            ':length' => $length,
+            ':start' => $start
+        ];
+        if ($search) {
+            $params[':search'] = '%' . $search . '%';
+        }
+        $result = $this->database->executeSelect($params);
 
         $roles = (new Role())->getRoles();
         if (count($result)) {
@@ -455,10 +552,11 @@ class User extends AbstractProvider
     {
         $sql = "SELECT COUNT(*) FROM user ";
         if ($search) {
-            $sql .= " WHERE CONCAT(IFNULL(user_id,''), IFNULL(name,''), IFNULL(username,''), IFNULL(orcid,''), IFNULL(email,'')) LIKE '%$search%' ";
+            $sql .= " WHERE CONCAT(IFNULL(user_id,''), IFNULL(name,''), IFNULL(username,''), IFNULL(orcid,''), IFNULL(email,'')) LIKE :search ";
         }
         $this->database->prepareQuery($sql);
-        $count = $this->database->executeSelect();
-        return $count[0]['COUNT(*)'];
+        $params = (!empty($search)) ? [":search" => '%' . $search . '%'] : [];
+        $result = $this->database->executeSelect($params);
+        return $result[0]['COUNT(*)'];
     }
 }

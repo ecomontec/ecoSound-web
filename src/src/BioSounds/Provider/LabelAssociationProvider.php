@@ -66,8 +66,16 @@ class LabelAssociationProvider extends BaseProvider
      */
     public function delete(string $id): void
     {
-        $this->database->prepareQuery("DELETE FROM label_association WHERE recording_id IN ($id)");
-        $this->database->executeDelete();
+        $params = [];
+        $ids = explode(',', $id);
+        $placeholders = [];
+        foreach ($ids as $index => $value) {
+            $placeholders[] = ":id$index";
+            $params[":id$index"] = (int)$value;
+        }
+        $id_str = implode(', ', $placeholders);
+        $this->database->prepareQuery("DELETE FROM label_association WHERE recording_id IN ($id_str)");
+        $this->database->executeDelete($params);
     }
 
 }

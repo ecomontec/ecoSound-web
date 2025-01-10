@@ -47,7 +47,7 @@
                     <input type="checkbox" class="js-all-checkbox" name="check-all" id="check-all">
                 </th>
                 <th>#</th>
-                <th>Phony</th>
+                <th>Soundscape Component</th>
                 <th>Sound Type</th>
                 <th>Recording</th>
                 <th>User</th>
@@ -162,17 +162,17 @@
                     location.reload();
                 });
             });
-            $('#tagsTable tbody').on('change', 'select[name=phony]', function () {
+            $('#tagsTable tbody').on('change', 'select[name=soundscape_component]', function () {
                 let id = $(this).attr('id').split('_')[1]
                 let index = 0
-                if ($("#phony_" + id).find("option:selected").text() == 'biophony') {
-                    $(".phony_" + id).show()
+                if ($("#soundscape_component_" + id).find("option:selected").text() == 'biophony') {
+                    $("#soundscape_component_" + id).show()
                 } else {
-                    $(".phony_" + id).hide()
+                    $("#soundscape_component_" + id).hide()
                 }
                 $('#sound_id' + id).empty()
                 for (var key in soundTypes) {
-                    if (soundTypes[key]['phony'] == $("#phony_" + id).find("option:selected").text()) {
+                    if (soundTypes[key]['soundscape_component'] == $("#soundscape_component_" + id).find("option:selected").text()) {
                         if (index == 0) {
                             $('#sound_id' + id).append("<option value='" + soundTypes[key]['sound_id'] + "' selected>" + soundTypes[key]['sound_type'] + "</option>");
 

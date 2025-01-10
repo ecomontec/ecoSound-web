@@ -7,7 +7,7 @@ class Sound
 {
     const TABLE_NAME = 'sound';
     const SOUND_ID = 'sound_id';
-    const PHONY = 'phony';
+    const SOUNDSCAPE_COMPONENT = 'soundscape_component';
     const SOUND_TYPE = 'sound_type';
 
     /**
@@ -18,7 +18,7 @@ class Sound
     /**
      * @var string
      */
-    private $phony;
+    private $soundscape_component;
 
     /**
      * @var string
@@ -46,18 +46,18 @@ class Sound
     /**
      * @return null|string
      */
-    public function getPhony(): ?string
+    public function getSoundscapeComponent(): ?string
     {
-        return $this->phony;
+        return $this->soundscape_component;
     }
 
     /**
-     * @param null|string $phony
+     * @param null|string $soundscape_component
      * @return Sound
      */
-    public function setPhony(?string $phony): Sound
+    public function setSoundscapeComponent(?string $soundscape_component): Sound
     {
-        $this->phony = $phony;
+        $this->soundscape_component = $soundscape_component;
         return $this;
     }
 

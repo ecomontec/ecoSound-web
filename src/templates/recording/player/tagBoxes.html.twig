@@ -2,7 +2,7 @@
     <div class="tag-controls {{ tag.style }}" id="{{ tag.id }}" style="z-index: {{ tag.position }}; border-color: {{ tag.color }}; left: {{ tag.left }}px; top: {{ tag.top }}px; height: {{ tag.height }}px; width: {{ tag.width }}px; {{ show_tags ? '' : 'display:none;' }}"></div>
     <div class="card js-panel-tag" style="display:none;">
         <div class="card-header">
-            <small>{{ tag.id }} | {{ tag.title?tag.title:tag.soundType?tag.soundType:tag.phony }}</small>
+            <small>{{ tag.id }} | {{ tag.title?tag.title:tag.soundType?tag.soundType:tag.soundscapeComponent }}</small>
         </div>
         <div class="card-body mx-auto">
             <div class="btn-group" role="group">
@@ -14,7 +14,7 @@
                 <a href='#' onclick='return false;' class='btn btn-outline-primary btn-sm zoom-tag' title='Zoom tag(+Alt: open in new tab)'>
                     <i class='fas fa-search' aria-hidden='true'></i>
                 </a>
-                {% if tag.phony == "biophony" and tag.public %}
+                {% if tag.soundscapeComponent == "biophony" and tag.public %}
                     <a href='#' onclick='return false;' id="est_{{ tag.id }}" type='button'
                        class='btn btn-outline-primary btn-sm estimate-distance' title='Estimate call distance'>
                         <i class='fas fa-bullhorn' aria-hidden='true'></i>
