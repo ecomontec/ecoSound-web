@@ -190,8 +190,8 @@ class User extends AbstractProvider
     public function getUserCount($collection_id)
     {
         $collection_id = $collection_id ? $collection_id : 0;
-        $this->database->prepareQuery("SELECT COUNT(user_id) AS count FROM (SELECT user_id FROM user_permission WHERE collection_id IN ( $collection_id ) UNION All SELECT user_id FROM `user` WHERE role_id = 1)c GROUP BY user_id");
-        if (empty($result = $this->database->executeSelect())) {
+        $this->database->prepareQuery("SELECT COUNT(user_id) AS count FROM (SELECT user_id FROM user_permission WHERE collection_id IN ( :collection_id ) UNION All SELECT user_id FROM `user` WHERE role_id = 1)c GROUP BY user_id");
+        if (empty($result = $this->database->executeSelect([':collection_id' => $collection_id]))) {
             return null;
         }
         return count($result);
@@ -348,20 +348,21 @@ class User extends AbstractProvider
     {
         if (Auth::isUserAdmin()) {
             $sql = 'SELECT * FROM user ORDER BY `name`';
+            $this->database->prepareQuery($sql);
+            $result = $this->database->executeSelect();
         } else {
-            $user_id = Auth::getUserID();
-            $sql = "SELECT u.* FROM user u LEFT JOIN user_permission p ON u.user_id = p.user_id WHERE p.collection_id IN (SELECT collection_id FROM user_permission WHERE user_id = $user_id AND permission_id = 4) GROUP BY u.user_id ORDER BY u.name";
+            $sql = "SELECT u.* FROM user u LEFT JOIN user_permission p ON u.user_id = p.user_id WHERE p.collection_id IN (SELECT collection_id FROM user_permission WHERE user_id = :user_id AND permission_id = 4) GROUP BY u.user_id ORDER BY u.name";
+            $this->database->prepareQuery($sql);
+            $result = $this->database->executeSelect([":user_id" => Auth::getUserID()]);
         }
-        $this->database->prepareQuery($sql);
-        return $this->database->executeSelect();
+        return $result;
     }
 
     public function getManageList(): array
     {
-        $user_id = Auth::getUserID();
-        $sql = "SELECT collection_id FROM user_permission WHERE user_id = $user_id AND permission_id = 4";
+        $sql = "SELECT collection_id FROM user_permission WHERE user_id = :user_id AND permission_id = 4";
         $this->database->prepareQuery($sql);
-        return $this->database->executeSelect();
+        return $this->database->executeSelect([":user_id" => Auth::getUserID()]);
     }
 
     public function getName(): array
@@ -484,11 +485,11 @@ class User extends AbstractProvider
         return $this->database->executeUpdate($values);
     }
 
-    public function isValid($str)
+    public function isValid(string $username)
     {
-        $sql = "SELECT * FROM user WHERE `username` = '$str'";
+        $sql = "SELECT * FROM user WHERE `username` = :username";
         $this->database->prepareQuery($sql);
-        $result = $this->database->executeSelect();
+        $result = $this->database->executeSelect([":username" => $username]);
         if (count($result) > 0) {
             return true;
         }
@@ -500,17 +501,25 @@ class User extends AbstractProvider
         $arr = [];
         $sql = "SELECT * FROM user ";
         $is_admin = Auth::isUserAdmin();
+        $dir = ($dir === 'asc' || $dir === 'desc') ? $dir : 'asc';
         if ($search) {
-            $sql .= " WHERE CONCAT(IFNULL(user_id,''), IFNULL(name,''), IFNULL(username,''), IFNULL(orcid,''), IFNULL(email,'')) LIKE '%$search%' ";
+            $sql .= " WHERE CONCAT(IFNULL(user_id,''), IFNULL(name,''), IFNULL(username,''), IFNULL(orcid,''), IFNULL(email,'')) LIKE :search ";
         }
         if ($is_admin) {
             $a = ['', 'user_id', 'name', 'username', 'orcid', 'email', 'role_id', 'active', 'color'];
         } else {
             $a = ['', 'user_id', 'name', 'username', 'orcid', 'email', 'color'];
         }
-        $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
+        $sql .= " ORDER BY $a[$column] $dir LIMIT :length OFFSET :start";
         $this->database->prepareQuery($sql);
-        $result = $this->database->executeSelect();
+        $params = [
+            ':length' => $length,
+            ':start' => $start
+        ];
+        if ($search) {
+            $params[':search'] = '%' . $search . '%';
+        }
+        $result = $this->database->executeSelect($params);
 
         $roles = (new Role())->getRoles();
         if (count($result)) {
@@ -543,10 +552,11 @@ class User extends AbstractProvider
     {
         $sql = "SELECT COUNT(*) FROM user ";
         if ($search) {
-            $sql .= " WHERE CONCAT(IFNULL(user_id,''), IFNULL(name,''), IFNULL(username,''), IFNULL(orcid,''), IFNULL(email,'')) LIKE '%$search%' ";
+            $sql .= " WHERE CONCAT(IFNULL(user_id,''), IFNULL(name,''), IFNULL(username,''), IFNULL(orcid,''), IFNULL(email,'')) LIKE :search ";
         }
         $this->database->prepareQuery($sql);
-        $count = $this->database->executeSelect();
-        return $count[0]['COUNT(*)'];
+        $params = (!empty($search)) ? [":search" => '%' . $search . '%'] : [];
+        $result = $this->database->executeSelect($params);
+        return $result[0]['COUNT(*)'];
     }
 }

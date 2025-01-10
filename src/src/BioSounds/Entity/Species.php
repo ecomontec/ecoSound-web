@@ -27,9 +27,9 @@ class Species extends BaseProvider
 
     public function getByName(string $name)
     {
-        $query = 'SELECT * FROM species WHERE binomial="' . $name . '"';
+        $query = 'SELECT * FROM species WHERE binomial= :name ';
         $this->database->prepareQuery($query);
-        $result = $this->database->executeSelect();
+        $result = $this->database->executeSelect([':name' => $name]);
         return $result;
     }
 

@@ -56,16 +56,30 @@ class UserPermission extends BaseProvider
         if (empty($permissionData)) {
             return false;
         }
-
+        $params = [':permission_id' => $permissionData['permission_id']];
+        $collection_ids = explode(',', $permissionData['collection_id']);
+        $placeholders = [];
+        foreach ($collection_ids as $index => $collection_id) {
+            $placeholders[] = ":collection_id$index";
+            $params[":collection_id$index"] = (int)$collection_id;
+        }
+        $collection_str = implode(', ', $placeholders);
+        $user_ids = explode(',', $permissionData['user_id']);
+        $placeholders = [];
+        foreach ($user_ids as $index => $user_id) {
+            $placeholders[] = ":user_id$index";
+            $params[":user_id$index"] = (int)$user_id;
+        }
+        $user_str = implode(', ', $placeholders);
         $sql = "INSERT INTO user_permission (collection_id, user_id, permission_id) 
-            SELECT c.collection_id, u.user_id, $permissionData[permission_id]
+            SELECT c.collection_id, u.user_id, :permission_id
             FROM collection c
             CROSS JOIN user u
-            WHERE c.collection_id IN ($permissionData[collection_id])
-            AND u.user_id IN ($permissionData[user_id])";
+            WHERE c.collection_id IN ($collection_str)
+            AND u.user_id IN ($user_str)";
 
         $this->database->prepareQuery($sql);
-        return $this->database->executeInsert();
+        return $this->database->executeInsert($params);
     }
 
     /**
@@ -76,8 +90,23 @@ class UserPermission extends BaseProvider
      */
     public function delete(string $userId, string $colId): ?int
     {
-        $this->database->prepareQuery("DELETE FROM user_permission WHERE user_id IN ($userId) AND collection_id IN ($colId)");
-        return $this->database->executeDelete();
+        $params = [];
+        $collection_ids = explode(',', $colId);
+        $placeholders = [];
+        foreach ($collection_ids as $index => $collection_id) {
+            $placeholders[] = ":collection_id$index";
+            $params[":collection_id$index"] = (int)$collection_id;
+        }
+        $collection_str = implode(', ', $placeholders);
+        $user_ids = explode(',', $userId);
+        $placeholders = [];
+        foreach ($user_ids as $index => $user_id) {
+            $placeholders[] = ":user_id$index";
+            $params[":user_id$index"] = (int)$user_id;
+        }
+        $user_str = implode(', ', $placeholders);
+        $this->database->prepareQuery("DELETE FROM user_permission WHERE user_id IN ($user_str) AND collection_id IN ($collection_str)");
+        return $this->database->executeDelete($params);
     }
 
     /**
@@ -93,21 +122,21 @@ class UserPermission extends BaseProvider
 
     public function updatePermission($collection_id, $project_id)
     {
-        $this->database->prepareQuery("SELECT user_id FROM user_permission WHERE collection_id IN (SELECT collection_id FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = $collection_id)) GROUP BY user_id");
-        $result = $this->database->executeSelect();
+        $this->database->prepareQuery("SELECT user_id FROM user_permission WHERE collection_id IN (SELECT collection_id FROM collection WHERE project_id = (SELECT project_id FROM collection WHERE collection_id = :collection_id)) GROUP BY user_id");
+        $result = $this->database->executeSelect([':collection_id' => $collection_id]);
         foreach ($result as $r) {
             if ((new User)->isProjectManageCreate($r['user_id'], $project_id)) {
-                $this->database->prepareQuery("INSERT INTO user_permission (user_id, collection_id, permission_id) VALUES (" . $r['user_id'] . "," . $collection_id . "," . 4 . ")");
-                $this->database->executeInsert();
+                $this->database->prepareQuery("INSERT INTO user_permission (user_id, collection_id, permission_id) VALUES (:user_id,:collection_id,4)");
+                $this->database->executeInsert([':user_id' => $r['user_id'], ':collection_id' => $collection_id]);
             } else if ((new User)->isAllReview($r['user_id'], $collection_id)) {
-                $this->database->prepareQuery("INSERT INTO user_permission (user_id, collection_id, permission_id) VALUES (" . $r['user_id'] . "," . $collection_id . "," . 2 . ")");
-                $this->database->executeInsert();
+                $this->database->prepareQuery("INSERT INTO user_permission (user_id, collection_id, permission_id) VALUES (:user_id,:collection_id,2)");
+                $this->database->executeInsert([':user_id' => $r['user_id'], ':collection_id' => $collection_id]);
             } else if ((new User)->isAllView($r['user_id'], $collection_id)) {
-                $this->database->prepareQuery("INSERT INTO user_permission (user_id, collection_id, permission_id) VALUES (" . $r['user_id'] . "," . $collection_id . "," . 1 . ")");
-                $this->database->executeInsert();
+                $this->database->prepareQuery("INSERT INTO user_permission (user_id, collection_id, permission_id) VALUES (:user_id,:collection_id,1)");
+                $this->database->executeInsert([':user_id' => $r['user_id'], ':collection_id' => $collection_id]);
             } else if ((new User)->isAllAccess($r['user_id'], $collection_id)) {
-                $this->database->prepareQuery("INSERT INTO user_permission (user_id, collection_id, permission_id) VALUES (" . $r['user_id'] . "," . $collection_id . "," . 3 . ")");
-                $this->database->executeInsert();
+                $this->database->prepareQuery("INSERT INTO user_permission (user_id, collection_id, permission_id) VALUES (:user_id,:collection_id,3)");
+                $this->database->executeInsert([':user_id' => $r['user_id'], ':collection_id' => $collection_id]);
             }
         }
     }

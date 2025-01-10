@@ -125,7 +125,7 @@ class TagReview extends AbstractProvider
         return $this->database->executeUpdate($values);
     }
 
-    public function delete(string $str)
+    public function dellete(string $str)
     {
         $data = explode(',', $str);
         $sql = "DELETE FROM tag_review WHERE ";

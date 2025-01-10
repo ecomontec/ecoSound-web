@@ -15,8 +15,8 @@ class Queue extends BaseProvider
             $_SESSION['index_id'] = $_SESSION['index_id'] + 1;
             return $_SESSION['index_id'];
         } else {
-            $this->database->prepareQuery("SELECT * FROM queue WHERE queue_id = " . $id);
-            return $this->database->executeSelect()[0];
+            $this->database->prepareQuery("SELECT * FROM queue WHERE queue_id = :id");
+            return $this->database->executeSelect([':id' => $id])[0];
         }
     }
 
