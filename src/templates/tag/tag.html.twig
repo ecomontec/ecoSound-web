@@ -166,7 +166,7 @@
                         var sound_id = $.cookie('save_button');
                         $('.save-type').click(function () {
                             if ($.cookie('cookieConsent') == 'accepted') {
-                                $.cookie('save_button', $(this).text(), {path: '/', expires: 180});
+                                $.cookie('save_button', $(this).text(), {path: '/', expires: 180, samesite: 'None'});
                             }
                             $('#saveButton').html('<i class="fa fa-save"></i> ' + $(this).text());
                         })
@@ -232,7 +232,7 @@
         }
         {% if not tag.soundId %}
         if ($.cookie('cookieConsent') == 'accepted') {
-            $.cookie('soundscape_component', $("#soundscape_component").val(), {path: '/', expires: 180});
+            $.cookie('soundscape_component', $("#soundscape_component").val(), {path: '/', expires: 180, samesite: 'None'});
         }
         {% endif %}
         $('#sound_id').empty()
@@ -250,7 +250,7 @@
     {% if not tag.soundId %}
     $("#sound_id").on('change', function () {
         if ($.cookie('cookieConsent') == 'accepted') {
-            $.cookie('sound_id', $("#sound_id").val(), {path: '/', expires: 180});
+            $.cookie('sound_id', $("#sound_id").val(), {path: '/', expires: 180, samesite: 'None'});
         }
     })
     {% endif %}

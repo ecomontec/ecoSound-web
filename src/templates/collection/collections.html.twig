@@ -446,7 +446,7 @@
         $("#btn_map").click(function () {
             $("#map").toggle()
             if ($.cookie('cookieConsent') == 'accepted') {
-                $.cookie('map', $("#btn_map").text(), {path: '/', expires: 180});
+                $.cookie('map', $("#btn_map").text(), {path: '/', expires: 180, samesite: 'None'});
             }
             if ($("#btn_map").text() == 'Hide Map') {
                 $("#btn_map").text('Show Map')
