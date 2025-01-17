@@ -73,6 +73,8 @@ function img_jcrop() {
         $(this).css('left', (parseFloat($(this).css('left')) / specWidth * $('#player_box').width()) + "px")
         $(this).css('width', (parseFloat($(this).css('width')) / specWidth * $('#player_box').width()) + "px")
     })
+    $(".player_img").height('400px')
+    $(".player_img").width($('#player_box').width())
     specWidth = $('#player_box').width()
     var myJcrop = $.Jcrop('#cropbox', {
         boxWidth: $('#player_box').width(),
@@ -86,7 +88,5 @@ function img_jcrop() {
     $("#myCanvas > div.jcrop-holder.custom > div:nth-child(1) > div:nth-child(1) > img").width($('#player_box').width())
     $(".jcrop-holder").height('400px')
     $(".jcrop-holder").width($('#player_box').width())
-    $(".player_img").height('400px')
-    $(".player_img").width($('#player_box').width())
     return myJcrop
 }

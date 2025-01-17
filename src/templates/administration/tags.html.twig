@@ -163,12 +163,12 @@
                 });
             });
             $('#tagsTable tbody').on('change', 'select[name=soundscape_component]', function () {
-                let id = $(this).attr('id').split('_')[1]
+                let id = $(this).attr('id').split('_')[2]
                 let index = 0
                 if ($("#soundscape_component_" + id).find("option:selected").text() == 'biophony') {
-                    $("#soundscape_component_" + id).show()
+                    $("#speciesName_" + id).show()
                 } else {
-                    $("#soundscape_component_" + id).hide()
+                    $("#speciesName_" + id).hide()
                 }
                 $('#sound_id' + id).empty()
                 for (var key in soundTypes) {

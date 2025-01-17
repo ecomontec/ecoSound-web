@@ -6,7 +6,6 @@ use BioSounds\Entity\AbstractProvider;
 use BioSounds\Entity\Collection;
 use BioSounds\Exception\Database\NotFoundException;
 use BioSounds\Utils\Auth;
-use Cassandra\Varint;
 
 class CollectionProvider extends AbstractProvider
 {
