@@ -205,19 +205,19 @@ class RecordingController extends BaseController
 
         /* Get the spectrogram selection values to generate zoom and filter */
         if (isset($_POST['t_min']) && isset($_POST['t_max']) && isset($_POST['f_min']) && isset($_POST['f_max'])) {
-            $minTime = $_POST['t_min'];
-            $maxTime = $_POST['t_max'];
-            $minFrequency = $_POST['f_min'];
-            $maxFrequency = $_POST['f_max'];
+            $minTime = $_POST['t_min'] < $minTime ? $minTime : $_POST['t_min'];
+            $maxTime = $_POST['t_max'] > $maxTime ? $maxTime : $_POST['t_max'];
+            $minFrequency = $_POST['f_min'] < $minFrequency ? $minFrequency : $_POST['f_min'];
+            $maxFrequency = $_POST['f_max'] > $maxFrequency ? $maxFrequency : $_POST['f_max'];
             if (isset($_POST['filter'])) {
                 $filter = filter_var($_POST['filter'], FILTER_VALIDATE_BOOLEAN);
             }
         }
         if (isset($_GET['t_min']) && isset($_GET['t_max']) && isset($_GET['f_min']) && isset($_GET['f_max'])) {
-            $minTime = $_GET['t_min'];
-            $maxTime = $_GET['t_max'];
-            $minFrequency = $_GET['f_min'];
-            $maxFrequency = $_GET['f_max'];
+            $minTime = $_GET['t_min'] < $minTime ? $minTime : $_GET['t_min'];
+            $maxTime = $_GET['t_max'] > $maxTime ? $maxTime : $_GET['t_max'];
+            $minFrequency = $_GET['f_min'] < $minFrequency ? $minFrequency : $_GET['f_min'];
+            $maxFrequency = $_GET['f_max'] > $maxFrequency ? $maxFrequency : $_GET['f_max'];
         }
 
         // Spectrogram Image Width
