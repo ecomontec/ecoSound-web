@@ -55,7 +55,7 @@ class IndexLogProvider extends AbstractProvider
         }
         $id_str = implode(', ', $placeholders);
         $this->database->prepareQuery("DELETE FROM index_log WHERE recording_id IN ($id_str)");
-        return $this->database->executeDelete();
+        return $this->database->executeDelete($params);
     }
 
     public function getIndexLog(): array

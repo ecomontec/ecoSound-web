@@ -399,10 +399,9 @@ class Collection extends BaseProvider
 
     public function isValid($project_id, $str, $collection_id)
     {
-
         $sql = "SELECT * FROM collection WHERE project_id = :project_id AND `name` = :name";
         if (isset($collection_id)) {
-            $sql = $sql . " and collection_id != $collection_id";
+            $sql = $sql . " and collection_id != :collection_id";
         }
         $this->database->prepareQuery($sql);
         $params = [
