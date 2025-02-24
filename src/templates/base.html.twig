@@ -18,7 +18,7 @@
 
 <div id="modalWindows"></div>
 <div id="cookieConsent" class="cookie-consent">
-    <p>By clicking “Accept All”, you agree to the storing of cookies on your device to enhance site navigation, analyze site usage, and personalize content. <a href="/project/cookie_policy" target="_blank">Privacy Policy</a>.</p>
+    <p>By clicking “Accept All”, you agree to the storing of cookies on your device to enhance site navigation, analyze site usage, and personalize content. <a href="{{ baseUrl }}/project/cookie_policy" target="_blank">Privacy Policy</a>.</p>
     <button class="btn btn-outline-primary acceptCookies">Accept All</button>
     <button class="btn btn-outline-primary declineCookies">Refuse All</button>
     <button class="btn btn-outline-primary btn-cookie">Manage Cookies</button>
@@ -36,22 +36,22 @@
             }
 
             $('.acceptCookies').on('click', function () {
-                $.cookie('cookieConsent', 'accepted', {path: '/', expires: 180});
+                $.cookie('cookieConsent', 'accepted', {path: '/', expires: 180, samesite: 'None'});
                 document.getElementById('cookieConsent').style.display = 'none';
                 $('#modal-cookie').modal('hide')
             });
 
             $('.declineCookies').on('click', function () {
-                $.cookie('cookieConsent', 'declined', {path: '/', expires: 180});
+                $.cookie('cookieConsent', 'declined', {path: '/', expires: 180, samesite: 'None'});
                 document.getElementById('cookieConsent').style.display = 'none';
                 $('#modal-cookie').modal('hide')
             });
 
             $('.confirmCookies').on('click', function () {
                 if ($('#cb_functional_cookies')) {
-                    $.cookie('cookieConsent', 'accepted', {path: '/', expires: 180});
+                    $.cookie('cookieConsent', 'accepted', {path: '/', expires: 180, samesite: 'None'});
                 } else {
-                    $.cookie('cookieConsent', 'declined', {path: '/', expires: 180});
+                    $.cookie('cookieConsent', 'declined', {path: '/', expires: 180, samesite: 'None'});
                 }
                 document.getElementById('cookieConsent').style.display = 'none';
                 $('#modal-cookie').modal('hide')

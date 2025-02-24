@@ -51,31 +51,3 @@ $('#play-dropdown').click(function (event) {
 $('#dropdown-menu-play').click(function (event) {
     event.stopPropagation();
 });
-
-savePlayLog = function () {
-    postRequest(
-        baseUrl + '/api/PlayLog/save',
-        {
-            recordingId: recordingId,
-            userId: userId,
-            startTime: playStartTime,
-            stopTime: new Date().valueOf() / 1000,
-        }
-    );
-    // $.post(baseUrl + "/PlayLog/save",
-    //     {
-    //         recordingId:  recordingId,
-    //         userId: userId,
-    //         startTime: getCookie('playStartTime'),
-    //         stopTime: new Date().valueOf() / 1000,
-    //     })
-    //     .fail(function(xhr, textStatus, errorThrown) {
-    //         console.log('Error while saving play log: ' + xhr.responseText);
-    //     })
-    //     .done(function(data) {
-    //         if(data.error) {
-    //             console.log('Error while saving play log: ' + data.error);
-    //         }
-    //         deleteCookie('playStartTime');
-    //     });
-};

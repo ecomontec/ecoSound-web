@@ -16,7 +16,9 @@
                     </select>
                     <label for="collectionId" class="ml-3">Collection</label>
                     <select id="collectionId" name="collectionId" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
-                        <option></option>
+                        {% if is_project_manage %}
+                            <option></option>
+                        {% endif %}
                         {% for collection in collections %}
                             <option value="{{ collection.id }}" {{ collection.id == collectionId ? 'selected' }}>
                                 {{ collection.name }}
@@ -121,7 +123,7 @@
                         "url": '{{ baseUrl }}/admin/siteManager/getListByPage/{{ projectId }}/{{ collectionId }}',
                         "type": 'POST',
                         "error": function (xhr, error, thrown) {
-                            if (xhr.status == 400 || xhr.status == 404 ||xhr.status == 500) {
+                            if (xhr.status == 400 || xhr.status == 404 || xhr.status == 500) {
                                 location.reload();
                             }
                         }

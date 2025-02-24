@@ -222,6 +222,9 @@ class User extends AbstractProvider
      */
     public function isManage(int $userId, ?int $collection_id = null): bool
     {
+        if (Auth::isUserAdmin()) {
+            return true;
+        }
         $sql = 'SELECT count(*) AS result FROM user u LEFT JOIN user_permission p ON u.user_id = p.user_id WHERE p.user_id = :userId AND permission_id = 4';
 
         if ($collection_id) {
