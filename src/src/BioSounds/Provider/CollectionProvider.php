@@ -174,8 +174,13 @@ class CollectionProvider extends AbstractProvider
 
     public function getWithSite(int $project_id, string $site_id): ?array
     {
-        $this->database->prepareQuery('SELECT c.*,MAX(IF(site_id = :site_id, 1, 0)) AS site_id FROM collection c LEFT JOIN site_collection sc ON sc.collection_id = c.collection_id WHERE c.project_id = :project_id GROUP BY c.collection_id');
-        $results = $this->database->executeSelect([':project_id' => $project_id, ':site_id' => $site_id]);
+        if (Auth::isUserAdmin()) {
+            $this->database->prepareQuery('SELECT c.*,MAX(IF(site_id = :site_id, 1, 0)) AS site_id FROM collection c LEFT JOIN site_collection sc ON sc.collection_id = c.collection_id WHERE c.project_id = :project_id GROUP BY c.collection_id');
+            $results = $this->database->executeSelect([':project_id' => $project_id, ':site_id' => $site_id]);
+        } else {
+            $this->database->prepareQuery('SELECT c.*,MAX(IF(site_id = :site_id, 1, 0)) AS site_id FROM collection c LEFT JOIN site_collection sc ON sc.collection_id = c.collection_id LEFT JOIN user_permission up ON up.collection_id = c.collection_id WHERE c.project_id = :project_id AND up.user_id = :user_id AND up.permission_id = 4 GROUP BY c.collection_id');
+            $results = $this->database->executeSelect([':project_id' => $project_id, ':site_id' => $site_id, ':user_id' => Auth::getUserLoggedID()]);
+        }
         $data = [];
         foreach ($results as $item) {
             $data[] = (new Collection())

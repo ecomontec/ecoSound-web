@@ -10,7 +10,7 @@
                     <label for="name" class="col-form-label-sm">Name</label>
                     <input id="name" type="text" name="name_text" class="form-control form-control-sm" maxlength="100" required>
                     <input id="project_id" type="hidden" name="project_id_text" value="{{ projectId }}">
-                    <input id="collection_id" type="hidden" name="collection_id_text" value="{{ collectionId }}">
+                    <input id="collection_id" type="hidden" name="collection_id_text" value="{% if collectionId is empty and not is_project_manage %}{{ collections|first.id }}{% else %}{{ collectionId }}{% endif %}">
                     <div class="invalid-feedback">
                         Please provide a site name.
                     </div>
