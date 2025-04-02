@@ -9,7 +9,7 @@ services:
   database:
     image: mysql
     volumes:
-      - /var/lib/mysql
+      - biosounds-mysql:/var/lib/mysql
     ports:
       - 13306:3306
     environment:
@@ -23,6 +23,8 @@ services:
     build:
       context: src
       target: queue
+    volumes:
+      - biosounds-queue:/var/lib/rabbitmq
     ports:
       - 15672:5672
     environment:
@@ -46,4 +48,7 @@ services:
       QUEUE_PORT: 5672
 
 volumes:
-  biosounds-vendor:
+    biosounds-vendor:
+    biosounds-mysql:
+    biosounds-queue:
+    biosounds-apache:
