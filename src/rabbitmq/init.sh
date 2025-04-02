@@ -2,6 +2,10 @@
 
 # Create Rabbitmq user
 ( rabbitmqctl wait --timeout 60 $RABBITMQ_PID_FILE; \
+rabbitmq-plugins enable rabbitmq_management ; \
+wget -O /usr/local/bin/rabbitmqadmin
+http://127.0.0.1:15672/cli/rabbitmqadmin ; \
+chmod +x /usr/local/bin/rabbitmqadmin ; \
 rabbitmqadmin declare queue name=$QUEUE_NAME ; \
 rabbitmqctl add_user $RABBITMQ_USER $RABBITMQ_PASSWORD 2>/dev/null ; \
 rabbitmqctl set_user_tags $RABBITMQ_USER administrator ; \

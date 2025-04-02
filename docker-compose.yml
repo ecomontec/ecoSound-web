@@ -26,7 +26,8 @@ services:
     volumes:
       - biosounds-queue:/var/lib/rabbitmq
     ports:
-      - 15672:5672
+      - 5672:5672
+      - 15672:15672
     environment:
       RABBITMQ_USER: biosounds
       RABBITMQ_PASSWORD: biosounds

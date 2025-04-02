@@ -1,3 +1,4 @@
+
 FROM php:7.4-apache AS apache
 
 COPY apache/000-default.conf /etc/apache2/sites-enabled/000-default.conf
@@ -27,7 +28,7 @@ RUN pip install scikits.audiolab==0.8 Pillow
 
 FROM rabbitmq:3.8.4-rc.3-alpine AS queue
 ENV RABBITMQ_PID_FILE /var/lib/rabbitmq/mnesia/rabbitmq
-
+RUN apk add python3
 ADD rabbitmq/init.sh /init.sh
 RUN chmod +x /init.sh
 
