@@ -91,7 +91,9 @@ VALUES ('allow_upload', '0'),
        ('use_googlemaps', '0'),
        ('use_tags', '0'),
        ('use_xml', '1'),
-       ('wav_toflac', '1');
+       ('wav_toflac', '1'),
+       ('server_name', 'test'),
+       ('shared', '0');
 
 --
 -- Dumping data for table `sound_type`

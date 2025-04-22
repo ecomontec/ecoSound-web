@@ -1,0 +1,43 @@
+<div class="modal fade" id="modal-div" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document" style="max-width: 80% !important;">
+        <div class="modal-content">
+            <form id="siteCollectionForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">Api Setting</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table id="user-perm" class="table table-sm table-hover" style="white-space: nowrap;">
+                        <thead class="table-borderless">
+                        <tr>
+                            <th>#</th>
+                            <th>Server Name</th>
+                            <th>Discoverable <i class="fa fa-info-circle" title="name and location of the ecoSound-web instance are shared with this partner" data-toggle="tooltip"></i></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for api in apis %}
+                            <tr>
+                                <td>{{ api.api_id }}</td>
+                                <td>{{ api.server_name }}</td>
+                                <td><input type="checkbox" disabled checked></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button id="saveButton" type="submit" class="btn btn-outline-primary">
+                        <i class="fas fa-save"></i>
+                        Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+</script>
