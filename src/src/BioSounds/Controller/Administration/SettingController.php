@@ -22,6 +22,12 @@ class SettingController extends BaseController
     {
         echo Utils::getSetting('license');
 
+        if (!isset($_SESSION['syncApi']) || $_SESSION['syncApi'] < strtotime('today')) {
+            $data = (new Api())->getApis();
+            $this->synchronize($data);
+            $_SESSION['syncApi'] = strtotime('today');
+        }
+
         return $this->twig->render('administration/settings.html.twig', [
             'user' => (new User)->getFftValue(Auth::getUserID()),
             'projectFft' => Utils::getSetting('fft'),
@@ -54,12 +60,14 @@ class SettingController extends BaseController
 
         $_SESSION['settings'] = $setting->getList();
         if (!$this->isLocalAddress(APP_URL)) {
-            $url = "http://192.168.93.129:8080/api/admin/settings/api";
+            $url = HOST_URL . "/api/admin/settings/api";
             $data = http_build_query([
                 'api' => base64_encode(APP_URL),
                 'server_name' => $setting_data['server_name'],
                 'last_updated' => date('Y-m-d H:i:s'),
-                'shared' => $_POST['shared'],
+                'latitude' => $setting_data['latitude'],
+                'longitude' => $setting_data['longitude'],
+                'shared' => $setting_data['shared'],
             ]);
 
             $options = [
@@ -72,7 +80,8 @@ class SettingController extends BaseController
 
             $context = stream_context_create($options);
             $contents = file_get_contents($url, false, $context);
-            $this->synchronize($contents);
+            $apis = json_decode($contents, true);
+            $this->synchronize($apis);
         }
 
         return json_encode([
@@ -99,27 +108,25 @@ class SettingController extends BaseController
 
     public function api()
     {
-        if (empty($_POST['api'])) {
-            return false;
-        }
-
         $apiProvider = new Api();
 
-        foreach ($_POST as $key => $value) {
-            $data[$key] = $value;
+        if (!empty($_POST['api'])) {
+            foreach ($_POST as $key => $value) {
+                $data[$key] = $value;
+            }
+
+            if ($apiProvider->isValid($data['api'])) {
+                $apiProvider->updateApi($data);
+            } else {
+                $apiProvider->insertApi($data);
+            }
         }
 
-        if ($apiProvider->isValid($data['api'])) {
-            $apiProvider->updateApi($data);
-        } else {
-            $apiProvider->insertApi($data);
-        }
         return json_encode($apiProvider->getApis());
     }
 
-    public function synchronize($data)
+    public function synchronize($apis)
     {
-        $apis = json_decode($data, true);
         $apiProvider = new Api();
         foreach ($apis as $api) {
             if ($apiProvider->isValidById($api['api_id'])) {

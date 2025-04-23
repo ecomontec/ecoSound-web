@@ -93,7 +93,9 @@ VALUES ('allow_upload', '0'),
        ('use_xml', '1'),
        ('wav_toflac', '1'),
        ('server_name', 'test'),
-       ('shared', '0');
+       ('shared', '0'),
+       ('latitude', ''),
+       ('longitude', '');
 
 --
 -- Dumping data for table `sound_type`

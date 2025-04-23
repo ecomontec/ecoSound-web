@@ -27,11 +27,33 @@
                     <div class="form-group input-group-sm">
                         <label for="server_name">Server Name</label>
                         <input id="server_name" type="text" name="server_name_text" class="form-control" value="{{ setting.server_name }}">
-                        <div class="d-flex justify-content-end">
-                            <div>
-                                <input type="checkbox" class="form-check-input" id="shared" name="shared" {% if setting.shared %} checked {% endif %}>
-                                <label class="label" for="shared"><small>Shared Data</small></label>
-                            </div>
+                    </div>
+                    <div class="form-group input-group-sm">
+                        <div>
+                            <label style="width:50%" class="col-form-label-sm" for="longitude">Longitude [-180,180]</label>
+                            <label style="width:49.5%" class="col-form-label-sm" for="latitude">Latitude [-90,90]</label>
+                        </div>
+                        <div>
+                    <span>
+                        <input id="longitude" type="number" min="-180" max="180" step="0.0000000000001" pattern="##.##############" name="longitude_number" style="width:50%" maxlength="100" value="{{ setting.longitude }}">
+                    </span>
+                            <span>
+                        <input id="latitude" type="number" min="-90" max="90" step="0.0000000000001" pattern="##.##############" name="latitude_number" style="width:49.5%" maxlength="100" value="{{ setting.latitude }}">
+                    </span>
+                        </div>
+                        <div>
+                    <span id="invalidLongDiv" class="invalid-feedback">
+                        Please provide valid longitude value.
+                    </span>
+                            <span id="invalidLatDiv" class="invalid-feedback">
+                        Please provide valid latitude value.
+                    </span>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <div>
+                            <input type="checkbox" class="form-check-input" id="shared" name="shared" {% if setting.shared %} checked {% endif %}>
+                            <label class="label" for="shared"><small>Shared Data</small></label>
                         </div>
                     </div>
                 {% endif %}
@@ -46,5 +68,36 @@
             requestModal("{{ baseUrl }}/admin/settings/view");
             e.preventDefault();
         })
+        $('#longitude').on('change', function () {
+            if (this.checkValidity() === false) {
+                if ($('#invalid LatDiv').css('display') && $('#inv4LatDiv').css('display')) {
+                    $('#inv4LatDiv').css({"width": "", "display": ""});
+                }
+                $('#invalidLongDiv').css({"width": "50%", "display": "inline-block", "position": "relative"});
+            } else {
+                if ($('#invalidLatDiv').css('display') && (!$('#inv4LatDiv').css('display') || $('#inv4LatDiv').css('display') === 'none')) {
+                    $('#inv4LatDiv').css({"width": "50%", "display": "inline-block"});
+                }
+                if ((!$('#invalidLatDiv').css('display') || $('#invalidLatDiv').css('display') === 'none') || !$('#inv4LatDiv').css('display')) {
+                    $('#inv4LatDiv').css({"width": "", "display": ""});
+                }
+
+                $('#invalidLongDiv').css({"display": "", "position": ""});
+            }
+        });
+        $('#latitude').on('change', function () {
+            if (this.checkValidity() === false) {
+                $('#inv4LatDiv').css({"width": "50%", "display": "inline-block"});
+                $('#invalidLatDiv').css({
+                    "width": "49%",
+                    "display": "inline-block",
+                    "position": "relative",
+                    "right": "2"
+                });
+            } else {
+                $('#invalidLatDiv').css({"display": "", "position": ""});
+                $('#inv4LatDiv').css({"width": "", "display": ""});
+            }
+        });
     </script>
 {% endblock %}
