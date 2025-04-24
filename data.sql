@@ -361,7 +361,9 @@ VALUES ('biophony', 'fish chorus'),
        ('geophony', 'earthquake'),
        ('geophony', 'rain'),
        ('geophony', ''),
-       ('unknown', 'test unknown');
+       ('unknown', 'test unknown'),
+       ('other', 'template matching result'),
+       ('other', '');
 
 --
 -- Dumping data for table `recorder`

@@ -38,11 +38,11 @@
                     <input type="hidden" name="channel_num" value="{{ player.recording.channel_num }}">
                     <input type='hidden' name='showTags' value="{{ player.showTags }}">
                     <input type='hidden' name='estimateDistID' value="{{ player.estimateDistID }}">
-                    <input type="hidden" name="collection_id" value="{{ player.recording.col_id }}">
+                    <input type="hidden" name="collection_id" value="{{ player.recording.col_id }}" class="param-tm" id="collection_id">
                     <input type="hidden" name="recording_id" value="{{ player.recording.recording_id }}">
                     <input type="hidden" name="recording_name" value="{{ player.recording.name }}">
-                    <input type="hidden" name="filename" value="{{ player.recording.filename }}">
-                    <input type="hidden" name="recording_directory" value="{{ player.recording.directory }}">
+                    <input type="hidden" name="filename" value="{{ player.recording.filename }}" class="param-tm" id="filename">
+                    <input type="hidden" name="recording_directory" value="{{ player.recording.directory }}" class="param-tm" id="recording_directory">
                     <input type="hidden" name="specWidth" value="{{ player.spectrogramWidth }}">
                     <input type="hidden" name="specHeight" value="{{ player.spectrogramHeight }}">
                     <input type="hidden" name="minTimeView" value="{{ player.minTime }}">
@@ -65,9 +65,6 @@
                     <div class="btn-group dark-buttons" role="group">
                         <a href="#" id="exportCoordinates" class="btn btn-link" title="Export coordinates to clipboard">
                             <i class="fas fa-clipboard"></i>
-                        </a>
-                        <a href="{{ baseUrl }}/recording/maad" id="exportMaxF" class="btn btn-link" title="Export frequency of maximum energy to clipboard">
-                            <i class="arrow-peak"></i>
                         </a>
                         <button id="zoom-submit" class="btn btn-link" type="button" title="Zoom" disabled>
                             <i class="fas fa-search-plus"></i>
@@ -118,6 +115,12 @@
                 <a href="#" class="js-open-tf-modal">
                     <i class="svg-model mt-3"></i>
                     <strong>AI models</strong>
+                </a>
+            </div>
+            <div>
+                <a href="#" class="js-open-aa-modal">
+                    <i class="png-ruler mt-3"></i>
+                    <strong>Acoustic analysis</strong>
                 </a>
             </div>
         </div>
@@ -203,6 +206,61 @@
                 </div>
             </div>
         </div>
+        <div class="modal fade" id="modal-aa" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title maad-title">Acoustic Analysis</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body ml-3">
+                        <div>
+                            <div class="form-group">
+                                <select id="acoustic_analysis" name="acoustic_analysis_id" autocomplete="off" class="form-control form-control-sm col-6 mb-3" required>
+                                    <option value="1">template_matching</option>
+                                    <option value="2">Frequency of maximum energy</option>
+                                </select>
+                                <div id="template-matching">
+                                    <div class="col-form-label">
+                                        <strong>Description:</strong>
+                                        <a class="col-form-label" href="https://scikit-maad.github.io/generated/maad.rois.template_matching.html" target="_blank" title="Documentation"> <i class="fa fa-book"></i></a>
+                                        <div class="col-form-label-sm">Use normalized spectrogram cross-correlation to detect the occurrence of a template sound in a target audio.</div>
+                                    </div>
+                                    <div class="form-inline">
+                                        <label class="ml-1 col-form-label-sm" for="peak_th">peak_th</label>
+                                    </div>
+                                    <div class="form-group form-inline">
+                                        <input id="peak_th" name="peak_th" class="form-control form-control-sm param-tm" type="text">
+                                        <label class="ml-2 col-form-label-sm">default: 0.5</label>
+                                    </div>
+                                    <div class="form-inline">
+                                        <label class="ml-1 col-form-label-sm" for="peak_distance">peak_distance</label>
+                                    </div>
+                                    <div class="form-group form-inline">
+                                        <input id="peak_distance" name="peak_distance" class="form-control form-control-sm param-tm" type="text">
+                                        <label class="ml-2 col-form-label-sm">default: None</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="modal-footer">
+                            <button id="js-close-button" type="button" class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                                <i class="fas fa-times"></i>
+                                Close
+                            </button>
+                            <a href="{{ baseUrl }}/recording/maad" class="js-aa-modal btn btn-outline-primary">
+                                <i class="fa-solid fa-check"></i>
+                                Compute
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <script>
             $(".loading").css("opacity", "0");
             $(document).ready(function () {
@@ -229,6 +287,14 @@
                     {% endfor %}
                 })
                 $("#tf").change();
+                $('#acoustic_analysis').change(function () {
+                    if ($(this).val() == '1') {
+                        $('#template-matching').show()
+                    } else {
+                        $('#template-matching').hide()
+                    }
+                })
+                $("#acoustic_analysis").change();
             });
 
             $("#maad").change(function () {
@@ -247,6 +313,9 @@
             })
             $('.js-open-tf-modal').click(function () {
                 $('#modal-tf').modal('show');
+            })
+            $('.js-open-aa-modal').click(function () {
+                $('#modal-aa').modal('show');
             })
             $(".js-maad-modal").click(function (e) {
                 let data = []
@@ -316,6 +385,7 @@
                         'user_id': '{{ user_id }}',
                     };
                 }
+                $('#modal-tf').modal('hide');
                 data = jsToFormData(data)
                 $.ajax({
                     type: 'POST',
@@ -341,6 +411,86 @@
                         showAlert(response.responseJSON.message);
                     })
                 e.preventDefault();
+            });
+            $(".js-aa-modal").click(function (e) {
+                let data = []
+                let param = ''
+                $('.loading-grey').toggle();
+                $('#modal-aa').modal('hide');
+                if ($('#acoustic_analysis').val() == 1) {
+                    if(minTime==0&&maxTime==fileDuration.toFixed(1)&&minFrequency==1&&maxFrequency==fileFreqMax){
+                        showAlert('Please zoom in before executing.')
+                        e.preventDefault();
+                        $('.loading-grey').toggle();
+                        return
+                    }
+                    $('.param-tm').each(function () {
+                        if ($(this).val() != '') {
+                            param = param + $(this).attr('id') + '?' + $(this).val() + '@'
+                        }
+                    })
+                    data = {
+                        'min_time': $('input[name=minTimeView]').val(),
+                        'max_time': $('input[name=maxTimeView]').val(),
+                        'min_frequency': $('input[name=minFreqView]').val(),
+                        'max_frequency': $('input[name=maxFreqView]').val(),
+                        'collection_id': $('input[name=collection_id]').val(),
+                        'recording_id': $('input[name=recording_id]').val(),
+                        'filename': soundFilePath,
+                        'index_id': $('#acoustic_analysis').val(),
+                        'index': $('#acoustic_analysis').find("option:selected").text(),
+                        'channel_num': $('input[name=channel_num]').val(),
+                        'channel': $('input[name=channel]').val(),
+                        'param': param,
+                    };
+                    data = jsToFormData(data)
+                    requestModal(this.href, data, true);
+                    $('.loading-grey').toggle();
+                    e.preventDefault();
+                } else if ($('#acoustic_analysis').val() == 2) {
+                    data = {
+                        'minTime': $('input[name=minTimeView]').val(),
+                        'maxTime': $('input[name=maxTimeView]').val(),
+                        'minFrequency': $('input[name=minFreqView]').val(),
+                        'maxFrequency': $('input[name=maxFreqView]').val(),
+                        'collection_id': $('input[name=collection_id]').val(),
+                        'recording_id': $('input[name=recording_id]').val(),
+                        'filename': soundFilePath,
+                        'recording_directory': $('input[name=recording_directory]').val(),
+                        'index': '',
+                        'channel_num': $('input[name=channel_num]').val(),
+                        'channel': $('input[name=channel]').val(),
+                    };
+                    data = jsToFormData(data)
+                    $.ajax({
+                        type: 'POST',
+                        url: this.href,
+                        data: data,
+                        dataType: 'json',
+                        processData: false,
+                        contentType: false,
+                    })
+                        .done(function (result) {
+                            let message = 'Frequency of maximum energy: ' + result + ' Hz (copied to clipboard)'
+
+                            const input = document.createElement('input');
+                            document.body.appendChild(input);
+                            input.value = result
+                            input.focus();
+                            input.select();
+
+                            const isSuccessful = document.execCommand('copy');
+
+                            if (!isSuccessful) {
+                                message = 'Frequency of maximum energy: ' + result + ' Hz (Data copy to clipboard failed)';
+                            }
+
+                            input.remove();
+                            $('.loading-grey').toggle();
+                            showAlert(message);
+                        })
+                    e.preventDefault();
+                }
             });
         </script>
     {% endif %}

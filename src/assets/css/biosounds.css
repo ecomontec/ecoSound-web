@@ -1532,13 +1532,13 @@ li {
     scrollbar-width: none;
 }
 
-.arrow-peak {
-    width: 16px;
-    content: url("../webfonts/arrow-peak.svg");
+.js-open-aa-modal .png-ruler  {
+    width: 18px;
+    content: url("../webfonts/ruler.png");
 }
 
-.arrow-peak:hover {
-    content: url("../webfonts/arrow-peak-hover.svg");
+.js-open-aa-modal .png-ruler:hover {
+    content: url("../webfonts/ruler-hover.png");
 }
 
 .continue-playback {
