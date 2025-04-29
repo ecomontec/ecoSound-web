@@ -444,8 +444,26 @@
                         'param': param,
                     };
                     data = jsToFormData(data)
-                    requestModal(this.href, data, true);
-                    $('.loading-grey').toggle();
+                    $.ajax({
+                        type: 'POST',
+                        url: this.href,
+                        data: data,
+                        dataType: 'json',
+                        processData: false,
+                        contentType: false,
+                    })
+                        .done(function (result) {
+                            alert(result.message)
+                            $('.loading-grey').toggle();
+                        })
+                        .fail(function (response) {
+                            $('.loading-grey').toggle();
+                            if (!response.responseJSON) {
+                                showAlert('Error ' + response.message);
+                                return;
+                            }
+                            showAlert(response.responseJSON.message);
+                        })
                     e.preventDefault();
                 } else if ($('#acoustic_analysis').val() == 2) {
                     data = {
