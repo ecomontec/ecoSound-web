@@ -340,13 +340,6 @@ class User extends AbstractProvider
      * @return array
      * @throws \Exception
      */
-    public function getList(): array
-    {
-        $sql = 'SELECT * FROM user ORDER BY `name`';
-        $this->database->prepareQuery($sql);
-        return $this->database->executeSelect();
-    }
-
     public function getUserList(): array
     {
         if (Auth::isUserAdmin()) {
@@ -502,16 +495,24 @@ class User extends AbstractProvider
     public function getListByPage(string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
     {
         $arr = [];
-        $sql = "SELECT * FROM user ";
+        if (Auth::isUserAdmin()) {
+            $sql = 'SELECT * FROM user u ';
+        } else {
+            $sql = "SELECT u.* FROM user u LEFT JOIN user_permission p ON u.user_id = p.user_id WHERE p.collection_id IN (SELECT collection_id FROM user_permission WHERE user_id = :user_id AND permission_id = 4) ";
+        }
         $is_admin = Auth::isUserAdmin();
         $dir = ($dir === 'asc' || $dir === 'desc') ? $dir : 'asc';
         if ($search) {
-            $sql .= " WHERE CONCAT(IFNULL(user_id,''), IFNULL(name,''), IFNULL(username,''), IFNULL(orcid,''), IFNULL(email,'')) LIKE :search ";
+            $sql .= Auth::isUserAdmin() ? ' WHERE ' : ' AND ';
+            $sql .= " CONCAT(IFNULL(u.user_id,''), IFNULL(u.name,''), IFNULL(u.username,''), IFNULL(u.orcid,''), IFNULL(u.email,'')) LIKE :search ";
         }
         if ($is_admin) {
             $a = ['', 'user_id', 'name', 'username', 'orcid', 'email', 'role_id', 'active', 'color'];
         } else {
             $a = ['', 'user_id', 'name', 'username', 'orcid', 'email', 'color'];
+        }
+        if (!Auth::isUserAdmin()) {
+            $sql .= " GROUP BY u.user_id ";
         }
         $sql .= " ORDER BY $a[$column] $dir LIMIT :length OFFSET :start";
         $this->database->prepareQuery($sql);
@@ -519,6 +520,9 @@ class User extends AbstractProvider
             ':length' => $length,
             ':start' => $start
         ];
+        if (!Auth::isUserAdmin()) {
+            $params[':user_id'] = Auth::getUserID();
+        }
         if ($search) {
             $params[':search'] = '%' . $search . '%';
         }
@@ -553,13 +557,21 @@ class User extends AbstractProvider
 
     public function getFilterCount(string $search): int
     {
-        $sql = "SELECT COUNT(*) FROM user ";
+        if (Auth::isUserAdmin()) {
+            $sql = 'SELECT COUNT(DISTINCT u.user_id) FROM user u ';
+        } else {
+            $sql = "SELECT COUNT(DISTINCT u.user_id) FROM user u LEFT JOIN user_permission p ON u.user_id = p.user_id WHERE p.collection_id IN (SELECT collection_id FROM user_permission WHERE user_id = :user_id AND permission_id = 4) ";
+        }
         if ($search) {
-            $sql .= " WHERE CONCAT(IFNULL(user_id,''), IFNULL(name,''), IFNULL(username,''), IFNULL(orcid,''), IFNULL(email,'')) LIKE :search ";
+            $sql .= Auth::isUserAdmin() ? ' WHERE ' : ' AND ';
+            $sql .= " CONCAT(IFNULL(u.user_id,''), IFNULL(u.name,''), IFNULL(u.username,''), IFNULL(u.orcid,''), IFNULL(u.email,'')) LIKE :search ";
         }
         $this->database->prepareQuery($sql);
         $params = (!empty($search)) ? [":search" => '%' . $search . '%'] : [];
+        if (!Auth::isUserAdmin()) {
+            $params[':user_id'] = Auth::getUserID();
+        }
         $result = $this->database->executeSelect($params);
-        return $result[0]['COUNT(*)'];
+        return $result[0]['COUNT(DISTINCT u.user_id)'];
     }
 }
