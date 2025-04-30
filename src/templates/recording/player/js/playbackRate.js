@@ -159,20 +159,19 @@ function createSource() {
     source.buffer = bufferPlay;
     source.loop = false;
     source.onended = function () {
-        stop();
         postRequest(
-            baseUrl + '/api/PlayLog/save',
+            baseUrl + '/PlayLog/save',
             {
                 recordingId: recordingId,
                 userId: userId,
                 startTime: playStartTime,
                 stopTime: new Date().valueOf() / 1000,
-            }, false, false, function () {
-                if (isContinuous && !pause) {
-                    continuousPlay();
-                }
             }
-        );
+        )
+        if (isContinuous && !pause) {
+            continuousPlay();
+        }
+        stop();
     };
     source.connect(context.destination);
     source.playbackRate.value = playbackControl.value;

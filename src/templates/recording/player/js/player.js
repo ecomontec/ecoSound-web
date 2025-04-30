@@ -37,8 +37,10 @@ let setContinuousPlay = function (value) {
     continuousPlaySelector.prop('checked', value);
     if (value) {
         $("label[for='continuous-play']").addClass('active');
+        $('#continue-playback').addClass('active');
     } else {
         $("label[for='continuous-play']").removeClass('active');
+        $('#continue-playback').removeClass('active');
     }
 };
 
