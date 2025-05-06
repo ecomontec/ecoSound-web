@@ -562,19 +562,19 @@ class RecordingController extends BaseController
                     array_shift($out);
                     foreach ($out as $line) {
                         $values = preg_split('/\s+/', trim($line));
-                            $arr['sound_id'] = '15';
-                            $arr['recording_id'] = $data['recording_id'];
-                            $arr['user_id'] = Auth::getUserID();
-                            $arr['creator_type'] = "template_matching";
-                            $arr['min_time'] = $values[3];
-                            $arr['max_time'] = $values[4];
-                            $arr['min_freq'] = $values[5];
-                            $arr['max_freq'] = $values[6];
-                            $arr['individuals'] = 1;
-                            $arr['reference_call'] = 0;
-                            $arr['comments'] = "matched template min_freq=$values[5], max_freq=$values[6], min_time=$values[3], max_time=$values[4] from recording_id=$data[recording_id] with xcorrcoeff = $values[2]";
-                            $list[] = $arr;
-                            $i = $i + 1;
+                        $arr['sound_id'] = '15';
+                        $arr['recording_id'] = $data['recording_id'];
+                        $arr['user_id'] = Auth::getUserID();
+                        $arr['creator_type'] = "template_matching";
+                        $arr['min_time'] = $values[3];
+                        $arr['max_time'] = $values[4];
+                        $arr['min_freq'] = $values[5];
+                        $arr['max_freq'] = $values[6];
+                        $arr['individuals'] = 1;
+                        $arr['reference_call'] = 0;
+                        $arr['comments'] = "matched template min_freq=$values[5], max_freq=$values[6], min_time=$values[3], max_time=$values[4] from recording_id=$data[recording_id] with xcorrcoeff = $values[2]";
+                        $list[] = $arr;
+                        $i = $i + 1;
                     }
                     (new TagProvider())->insertArr($list);
                 }
@@ -807,9 +807,9 @@ class RecordingController extends BaseController
             $str = $str . ' --sf_thresh ' . $data['sf_thresh'];
         }
         exec($str . " 2>&1", $out, $status);
+        $result = [];
         if ($status == 0) {
             $handle = fopen(ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv", "rb");
-            $result = [];
             while (!feof($handle)) {
                 $d = fgetcsv($handle);
                 $result[] = $d;
@@ -907,11 +907,10 @@ class RecordingController extends BaseController
                 break;
             }
         }
-
+        $result = [];
         if ($status == 0) {
             if (file_exists($resultPath . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav' . ".csv")) {
                 $handle = fopen($resultPath . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav' . ".csv", "rb");
-                $result = [];
                 while (!feof($handle)) {
                     $d = fgetcsv($handle);
                     $result[] = $d;

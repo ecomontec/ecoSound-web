@@ -1,10 +1,5 @@
 #!/bin/sh
 
-# Install BioSounds
-
-git clone https://github.com/kahst/BirdNET-Analyzer.git ./src/BirdNET-Analyzer
-git clone https://github.com/macaodha/batdetect2.git ./src/batdetect2
-
 docker-compose up -d
 docker-compose exec apache composer install
 docker-compose exec apache bash -c '
@@ -19,5 +14,10 @@ docker exec -i "$(docker ps -q -f ancestor=mysql)" mysql -ubiosounds -pbiosounds
 docker exec -i "$(docker ps -q -f ancestor=mysql)" mysql -ubiosounds -pbiosounds biosounds < data.sql
 docker exec -i "$(docker ps -q -f ancestor=mysql)" mysql -ubiosounds -pbiosounds biosounds < gadm.sql
 docker exec -i "$(docker ps -q -f ancestor=mysql)" mysql -ubiosounds -pbiosounds biosounds < world_seas.sql
+
+# Install BioSounds
+git clone https://github.com/kahst/BirdNET-Analyzer.git ./src/BirdNET-Analyzer
+cd ./src/BirdNET-Analyzer
+git checkout 9c2f852
 
 echo "Data imported"
