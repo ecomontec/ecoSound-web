@@ -552,10 +552,7 @@ class RecordingController extends BaseController
                 if ($out[0] == 'Empty DataFrame') {
                     return json_encode([
                         'errorCode' => 0,
-                        'data' => $this->twig->render('recording/player/maadResult.html.twig', [
-                            'title' => 'No valid data matched.',
-                            'result' => '',
-                        ])
+                        'message' => "No valid data matched.",
                     ]);
                 } else {
                     $i = 0;
