@@ -418,7 +418,7 @@
                 $('.loading-grey').toggle();
                 $('#modal-aa').modal('hide');
                 if ($('#acoustic_analysis').val() == 1) {
-                    if(minTime==0&&maxTime==fileDuration.toFixed(1)&&minFrequency==1&&maxFrequency==fileFreqMax){
+                    if (minTime == 0 && maxTime == fileDuration.toFixed(1) && minFrequency == 1 && maxFrequency == fileFreqMax) {
                         showAlert('Please zoom in before executing.')
                         e.preventDefault();
                         $('.loading-grey').toggle();
@@ -454,6 +454,7 @@
                     })
                         .done(function (result) {
                             alert(result.message)
+                            location.assign(location.pathname);
                             $('.loading-grey').toggle();
                         })
                         .fail(function (response) {
