@@ -353,7 +353,7 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
         if param != '' and param is not None:
             for p in param.split('@'):
                 parameter[p.split('?')[0]] = p.split('?')[1]
-        s_wav, fs_wav = maad.sound.load('/var/www/html/sounds/sounds/' + parameter['collection_id'] + '/' + parameter['recording_directory'] + '/' + parameter['filename'], channel=channel)
+        s_wav, fs_wav = maad.sound.load('/var/www/html/sounds/sounds/' + parameter['collection_id'] + '/' + parameter['recording_directory'] + '/' + parameter['filename'].rsplit('.', 1)[0] + '.wav', channel=channel)
         peak_th = float(parameter['peak_th'])
         peak_distance = parameter['peak_distance'] if parameter['peak_distance'] == None else float(parameter['peak_distance'])
         # zoom

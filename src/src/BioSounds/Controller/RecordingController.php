@@ -574,12 +574,11 @@ class RecordingController extends BaseController
                         $i = $i + 1;
                     }
                     (new TagProvider())->insertArr($list);
+                    return json_encode([
+                        'errorCode' => 0,
+                        'message' => "Scikit-maad template_matching found and inserted $i detections as tags.",
+                    ]);
                 }
-                return json_encode([
-                    'errorCode' => 0,
-                    'message' => "Scikit-maad template_matching found and inserted $i detections as tags.",
-                ]);
-
             } else {
                 $result = $out[count($out) - 1];
                 if ($data['channel_num'] == 1) {

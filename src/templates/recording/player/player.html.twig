@@ -453,8 +453,15 @@
                         contentType: false,
                     })
                         .done(function (result) {
-                            alert(result.message)
-                            location.assign(location.pathname);
+                            if (result.message) {
+                                alert(result.message)
+                                if (result.message.startsWith('Scikit-maad template_matching')) {
+                                    location.assign(location.pathname);
+                                }
+                            } else {
+                                $('#modalWindows').html(result.data);
+                                $("#modal-div").modal('show');
+                            }
                             $('.loading-grey').toggle();
                         })
                         .fail(function (response) {
