@@ -549,7 +549,7 @@ class RecordingController extends BaseController
         exec($str . " 2>&1", $out, $status);
         if ($status == 0 && $out[count($out) - 1] != "0") {
             if ($data['index'] == 'template_matching') {
-                if ($out[0] == 'Empty DataFrame') {
+                if ($out[0] == 'Empty DataFrame' || count($out) == 2) {
                     return json_encode([
                         'errorCode' => 0,
                         'message' => "No valid data matched.",

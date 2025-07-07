@@ -1,6 +1,6 @@
 import optparse
 import maad
-from maad import sound, rois
+from maad import sound, rois, util
 from maad.features import shape_features
 import numpy
 
@@ -357,14 +357,13 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
         peak_th = float(parameter['peak_th'])
         peak_distance = parameter['peak_distance'] if parameter['peak_distance'] == None else float(parameter['peak_distance'])
         # zoom
-        Sxx, tn, fn, ext = sound.spectrogram(s_wav, fs_wav)
-        Sxx_template, tn_template, fn_template, ext_template = sound.spectrogram(s, fs)
+        Sxx_template, _, _, _ = sound.spectrogram(s_wav, fs_wav, flims=(float(minFrequency),float(maxFrequency)), tlims=(float(minTime),float(maxTime)))
+        Sxx_audio, tn, fn, ext = sound.spectrogram(s_wav, fs_wav, flims=(float(minFrequency),float(maxFrequency)))
         # index
         xcorrcoef, rois = maad.rois.template_matching(
-            Sxx=Sxx,
+            Sxx=Sxx_audio,
             Sxx_template=Sxx_template,
             tn=tn,
-            fn=fn,
             ext=ext,
             peak_th=peak_th,
             peak_distance=peak_distance,
