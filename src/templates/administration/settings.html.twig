@@ -44,7 +44,7 @@
                     <div class="d-flex justify-content-end">
                         <div>
                             <input type="checkbox" class="form-check-input" id="shared" name="shared" {% if setting.shared %} checked {% endif %}>
-                            <label class="label" for="shared"><small>Shared Data</small></label>
+                            <label class="label" for="shared"><small>Share Data <i class="fa fa-info-circle" title="Enables discoverability of the server to other servers connected to the same host ({{ hostUrl }})" data-toggle="tooltip"></i></small></label>
                         </div>
                     </div>
                     <hr>
@@ -65,6 +65,9 @@
         </form>
     </div>
     <script>
+        $(document).ready(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+        })
         $('.btn-setting').click(function (e) {
             requestModal("{{ baseUrl }}/admin/settings/view");
             e.preventDefault();

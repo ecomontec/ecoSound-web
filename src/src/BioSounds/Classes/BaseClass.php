@@ -97,6 +97,7 @@ class BaseClass
         $this->twig->addGlobal('projectImagesUrl', PROJECT_IMAGES_URL);
         $this->twig->addGlobal('licenseImagesUrl', LICENSE_IMAGES_URL);
         $this->twig->addGlobal('baseUrl', APP_URL);
+        $this->twig->addGlobal('hostUrl', HOST_URL);
         $this->twig->addGlobal('Host', $_SERVER['HTTP_HOST']);
         $this->twig->addGlobal('project_name', Utils::getSetting(Setting::PROJECT_NAME));
         $this->twig->addGlobal('project_description', Utils::getSetting(Setting::PROJECT_DESCRIPTION));
