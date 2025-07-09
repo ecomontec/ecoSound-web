@@ -398,12 +398,15 @@
 
         var marker = L.marker([{{ api.latitude }}, {{ api.longitude }}], {
             icon: CustomIcon,
-        }).addTo(map).bindPopup("<b>{{ api.server_name }}</b><br>latitude: {{ api.latitude }} longitude:{{ api.longitude }}");
+        }).addTo(map).bindPopup("<b>{{ api.server_name }}</b>");
 
         bounds.extend([{{ api.latitude }}, {{ api.longitude }}]);
         {% endfor %}
 
-        map.fitBounds(bounds);
+        map.fitBounds(bounds
+            , {
+                padding: [30, 30]
+            });
 
         var isShiftDown = false;
 
