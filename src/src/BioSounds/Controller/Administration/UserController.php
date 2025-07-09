@@ -33,7 +33,7 @@ class UserController extends BaseController
         if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
-        $total = count((new User())->getList());
+        $total = count((new User())->getUserList());
         $start = $_POST['start'];
         $length = $_POST['length'];
         $search = $_POST['search']['value'];
@@ -249,7 +249,7 @@ class UserController extends BaseController
         }
         $Als[] = $colArr;
 
-        $List = (new User())->getList();
+        $List = (new User())->getUserList();
         foreach ($List as $Item) {
             unset($Item['password']);
             $Als[] = $Item;

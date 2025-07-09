@@ -104,6 +104,22 @@
             </div>
         </div>
     </section>
+    {% if apis and setting.shared %}
+        <section class="main-brand-area bg-lightblue">
+            <div class="brand-area mt-5 mb-5">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="section-slider-title-wrapper-title text-center t-darkgreen mb-5">EcoSound-web Network</div>
+                            <div class="row mb-5" id="sc-map">
+                                <div id="map" class="col-lg-12" style="height: 600px" title="Hold down Shift and scroll the mouse wheel to zoom the map."></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    {% endif %}
     <div class="bg-lightblue">
         <div class="section-slider-title-wrapper-title text-center t-darkgreen mb-3">Sponsored By</div>
     </div>
@@ -350,9 +366,72 @@
             </div>
         </div>
     </section>
+
 {% endblock %}
 
 {% block header %}
     {{ parent() }}
+    <link rel="stylesheet" href="{{ baseUrl }}/assets/css/leaflet.css"/>
+{% endblock %}
+
+{% block scripts %}
+    {{ parent() }}
     <script src="{{ baseUrl }}/templates/js/index.js?v=1.3" defer></script>
+    <script src="{{ baseUrl }}/assets/js/leaflet-src.js"></script>
+    <script>
+        {% if apis and setting.shared %}
+        var map = L.map('map', {worldCopyJump: true, scrollWheelZoom: false}).setView([0, 180], 2);
+
+        var tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            minZoom: 1,
+            maxZoom: 18,
+        }).addTo(map);
+
+        var bounds = L.latLngBounds([]);
+
+        {% for api in apis %}
+        var CustomIcon = L.divIcon({
+            className: 'custom-marker1',
+            iconSize: [25, 41],
+            iconAnchor: [12, 12]
+        });
+
+        var marker = L.marker([{{ api.latitude }}, {{ api.longitude }}], {
+            icon: CustomIcon,
+        }).addTo(map).bindPopup("<b>{{ api.server_name }}</b>");
+
+        bounds.extend([{{ api.latitude }}, {{ api.longitude }}]);
+        {% endfor %}
+
+        map.fitBounds(bounds
+            , {
+                padding: [30, 30]
+            });
+
+        var isShiftDown = false;
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Shift') {
+                isShiftDown = true;
+            }
+        });
+
+        document.addEventListener('keyup', function (e) {
+            if (e.key === 'Shift') {
+                isShiftDown = false;
+            }
+        });
+
+        map.getContainer().addEventListener('wheel', function (e) {
+            if (isShiftDown) {
+                e.preventDefault();
+                if (e.deltaY > 0) {
+                    map.zoomOut();
+                } else {
+                    map.zoomIn();
+                }
+            }
+        });
+        {% endif %}
+    </script>
 {% endblock %}

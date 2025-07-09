@@ -206,6 +206,10 @@
             $('#saveButton').removeAttr('disabled');
             $('.type-btn').removeAttr('disabled');
         });
+        $('#sound_id').on('changed.bs.select', function () {
+            $('#saveButton').removeAttr('disabled');
+            $('.type-btn').removeAttr('disabled');
+        });
         $('#reviewForm').on('click', 'button', function () {
             $('#saveButton').removeAttr('disabled');
             $('.type-btn').removeAttr('disabled');

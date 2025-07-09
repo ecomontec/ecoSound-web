@@ -305,7 +305,11 @@
             selectorBack: true,
         }).addTo(map);
         mcg.addTo(map);
-        map.fitBounds(mcg.getBounds());
+        map.fitBounds(mcg.getBounds()
+            , {
+                padding: [30, 30]
+            }
+        );
 
         function throttle(func, wait) {
             let timeout = null;

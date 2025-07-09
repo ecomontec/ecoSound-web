@@ -217,16 +217,17 @@ function asyncRequest(type, href, data = [], showMessage = false, showLoading = 
             }
         })
         .fail(function (response) {
-            if (response.status === 401) {
-                //showAlert('You are not authenticated. Please, log in.');
-                //window.location.href = baseUrl;
+            if (response.status != 0) {
+                if (response.status === 401) {
+                    //showAlert('You are not authenticated. Please, log in.');
+                    //window.location.href = baseUrl;
+                }
+                if (!response.responseJSON) {
+                    showAlert('Error ' + response.message);
+                    return;
+                }
+                showAlert(response.responseJSON.message);
             }
-
-            if (!response.responseJSON) {
-                showAlert('Error ' + response.message);
-                return;
-            }
-            showAlert(response.responseJSON.message);
         })
         .always(function () {
             if (showLoading) {

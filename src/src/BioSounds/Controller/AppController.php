@@ -3,6 +3,8 @@
 namespace BioSounds\Controller;
 
 use BioSounds\Classes\BaseClass;
+use BioSounds\Entity\Api;
+use BioSounds\Entity\Setting;
 use BioSounds\Entity\User;
 use BioSounds\Exception\InvalidActionException;
 use BioSounds\Listener\Exception\ApiExceptionListener;
@@ -47,6 +49,8 @@ class AppController extends BaseClass
                 'recordings' => (new RecordingProvider())->getCount(),
                 'users' => count((new User())->getAll()),
                 'tags' => (new TagProvider())->getAll(),
+                'apis' => (new API())->getApis(),
+                'setting' => (new Setting())->getList(),
             ]);
         }
 

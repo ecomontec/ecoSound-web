@@ -280,7 +280,11 @@
                 col_js({{ project.id }}, site)
             }
             if (isChange == 1) {
-                map.fitBounds(mcg.getBounds());
+                map.fitBounds(mcg.getBounds()
+                    , {
+                        padding: [30, 30]
+                    }
+                );
             }
         }, 500);
 

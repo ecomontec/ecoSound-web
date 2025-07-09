@@ -548,31 +548,64 @@ class RecordingController extends BaseController
         }
         exec($str . " 2>&1", $out, $status);
         if ($status == 0 && $out[count($out) - 1] != "0") {
-            $result = $out[count($out) - 1];
-            if ($data['channel_num'] == 1) {
-                $channel = 'Mono';
-            } elseif ($data['channel'] == 2) {
-                $channel = 'Right';
+            if ($data['index'] == 'template_matching') {
+                if ($out[0] == 'Empty DataFrame' || count($out) == 2) {
+                    return json_encode([
+                        'errorCode' => 0,
+                        'message' => "No valid data matched.",
+                    ]);
+                } else {
+                    $i = 0;
+                    array_shift($out);
+                    foreach ($out as $line) {
+                        $values = preg_split('/\s+/', trim($line));
+                        $arr['sound_id'] = '15';
+                        $arr['recording_id'] = $data['recording_id'];
+                        $arr['user_id'] = Auth::getUserID();
+                        $arr['creator_type'] = "template_matching";
+                        $arr['min_time'] = $values[3];
+                        $arr['max_time'] = $values[4];
+                        $arr['min_freq'] = $values[5];
+                        $arr['max_freq'] = $values[6];
+                        $arr['individuals'] = 1;
+                        $arr['reference_call'] = 0;
+                        $arr['comments'] = "matched template min_freq=$values[5], max_freq=$values[6], min_time=$values[3], max_time=$values[4] from recording_id=$data[recording_id] with xcorrcoeff = $values[2]";
+                        $list[] = $arr;
+                        $i = $i + 1;
+                    }
+                    (new TagProvider())->insertArr($list);
+                    return json_encode([
+                        'errorCode' => 0,
+                        'message' => "Scikit-maad template_matching found and inserted $i detections as tags.",
+                    ]);
+                }
             } else {
-                $channel = 'Left';
-            }
-            if ($data['index'] == '') {
-                return $result;
-            } else {
-                return json_encode([
-                    'errorCode' => 0,
-                    'data' => $this->twig->render('recording/player/maadResult.html.twig', [
-                        'title' => $data['index'],
-                        'result' => $result,
-                        'recording_id' => $data['recording_id'],
-                        'index_id' => $data['index_id'],
-                        'min_time' => $data['min_time'],
-                        'max_time' => $data['max_time'],
-                        'min_frequency' => $data['min_frequency'],
-                        'max_frequency' => $data['max_frequency'],
-                        'param' => substr('Channel?' . $channel . '@' . $data['param'], 0, -1),
-                    ])
-                ]);
+                $result = $out[count($out) - 1];
+                if ($data['channel_num'] == 1) {
+                    $channel = 'Mono';
+                } elseif ($data['channel'] == 2) {
+                    $channel = 'Right';
+                } else {
+                    $channel = 'Left';
+                }
+                if ($data['index'] == '') {
+                    return $result;
+                } else {
+                    return json_encode([
+                        'errorCode' => 0,
+                        'data' => $this->twig->render('recording/player/maadResult.html.twig', [
+                            'title' => $data['index'],
+                            'result' => $result,
+                            'recording_id' => $data['recording_id'],
+                            'index_id' => $data['index_id'],
+                            'min_time' => $data['min_time'],
+                            'max_time' => $data['max_time'],
+                            'min_frequency' => $data['min_frequency'],
+                            'max_frequency' => $data['max_frequency'],
+                            'param' => substr('Channel?' . $channel . '@' . $data['param'], 0, -1),
+                        ])
+                    ]);
+                }
             }
         } else {
             return json_encode([
@@ -770,9 +803,9 @@ class RecordingController extends BaseController
             $str = $str . ' --sf_thresh ' . $data['sf_thresh'];
         }
         exec($str . " 2>&1", $out, $status);
+        $result = [];
         if ($status == 0) {
             $handle = fopen(ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv", "rb");
-            $result = [];
             while (!feof($handle)) {
                 $d = fgetcsv($handle);
                 $result[] = $d;
@@ -870,11 +903,10 @@ class RecordingController extends BaseController
                 break;
             }
         }
-
+        $result = [];
         if ($status == 0) {
             if (file_exists($resultPath . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav' . ".csv")) {
                 $handle = fopen($resultPath . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav' . ".csv", "rb");
-                $result = [];
                 while (!feof($handle)) {
                     $d = fgetcsv($handle);
                     $result[] = $d;

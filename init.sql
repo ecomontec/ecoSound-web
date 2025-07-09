@@ -486,6 +486,17 @@ CREATE TABLE `queue`
     `warning`  text COLLATE utf8_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+CREATE TABLE `api`
+(
+    `api_id`      int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `api`  varchar(255) COLLATE utf8_unicode_ci,
+    `server_name`  varchar(255) COLLATE utf8_unicode_ci,
+    `longitude` double DEFAULT NULL,
+    `latitude`  double DEFAULT NULL,
+    `shared` int(1) DEFAULT 0,
+    `last_updated` datetime
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
 --
 -- Indexes for table `collection`
 --

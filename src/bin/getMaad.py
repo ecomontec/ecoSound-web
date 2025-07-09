@@ -1,6 +1,6 @@
 import optparse
 import maad
-from maad import sound, rois
+from maad import sound, rois, util
 from maad.features import shape_features
 import numpy
 
@@ -346,6 +346,31 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
         RAOQ = maad.features.frequency_raoq(S_power, fn, bin_step=bin_step)
         # print
         print("RAOQ?" + str(RAOQ))
+    elif index_type == "template_matching":
+        # param
+        parameter['peak_th'] = "0.5"
+        parameter['peak_distance'] = None
+        if param != '' and param is not None:
+            for p in param.split('@'):
+                parameter[p.split('?')[0]] = p.split('?')[1]
+        s_wav, fs_wav = maad.sound.load('/var/www/html/sounds/sounds/' + parameter['collection_id'] + '/' + parameter['recording_directory'] + '/' + parameter['filename'].rsplit('.', 1)[0] + '.wav', channel=channel)
+        peak_th = float(parameter['peak_th'])
+        peak_distance = parameter['peak_distance'] if parameter['peak_distance'] == None else float(parameter['peak_distance'])
+        # zoom
+        Sxx_template, _, _, _ = sound.spectrogram(s_wav, fs_wav, flims=(float(minFrequency),float(maxFrequency)), tlims=(float(minTime),float(maxTime)))
+        Sxx_audio, tn, fn, ext = sound.spectrogram(s_wav, fs_wav, flims=(float(minFrequency),float(maxFrequency)))
+        # index
+        xcorrcoef, rois = maad.rois.template_matching(
+            Sxx=Sxx_audio,
+            Sxx_template=Sxx_template,
+            tn=tn,
+            ext=ext,
+            peak_th=peak_th,
+            peak_distance=peak_distance,
+            display=True
+        )
+        # print
+        print(rois)
     else:
         Sxx_power, tn, fn, ext = maad.sound.spectrogram(s, fs)
         result = numpy.where(Sxx_power == numpy.max(Sxx_power))

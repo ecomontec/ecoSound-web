@@ -91,7 +91,11 @@ VALUES ('allow_upload', '0'),
        ('use_googlemaps', '0'),
        ('use_tags', '0'),
        ('use_xml', '1'),
-       ('wav_toflac', '1');
+       ('wav_toflac', '1'),
+       ('server_name', 'test'),
+       ('shared', '0'),
+       ('latitude', ''),
+       ('longitude', '');
 
 --
 -- Dumping data for table `sound_type`
@@ -357,7 +361,9 @@ VALUES ('biophony', 'fish chorus'),
        ('geophony', 'earthquake'),
        ('geophony', 'rain'),
        ('geophony', ''),
-       ('unknown', 'test unknown');
+       ('unknown', 'test unknown'),
+       ('other', 'template matching result'),
+       ('other', '');
 
 --
 -- Dumping data for table `recorder`
