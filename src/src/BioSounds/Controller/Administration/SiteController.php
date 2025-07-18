@@ -6,6 +6,7 @@ use BioSounds\Controller\BaseController;
 use BioSounds\Entity\IucnGet;
 use BioSounds\Entity\Site;
 use BioSounds\Entity\SiteCollection;
+use BioSounds\Entity\User;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\ProjectProvider;
@@ -42,6 +43,9 @@ class SiteController extends BaseController
             $projectId = $projects[0]->getId();
         }
         $collections = (new CollectionProvider())->getByProject($projectId, 0);
+        if (empty($colId) && $collections && !(new User())->isProjectManageByProject(Auth::getUserID(), $projectId)) {
+            $collectionId = $collections[0]->getId();
+        }
         $arr = [];
         $iucn_gets = (new IucnGet())->getAllIucnGets();
         foreach ($iucn_gets as $iucn_get) {
