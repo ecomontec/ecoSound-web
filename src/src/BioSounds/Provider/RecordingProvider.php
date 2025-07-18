@@ -456,9 +456,7 @@ class RecordingProvider extends AbstractProvider
                         <input id='old_name$value[recording_id]' type='hidden' value='$value[username]'>
                         <input id='directory$value[recording_id]' type='hidden' value='$value[directory]'>
                         <input id='filename$value[recording_id]' type='hidden' value='$value[filename]'>
-                        <input id='channel_num$value[recording_id]' type='hidden' value='$value[channel_num]' >
                         <input id='path$value[recording_id]' type='hidden' value='$value[path]' >
-                        <input id='max_time$value[recording_id]' type='hidden' value='$value[duration]' >
                         <input id='max_freq$value[recording_id]' type='hidden' value='" . ($value['sampling_rate'] / 2) . "'>";
                 $arr[$key][] = $value['data_type'];
                 $arr[$key][] = $value['filename'];
@@ -467,6 +465,17 @@ class RecordingProvider extends AbstractProvider
                 $arr[$key][] = "<select id='site_id$value[recording_id]' name='site_id' style='width:120px;' class='form-control form-control-sm'><option value='0' ></option>$str_site</select>";
                 $arr[$key][] = "<select name='recorder_id' id='recorder_$value[recording_id]' style='width:250px;' class='form-control form-control-sm'><option value='0' ></option>$str_recorder</select>";
                 $arr[$key][] = "<select name='microphone_id' id='microphone_$value[recording_id]' style='width:250px;' class='form-control form-control-sm'><option value='$value[microphone_id]' selected>$value[microphone]</option></select>";
+                if ($value['data_type'] == 'audio data') {
+                      	$arr[$key][] = $value['sampling_rate'];
+                	$arr[$key][] = $value['duration'];
+                	$arr[$key][] = $value['channel_num'];
+                	$arr[$key][] = $value['bitdepth'];
+                	} else {
+                	$arr[$key][] = "<input type='number' class='form-control form-control-sm' name='sampling_rate' data-id='$value[recording_id]' value='$value[sampling_rate]' min='0' step='1'><small id='samplingRateValid$value[recording_id]' class='text-danger'></small>";
+                	$arr[$key][] = "<input type='number' class='form-control form-control-sm' name='duration' data-id='$value[recording_id]' value='$value[duration]' min='0'><small id='durationValid$value[recording_id]' class='text-danger'></small>";
+                	$arr[$key][] = "<input type='number' class='form-control form-control-sm' name='channel_num' data-id='$value[recording_id]' value='$value[channel_num]' min='1' step='1'><small id='channelNumValid$value[recording_id]' class='text-danger'></small>";
+                	$arr[$key][] = "<input type='number' class='form-control form-control-sm' name='bitdepth' data-id='$value[recording_id]' value='$value[bitdepth]' min='0' step='1'><small id='bitdepthValid$value[recording_id]' class='text-danger'></small>";
+                	}
                 $arr[$key][] = "<input type='number' class='form-control form-control-sm' name='recording_gain' data-id='$value[recording_id]' value='$value[recording_gain]' min='1' step='1'><small id='recordingGainValid$value[recording_id]' class='text-danger'></small>";
                 $arr[$key][] = "<select name='license_id' style='width:140px;' class='form-control form-control-sm'><option value='0'></option>$str_license</select>";
                 $arr[$key][] = "<select name='type' style='width:100px;' class='form-control form-control-sm'>
@@ -488,7 +497,7 @@ class RecordingProvider extends AbstractProvider
                 $arr[$key][] = "<input type='time' class='form-control form-control-sm' title='Time' name='file_time' min='00:00:00' max='23:59:59' step='1' value='$value[file_time]'>";
                 if ($value['data_type'] == 'audio data') {
                     if ($fileMeta['fileformat'] == 'ogg') {
-                        $arr[$key][] = isset($fileMeta['tags']['vorbiscomment']['title']) ? $fileMeta['tags']['vorbiscomment']['title'][0] . ' (Vorbis) ' : '';
+			$arr[$key][] = isset($fileMeta['tags']['vorbiscomment']['title']) ? $fileMeta['tags']['vorbiscomment']['title'][0] . ' (Vorbis) ' : '';
                         $arr[$key][] = isset($fileMeta['tags']['vorbiscomment']['artist']) ? $fileMeta['tags']['vorbiscomment']['artist'][0] . ' (Vorbis) ' : '';
                         $arr[$key][] = isset($fileMeta['tags']['vorbiscomment']['album']) ? $fileMeta['tags']['vorbiscomment']['album'][0] . ' (Vorbis) ' : '';
                         $arr[$key][] = isset($fileMeta['tags']['vorbiscomment']['date']) ? $fileMeta['tags']['vorbiscomment']['date'][0] . ' (Vorbis) ' : '';
