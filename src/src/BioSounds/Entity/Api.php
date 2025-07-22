@@ -81,4 +81,10 @@ class Api extends BaseProvider
         $this->database->prepareQuery("UPDATE api SET $fields WHERE api = :api");
         return $this->database->executeUpdate($values);
     }
+
+    public function truncate()
+    {
+        $this->database->prepareQuery('TRUNCATE TABLE api;');
+        return $this->database->executeSelect();
+    }
 }
