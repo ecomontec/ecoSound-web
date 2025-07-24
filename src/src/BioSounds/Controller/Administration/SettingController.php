@@ -22,9 +22,11 @@ class SettingController extends BaseController
     {
         echo Utils::getSetting('license');
 
-        if (!isset($_SESSION['syncApi']) || $_SESSION['syncApi'] < strtotime('today')) {
-            $data = (new Api())->getApis();
-            $this->synchronize($data);
+        if (!$this->isLocalAddress(APP_URL) && HOST_URL != APP_URL && (!isset($_SESSION['syncApi']) || $_SESSION['syncApi'] < strtotime('today'))) {
+            $url = HOST_URL . "/api/admin/settings/api";
+            $contents = file_get_contents($url);
+            $apis = json_decode($contents, true);
+            $this->synchronize($apis);
             $_SESSION['syncApi'] = strtotime('today');
         }
 
@@ -72,7 +74,11 @@ class SettingController extends BaseController
 
             $options = [
                 'http' => [
-                    'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+                    'header' => [
+                        "Host: " . parse_url(HOST_URL)['host'],
+                        "Content-Type: application/x-www-form-urlencoded",
+                        "Content-Length: " . strlen($data),
+                    ],
                     'method' => 'POST',
                     'content' => $data,
                 ],
@@ -127,12 +133,13 @@ class SettingController extends BaseController
 
     public function synchronize($apis)
     {
-        $apiProvider = new Api();
-        foreach ($apis as $api) {
-            if ($apiProvider->isValidById($api['api_id'])) {
-                $apiProvider->updateApi($api);
-            } else {
-                $apiProvider->insertApi($api);
+        if (HOST_URL != APP_URL) {
+            $apiProvider = new Api();
+            $apiProvider->truncate();
+            if (!empty($apis)) {
+                foreach ($apis as $api) {
+                    $apiProvider->insertApi($api);
+                }
             }
         }
     }
