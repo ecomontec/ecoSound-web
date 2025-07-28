@@ -215,3 +215,11 @@ $('.player_img').on('click', function (e) {
         $("#time_sec_div").html(Math.round(minTime + currentTime));
     }
 });
+
+$(document).on('keydown', function (e) {
+    if (e.code === 'Space') {
+        if ($(e.target).is('input, textarea')) return;
+        e.preventDefault();
+        $('#play').trigger('click');
+    }
+});

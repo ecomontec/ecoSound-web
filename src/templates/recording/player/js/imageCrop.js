@@ -68,9 +68,38 @@ $(function () {
         }, 200);
     })
 
+    let canExec = true;
     $(document).on('keydown', function (e) {
         if ($('.jcrop-holder') && e.key == 'Control' && $('#play').attr('data-playing') === 'false') {
             myJcrop.destroy()
+        }
+        if (canExec) {
+            if (e.code === 'Enter' && !$('#modal-div').hasClass('show')) {
+                const coords = myJcrop.tellSelect() || {};
+                if (coords.w > 0 && coords.h > 0) {
+                    e.preventDefault();
+                    $('.js-new-tag').trigger('click');
+
+                    canExec = false;
+                    setTimeout(() => canExec = true, 1000);
+                }
+            }
+            if (e.ctrlKey && e.key === 'ArrowLeft' && !$('#shift-left').hasClass('a-disabled')) {
+                e.preventDefault();
+                if (!canExec) return;
+                $('#shift-left').trigger('click');
+
+                canExec = false;
+                setTimeout(() => canExec = true, 10000);
+            }
+            if (e.ctrlKey && e.key === 'ArrowRight' && !$('#shift-right').hasClass('a-disabled')) {
+                e.preventDefault();
+                if (!canExec) return;
+                $('#shift-right').trigger('click');
+
+                canExec = false;
+                setTimeout(() => canExec = true, 10000);
+            }
         }
     });
     $(document).on('keyup', function (e) {
