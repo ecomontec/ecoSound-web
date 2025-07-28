@@ -63,9 +63,28 @@ $(function () {
         resizeTimer = setTimeout(function () {
             myJcrop.destroy()
             myJcrop = img_jcrop()
+            playerCursor.style.left = (currentTime < 0 ? 0 : currentTime / selectionDuration) * specWidth + 'px';
             $('.loading-grey').hide();
         }, 200);
     })
+
+    $(document).on('keydown', function (e) {
+        if ($('.jcrop-holder') && e.key == 'Control' && $('#play').attr('data-playing') === 'false') {
+            myJcrop.destroy()
+        }
+    });
+    $(document).on('keyup', function (e) {
+        if (!$('.jcrop-holder').length && e.key == 'Control' && $('#play').attr('data-playing') === 'false') {
+            myJcrop = $.Jcrop('#cropbox', {
+                boxWidth: $('#player_box').width(),
+                boxHeight: 400,
+                onChange: setSelectionData,
+                onSelect: selectData,
+                addClass: 'custom',
+                keySupport: false,
+            });
+        }
+    });
 })
 
 function img_jcrop() {
@@ -82,6 +101,7 @@ function img_jcrop() {
         onChange: setSelectionData,
         onSelect: selectData,
         addClass: 'custom',
+        keySupport: false,
     });
     $("#myCanvas > div.jcrop-holder.custom > div.jcrop-tracker").height('404px')
     $("#myCanvas > div.jcrop-holder.custom > div:nth-child(1) > div:nth-child(1) > img").height('400px')

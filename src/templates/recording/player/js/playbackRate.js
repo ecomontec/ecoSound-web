@@ -195,3 +195,23 @@ function resetCursor() {
 function moveCursor(time) {
     playerCursor.style.left = (time < 0 ? 0 : time / selectionDuration) * specWidth + 'px';
 }
+
+$('.player_img').on('click', function (e) {
+    if (e.ctrlKey && $('#play').attr('data-playing') === 'false') {
+        let offset = $(this).offset();
+        let clickX = e.pageX - offset.left;
+
+        let clickedTime = clickX / specWidth * selectionDuration;
+        if (clickedTime < 0) clickedTime = 0;
+        if (clickedTime > selectionDuration) clickedTime = selectionDuration;
+
+        currentTime = clickedTime;
+        pauseTime = currentTime;
+        elapsedRateTime = 0;
+        seek = 0;
+
+        moveCursor(currentTime);
+
+        $("#time_sec_div").html(Math.round(minTime + currentTime));
+    }
+});

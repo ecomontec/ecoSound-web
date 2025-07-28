@@ -3,8 +3,8 @@
     <div id="player_box" class="col-9">
         <div id="myCanvas" class="canvas">
             {% include 'recording/player/tagBoxes.html.twig' with {'tags': player.tags, 'show_tags': player.isShowTags} %}
-            <div id="playerCursor" class="player-line"></div>
-            <img class="player_img" src="{{ player.imageFilePath }}" id="cropbox"/>
+            <div id="playerCursor" class="player-line" title="Drag or Ctrl+mouse click to place cursor"></div>
+            <img class="player_img" src="{{ player.imageFilePath }}" id="cropbox" draggable="false"/>
         </div>
         <div class="row no-gutters mt-1">
             <div class="col-auto mr-auto form-inline">
