@@ -13,7 +13,7 @@ class TagReviewProvider extends AbstractProvider
 {
     const TABLE_NAME = "tag_review";
 
-    public function getReview(string $collectionId): array
+    public function getReview(string $collectionId, string $recordingId): array
     {
         $sql = "SELECT tr.*,r.recording_id,r.`name` AS recording,u.`name` AS username,trs.`name` as state,s.binomial as specie FROM tag_review tr 
                 LEFT JOIN tag t ON t.tag_id = tr.tag_id 
@@ -24,11 +24,14 @@ class TagReviewProvider extends AbstractProvider
         if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
             $sql .= " AND tr.user_id = " . Auth::getUserID();
         }
+        if ($recordingId) {
+            $sql .= " AND r.recording_id = $recordingId";
+        }
         $this->database->prepareQuery($sql);
         return $this->database->executeSelect();
     }
 
-    public function getFilterCount(string $collectionId, string $search): int
+    public function getFilterCount(string $collectionId, string $recordingId, string $search): int
     {
         $sql = "SELECT tr.*,r.`name` AS recording,u.`name` AS username,trs.`name` as state,s.binomial as specie FROM tag_review tr 
                 LEFT JOIN tag t ON t.tag_id = tr.tag_id 
@@ -38,6 +41,9 @@ class TagReviewProvider extends AbstractProvider
                 LEFT JOIN species s ON s.species_id = tr.species_id WHERE r.col_id = $collectionId";
         if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
             $sql .= " AND tr.user_id = " . Auth::getUserID();
+        }
+        if ($recordingId) {
+            $sql .= " AND r.recording_id = $recordingId";
         }
         if ($search) {
             $sql .= " AND CONCAT(IFNULL(tr.tag_id,''), IFNULL(r.`name`,''), IFNULL(u.`name`,''), IFNULL(trs.`name`,''), IFNULL(s.binomial,''), IFNULL(tr.note,'')) LIKE '%$search%' ";
@@ -54,7 +60,7 @@ class TagReviewProvider extends AbstractProvider
         return $this->database->executeSelect();
     }
 
-    public function getListByPage(string $collectionId, string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
+    public function getListByPage(string $collectionId, string $recordingId, string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
     {
         $arr = [];
         $sql = "SELECT tr.*,t.species_id AS tag_species,t.min_time,t.max_time,t.min_freq,t.max_freq,r.`name` AS recording,r.recording_id,u.`name` AS username,trs.`name` as state,s.binomial as specie FROM tag_review tr 
@@ -65,6 +71,9 @@ class TagReviewProvider extends AbstractProvider
                 LEFT JOIN species s ON s.species_id = tr.species_id WHERE r.col_id = $collectionId";
         if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
             $sql .= " AND tr.user_id = " . Auth::getUserID();
+        }
+        if ($recordingId) {
+            $sql .= " AND r.recording_id = $recordingId";
         }
         if ($search) {
             $sql .= " AND CONCAT(IFNULL(tr.tag_id,''), IFNULL(r.`name`,''), IFNULL(u.`name`,''), IFNULL(trs.`name`,''), IFNULL(s.binomial,''), IFNULL(tr.note,'')) LIKE '%$search%' ";

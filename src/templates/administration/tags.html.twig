@@ -13,11 +13,20 @@
                             </option>
                         {% endfor %}
                     </select>
-                    <label for="collId" class="ml-3">Collection</label>
+                    <label for="colId" class="ml-3">Collection</label>
                     <select id="colId" name="colId" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
                         {% for collection in collections %}
                             <option value="{{ collection.id }}" {{ collection.id == colId ? 'selected' }}>
                                 {{ collection.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <label for="recordingId" class="ml-3">Recording</label>
+                    <select id="recordingId" name="recordingId" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
+                        <option></option>
+                        {% for recording in recordings %}
+                            <option value="{{ recording.recording_id }}" {{ recording.recording_id == recordingId ? 'selected' }}>
+                                {{ recording.name }}
                             </option>
                         {% endfor %}
                     </select>
@@ -107,14 +116,15 @@
     <script>
         $(document).ready(function () {
             $('#tagsTable').show()
+            let url
             let table = $('#tagsTable').DataTable({
                 "processing": true,
                 "serverSide": true,
                 "ajax": {
-                    "url": '{{ baseUrl }}/admin/tagMgr/getListByPage/{{ colId }}',
+                    "url": '{{ baseUrl }}/admin/tagMgr/getListByPage/{{ colId }}/{{ recordingId }}',
                     "type": 'POST',
                     "error": function (xhr, error, thrown) {
-                        if (xhr.status == 400 || xhr.status == 404 ||xhr.status == 500) {
+                        if (xhr.status == 400 || xhr.status == 404 || xhr.status == 500) {
                             location.reload();
                         }
                     }
@@ -191,9 +201,14 @@
             });
             $('#projectId').change(function () {
                 $('#colId').val("")
+                $('#recordingId').val("")
                 $("#collectionForm").submit();
             });
             $('#colId').change(function () {
+                $('#recordingId').val("")
+                $("#collectionForm").submit();
+            });
+            $('#recordingId').change(function () {
                 $("#collectionForm").submit();
             });
             $('#tagsTable tbody').on('click', 'input[name=distance_not_estimable]', function () {

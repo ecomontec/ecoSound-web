@@ -304,7 +304,7 @@ class TagProvider extends AbstractProvider
         return $data;
     }
 
-    public function getTag(string $collectionId): array
+    public function getTag(string $collectionId, string $recordingId): array
     {
         $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass FROM tag t 
             INNER JOIN recording r ON r.recording_id = t.recording_id
@@ -316,12 +316,15 @@ class TagProvider extends AbstractProvider
         if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
             $sql .= " AND t.user_id = " . Auth::getUserID();
         }
+        if ($recordingId) {
+            $sql .= " AND r.recording_id = $recordingId";
+        }
         $sql .= ' ORDER BY t.tag_id';
         $this->database->prepareQuery($sql);
         return $this->database->executeSelect();
     }
 
-    public function getFilterCount(string $collectionId, string $search): int
+    public function getFilterCount(string $collectionId, string $recordingId, string $search): int
     {
         $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass FROM tag t 
             INNER JOIN recording r ON r.recording_id = t.recording_id
@@ -334,6 +337,9 @@ class TagProvider extends AbstractProvider
         if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
             $sql .= " AND t.user_id = " . Auth::getUserID();
         }
+        if ($recordingId) {
+            $sql .= " AND r.recording_id = $recordingId";
+        }
         if ($search) {
             $sql .= " AND CONCAT(IFNULL(t.tag_id,''), IFNULL(sound.soundscape_component,''), IFNULL(sound.sound_type,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(t.creator_type,''), IFNULL(t.confidence,''), IFNULL(t.min_time,''), IFNULL(t.max_time,''), IFNULL(t.min_freq,''), IFNULL(t.max_freq,''), IFNULL(s.binomial,''), IFNULL(t.sound_distance_m,''), IFNULL(t.individuals,''), IFNULL(st.name,''), IFNULL(t.comments,''), IFNULL(t.creation_date,'')) LIKE '%$search%' ";
         }
@@ -343,7 +349,7 @@ class TagProvider extends AbstractProvider
         return $count;
     }
 
-    public function getListByPage(string $collectionId, string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
+    public function getListByPage(string $collectionId, string $recordingId, string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
     {
         $arr = [];
         $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass FROM tag t 
@@ -356,6 +362,9 @@ class TagProvider extends AbstractProvider
             WHERE c.collection_id = $collectionId ";
         if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
             $sql .= " AND t.user_id = " . Auth::getUserID();
+        }
+        if ($recordingId) {
+            $sql .= " AND r.recording_id = $recordingId";
         }
         if ($search) {
             $sql .= " AND CONCAT(IFNULL(t.tag_id,''), IFNULL(sound.soundscape_component,''), IFNULL(sound.sound_type,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(t.creator_type,''), IFNULL(t.confidence,''), IFNULL(t.min_time,''), IFNULL(t.max_time,''), IFNULL(t.min_freq,''), IFNULL(t.max_freq,''), IFNULL(s.binomial,''), IFNULL(t.sound_distance_m,''), IFNULL(t.individuals,''), IFNULL(st.name,''), IFNULL(t.comments,''), IFNULL(t.creation_date,'')) LIKE '%$search%' ";

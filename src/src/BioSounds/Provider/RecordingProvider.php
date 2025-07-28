@@ -232,6 +232,20 @@ class RecordingProvider extends AbstractProvider
         return $this->database->executeSelect()[0]['count'];
     }
 
+    public function getHasTags($col_id)
+    {
+        $query = 'SELECT r.* FROM recording r JOIN tag t ON r.recording_id = t.recording_id WHERE r.col_id = :col_id GROUP BY r.recording_id';
+        $this->database->prepareQuery($query);
+        return $this->database->executeSelect([':col_id' => $col_id]);
+    }
+
+    public function getHasReviewTags($col_id)
+    {
+        $query = 'SELECT r.* FROM recording r JOIN tag_review tr ON r.recording_id = tr.recording_id WHERE tr.col_id = :col_id GROUP BY r.recording_id';
+        $this->database->prepareQuery($query);
+        return $this->database->executeSelect([':col_id' => $col_id]);
+    }
+
     public function getCountByCollection(string $id, string $site = null)
     {
         $query = "SELECT COUNT(*) AS count FROM recording ";
