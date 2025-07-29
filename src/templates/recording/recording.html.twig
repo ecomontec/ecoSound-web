@@ -94,13 +94,13 @@
                     </a>
                     <div class="dropdown-menu">
                         <div class="form-inline p-2">
-                            <a class="zoom-btn" href="#" id="btn-zoom-in">
+                            <a class="zoom-btn" href="#" id="btn-zoom-in" title=" Shift + mouse wheel to zoom in">
                                 <i class="fa-solid fa-magnifying-glass-plus"></i>
                             </a>
                             <div>Zoom in <input class="form-control form-control-sm" id="zoom_in_input" type="number" style="width: 50px;" value="50" required> %</div>
                         </div>
                         <div class="form-inline p-2">
-                            <a class="zoom-btn" href="#" id="btn-zoom-out">
+                            <a class="zoom-btn" href="#" id="btn-zoom-out" title="Shift + mouse wheel to zoom out">
                                 <i class="fa-solid fa-magnifying-glass-minus"></i>
                             </a>
                             <div>Zoom out <input class="form-control form-control-sm" id="zoom_out_input" type="number" style="width: 50px;" value="50" required> %</div>
@@ -151,12 +151,12 @@
 
 {% block header %}
     {{ parent() }}
-    <script src="{{ baseUrl }}/templates/recording/js/recording.js?v=1.0" defer></script>
+    <script src="{{ baseUrl }}/templates/recording/js/recording.js?v=1.1" defer></script>
 
     <script src="{{ baseUrl }}/assets/js/jquery.Jcrop.min.js" defer></script>
-    <script src="{{ baseUrl }}/templates/recording/player/js/imageCrop.js?v=1.0" defer></script>
+    <script src="{{ baseUrl }}/templates/recording/player/js/imageCrop.js?v=1.1" defer></script>
 
-    <script type="module" src="{{ baseUrl }}/templates/recording/player/js/playbackRate.js?v=1.2" defer></script>
+    <script type="module" src="{{ baseUrl }}/templates/recording/player/js/playbackRate.js?v=1.3" defer></script>
     <script src="{{ baseUrl }}/templates/recording/player/js/player.js?v=1.3" defer></script>
     <script src="{{ baseUrl }}/templates/recording/player/js/coordinateExport.js?v=1.2" defer></script>
     <script src="{{ baseUrl }}/templates/recording/player/js/tagControls.js" defer></script>

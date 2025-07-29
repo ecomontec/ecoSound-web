@@ -136,6 +136,28 @@ $(function () {
             });
         }
     });
+    document.addEventListener('wheel', function (e) {
+        if (canExec) {
+            if (e.shiftKey) {
+                if (e.deltaY < 0) {
+                    e.preventDefault();
+                    if (!canExec) return;
+                    $("#btn-zoom-in").trigger('click')
+
+                    canExec = false;
+                    setTimeout(() => canExec = true, 10000);
+                } else if (e.deltaY > 0) {
+                    e.preventDefault();
+                    if (!canExec) return;
+                    $("#btn-zoom-out").trigger('click')
+
+                    canExec = false;
+                    setTimeout(() => canExec = true, 10000);
+                }
+                e.preventDefault();
+            }
+        }
+    }, {passive: false});
 })
 
 function img_jcrop() {
