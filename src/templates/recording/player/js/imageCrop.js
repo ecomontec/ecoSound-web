@@ -45,6 +45,27 @@ let setSelectionData = function (coordinates) {
 selectData = function (coordinates) {
     enableZoom();
     setSelectionData(coordinates);
+    $("#zoom-submit").removeClass("a-disabled");
+    if ($.cookie('zoom_info')) {
+        const zoom_info = JSON.parse(decodeURIComponent($.cookie('zoom_info')));
+        if (zoom_info[0] == 3) {
+            $("#zoom-btn").removeClass("a-disabled");
+        }
+    } else {
+        $("#zoom-btn").removeClass("a-disabled");
+    }
+}
+
+onRelease = function () {
+    $("#zoom-submit").addClass("a-disabled");
+    if ($.cookie('zoom_info')) {
+        const zoom_info = JSON.parse(decodeURIComponent($.cookie('zoom_info')));
+        if (zoom_info[0] == 3) {
+            $("#zoom-btn").addClass("a-disabled");
+        }
+    } else {
+        $("#zoom-btn").addClass("a-disabled");
+    }
 }
 
 
@@ -109,6 +130,7 @@ $(function () {
                 boxHeight: 400,
                 onChange: setSelectionData,
                 onSelect: selectData,
+                onRelease: onRelease,
                 addClass: 'custom',
                 keySupport: false,
             });
@@ -129,6 +151,7 @@ function img_jcrop() {
         boxHeight: 400,
         onChange: setSelectionData,
         onSelect: selectData,
+        onRelease: onRelease,
         addClass: 'custom',
         keySupport: false,
     });
