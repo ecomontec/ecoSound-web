@@ -1011,7 +1011,7 @@ class RecordingController extends BaseController
                     $arr_specie_id[$specie['binomial']] = $specie['species_id'];
                 }
                 foreach ($json as $d) {
-                    if ($d['prediction'] != '[]' && $d != null) {
+                    if ($d['prediction'] != '[]' && $d['offset'] != 'majority' && $d != null) {
                         $result = json_decode(str_replace("'", '"', $d['prediction']));
                         $maxValue = null;
                         foreach ($result as $r) {
