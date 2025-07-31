@@ -148,14 +148,15 @@ VALUES (1, 'Accepted'),
 --
 INSERT INTO `models` (`tf_model_id`,`name`,`tf_model_path`,`labels_path`,`source_URL`,`description`,`parameter`)
 VALUES (1, 'BirdNET-Analyzer', '/BirdNET-Analyzer', '/BirdNET-Analyzer', 'https://github.com/kahst/BirdNET-Analyzer', 'Automated scientific audio data processing and bird ID.', 'sensitivity@Values in [0.5, 1.5]. Defaults to 1.0.$min_conf@Values in [0.01, 0.99]. Defaults to 0.1.$overlap@Values in [0.0, 2.9]. Defaults to 0.0.$sf_thresh@values in [0.01, 0.99]. Defaults to 0.03.'),
-       (2, 'batdetect2', '/batdetect2', '/batdetect2', 'https://github.com/macaodha/batdetect2.git', 'Code for detecting and classifying bat echolocation calls in high frequency audio recordings.', 'detection_threshold@Values in [0, 1.0]. Defaults to 0.3.');
+       (2, 'batdetect2', '/batdetect2', '/batdetect2', 'https://github.com/macaodha/batdetect2.git', 'Code for detecting and classifying bat echolocation calls in high frequency audio recordings.', 'detection_threshold@Values in [0, 1.0]. Defaults to 0.3.'),
+       (3, 'insects-base-cnn10-96k-t', 'hf:AlexanderGbd/insects-base-cnn10-96k-t', 'hf:AlexanderGbd/insects-base-cnn10-96k-t', 'https://huggingface.co/AlexanderGbd/insects-base-cnn10-96k-t#baseline-model-for-audio-classification-of-orthopera-and-hemiptera', 'This baseline model, utilized in the ECOSoundSet paper, was trained to tag audio files with one or more of 86 species from the Orthoptera and Hemiptera insect orders.', 'window_size@Defaults to 4.0$stride_length@Defaults to 4.0');
 
 --
 -- Dumping data for table `project`
 --
 INSERT INTO `project` (`project_id`, `name`, `description`, `description_short`, `creator_id`, `url`, `picture_id`, `active`)
 VALUES (101, 'Testing Project', 'This is a test project, You can set this up via the administration page.', 'testing description', '100', 'https://github.com/ecomontec/ecoSound-web', null, 1);
---
+--       
 -- Dumping data for table `role`
 --
 INSERT INTO `role` (`role_id`, `name`)
