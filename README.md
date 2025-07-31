@@ -10,15 +10,15 @@ Web application for ecoacoustics to manage, navigate, visualise, annotate, and a
 
 Designed by [Kevin Darras](http://kevindarras.weebly.com/index.html), developed by [Noemi Perez](https://github.com/nperezg) and Dilong Liu. ecoSound-web was forked from [BioSounds](https://github.com/nperezg/biosounds) and is licensed under the [GNU General Public License, v3](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
-The corresponding updatable scientific publication is in [F1000Research](https://f1000research.com/articles/9-1224/v2).
+The corresponding updatable scientific publication is in [F1000Research](https://f1000research.com/articles/9-1224/v3).
 
 ## Quick start for end users
 
-A working instance of ecoSound-web can be accessed [here](https://ecosound-web.de/) with limited functionality within the open collections.
+A working instance of ecoSound-web can be accessed [here](https://ecosound-web.de/ecosound_web/) with limited functionality within the open collections.
 
 You may learn about the basic functionality in the user guide (see Wiki).
 
-[Contact us](mailto:kdarras@gwdg.de) for a collaboration.
+[Contact us](mailto:kevin.darras@inrae.fr) for a collaboration.
 
 ## Quick start for developers
 
