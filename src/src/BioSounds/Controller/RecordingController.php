@@ -966,6 +966,102 @@ class RecordingController extends BaseController
         ]);
     }
 
+    public function insectsbasecnn1096kt($data = null)
+    {
+        if (isset($data)) {
+            $_POST = $data;
+        }
+        foreach ($_POST as $key => $value) {
+            $data[$key] = $value;
+        }
+        $i = 0;
+        $j = 0;
+        $soundPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . "/sounds";
+        if (!file_exists($soundPath)) {
+            mkdir($soundPath, 0777, true);
+        }
+        copy(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav', $soundPath . '/' . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav');
+        $resultPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'];
+        $str = "autrainer inference " . escapeshellarg("hf:AlexanderGbd/insects-base-cnn10-96k-t") . " -sr " . escapeshellarg(Utils::getFileSamplingRate($soundPath . '/' . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav'));
+        $windowSize = (!empty($data['window_size']) && $data['window_size'] != 'undefined') ? escapeshellarg($data['window_size']) : escapeshellarg("4.0");
+        $strideSize = (!empty($data['stride_length']) && $data['stride_length'] != 'undefined') ? escapeshellarg($data['stride_length']) : escapeshellarg("4.0");
+
+        $str .= ' -w ' . $windowSize . ' -s ' . $strideSize . ' ' . escapeshellarg($soundPath) . ' ' . escapeshellarg($resultPath);
+        exec($str . " 2>&1", $out, $status);
+        if ($status == 0) {
+            if (file_exists($resultPath . "/results.csv")) {
+                $json = [];
+                $handle = fopen($resultPath . "/results.csv", "rb");
+                $header = fgetcsv($handle);
+                while (($row = fgetcsv($handle)) !== FALSE) {
+                    if (count($row) == count($header)) {
+                        $json[] = array_combine($header, $row);
+                    }
+                }
+                fclose($handle);
+                $species = (new Species())->get();
+                $species_id = (new Species())->getByName('Unknown');
+                $arr_specie = [];
+                $arr_specie_id = [];
+                $unmatched_species = [];
+                $list = [];
+
+                foreach ($species as $specie) {
+                    $arr_specie[] = $specie['binomial'];
+                    $arr_specie_id[$specie['binomial']] = $specie['species_id'];
+                }
+                foreach ($json as $d) {
+                    if ($d['prediction'] != '[]' && $d != null) {
+                        $result = json_decode(str_replace("'", '"', $d['prediction']));
+                        $maxValue = null;
+                        foreach ($result as $r) {
+                            if ($maxValue === null || $d[$r] > $maxValue) {
+                                $maxValue = $d[$r];
+                                $maxResult = $r;
+                            }
+                        }
+                        if (in_array($maxResult, $arr_specie)) {
+                            $arr['species_id'] = $arr_specie_id[$maxResult];
+                            $arr['comments'] = '';
+                        } else {
+                            $arr['species_id'] = $species_id[0]['species_id'];
+                            $arr['comments'] = $maxResult;
+                            $unmatched_species[] = $maxResult;
+                            $j = $j + 1;
+                        }
+                        list($start, $end) = explode('-', $d['offset']);
+                        $arr['sound_id'] = '4';
+                        $arr['recording_id'] = $data['recording_id'];
+                        $arr['user_id'] = $data['user_id'];
+                        $arr['creator_type'] = $data['creator_type'];
+                        $arr['min_time'] = $start;
+                        $arr['max_time'] = $end;
+                        $arr['min_freq'] = 1;
+                        $arr['max_freq'] = $data['max_freq'];
+                        $arr['distance_not_estimable'] = 1;
+                        $arr['confidence'] = $maxValue;
+                        $arr['individuals'] = 1;
+                        $arr['reference_call'] = 0;
+                        $list[] = $arr;
+                        $i = $i + 1;
+                    }
+                }
+                (new TagProvider())->insertArr($list);
+            } else {
+                Utils::deleteDirContents($resultPath);
+                return json_encode([
+                    'errorCode' => 0,
+                    'message' => "insects-base-cnn10-96k-t found 0 detections. 0 tags were inserted.",
+                ]);
+            }
+        }
+        Utils::deleteDirContents($resultPath);
+        return json_encode([
+            'errorCode' => 0,
+            'message' => "insects-base-cnn10-96k-t found $i detections. $i tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
+        ]);
+    }
+
     private function checkPermissions(): bool
     {
         if (!Auth::isUserLogged()) {

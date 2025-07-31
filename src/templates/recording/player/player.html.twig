@@ -365,7 +365,6 @@
                         'min_conf': $("#min_conf").val(),
                         'overlap': $("#overlap").val(),
                         'sf_thresh': $("#sf_thresh").val(),
-                        'temp': soundFilePath,
                         'max_freq': fileFreqMax,
                         'user_id': '{{ user_id }}',
                     };
@@ -376,9 +375,20 @@
                         'filename': $('input[name=filename]').val(),
                         'creator_type': $("#tf option:selected").text(),
                         'recording_directory': $('input[name=recording_directory]').val(),
-                        'file_date': $("#file_date").val(),
                         'detection_threshold': $("#detection_threshold").val(),
-                        'temp': soundFilePath,
+                        'user_id': '{{ user_id }}',
+                    };
+                }
+                else if ($('#tf').val() == 3) {
+                    data = {
+                        'collection_id': $('input[name=collection_id]').val(),
+                        'recording_id': $('input[name=recording_id]').val(),
+                        'filename': $('input[name=filename]').val(),
+                        'creator_type': $("#tf option:selected").text(),
+                        'recording_directory': $('input[name=recording_directory]').val(),
+                        'window_size': $("#window_size").val(),
+                        'stride_length': $("#stride_length").val(),
+                        'max_freq': fileFreqMax,
                         'user_id': '{{ user_id }}',
                     };
                 }

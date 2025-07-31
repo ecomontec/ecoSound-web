@@ -330,8 +330,23 @@ class RecordingController extends BaseController
                         'recording_id' => $recording['recording_id'],
                         'filename' => $recording['filename'],
                         'recording_directory' => $recording['directory'],
-                        'file_date' => $recording['file_date'],
                         'detection_threshold' => $para->detection_threshold,
+                        'user_id' => Auth::getUserID(),
+                    ];
+                }
+            }
+        } elseif ($para->creator_type == 'insects-base-cnn10-96k-t') {
+            {
+                foreach ($recordings as $recording) {
+                    $data[] = [
+                        'creator_type' => $para->creator_type,
+                        'collection_id' => $recording['col_id'],
+                        'recording_id' => $recording['recording_id'],
+                        'filename' => $recording['filename'],
+                        'recording_directory' => $recording['directory'],
+                        'window_size' => $para->window_size,
+                        'stride_length' => $para->stride_length,
+                        'max_freq' => $recording['sampling_rate'] / 2,
                         'user_id' => Auth::getUserID(),
                     ];
                 }

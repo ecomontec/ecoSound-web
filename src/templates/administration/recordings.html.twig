@@ -571,6 +571,12 @@
                             'detection_threshold': $("#detection_threshold").val(),
                             'creator_type': $("#tf option:selected").text(),
                         };
+                    } else if ($('#tf').val() == 3) {
+                        arr = {
+                            'window_size': $("#window_size").val(),
+                            'stride_length': $("#stride_length").val(),
+                            'creator_type': $("#tf option:selected").text(),
+                        };
                     }
                     arr = JSON.stringify(arr)
                     data.push(arr)
