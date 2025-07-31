@@ -44,49 +44,49 @@ class FileController
                 if (!strlen($d[0]) || !preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $d[0])) {
                     return json_encode([
                         'error_code' => 0,
-                        'message' => 'Row ' . $i . ' column 1 data format error.',
+                        'message' => 'Data format error in column 1, row ' . $i . ': Expected date in format YYYY-MM-DD HH:MM:SS.',
                     ]);
                 }
                 if (!strlen($d[1]) || !filter_var($d[1], FILTER_SANITIZE_NUMBER_FLOAT)) {
                     return json_encode([
                         'error_code' => 0,
-                        'message' => 'Row ' . $i . ' column 2 data format error.',
+                        'message' => 'Data format error in column 2, row ' . $i . ': Expected float number.',
                     ]);
                 }
                 if (!strlen($d[2]) || !filter_var($d[2], FILTER_SANITIZE_NUMBER_FLOAT)) {
                     return json_encode([
                         'error_code' => 0,
-                        'message' => 'Row ' . $i . ' column 3 data format error.',
+                        'message' => 'Data format error in column 3, row ' . $i . ': Expected float number.',
                     ]);
                 }
                 if (strlen($d[3]) && !filter_var($d[3], FILTER_SANITIZE_STRING)) {
                     return json_encode([
                         'error_code' => 0,
-                        'message' => 'Row ' . $i . ' column 4 data format error.',
+                        'message' => 'Data format error in column 4, row ' . $i . ': Expected string.',
                     ]);
                 }
                 if (strlen($d[4]) && !filter_var($d[4], FILTER_SANITIZE_NUMBER_INT)) {
                     return json_encode([
                         'error_code' => 0,
-                        'message' => 'Row ' . $i . ' column 5 data format error.',
+                        'message' => 'Data format error in column 5, row ' . $i . ': Expected integer.',
                     ]);
                 }
                 if (strlen($d[5]) && !filter_var($d[5], FILTER_SANITIZE_NUMBER_INT)) {
                     return json_encode([
                         'error_code' => 0,
-                        'message' => 'Row ' . $i . ' column 6 data format error.',
+                        'message' => 'Data format error in column 6, row ' . $i . ': Expected integer.',
                     ]);
                 }
                 if (strlen($d[6]) && !filter_var($d[6], FILTER_SANITIZE_NUMBER_INT)) {
                     return json_encode([
                         'error_code' => 0,
-                        'message' => 'Row ' . $i . ' column 7 data format error.',
+                        'message' => 'Data format error in column 7, row ' . $i . ': Expected integer.',
                     ]);
                 }
                 if (strlen($d[7]) && !filter_var($d[7], FILTER_SANITIZE_NUMBER_INT)) {
                     return json_encode([
                         'error_code' => 0,
-                        'message' => 'Row ' . $i . ' column 8 data format error.',
+                        'message' => 'Data format error in column 8, row ' . $i . ': Expected integer.',
                     ]);
                 }
             }
@@ -101,10 +101,10 @@ class FileController
             $arr['duration'] = $d[1];
             $arr['sampling_rate'] = $d[2];
             isset($d[3]) ? $arr['name'] = $d[3] : '';
-            isset($d[4]) ? $arr['bitdepth'] = $d[4] : '';
-            isset($d[5]) ? $arr['channel_num'] = $d[5] : '';
-            isset($d[6]) ? $arr['duty_cycle_recording'] = $d[6] : '';
-            isset($d[7]) ? $arr['duty_cycle_period'] = $d[7] : '';
+            isset($d[4]) && $d[4]!= '' ? $arr['bitdepth'] = $d[4] : '';
+            isset($d[5]) && $d[5]!= ''  ? $arr['channel_num'] = $d[5] : '';
+            isset($d[6]) && $d[6]!= ''  ? $arr['duty_cycle_recording'] = $d[6] : '';
+            isset($d[7]) && $d[7]!= ''  ? $arr['duty_cycle_period'] = $d[7] : '';
             $arr['data_type'] = 'meta-data';
             $arr['creation_date'] = date('Y-m-d H:i:s', time());
             (new RecordingProvider())->insert($arr);
