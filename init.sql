@@ -56,9 +56,9 @@ CREATE TABLE `models`
 (
     `tf_model_id`   int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `name`          varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `tf_model_path` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `labels_path`   varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `source_URL`    varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `tf_model_path` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `labels_path`   varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `source_URL`    varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
     `description` text CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL,
     `parameter` text CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
