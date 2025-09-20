@@ -93,29 +93,30 @@
                         </a>
                     </a>
                     <div class="dropdown-menu">
+                        <div class="form-inline p-2">Zoom options:</div>
                         <div class="form-inline p-2">
-                            <a class="zoom-btn" href="#" id="btn-zoom-in" title=" Shift + mouse wheel to zoom in">
+                            <a class="zoom-btn mx-1" href="#" id="btn-zoom-in" title=" Shift + mouse wheel to zoom in">
                                 <i class="fa-solid fa-magnifying-glass-plus"></i>
                             </a>
-                            <div>Zoom in <input class="form-control form-control-sm" id="zoom_in_input" type="number" style="width: 50px;" value="50" required> %</div>
+                            <div>In BY<input class="form-control form-control-sm" id="zoom_in_input" type="number" style="width: 50px;" value="50" required> %</div>
                         </div>
                         <div class="form-inline p-2">
-                            <a class="zoom-btn" href="#" id="btn-zoom-out" title="Shift + mouse wheel to zoom out">
+                            <a class="zoom-btn mx-1" href="#" id="btn-zoom-out" title="Shift + mouse wheel to zoom out">
                                 <i class="fa-solid fa-magnifying-glass-minus"></i>
                             </a>
-                            <div>Zoom out <input class="form-control form-control-sm" id="zoom_out_input" type="number" style="width: 50px;" value="50" required> %</div>
+                            <div>Out BY<input class="form-control form-control-sm" id="zoom_out_input" type="number" style="width: 50px;" value="50" required> %</div>
                         </div>
                         <div class="form-inline p-2">
-                            <a class="bg-white a-disabled" href="#" id="zoom-submit">
+                            <a class="bg-white a-disabled mx-1" href="#" id="zoom-submit">
                                 <i class="fa-solid fa-magnifying-glass"></i>
                             </a>
-                            <div>Zoom into selection</div>
+                            <div>Into selection</div>
                         </div>
                         <div class="form-inline p-2">
-                            <a class="zoom-btn" href="#" id="zoom-pix">
+                            <a class="zoom-btn mx-1" href="#" id="zoom-pix">
                                 <i class="fa-solid fa-magnifying-glass-arrow-right"></i>
                             </a>
-                            <div>Zoom into <input class="form-control form-control-sm" id="zoom_input" type="number" style="width: 50px;" value="15" required> px/s</div>
+                            <div>Into <input class="form-control form-control-sm" id="zoom_input" type="number" style="width: 50px;" value="15" required> px/s</div>
                         </div>
                     </div>
                 </div>
@@ -151,7 +152,7 @@
 
 {% block header %}
     {{ parent() }}
-    <script src="{{ baseUrl }}/templates/recording/js/recording.js?v=1.1" defer></script>
+    <script src="{{ baseUrl }}/templates/recording/js/recording.js?v=1.2" defer></script>
 
     <script src="{{ baseUrl }}/assets/js/jquery.Jcrop.min.js" defer></script>
     <script src="{{ baseUrl }}/templates/recording/player/js/imageCrop.js?v=1.1" defer></script>

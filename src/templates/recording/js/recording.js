@@ -59,7 +59,7 @@ $(function () {
     $(".zoom-btn").click(function (e) {
         if ($(this).attr('id') == 'btn-zoom-in') {
             if ($("#zoom_in_input").val() == '' || $("#zoom_in_input").val() <= 0 || $("#zoom_in_input").val() >= 100) {
-                showAlert("Please enter a positive number less than 100 for zoom in")
+                showAlert("Please enter a positive number smaller than 100 for zooming in")
                 e.preventDefault();
                 return false;
             }
