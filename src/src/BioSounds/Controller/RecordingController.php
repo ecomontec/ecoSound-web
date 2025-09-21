@@ -1013,37 +1013,32 @@ class RecordingController extends BaseController
                 foreach ($json as $d) {
                     if ($d['prediction'] != '[]' && $d['offset'] != 'majority' && $d != null) {
                         $result = json_decode(str_replace("'", '"', $d['prediction']));
-                        $maxValue = null;
                         foreach ($result as $r) {
-                            if ($maxValue === null || $d[$r] > $maxValue) {
-                                $maxValue = $d[$r];
-                                $maxResult = $r;
+                            if (in_array($r, $arr_specie)) {
+                                $arr['species_id'] = $arr_specie_id[$r];
+                                $arr['comments'] = '';
+                            } else {
+                                $arr['species_id'] = $species_id[0]['species_id'];
+                                $arr['comments'] = $r;
+                                $unmatched_species[] = $r;
+                                $j = $j + 1;
                             }
+                            list($start, $end) = explode('-', $d['offset']);
+                            $arr['sound_id'] = '4';
+                            $arr['recording_id'] = $data['recording_id'];
+                            $arr['user_id'] = $data['user_id'];
+                            $arr['creator_type'] = $data['creator_type'];
+                            $arr['min_time'] = $start;
+                            $arr['max_time'] = $end;
+                            $arr['min_freq'] = 1;
+                            $arr['max_freq'] = $data['max_freq'];
+                            $arr['distance_not_estimable'] = 1;
+                            $arr['confidence'] = $d[$r];
+                            $arr['individuals'] = 1;
+                            $arr['reference_call'] = 0;
+                            $list[] = $arr;
+                            $i = $i + 1;
                         }
-                        if (in_array($maxResult, $arr_specie)) {
-                            $arr['species_id'] = $arr_specie_id[$maxResult];
-                            $arr['comments'] = '';
-                        } else {
-                            $arr['species_id'] = $species_id[0]['species_id'];
-                            $arr['comments'] = $maxResult;
-                            $unmatched_species[] = $maxResult;
-                            $j = $j + 1;
-                        }
-                        list($start, $end) = explode('-', $d['offset']);
-                        $arr['sound_id'] = '4';
-                        $arr['recording_id'] = $data['recording_id'];
-                        $arr['user_id'] = $data['user_id'];
-                        $arr['creator_type'] = $data['creator_type'];
-                        $arr['min_time'] = $start;
-                        $arr['max_time'] = $end;
-                        $arr['min_freq'] = 1;
-                        $arr['max_freq'] = $data['max_freq'];
-                        $arr['distance_not_estimable'] = 1;
-                        $arr['confidence'] = $maxValue;
-                        $arr['individuals'] = 1;
-                        $arr['reference_call'] = 0;
-                        $list[] = $arr;
-                        $i = $i + 1;
                     }
                 }
                 (new TagProvider())->insertArr($list);
@@ -1055,7 +1050,7 @@ class RecordingController extends BaseController
                 ]);
             }
         }
-        Utils::deleteDirContents($resultPath);
+        #Utils::deleteDirContents($resultPath);
         return json_encode([
             'errorCode' => 0,
             'message' => "insects-base-cnn10-96k-t found $i detections. $i tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
