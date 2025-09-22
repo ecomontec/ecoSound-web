@@ -24,7 +24,6 @@ use BioSounds\Provider\TagProvider;
 use BioSounds\Service\RecordingService;
 use BioSounds\Utils\Auth;
 use BioSounds\Utils\Utils;
-use Cassandra\Varint;
 use Twig\Environment;
 use Symfony\Component\Process\Process;
 
@@ -559,7 +558,7 @@ class RecordingController extends BaseController
                     array_shift($out);
                     foreach ($out as $line) {
                         $values = preg_split('/\s+/', trim($line));
-                        $arr['sound_id'] = '15';
+                        $arr['sound_id'] = '22';
                         $arr['recording_id'] = $data['recording_id'];
                         $arr['user_id'] = Auth::getUserID();
                         $arr['creator_type'] = "template_matching";
@@ -845,7 +844,7 @@ class RecordingController extends BaseController
                         $unmatched_species[] = $r[2];
                         $j = $j + 1;
                     }
-                    $arr['sound_id'] = '4';
+                    $arr['sound_id'] = '6';
                     $arr['recording_id'] = $data['recording_id'];
                     $arr['user_id'] = $data['user_id'];
                     $arr['creator_type'] = $data['creator_type'] . ' ' . $maxValue;
@@ -861,12 +860,15 @@ class RecordingController extends BaseController
                     $i = $i + 1;
                 }
             }
+            $cmd = 'python3 ' . ABSOLUTE_DIR . 'bin/mergedTags.py ' . escapeshellarg(json_encode($list)) . " " . $species_id[0]['species_id'] . ' BirdNET ' . $data['max_gap'] . ' ' . $data['keep_merged'];
+            $output = shell_exec($cmd);
+            $list = json_decode($output, true);
             (new TagProvider())->insertArr($list);
             unlink(ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv");
         }
         return json_encode([
             'errorCode' => 0,
-            'message' => "BirdNET v$maxValue found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. $i tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
+            'message' => "BirdNET v$maxValue found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. " . (is_array($list) ? count($list) : 0) . " tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
         ]);
     }
 
@@ -934,7 +936,7 @@ class RecordingController extends BaseController
                             $unmatched_species[] = $r[6];
                             $j = $j + 1;
                         }
-                        $arr['sound_id'] = '4';
+                        $arr['sound_id'] = '6';
                         $arr['recording_id'] = $data['recording_id'];
                         $arr['user_id'] = $data['user_id'];
                         $arr['creator_type'] = $data['creator_type'] . ' ' . $version;
@@ -950,6 +952,9 @@ class RecordingController extends BaseController
                         $i = $i + 1;
                     }
                 }
+                $cmd = 'python3 ' . ABSOLUTE_DIR . 'bin/mergedTags.py ' . escapeshellarg(json_encode($list)) . " " . $species_id[0]['species_id'] . ' batdetect2 ' . $data['max_gap'] . ' ' . $data['keep_merged'];
+                $output = shell_exec($cmd);
+                $list = json_decode($output, true);
                 (new TagProvider())->insertArr($list);
             } else {
                 Utils::deleteDirContents($resultPath);
@@ -962,7 +967,7 @@ class RecordingController extends BaseController
         Utils::deleteDirContents($resultPath);
         return json_encode([
             'errorCode' => 0,
-            'message' => "Batdetect2 $version found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. $i tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
+            'message' => "Batdetect2 $version found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. " . (is_array($list) ? count($list) : 0) . " tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
         ]);
     }
 
@@ -982,7 +987,7 @@ class RecordingController extends BaseController
         }
         copy(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav', $soundPath . '/' . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav');
         $resultPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'];
-        $str = "autrainer inference " . escapeshellarg("hf:AlexanderGbd/insects-base-cnn10-96k-t") . " -sr " . escapeshellarg(Utils::getFileSamplingRate($soundPath . '/' . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav'));
+        $str = escapeshellarg("hf:AlexanderGbd/insects-base-cnn10-96k-t") . " -sr " . escapeshellarg(Utils::getFileSamplingRate($soundPath . '/' . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav'));
         $windowSize = (!empty($data['window_size']) && $data['window_size'] != 'undefined') ? escapeshellarg($data['window_size']) : escapeshellarg("4.0");
         $strideSize = (!empty($data['stride_length']) && $data['stride_length'] != 'undefined') ? escapeshellarg($data['stride_length']) : escapeshellarg("4.0");
 
@@ -1024,7 +1029,7 @@ class RecordingController extends BaseController
                                 $j = $j + 1;
                             }
                             list($start, $end) = explode('-', $d['offset']);
-                            $arr['sound_id'] = '4';
+                            $arr['sound_id'] = '6';
                             $arr['recording_id'] = $data['recording_id'];
                             $arr['user_id'] = $data['user_id'];
                             $arr['creator_type'] = $data['creator_type'];
@@ -1041,6 +1046,9 @@ class RecordingController extends BaseController
                         }
                     }
                 }
+                $cmd = 'python3 ' . ABSOLUTE_DIR . 'bin/mergedTags.py ' . escapeshellarg(json_encode($list)) . " " . $species_id[0]['species_id'] . ' insects-base-cnn10-96k-t ' . $data['max_gap'] . ' ' . $data['keep_merged'];
+                $output = shell_exec($cmd);
+                $list = json_decode($output, true);
                 (new TagProvider())->insertArr($list);
             } else {
                 Utils::deleteDirContents($resultPath);
@@ -1050,10 +1058,10 @@ class RecordingController extends BaseController
                 ]);
             }
         }
-        #Utils::deleteDirContents($resultPath);
+        Utils::deleteDirContents($resultPath);
         return json_encode([
             'errorCode' => 0,
-            'message' => "insects-base-cnn10-96k-t found $i detections. $i tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
+            'message' => "insects-base-cnn10-96k-t found $i detections. " . (is_array($list) ? count($list) : 0) . " tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
         ]);
     }
 

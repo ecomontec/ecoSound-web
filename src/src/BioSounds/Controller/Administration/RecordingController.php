@@ -319,6 +319,8 @@ class RecordingController extends BaseController
                     'sf_thresh' => $para->sf_thresh,
                     'max_freq' => $recording['sampling_rate'] / 2,
                     'user_id' => Auth::getUserID(),
+                    'max_gap' => $para->max_gap,
+                    'keep_merged' => $para->keep_merged,
                 ];
             }
         } elseif ($para->creator_type == 'batdetect2') {
@@ -332,6 +334,8 @@ class RecordingController extends BaseController
                         'recording_directory' => $recording['directory'],
                         'detection_threshold' => $para->detection_threshold,
                         'user_id' => Auth::getUserID(),
+                        'max_gap' => $para->max_gap,
+                        'keep_merged' => $para->keep_merged,
                     ];
                 }
             }
@@ -348,6 +352,8 @@ class RecordingController extends BaseController
                         'stride_length' => $para->stride_length,
                         'max_freq' => $recording['sampling_rate'] / 2,
                         'user_id' => Auth::getUserID(),
+                        'max_gap' => $para->max_gap,
+                        'keep_merged' => $para->keep_merged,
                     ];
                 }
             }
