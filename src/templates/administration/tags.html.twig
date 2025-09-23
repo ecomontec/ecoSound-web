@@ -159,7 +159,7 @@
             var soundTypes ={{ soundTypes|json_encode|raw }};
             'use strict';
             $(document).on('click', '#tagsExport', function () {
-                window.location.href = '{{ baseUrl }}/api/admin/tagMgr/export/{{ colId }}';
+                window.location.href = '{{ baseUrl }}/api/admin/tagMgr/export/{{ colId }}/{{ recordingId }}';
             });
 
             $('#js-delete-button').click(function (e) {
@@ -176,9 +176,9 @@
                 let id = $(this).attr('id').split('_')[2]
                 let index = 0
                 if ($("#soundscape_component_" + id).find("option:selected").text() == 'biophony') {
-                    $("#speciesName_" + id).show()
+                    $(".soundscape_component_" + id).removeAttr("hidden");
                 } else {
-                    $("#speciesName_" + id).hide()
+                    $(".soundscape_component_" + id).attr("hidden", true);
                 }
                 $('#sound_id' + id).empty()
                 for (var key in soundTypes) {

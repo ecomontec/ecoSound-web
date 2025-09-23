@@ -9,6 +9,7 @@ use BioSounds\Entity\Species;
 use BioSounds\Entity\UserPermission;
 use BioSounds\Entity\Permission;
 use BioSounds\Entity\User;
+use BioSounds\Exception\ForbiddenException;
 use BioSounds\Exception\NotAuthenticatedException;
 use BioSounds\Presenter\FrequencyScalePresenter;
 use BioSounds\Presenter\RecordingPresenter;
@@ -20,6 +21,8 @@ use BioSounds\Provider\LabelAssociationProvider;
 use BioSounds\Provider\LabelProvider;
 use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\RecordingProvider;
+use BioSounds\Provider\SoundProvider;
+use BioSounds\Provider\SoundTypeProvider;
 use BioSounds\Provider\TagProvider;
 use BioSounds\Service\RecordingService;
 use BioSounds\Utils\Auth;
@@ -110,6 +113,11 @@ class RecordingController extends BaseController
                 $this->recordingPresenter->setEstimateDistID(filter_var($_POST['estimateDistID'], FILTER_VALIDATE_INT));
             }
             $this->setCanvas($recordingData);
+            $arr = [];
+            $animal_sound_types = (new SoundTypeProvider())->getAllList();
+            foreach ($animal_sound_types as $animal_sound_type) {
+                $arr[$animal_sound_type->getTaxonClass() . $animal_sound_type->getTaxonOrder()][$animal_sound_type->getSoundTypeId()] = [$animal_sound_type->getSoundTypeId(), $animal_sound_type->getName()];
+            }
             return $this->twig->render('recording/recording.html.twig', [
                 'project' => (new ProjectProvider())->get($this->recordingPresenter->getRecording()['collection']->getProject()),
                 'player' => $this->recordingPresenter,
@@ -125,6 +133,9 @@ class RecordingController extends BaseController
                 'modalX' => $_POST['modalX'],
                 'modalY' => $_POST['modalY'],
                 'models' => (new RecordingProvider())->getModel(),
+                'animal_sound_types' => $arr,
+                'soundTypes' => (new SoundProvider())->getAll(),
+                'soundscape_components' => (new SoundProvider())->get(),
             ]);
         } else {
             return $this->twig->render('collection/noaccess.html.twig');
@@ -1095,4 +1106,80 @@ class RecordingController extends BaseController
         return true;
     }
 
+    public function getListByPage($collectionId, $recordingId)
+    {
+        $total = count((new TagProvider())->getViewTag($collectionId, $recordingId));
+        $start = $_POST['start'];
+        $length = $_POST['length'];
+        $search = $_POST['search']['value'];
+        $column = $_POST['order'][0]['column'];
+        $dir = $_POST['order'][0]['dir'];
+        $data = (new TagProvider())->getViewListByPage($collectionId, $recordingId, $start, $length, $search, $column, $dir);
+        if (count($data) == 0) {
+            $data = [];
+        }
+        $result = [
+            'draw' => $_POST['draw'],
+            'recordsTotal' => $total,
+            'recordsFiltered' => (new TagProvider())->getViewFilterCount($collectionId, $recordingId, $search),
+            'data' => $data,
+        ];
+        return json_encode($result);
+    }
+    public function export($collection_id, $recording_id)
+    {
+        if (!Auth::isUserLogged()) {
+            throw new ForbiddenException();
+        }
+        $colArr = [];
+        $file_name = "tags.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        $columns = (new TagProvider())->getColumns();
+        foreach ($columns as $column) {
+            $colArr[] = $column['COLUMN_NAME'];
+        }
+
+        array_splice($colArr, 2, 0, 'soundscape component');
+        array_splice($colArr, 3, 0, 'sound type');
+        array_splice($colArr, 5, 0, 'recording');
+        array_splice($colArr, 7, 0, 'user');
+        array_splice($colArr, 15, 0, 'species');
+        array_splice($colArr, 21, 0, 'animal sound type');
+
+        $Als[] = $colArr;
+        $List = (new TagProvider())->getExportTag($collection_id, $recording_id);
+        foreach ($List as $Item) {
+            unset($Item['TaxonOrder']);
+            unset($Item['TaxonClass']);
+
+            $valueToMove = $Item['soundscape_component'] == null ? '' : $Item['soundscape_component'];
+            unset($Item['soundscape_component']);
+            array_splice($Item, 2, 0, $valueToMove);
+            $valueToMove = $Item['sound_type'] == null ? '' : $Item['sound_type'];
+            unset($Item['sound_type']);
+            array_splice($Item, 3, 0, $valueToMove);
+            $valueToMove = $Item['recordingName'] == null ? '' : $Item['recordingName'];
+            unset($Item['recordingName']);
+            array_splice($Item, 5, 0, $valueToMove);
+            $valueToMove = $Item['userName'] == null ? '' : $Item['userName'];
+            unset($Item['userName']);
+            array_splice($Item, 7, 0, $valueToMove);
+            $valueToMove = $Item['speciesName'] == null ? '' : $Item['speciesName'];
+            unset($Item['speciesName']);
+            array_splice($Item, 15, 0, $valueToMove);
+            $valueToMove = $Item['typeName'] == null ? '' : $Item['typeName'];
+            unset($Item['typeName']);
+            array_splice($Item, 21, 0, $valueToMove);
+
+            $Als[] = $Item;
+        }
+        foreach ($Als as $line) {
+            fputcsv($fp, $line);
+        }
+        fclose($fp);
+        exit();
+    }
 }

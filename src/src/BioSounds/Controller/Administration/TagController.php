@@ -71,7 +71,6 @@ class TagController extends BaseController
         foreach ($animal_sound_types as $animal_sound_type) {
             $arr[$animal_sound_type->getTaxonClass() . $animal_sound_type->getTaxonOrder()][$animal_sound_type->getSoundTypeId()] = [$animal_sound_type->getSoundTypeId(), $animal_sound_type->getName()];
         }
-
         return $this->twig->render('administration/tags.html.twig', [
             'projectId' => $projectId,
             'projects' => $projects,
@@ -81,7 +80,6 @@ class TagController extends BaseController
             'recordings' => $recordings,
             'animal_sound_types' => $arr,
             'soundTypes' => (new SoundProvider())->getAll(),
-            'soundscape_components' => (new SoundProvider())->get(),
         ]);
     }
 
@@ -115,7 +113,7 @@ class TagController extends BaseController
     /**
      * @throws \Exception
      */
-    public function export($collection_id)
+    public function export($collection_id, $recording_id)
     {
         if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
@@ -139,7 +137,7 @@ class TagController extends BaseController
         array_splice($colArr, 21, 0, 'animal sound type');
 
         $Als[] = $colArr;
-        $List = (new TagProvider())->getTag($collection_id);
+        $List = (new TagProvider())->getTag($collection_id, $recording_id);
         foreach ($List as $Item) {
             unset($Item['TaxonOrder']);
             unset($Item['TaxonClass']);
