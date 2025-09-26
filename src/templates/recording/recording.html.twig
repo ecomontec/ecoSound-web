@@ -145,7 +145,7 @@
             <div class="col-10">
                 {% include 'recording/player/player.html.twig' %}
             </div>
-            <div class="col-12">
+            <div class="col-12 tagsForm">
                 <div class="border-light bg-white text-right mb-1">
                     <button id="viewing" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#viewing" disabled>
                         <i class="fas fa-eye"></i>
@@ -313,7 +313,7 @@
                     "processing": true,
                     "serverSide": true,
                     "ajax": {
-                        "url": '{{ baseUrl }}/recording/getListByPage/{{ player.recording.col_id }}/{{ player.recording.recording_id }}',
+                        "url": '{{ baseUrl }}/recording/getListByPage/{{ player.recording.col_id }}/{{ player.recording.recording_id }}?minTime={{ player.minTime }}&maxTime={{ player.maxTime }}&minFrequency={{ player.minFrequency }}&maxFrequency={{ player.maxFrequency }}',
                         "type": 'POST',
                         "error": function (xhr, error, thrown) {
                             if (xhr.status == 400 || xhr.status == 404 || xhr.status == 500) {
@@ -321,7 +321,7 @@
                             }
                         }
                     },
-                    "scrollY": $(window).height() - $('#tagsTable').offset().top,
+                    "scrollY": Math.max(($(window).height() - $('#tagsTable').offset().top), 100),
                     "stateSave": true,
                     "StateDuration": -1,
                     "order": [[1, 'asc']],
@@ -338,6 +338,9 @@
                     "bAutoWidth": false,
                     "scrollX": true,
                 });
+                {% if not player.tags %}
+                $('.tagsForm').attr('hidden', true)
+                {% endif %}
             });
 
             var arr ={{ animal_sound_types|json_encode|raw }};

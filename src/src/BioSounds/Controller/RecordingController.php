@@ -1108,24 +1108,25 @@ class RecordingController extends BaseController
 
     public function getListByPage($collectionId, $recordingId)
     {
-        $total = count((new TagProvider())->getViewTag($collectionId, $recordingId));
+        $total = count((new TagProvider())->getViewTag($collectionId, $recordingId, $_GET['minTime'], $_GET['maxTime'], $_GET['minFrequency'], $_GET['maxFrequency']));
         $start = $_POST['start'];
         $length = $_POST['length'];
         $search = $_POST['search']['value'];
         $column = $_POST['order'][0]['column'];
         $dir = $_POST['order'][0]['dir'];
-        $data = (new TagProvider())->getViewListByPage($collectionId, $recordingId, $start, $length, $search, $column, $dir);
+        $data = (new TagProvider())->getViewListByPage($collectionId, $recordingId, $_GET['minTime'], $_GET['maxTime'], $_GET['minFrequency'], $_GET['maxFrequency'], $start, $length, $search, $column, $dir);
         if (count($data) == 0) {
             $data = [];
         }
         $result = [
             'draw' => $_POST['draw'],
             'recordsTotal' => $total,
-            'recordsFiltered' => (new TagProvider())->getViewFilterCount($collectionId, $recordingId, $search),
+            'recordsFiltered' => (new TagProvider())->getViewFilterCount($collectionId, $recordingId, $_GET['minTime'], $_GET['maxTime'], $_GET['minFrequency'], $_GET['maxFrequency'], $search),
             'data' => $data,
         ];
         return json_encode($result);
     }
+
     public function export($collection_id, $recording_id)
     {
         if (!Auth::isUserLogged()) {

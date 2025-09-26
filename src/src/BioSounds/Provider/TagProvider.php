@@ -449,7 +449,7 @@ class TagProvider extends AbstractProvider
         return $result[0]['count'];
     }
 
-    public function getViewTag(string $collectionId, string $recordingId): array
+    public function getViewTag(string $collectionId, string $recordingId, string $minTime, string $maxTime, string $minFrequency, string $maxFrequency): array
     {
         $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass FROM tag t 
             INNER JOIN recording r ON r.recording_id = t.recording_id
@@ -457,19 +457,30 @@ class TagProvider extends AbstractProvider
             LEFT JOIN collection c ON c.collection_id = r.col_id
             LEFT JOIN user u ON u.user_id = t.user_id
             LEFT JOIN sound ON sound.sound_id = t.sound_id
-            LEFT JOIN sound_type st ON st.sound_type_id = t.animal_sound_type WHERE c.collection_id = $collectionId ";
+            LEFT JOIN sound_type st ON st.sound_type_id = t.animal_sound_type WHERE c.collection_id = :collectionId 
+            AND min_time <= :maxTime 
+            AND max_time >= :minTime 
+            AND min_freq <= :maxFrequency 
+            AND max_freq >= :minFrequency ";
         if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
             $sql .= " AND (t.user_id = " . Auth::getUserID() . ' OR c.public_tags = 1) ';
         }
         if ($recordingId) {
-            $sql .= " AND r.recording_id = $recordingId";
+            $sql .= " AND r.recording_id = :recordingId";
         }
         $sql .= ' ORDER BY t.tag_id';
         $this->database->prepareQuery($sql);
-        return $this->database->executeSelect();
+        return $this->database->executeSelect([
+            ':collectionId' => $collectionId,
+            ':recordingId' => $recordingId,
+            ':minTime' => $minTime,
+            ':maxTime' => $maxTime,
+            ':minFrequency' => $minFrequency,
+            ':maxFrequency' => $maxFrequency
+        ]);
     }
 
-    public function getViewFilterCount(string $collectionId, string $recordingId, string $search): int
+    public function getViewFilterCount(string $collectionId, string $recordingId, string $minTime, string $maxTime, string $minFrequency, string $maxFrequency, string $search): int
     {
         $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass FROM tag t 
             INNER JOIN recording r ON r.recording_id = t.recording_id
@@ -478,23 +489,34 @@ class TagProvider extends AbstractProvider
             LEFT JOIN user u ON u.user_id = t.user_id
             LEFT JOIN sound ON sound.sound_id = t.sound_id
             LEFT JOIN sound_type st ON st.sound_type_id = t.animal_sound_type 
-            WHERE c.collection_id = $collectionId ";
+            WHERE c.collection_id = :collectionId 
+            AND min_time <= :maxTime 
+            AND max_time >= :minTime 
+            AND min_freq <= :maxFrequency 
+            AND max_freq >= :minFrequency ";
         if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
             $sql .= " AND (t.user_id = " . Auth::getUserID() . ' OR c.public_tags = 1) ';
         }
         if ($recordingId) {
-            $sql .= " AND r.recording_id = $recordingId";
+            $sql .= " AND r.recording_id = :recordingId";
         }
         if ($search) {
             $sql .= " AND CONCAT(IFNULL(t.tag_id,''), IFNULL(sound.soundscape_component,''), IFNULL(sound.sound_type,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(t.creator_type,''), IFNULL(t.confidence,''), IFNULL(t.min_time,''), IFNULL(t.max_time,''), IFNULL(t.min_freq,''), IFNULL(t.max_freq,''), IFNULL(s.binomial,''), IFNULL(t.sound_distance_m,''), IFNULL(t.individuals,''), IFNULL(st.name,''), IFNULL(t.comments,''), IFNULL(t.creation_date,'')) LIKE '%$search%' ";
         }
         $sql .= " GROUP BY t.tag_id";
         $this->database->prepareQuery($sql);
-        $count = count($this->database->executeSelect());
+        $count = count($this->database->executeSelect([
+            ':collectionId' => $collectionId,
+            ':recordingId' => $recordingId,
+            ':minTime' => $minTime,
+            ':maxTime' => $maxTime,
+            ':minFrequency' => $minFrequency,
+            ':maxFrequency' => $maxFrequency
+        ]));
         return $count;
     }
 
-    public function getViewListByPage(string $collectionId, string $recordingId, string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
+    public function getViewListByPage(string $collectionId, string $recordingId, string $minTime, string $maxTime, string $minFrequency, string $maxFrequency, string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
     {
         $arr = [];
         $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass,u.user_id FROM tag t 
@@ -504,12 +526,16 @@ class TagProvider extends AbstractProvider
             LEFT JOIN user u ON u.user_id = t.user_id
             LEFT JOIN sound ON sound.sound_id = t.sound_id
             LEFT JOIN sound_type st ON st.sound_type_id = t.animal_sound_type 
-            WHERE c.collection_id = $collectionId ";
+            WHERE c.collection_id = :collectionId 
+            AND min_time <= :maxTime 
+            AND max_time >= :minTime 
+            AND min_freq <= :maxFrequency 
+            AND max_freq >= :minFrequency ";
         if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
             $sql .= " AND (t.user_id = " . Auth::getUserID() . ' OR c.public_tags = 1) ';
         }
         if ($recordingId) {
-            $sql .= " AND r.recording_id = $recordingId";
+            $sql .= " AND r.recording_id = :recordingId";
         }
         if ($search) {
             $sql .= " AND CONCAT(IFNULL(t.tag_id,''), IFNULL(sound.soundscape_component,''), IFNULL(sound.sound_type,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(t.creator_type,''), IFNULL(t.confidence,''), IFNULL(t.min_time,''), IFNULL(t.max_time,''), IFNULL(t.min_freq,''), IFNULL(t.max_freq,''), IFNULL(s.binomial,''), IFNULL(t.sound_distance_m,''), IFNULL(t.individuals,''), IFNULL(st.name,''), IFNULL(t.comments,''), IFNULL(t.creation_date,'')) LIKE '%$search%' ";
@@ -518,7 +544,14 @@ class TagProvider extends AbstractProvider
         $a = ['', 't.tag_id', 'sound.soundscape_component', 'sound.sound_type', 'r.name', 'u.name', 't.creator_type', 't.confidence', 't.min_time', 't.max_time', 't.min_freq', 't.max_freq', 's.binomial', 't.uncertain', 't.sound_distance_m', 't.distance_not_estimable', 't.individuals', 'st.name', 'reference_call', 't.comments', 't.creation_date'];
         $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
         $this->database->prepareQuery($sql);
-        $result = $this->database->executeSelect();
+        $result = $this->database->executeSelect([
+            ':collectionId' => $collectionId,
+            ':recordingId' => $recordingId,
+            ':minTime' => $minTime,
+            ':maxTime' => $maxTime,
+            ':minFrequency' => $minFrequency,
+            ':maxFrequency' => $maxFrequency
+        ]);
         $soundscape_components = (new SoundProvider())->get();
         $sound_types = (new SoundProvider())->getAll();
         if (count($result)) {

@@ -113,6 +113,8 @@ document.addEventListener('DOMContentLoaded', function () {
             if ($("#edit").length == 0 || $("#edit").val() == 0) {
                 $('#modal-div').modal('hide');
             }
+            $('#tagsTable').DataTable().ajax.reload(null, false);
+            $('.tagsForm').removeAttr("hidden");
         });
 
         $('#distance').click(function () {
