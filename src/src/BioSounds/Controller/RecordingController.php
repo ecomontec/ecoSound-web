@@ -24,6 +24,7 @@ use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\SoundProvider;
 use BioSounds\Provider\SoundTypeProvider;
 use BioSounds\Provider\TagProvider;
+use BioSounds\Provider\TaskProvider;
 use BioSounds\Service\RecordingService;
 use BioSounds\Utils\Auth;
 use BioSounds\Utils\Utils;
@@ -80,7 +81,6 @@ class RecordingController extends BaseController
             throw new \Exception(ERROR_EMPTY_ID);
         }
 
-
         $this->recordingId = $id;
         $recordingData = (new RecordingProvider())->get($this->recordingId)[0];
 
@@ -129,13 +129,14 @@ class RecordingController extends BaseController
                 'indexs' => Auth::isUserLogged() ? (new IndexTypeProvider())->getList() : '',
                 'ffts' => [4096, 2048, 1024, 512, 256, 128,],
                 'fftsize' => $this->fftSize,
-                'open' => $_POST['open'],
+                'open' => $_POST['open'] ?? $_GET['open'] ?? null,
                 'modalX' => $_POST['modalX'],
                 'modalY' => $_POST['modalY'],
                 'models' => (new RecordingProvider())->getModel(),
                 'animal_sound_types' => $arr,
                 'soundTypes' => (new SoundProvider())->getAll(),
                 'soundscape_components' => (new SoundProvider())->get(),
+                'type' => $_POST['type'] ?? $_GET['type'] ?? '',
             ]);
         } else {
             return $this->twig->render('collection/noaccess.html.twig');
@@ -515,6 +516,7 @@ class RecordingController extends BaseController
         }
 
         if ((new LabelAssociationProvider())->setEntry($data) > 0) {
+            (new TaskProvider())->status($data['recording_id'], 'recording');
             return json_encode([
                 'errorCode' => 0,
                 'message' => 'Recording Label set successfully.'

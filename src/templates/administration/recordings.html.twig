@@ -37,6 +37,10 @@
                 <i class="fas fa-eye"></i>
                 View
             </button>
+            <button id="assignments" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" data-target="#assignments" disabled>
+                <i class="fas fa-tasks"></i>
+                Assignments
+            </button>
             <button id="maads" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" data-target="#maads" disabled>
                 <i class="svg-sum"></i>
                 Acoustic indices
@@ -107,7 +111,7 @@
             <tbody class="form-control-sm js-recording-list"></tbody>
         </table>
     </div>
-    <div class="modal fade" id="modal-div" tabindex="-1" role="dialog">
+    <div class="modal fade" id="modal-delete" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -457,10 +461,27 @@
                         }
                     });
                 });
-
-                $("#modal-div").keydown(function (e) {
+                $('button[name="table-btn"][data-target="#assignments"]').click(function (e) {
+                    let count = 0
+                    let id = [];
+                    $('.js-checkbox:checked').each(function () {
+                        if ($(this).data('type') == 'audio data') {
+                            count = count + 1
+                            id.push($(this).data('id'));
+                        }
+                    });
+                    if (count == 0) {
+                        showAlert('Select at least one audio recording.');
+                        e.preventDefault();
+                        return
+                    }
+                    let data = {'id': id, 'type': 'recording', 'collection_id': {{ colId }}};
+                    requestModal("{{ baseUrl }}/admin/taskMgr/assign", data);
+                    e.preventDefault();
+                })
+                $("#modal-delete").keydown(function (e) {
                     if (e.keyCode == 13) {
-                        $("#modal-div").modal('hide');
+                        $("#modal-delete").modal('hide');
                         event.preventDefault();
                     }
                 });
@@ -641,7 +662,7 @@
                     }).done(function (data) {
                         $('#count').text(data)
                         $('#delete_id').val(id)
-                        $("#modal-div").modal('show');
+                        $("#modal-delete").modal('show');
                     })
                 })
                 $('#maad').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {

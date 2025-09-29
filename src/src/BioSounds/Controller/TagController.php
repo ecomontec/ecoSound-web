@@ -96,7 +96,9 @@ class TagController extends BaseController
         }
         /**********************/
         $tagProvider = new TagProvider();
-        if (Auth::isUserAdmin() || $isReviewGranted || $isViewGranted || $isManageGranted) {
+        if ($_POST['type'] ?? $_GET['type'] ?? '' == 'task') {
+            $tags = $tagProvider->getListByTask();
+        } elseif (Auth::isUserAdmin() || $isReviewGranted || $isViewGranted || $isManageGranted) {
             $tags = $tagProvider->getList($tag->getRecording());
         } else {
             $tags = $tagProvider->getList($tag->getRecording(), Auth::getUserLoggedID());

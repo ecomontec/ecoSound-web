@@ -39,6 +39,7 @@ $(function () {
         $("#w").val(fileDuration);
         $("#y").val(1);
         $("#h").val(fileFreqMax);
+        $("#type").val('');
         $("input[name=filter]").prop("checked", false);
         $("input[name=continuous_play]").prop("checked", false);
         $("input[name=estimateDistID]").val("");

@@ -82,6 +82,27 @@ class TagProvider extends AbstractProvider
         return $result;
     }
 
+    public function getListByTask(): array
+    {
+        $result = [];
+        $query = 'SELECT tag.tag_id, tag.recording_id, tag.min_time, tag.max_time, tag.min_freq, tag.max_freq, tag.user_id, tag.uncertain,sound.soundscape_component,sound.sound_type, ';
+        $query .= 'species.binomial as species_name, tag.sound_distance_m, tag.distance_not_estimable, ';
+        $query .= '(SELECT COUNT(*) FROM tag_review WHERE tag_id = tag.tag_id) AS review_number, ';
+        $query .= '(( tag.max_time - tag.min_time ) + (tag.max_freq - tag.min_time )) AS time ';
+        $query .= 'FROM tag LEFT JOIN species ON tag.species_id = species.species_id ';
+        $query .= 'LEFT JOIN sound ON tag.sound_id = sound.sound_id ';
+        $query .= 'LEFT JOIN recording r ON r.recording_id = tag.recording_id ';
+        $query .= 'LEFT JOIN collection c ON c.collection_id = r.col_id ';
+        $query .= "LEFT JOIN task ON task.type = 'tag' AND task.assigned_id = tag.tag_id ";
+        $query .= " WHERE task.status='assigned' AND task.assignee_id = " . Auth::getUserLoggedID();
+        $query .= ' ORDER BY task.task_id';
+        $this->database->prepareQuery($query);
+        foreach ($this->database->executeSelect() as $tag) {
+            $result[] = (new Tag())->createFromValues($tag);
+        }
+        return $result;
+    }
+
     /**
      * @param int $recordingId
      * @param int|null $userId

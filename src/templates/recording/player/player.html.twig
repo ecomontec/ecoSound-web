@@ -55,6 +55,7 @@
                     <input type="hidden" name="lat" id="lat" value="{{ player.recording.latitude_WGS84_dd_dddd }}">
                     <input type="hidden" name="lon" id="lon" value="{{ player.recording.longitude_WGS84_dd_dddd }}">
                     <input type="hidden" name="file_date" id="file_date" value="{{ player.recording.file_date }}">
+                    <input type="hidden" name="type" id="type" value="{{ type }}">
                     {% include 'recording/player/timeBoxes.html.twig' with {
                         'minTime': player.minTime,
                         'maxTime': player.maxTime,

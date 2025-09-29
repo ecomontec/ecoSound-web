@@ -6,6 +6,7 @@ use BioSounds\Entity\TagReview;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Exception\NotAuthenticatedException;
 use BioSounds\Provider\TagProvider;
+use BioSounds\Provider\TaskProvider;
 use BioSounds\Utils\Auth;
 
 class TagReviewController extends BaseController
@@ -57,16 +58,17 @@ class TagReviewController extends BaseController
         if (empty($data[TagReview::SPECIES])) {
             unset($data[TagReview::SPECIES]);
         }
-
         if (isset($data['user_id_hidden'])) {
             unset($data['user_id']);
             (new TagReview())->update($data);
+            (new TaskProvider())->status($data['tag_id'], 'tag');
             return json_encode([
                 'errorCode' => 0,
                 'message' => 'Tag review updated successfully.'
             ]);
         } else {
             (new TagReview())->insert($data);
+            (new TaskProvider())->status($data['tag_id'], 'tag');
             return json_encode([
                 'errorCode' => 0,
                 'message' => 'Tag review saved successfully.',

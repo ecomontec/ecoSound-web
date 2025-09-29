@@ -387,6 +387,15 @@ function checkboxChange() {
             $('button[name="table-btn"][data-target="#download"]').prop('disabled', true);
         }
     }
+    if ($('button[name="table-btn"][data-target="#task"]').length > 0) {
+        if (selectedCount === 1) {
+            $('button[name="table-btn"][data-target="#task"]').removeClass('btn-outline-secondary').addClass('btn-outline-primary');
+            $('button[name="table-btn"][data-target="#task"]').prop('disabled', false);
+        } else {
+            $('button[name="table-btn"][data-target="#task"]').removeClass('btn-outline-primary').addClass('btn-outline-secondary');
+            $('button[name="table-btn"][data-target="#task"]').prop('disabled', true);
+        }
+    }
     if ($('button[name="table-btn"][data-target="#delete"]').length > 0) {
         if (selectedCount === 1) {
             $('button[name="table-btn"][data-target="#delete"]').removeClass('btn-outline-secondary').removeClass('btn-outline-primary').addClass('btn-outline-danger');

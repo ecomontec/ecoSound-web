@@ -5,6 +5,7 @@ namespace BioSounds\Controller;
 use BioSounds\Controller\Administration\IndexLogController;
 use BioSounds\Controller\Administration\QueueController;
 use BioSounds\Controller\Administration\SiteCollectionController;
+use BioSounds\Controller\Administration\TaskController;
 use BioSounds\Controller\Administration\UserController;
 use BioSounds\Utils\Auth;
 use BioSounds\Controller\Administration\CollectionController as CollectionController;
@@ -247,5 +248,25 @@ class AdminController extends BaseController
     public function queueMgr(string $action, int $id = null)
     {
         return (new QueueController($this->twig))->$action($id);
+    }
+
+    /**
+     * @param string|null $action
+     * @return false|string
+     * @throws \Exception
+     */
+    public function tasks()
+    {
+        return (new TaskController($this->twig))->show();
+    }
+
+    /**
+     * @param string $action
+     * @param int|null $id
+     * @return mixed
+     */
+    public function taskMgr(string $action, int $id = null)
+    {
+        return (new TaskController($this->twig))->$action($id);
     }
 }

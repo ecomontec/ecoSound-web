@@ -475,26 +475,38 @@ CREATE TABLE `iucn_get`
 CREATE TABLE `queue`
 (
     `queue_id`      int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `type`  varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-    `user_id` int(11) NOT NULL,
-    `completed` int(11) NOT NULL default 0,
-    `total` int(11) NOT NULL default 0,
-    `status` int(11) NOT NULL default 0,
-    `start_time` datetime,
-    `stop_time` datetime,
-    `error`  text COLLATE utf8_unicode_ci,
-    `warning`  text COLLATE utf8_unicode_ci
+    `type`          varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+    `user_id`       int(11) NOT NULL,
+    `completed`     int(11) NOT NULL default 0,
+    `total`         int(11) NOT NULL default 0,
+    `status`        int(11) NOT NULL default 0,
+    `start_time`    datetime,
+    `stop_time`     datetime,
+    `error`         text COLLATE utf8_unicode_ci,
+    `warning`       text COLLATE utf8_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE TABLE `api`
 (
-    `api_id`      int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `api`  varchar(255) COLLATE utf8_unicode_ci,
-    `server_name`  varchar(255) COLLATE utf8_unicode_ci,
-    `longitude` double DEFAULT NULL,
-    `latitude`  double DEFAULT NULL,
-    `shared` int(1) DEFAULT 0,
-    `last_updated` datetime
+    `api_id`        int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `api`           varchar(255) COLLATE utf8_unicode_ci,
+    `server_name`   varchar(255) COLLATE utf8_unicode_ci,
+    `longitude`     double DEFAULT NULL,
+    `latitude`      double DEFAULT NULL,
+    `shared`        int(1) DEFAULT 0,
+    `last_updated`  datetime
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `task`
+(
+    `task_id`       int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `type`          varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+    `assigned_id`   int(11) NOT NULL,
+    `assigner_id`   int(11) NOT NULL,
+    `assignee_id`   int(11) NOT NULL,
+    `status`        enum('assigned', 'reviewed') NOT NULL DEFAULT 'assigned',
+    `comment`       varchar(500) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `datetime`      datetime
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
