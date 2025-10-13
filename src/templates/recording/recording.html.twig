@@ -227,13 +227,13 @@
 
 {% block header %}
     {{ parent() }}
-    <script src="{{ baseUrl }}/templates/recording/js/recording.js?v=1.2" defer></script>
+    <script src="{{ baseUrl }}/templates/recording/js/recording.js?v=1.3" defer></script>
 
     <script src="{{ baseUrl }}/assets/js/jquery.Jcrop.min.js" defer></script>
     <script src="{{ baseUrl }}/templates/recording/player/js/imageCrop.js?v=1.1" defer></script>
 
-    <script type="module" src="{{ baseUrl }}/templates/recording/player/js/playbackRate.js?v=1.3" defer></script>
-    <script src="{{ baseUrl }}/templates/recording/player/js/player.js?v=1.3" defer></script>
+    <script type="module" src="{{ baseUrl }}/templates/recording/player/js/playbackRate.js?v=1.4" defer></script>
+    <script src="{{ baseUrl }}/templates/recording/player/js/player.js?v=1.4" defer></script>
     <script src="{{ baseUrl }}/templates/recording/player/js/coordinateExport.js?v=1.2" defer></script>
     <script src="{{ baseUrl }}/templates/recording/player/js/tagControls.js" defer></script>
     <script src="{{ baseUrl }}/templates/tag/js/tag.js?v=1.2" defer></script>
@@ -309,7 +309,7 @@
             });
             $(document).ready(function () {
                 $('#tagsTable').show()
-                let table = $('#tagsTable').DataTable({
+                window.table = $('#tagsTable').DataTable({
                     "processing": true,
                     "serverSide": true,
                     "ajax": {

@@ -1653,3 +1653,6 @@ li {
     font-size: 16px;
 }
 
+.fixed-top {
+    z-index: 99999;
+}

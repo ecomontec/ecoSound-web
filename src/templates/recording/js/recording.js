@@ -13,6 +13,11 @@ $(function () {
         $("#w").val(Math.round(maxTime - (selectionDuration * shiftRate)));
         $('#y').val($('input[name="minFreqView"]').val())
         $('#h').val($('input[name="maxFreqView"]').val())
+
+        if (typeof window.audioBufferQueue !== 'undefined') {
+            window.audioBufferQueue.length = 0;
+        }
+
         $("#recordingForm").submit();
 
         e.preventDefault();
@@ -29,6 +34,11 @@ $(function () {
         $("#w").val(shiftRightMax);
         $('#y').val($('input[name="minFreqView"]').val())
         $('#h').val($('input[name="maxFreqView"]').val())
+
+        if (typeof window.audioBufferQueue !== 'undefined') {
+            window.audioBufferQueue.length = 0;
+        }
+
         $("#recordingForm").submit();
 
         e.preventDefault();
@@ -54,6 +64,11 @@ $(function () {
         }
         $(this).prop("disabled", true);
         $("input[name=continuous_play]").prop("checked", false);
+
+        if (typeof window.audioBufferQueue !== 'undefined') {
+            window.audioBufferQueue.length = 0;
+        }
+
         $("#recordingForm").submit();
     });
 
