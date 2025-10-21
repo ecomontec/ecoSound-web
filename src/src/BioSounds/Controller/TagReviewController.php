@@ -61,14 +61,14 @@ class TagReviewController extends BaseController
         if (isset($data['user_id_hidden'])) {
             unset($data['user_id']);
             (new TagReview())->update($data);
-            (new TaskProvider())->status($data['tag_id'], 'tag');
+            (new TaskProvider())->status($data['tag_id'], Auth::getUserLoggedID(), 'tag');
             return json_encode([
                 'errorCode' => 0,
                 'message' => 'Tag review updated successfully.'
             ]);
         } else {
             (new TagReview())->insert($data);
-            (new TaskProvider())->status($data['tag_id'], 'tag');
+            (new TaskProvider())->status($data['tag_id'], Auth::getUserLoggedID(), 'tag');
             return json_encode([
                 'errorCode' => 0,
                 'message' => 'Tag review saved successfully.',

@@ -202,24 +202,4 @@ class TagReviewController extends BaseController
             'message' => 'Tag updated successfully.'
         ]);
     }
-
-    public function delete()
-    {
-        if (!Auth::isUserLogged()) {
-            throw new ForbiddenException();
-        }
-
-        $id = $_POST['id'];
-
-        if (empty($id)) {
-            throw new \Exception(ERROR_EMPTY_ID);
-        }
-
-        (new TagProvider())->delete($id);
-
-        return json_encode([
-            'errorCode' => 0,
-            'message' => 'Tag deleted successfully.',
-        ]);
-    }
 }

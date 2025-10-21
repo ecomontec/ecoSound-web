@@ -4,6 +4,7 @@ namespace BioSounds\Entity;
 
 use BioSounds\Database\Database;
 use BioSounds\Provider\BaseProvider;
+use BioSounds\Provider\TaskProvider;
 use BioSounds\Utils\Auth;
 
 class TagReview extends AbstractProvider
@@ -135,6 +136,7 @@ class TagReview extends AbstractProvider
             if ($key < count($data) - 1) {
                 $sql .= " OR ";
             }
+            (new TaskProvider())->status($value[0], $value[1], 'tag', 'assigned');
         }
         $this->database->prepareQuery($sql);
         return $this->database->executeDelete();

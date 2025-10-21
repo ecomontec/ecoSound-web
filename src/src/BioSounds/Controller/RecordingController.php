@@ -516,7 +516,7 @@ class RecordingController extends BaseController
         }
 
         if ((new LabelAssociationProvider())->setEntry($data) > 0) {
-            (new TaskProvider())->status($data['recording_id'], 'recording');
+            (new TaskProvider())->status($data['recording_id'], Auth::getUserLoggedID(), 'recording', $data['label_id'] == 1 ? 'assigned' : 'reviewed');
             return json_encode([
                 'errorCode' => 0,
                 'message' => 'Recording Label set successfully.'

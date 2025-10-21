@@ -37,6 +37,27 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (reviewForm.length) {
                     reviewForm.submit();
                 }
+                let buttonText = $('#saveButton').text();
+                if (buttonText.includes('Close')) {
+                    $('#modal-div').modal('hide');
+                    showAlert("Saved successfully.")
+                } else if (buttonText.includes('Next')) {
+                    $('#btn-next').click()
+                    if ($('#btn-next').hasClass('btn-secondary')) {
+                        showAlert("Saved successfully, this is the last tag.")
+                    } else {
+                        showAlert("Saved successfully.")
+                    }
+                } else if (buttonText.includes('Previous')) {
+                    $('#btn-previous').click()
+                    if ($('#btn-previous').hasClass('btn-secondary')) {
+                        showAlert("Saved successfully, this is the first tag.")
+                    } else {
+                        showAlert("Saved successfully.")
+                    }
+                } else {
+                    showAlert("Saved successfully.")
+                }
                 return;
             }
 
@@ -63,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (reviewForm.length) {
                         reviewForm.submit();
                     }
-                    const buttonText = $('#saveButton').text();
+                    let buttonText = $('#saveButton').text();
                     if (buttonText.includes('Close')) {
                         $('#modal-div').modal('hide');
                         showAlert("Saved successfully.")

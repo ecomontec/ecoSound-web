@@ -214,7 +214,9 @@
             $('#saveButton').removeAttr('disabled');
             $('.type-btn').removeAttr('disabled');
         });
-        {% if edit %}
+        {% if isTask %}
+        $('#saveButton').html('<i class="fa fa-save"></i> Save & Next Tag');
+        {% elseif edit %}
         if ($.cookie('save_button')) {
             $('#saveButton').html('<i class="fa fa-save"></i> ' + $.cookie('save_button'));
         }
@@ -280,7 +282,7 @@
         $("#open").val('{{ next.id }}');
         $("#modalX").val($('#modal-div').offset().left)
         $("#modalY").val($('#modal-div').offset().top)
-        $('#recordingForm').attr('action',"{{ baseUrl }}/recording/show/{{ next.recording }}")
+        $('#recordingForm').attr('action', "{{ baseUrl }}/recording/show/{{ next.recording }}")
         $("#recordingForm").submit();
         e.preventDefault();
     })
@@ -294,7 +296,7 @@
         $("#open").val('{{ previous.id }}');
         $("#modalX").val($('#modal-div').offset().left)
         $("#modalY").val($('#modal-div').offset().top)
-        $('#recordingForm').attr('action',"{{ baseUrl }}/recording/show/{{ previous.recording }}")
+        $('#recordingForm').attr('action', "{{ baseUrl }}/recording/show/{{ previous.recording }}")
         $("#recordingForm").submit();
         e.preventDefault();
     })

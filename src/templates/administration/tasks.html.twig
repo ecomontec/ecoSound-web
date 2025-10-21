@@ -11,7 +11,7 @@
             </div>
             <button id="viewing" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" data-target="#task" disabled>
                 <i class="fas fa-play"></i>
-                Play
+                Review
             </button>
             <button id="deletion" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#deletion" disabled>
                 <i class="fas fa-trash"></i>
@@ -31,10 +31,10 @@
                 <th>#</th>
                 <th>Type</th>
                 <th>Recording</th>
-                <th>Assigned Id</th>
+                <th>Assigned ID</th>
                 <th>Assigner</th>
                 <th>Assignee</th>
-                <th>Status</th>
+                <th>Status <i class="fa fa-info-circle" title='Value is "assigned" when the recording has a label or the tag has a review, and "assigned" otherwise.' data-toggle="tooltip"></i></th>
                 <th>Comment</th>
                 <th>Creation Date (UTC)</th>
             </tr>
@@ -109,6 +109,7 @@
             if (table.state.loaded()) {
                 $('#search').val(table.state.loaded().search.search);
             }
+            $('[data-toggle="tooltip"]').tooltip();
             $('#search').on('input', () => {
                 table.search($('#search').val()).draw();
             });

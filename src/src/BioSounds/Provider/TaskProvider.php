@@ -30,10 +30,10 @@ class TaskProvider extends AbstractProvider
                 LEFT JOIN user assignee ON assignee.user_id = t.assignee_id
                 LEFT JOIN tag ON tag.tag_id = t.assigned_id AND t.type='tag'
 				LEFT JOIN recording r ON (r.recording_id = t.assigned_id AND t.type='recording') OR (r.recording_id = tag.recording_id AND t.type='tag')
-                WHERE t.assigner_id = " . Auth::getUserLoggedID() . " OR t.assignee_id = " . Auth::getUserLoggedID();
+                WHERE (t.assigner_id = " . Auth::getUserLoggedID() . " OR t.assignee_id = " . Auth::getUserLoggedID() . ')';
         $params = [];
         if ($search) {
-            $sql .= " WHERE CONCAT(IFNULL(t.task_id,''), IFNULL(assigner.name,''), IFNULL(assignee.name,''), IFNULL(t.datetime,''), IFNULL(t.type,''), IFNULL(t.assigned_id,''), IFNULL(r.name,''), IFNULL(t.comment,''), IFNULL(t.status,'')) LIKE :search ";
+            $sql .= " AND CONCAT(IFNULL(t.task_id,''), IFNULL(assigner.name,''), IFNULL(assignee.name,''), IFNULL(t.datetime,''), IFNULL(t.type,''), IFNULL(t.assigned_id,''), IFNULL(r.name,''), IFNULL(t.comment,''), IFNULL(t.status,'')) LIKE :search ";
         }
         $this->database->prepareQuery($sql);
         if ($search) {
@@ -52,13 +52,13 @@ class TaskProvider extends AbstractProvider
                 LEFT JOIN user assignee ON assignee.user_id = t.assignee_id
                 LEFT JOIN tag ON tag.tag_id = t.assigned_id AND t.type='tag'
 				LEFT JOIN recording r ON (r.recording_id = t.assigned_id AND t.type='recording') OR (r.recording_id = tag.recording_id AND t.type='tag')
-                WHERE t.assigner_id = " . Auth::getUserLoggedID() . " OR t.assignee_id = " . Auth::getUserLoggedID();
+                WHERE (t.assigner_id = " . Auth::getUserLoggedID() . " OR t.assignee_id = " . Auth::getUserLoggedID() . ')';
         $params = [
             ':length' => $length,
             ':start' => $start,
         ];
         if ($search) {
-            $sql .= " WHERE CONCAT(IFNULL(t.task_id,''), IFNULL(assigner.name,''), IFNULL(assignee.name,''), IFNULL(t.datetime,''), IFNULL(t.type,''), IFNULL(t.assigned_id,''), IFNULL(r.name,''), IFNULL(t.comment,''), IFNULL(t.status,'')) LIKE :search ";
+            $sql .= " AND CONCAT(IFNULL(t.task_id,''), IFNULL(assigner.name,''), IFNULL(assignee.name,''), IFNULL(t.datetime,''), IFNULL(t.type,''), IFNULL(t.assigned_id,''), IFNULL(r.name,''), IFNULL(t.comment,''), IFNULL(t.status,'')) LIKE :search ";
         }
         $a = ['', 't.task_id', 't.type', 'r.name', 't.assigned_id', 'assigner.name', 'assignee.name', 't.status', 't.comment', 't.datetime'];
         $sql .= " ORDER BY $a[$column] $dir LIMIT :length OFFSET :start ";
@@ -76,7 +76,7 @@ class TaskProvider extends AbstractProvider
                 $arr[$key][] = $value['assigned_id'];
                 $arr[$key][] = $value['assigner'];
                 $arr[$key][] = $value['assignee'];
-                $arr[$key][] = $value['status'];
+                $arr[$key][] = "<div class='" . ($value['status'] == 'assigned' ? 'text-danger' : 'text-success') . "'>$value[status]</div>";
                 $arr[$key][] = $value['comment'];
                 $arr[$key][] = $value['datetime'];
             }
@@ -94,9 +94,9 @@ class TaskProvider extends AbstractProvider
         $this->database->executeDelete();
     }
 
-    public function status($assigned_id, $type)
+    public function status($assigned_id, $assignee_id, $type, $state = 'reviewed')
     {
-        $this->database->prepareQuery("UPDATE task SET status = 'reviewed' WHERE assignee_id = " . AUTH::getUserLoggedID() . " AND type = :type AND assigned_id = :assigned_id");
-        $this->database->executeUpdate([':assigned_id' => $assigned_id, ':type' => $type]);
+        $this->database->prepareQuery("UPDATE task SET status = :state WHERE assigned_id = :assigned_id AND assignee_id = :assignee_id AND `type` = :type");
+        $this->database->executeUpdate([':state' => $state, ':assigned_id' => $assigned_id, ':assignee_id' => $assignee_id, ':type' => $type]);
     }
 }
