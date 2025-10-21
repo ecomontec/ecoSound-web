@@ -138,7 +138,7 @@ $(function () {
             $("#y").val(1);
             $("#h").val(fileFreqMax);
             $("input[name=filter]").prop("checked", false);
-            $("input[name=continuous_play]").prop("checked", true);
+            $("input[name=continuous_play]").prop("checked", false);
             $("#recordingForm").submit();
         }
         e.preventDefault();
