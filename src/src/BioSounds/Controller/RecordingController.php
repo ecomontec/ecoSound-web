@@ -1000,7 +1000,7 @@ class RecordingController extends BaseController
         }
         copy(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav', $soundPath . '/' . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav');
         $resultPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'];
-        $str = escapeshellarg("hf:AlexanderGbd/insects-base-cnn10-96k-t") . " -sr " . escapeshellarg(Utils::getFileSamplingRate($soundPath . '/' . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav'));
+        $str = "autrainer inference " . escapeshellarg("hf:AlexanderGbd/insects-base-cnn10-96k-t") . " -sr " . escapeshellarg(Utils::getFileSamplingRate($soundPath . '/' . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav'));
         $windowSize = (!empty($data['window_size']) && $data['window_size'] != 'undefined') ? escapeshellarg($data['window_size']) : escapeshellarg("4.0");
         $strideSize = (!empty($data['stride_length']) && $data['stride_length'] != 'undefined') ? escapeshellarg($data['stride_length']) : escapeshellarg("4.0");
 
