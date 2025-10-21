@@ -130,7 +130,7 @@
                         if ($(this).data('type') == 'recording') {
                             window.open('{{ baseUrl }}/recording/show/' + $(this).data('recording'), '_blank');
                         } else if ($(this).data('type') == 'tag') {
-                            window.open('{{ baseUrl }}/recording/show/' + $(this).data('recording') + '?type=task&open=' + $(this).data('id') + '&t_min=' + $(this).data('tmin') + '&t_max=' + $(this).data('tmax') + '&f_min=' + $(this).data('fmin') + '&f_max=' + $(this).data('fmax'), '_blank');
+                            window.open('{{ baseUrl }}/recording/show/' + $(this).data('recording') + '?type=task&open=' + $(this).data('assigned') + '&t_min=' + $(this).data('tmin') + '&t_max=' + $(this).data('tmax') + '&f_min=' + $(this).data('fmin') + '&f_max=' + $(this).data('fmax'), '_blank');
                         }
                     } else {
                         showAlert('Only the assignee can view the task.')
@@ -154,7 +154,7 @@
                     return false;
                 }
                 if ($('.js-checkbox:checked').length > 1) {
-                    $('#delete_info').html("Are you sure you want to delete these <b class=\"text-danger\" >" + $('.js-checkbox:checked').length + "</b> entries?")
+                    $('#delete_info').html("Are you sure you want to delete these <b class='text-danger' >" + $('.js-checkbox:checked').length + "</b> entries?")
                 } else {
                     $('#delete_info').html("Are you sure you want to delete this entry?")
                 }

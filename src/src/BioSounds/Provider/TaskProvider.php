@@ -69,7 +69,7 @@ class TaskProvider extends AbstractProvider
         $result = $this->database->executeSelect($params);
         if (count($result)) {
             foreach ($result as $key => $value) {
-                $arr[$key][] = "<input type='checkbox' class='js-checkbox' data-id='$value[assigned_id]' data-recording='$value[recording_id]' data-type='$value[type]' data-assigner='$value[assigner_id]' data-assignee='$value[assignee_id]' data-status='$value[status]' name='cb[$value[task_id]]' id='cb[$value[task_id]]' data-tmin='$value[min_time]' data-tmax='$value[max_time]' data-fmin='$value[min_freq]' data-fmax='$value[max_freq]'>";
+                $arr[$key][] = "<input type='checkbox' class='js-checkbox' data-id='$value[task_id]' data-assigned='$value[assigned_id]' data-recording='$value[recording_id]' data-type='$value[type]' data-assigner='$value[assigner_id]' data-assignee='$value[assignee_id]' data-status='$value[status]' name='cb[$value[task_id]]' id='cb[$value[task_id]]' data-tmin='$value[min_time]' data-tmax='$value[max_time]' data-fmin='$value[min_freq]' data-fmax='$value[max_freq]'>";
                 $arr[$key][] = $value['task_id'];
                 $arr[$key][] = $value['type'];
                 $arr[$key][] = $value['recording'];
