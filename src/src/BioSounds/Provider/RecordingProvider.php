@@ -407,8 +407,36 @@ class RecordingProvider extends AbstractProvider
         if ($search) {
             $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.data_type,''), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.model,''), IFNULL(r.recording_gain,''), IFNULL(m.name,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.duty_cycle_recording,''), IFNULL(r.duty_cycle_period,''), IFNULL(r.note,''),IFNULL(r.DOI,''), IFNULL(r.creation_date,'')) LIKE :search ";
         }
-        $a = ['', 'r.recording_id', 'r.data_type', 'r.filename', 'r.name', 'u.name', 's.name', 're.model', 'r.recording_gain', 'm.name', 'l.name', 'r.type', 'r.medium', 'r.duty_cycle_recording', 'r.duty_cycle_period', 'r.note', 'r.DOI', 'file_date', 'file_time'];
-        $sql .= " ORDER BY $a[$column] $dir LIMIT :length OFFSET :start";
+        // Column mapping for server-side ordering. Index corresponds to DataTables column index.
+        // Keep an empty string at index 0 (checkbox column). The rest must follow the table header order
+        // defined in templates/administration/recordings.html.twig so sorting requests map to the
+        // correct database fields (e.g. sampling_rate must be at the sampling rate column index).
+        $a = [
+            '',                // 0: checkbox
+            'r.recording_id',  // 1: #
+            'r.data_type',     // 2: Data type
+            'r.filename',      // 3: Original Filename
+            'r.name',          // 4: Name
+            'u.name',          // 5: User
+            's.name',          // 6: Site
+            're.model',        // 7: Recorder
+            'm.name',          // 8: Microphone
+            'r.sampling_rate', // 9: Sampling Rate (Hz)
+            'r.duration',      // 10: Duration (s)
+            'r.channel_num',   // 11: Channels
+            'r.bitdepth',      // 12: Bit Depth
+            'r.recording_gain',// 13: Recording Gain
+            'l.name',          // 14: License
+            'r.type',          // 15: Recording Type
+            'r.medium',        // 16: Medium
+            'r.duty_cycle_recording', // 17: Duty Cycle Recording
+            'r.duty_cycle_period',    // 18: Duty Cycle Period
+            'r.note',          // 19: Note
+            'r.DOI',           // 20: DOI
+            'file_date',       // 21: Date
+            'file_time'        // 22: Time
+        ];
+		$sql .= " ORDER BY $a[$column] $dir LIMIT :length OFFSET :start";
         $this->database->prepareQuery($sql);
         $params = [
             ':collectionId' => $collectionId,
