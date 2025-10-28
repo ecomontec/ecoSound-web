@@ -880,10 +880,14 @@ class RecordingController extends BaseController
             }
             (new TagProvider())->insertArr($list);
             unlink(ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv");
+            return json_encode([
+                'errorCode' => 0,
+                'message' => "BirdNET v$maxValue found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. " . (is_array($list) ? count($list) : 0) . " tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
+            ]);
         }
         return json_encode([
-            'errorCode' => 0,
-            'message' => "BirdNET v$maxValue found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. " . (is_array($list) ? count($list) : 0) . " tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
+            'errorCode' => 1,
+            'message' => "BirdNET execution error.",
         ]);
     }
 
@@ -973,6 +977,11 @@ class RecordingController extends BaseController
                     $list = json_decode($output, true);
                 }
                 (new TagProvider())->insertArr($list);
+                Utils::deleteDirContents($resultPath);
+                return json_encode([
+                    'errorCode' => 0,
+                    'message' => "Batdetect2 $version found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. " . (is_array($list) ? count($list) : 0) . " tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
+                ]);
             } else {
                 Utils::deleteDirContents($resultPath);
                 return json_encode([
@@ -981,10 +990,9 @@ class RecordingController extends BaseController
                 ]);
             }
         }
-        Utils::deleteDirContents($resultPath);
         return json_encode([
-            'errorCode' => 0,
-            'message' => "Batdetect2 $version found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. " . (is_array($list) ? count($list) : 0) . " tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
+            'errorCode' => 1,
+            'message' => "Batdetect2 execution error.",
         ]);
     }
 
@@ -1069,6 +1077,11 @@ class RecordingController extends BaseController
                     $list = json_decode($output, true);
                 }
                 (new TagProvider())->insertArr($list);
+                Utils::deleteDirContents($resultPath);
+                return json_encode([
+                    'errorCode' => 0,
+                    'message' => "insects-base-cnn10-96k-t found $i detections. " . (is_array($list) ? count($list) : 0) . " tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
+                ]);
             } else {
                 Utils::deleteDirContents($resultPath);
                 return json_encode([
@@ -1077,10 +1090,9 @@ class RecordingController extends BaseController
                 ]);
             }
         }
-        Utils::deleteDirContents($resultPath);
         return json_encode([
-            'errorCode' => 0,
-            'message' => "insects-base-cnn10-96k-t found $i detections. " . (is_array($list) ? count($list) : 0) . " tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
+            'errorCode' => 1,
+            'message' => "insects-base-cnn10-96k-t execution error.",
         ]);
     }
 
