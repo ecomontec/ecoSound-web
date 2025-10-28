@@ -436,12 +436,14 @@ class RecordingProvider extends AbstractProvider
             'file_date',       // 21: Date
             'file_time'        // 22: Time
         ];
-		$sql .= " ORDER BY $a[$column] $dir LIMIT :length OFFSET :start";
+        $sql .= " ORDER BY $a[$column] $dir";
+        // Only add LIMIT if length is not -1 (DataTables "All" option sends -1)
+        if ($length != '-1') {
+            $sql .= " LIMIT :length OFFSET :start";
+        }
         $this->database->prepareQuery($sql);
         $params = [
             ':collectionId' => $collectionId,
-            ':length' => $length,
-            ':start' => $start,
         ];
         if ($search) {
             $params[':search'] = '%' . $search . '%';
