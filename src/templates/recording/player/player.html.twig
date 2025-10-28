@@ -189,9 +189,13 @@
                                     {% endfor %}
                                 </select>
                             </div>
-                            <div class="form-inline"><label class="ml-1 col-form-label-sm" for="max_gap">the minimum duration between merged tags.</label></div>
-                            <div class="form-group form-inline"><input id="max_gap" name="max_gap" class="form-control form-control-sm" type="text"><label class="ml-2 col-form-label-sm">Defaults to 0.</label></div>
-                            <div class="form-inline"><input id="keep_merged" name="keep_merged" class="form-control form-control-sm" type="checkbox"><label class="ml-1 col-form-label-sm" for="keep_merged">Keep only merged tags</label></div>
+                            <hr>
+                            <div class="form-inline"><input id="is_merged" name="is_merged" class="form-control form-control-sm" type="checkbox"><label class="ml-1 col-form-label-sm" for="is_merged">Merge resulting conspecific tags</label></div>
+                            <div class="merged-box mt-2" style="display: none;">
+                                <div class="form-inline"><label class="ml-1 col-form-label-sm" for="max_gap">Duration between separate tags, in seconds (default: 0)</label></div>
+                                <div class="form-group form-inline"><input id="max_gap" name="max_gap" class="form-control form-control-sm" type="text"></div>
+                                <div class="form-inline"><input id="keep_merged" name="keep_merged" class="form-control form-control-sm" type="checkbox"><label class="ml-1 col-form-label-sm" for="keep_merged">Keep only merged and separate tags</label></div>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -297,7 +301,13 @@
                 })
                 $("#acoustic_analysis").change();
             });
-
+            $('#is_merged').on('change', function () {
+                if ($(this).is(':checked')) {
+                    $('.merged-box').show();
+                } else {
+                    $('.merged-box').hide();
+                }
+            });
             $("#maad").change(function () {
                 $.ajax({
                     url: "{{ baseUrl }}/recording/getMaadlabel/" + $("#maad").val(),
@@ -372,6 +382,7 @@
                         'max_freq': fileFreqMax,
                         'user_id': '{{ user_id }}',
                         'max_gap': $("#max_gap").val() || 0,
+                        'is_merged': $("#is_merged").is(":checked") ? 1 : 0,
                         'keep_merged': $("#keep_merged").is(":checked") ? 1 : 0
                     };
                 } else if ($('#tf').val() == 2) {
@@ -384,6 +395,7 @@
                         'detection_threshold': $("#detection_threshold").val(),
                         'user_id': '{{ user_id }}',
                         'max_gap': $("#max_gap").val() || 0,
+                        'is_merged': $("#is_merged").is(":checked") ? 1 : 0,
                         'keep_merged': $("#keep_merged").is(":checked") ? 1 : 0
                     };
                 } else if ($('#tf').val() == 3) {
@@ -398,6 +410,7 @@
                         'max_freq': fileFreqMax,
                         'user_id': '{{ user_id }}',
                         'max_gap': $("#max_gap").val() || 0,
+                        'is_merged': $("#is_merged").is(":checked") ? 1 : 0,
                         'keep_merged': $("#keep_merged").is(":checked") ? 1 : 0
                     };
                 }

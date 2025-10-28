@@ -320,6 +320,7 @@ class RecordingController extends BaseController
                     'max_freq' => $recording['sampling_rate'] / 2,
                     'user_id' => Auth::getUserID(),
                     'max_gap' => $para->max_gap,
+                    'is_merged' => $para->is_merged,
                     'keep_merged' => $para->keep_merged,
                 ];
             }
@@ -335,6 +336,7 @@ class RecordingController extends BaseController
                         'detection_threshold' => $para->detection_threshold,
                         'user_id' => Auth::getUserID(),
                         'max_gap' => $para->max_gap,
+                        'is_merged' => $para->is_merged,
                         'keep_merged' => $para->keep_merged,
                     ];
                 }
@@ -353,6 +355,7 @@ class RecordingController extends BaseController
                         'max_freq' => $recording['sampling_rate'] / 2,
                         'user_id' => Auth::getUserID(),
                         'max_gap' => $para->max_gap,
+                        'is_merged' => $para->is_merged,
                         'keep_merged' => $para->keep_merged,
                     ];
                 }

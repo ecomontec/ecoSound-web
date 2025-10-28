@@ -873,9 +873,11 @@ class RecordingController extends BaseController
                     $i = $i + 1;
                 }
             }
-            $cmd = 'python3 ' . ABSOLUTE_DIR . 'bin/mergedTags.py ' . escapeshellarg(json_encode($list)) . " " . $species_id[0]['species_id'] . ' BirdNET ' . $data['max_gap'] . ' ' . $data['keep_merged'];
-            $output = shell_exec($cmd);
-            $list = json_decode($output, true);
+            if ($data['is_merged']) {
+                $cmd = 'python3 ' . ABSOLUTE_DIR . 'bin/mergedTags.py ' . escapeshellarg(json_encode($list)) . " " . $species_id[0]['species_id'] . ' BirdNET ' . $data['max_gap'] . ' ' . $data['keep_merged'];
+                $output = shell_exec($cmd);
+                $list = json_decode($output, true);
+            }
             (new TagProvider())->insertArr($list);
             unlink(ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv");
         }
@@ -965,9 +967,11 @@ class RecordingController extends BaseController
                         $i = $i + 1;
                     }
                 }
-                $cmd = 'python3 ' . ABSOLUTE_DIR . 'bin/mergedTags.py ' . escapeshellarg(json_encode($list)) . " " . $species_id[0]['species_id'] . ' batdetect2 ' . $data['max_gap'] . ' ' . $data['keep_merged'];
-                $output = shell_exec($cmd);
-                $list = json_decode($output, true);
+                if ($data['is_merged']) {
+                    $cmd = 'python3 ' . ABSOLUTE_DIR . 'bin/mergedTags.py ' . escapeshellarg(json_encode($list)) . " " . $species_id[0]['species_id'] . ' batdetect2 ' . $data['max_gap'] . ' ' . $data['keep_merged'];
+                    $output = shell_exec($cmd);
+                    $list = json_decode($output, true);
+                }
                 (new TagProvider())->insertArr($list);
             } else {
                 Utils::deleteDirContents($resultPath);
@@ -1059,9 +1063,11 @@ class RecordingController extends BaseController
                         }
                     }
                 }
-                $cmd = 'python3 ' . ABSOLUTE_DIR . 'bin/mergedTags.py ' . escapeshellarg(json_encode($list)) . " " . $species_id[0]['species_id'] . ' insects-base-cnn10-96k-t ' . $data['max_gap'] . ' ' . $data['keep_merged'];
-                $output = shell_exec($cmd);
-                $list = json_decode($output, true);
+                if ($data['is_merged']) {
+                    $cmd = 'python3 ' . ABSOLUTE_DIR . 'bin/mergedTags.py ' . escapeshellarg(json_encode($list)) . " " . $species_id[0]['species_id'] . ' insects-base-cnn10-96k-t ' . $data['max_gap'] . ' ' . $data['keep_merged'];
+                    $output = shell_exec($cmd);
+                    $list = json_decode($output, true);
+                }
                 (new TagProvider())->insertArr($list);
             } else {
                 Utils::deleteDirContents($resultPath);
