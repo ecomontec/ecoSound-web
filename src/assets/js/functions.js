@@ -417,3 +417,32 @@ $(document).ready(function () {
         $('#form-search').fadeToggle()
     }
 });
+
+/**
+ * Reset pagination position for a DataTable to the first page.
+ * @param {DataTable} table The DataTable instance to reset pagination for
+ */
+function resetDataTablesPagination(table) {
+    if (!table) return;
+    
+    try {
+        // Clear the state and reset to first page
+        table.state.clear();
+        table.page(0).draw();
+    } catch (e) {
+        console.error('Error resetting DataTable pagination:', e);
+    }
+}
+
+// Reset pagination to first page when switching projects/collections
+$(document).on('submit', '#projectForm, #collectionForm', function () {
+    if (typeof $.fn.dataTable === 'undefined') {
+        return;
+    }
+    
+    // Reset pagination for each visible DataTable
+    $('table.dataTable').each(function() {
+        var table = $(this).DataTable();
+        resetDataTablesPagination(table);
+    });
+});
