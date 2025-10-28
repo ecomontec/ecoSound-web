@@ -104,10 +104,7 @@ class IndexLogProvider extends AbstractProvider
             LEFT JOIN recording r ON r.recording_id = i.recording_id
             LEFT JOIN `user` u ON u.user_id = i.user_id
             LEFT JOIN index_type it ON it.index_id = i.index_id ";
-        $params = [
-            ':length' => $length,
-            ':start' => $start,
-        ];
+        $params = [];
         if (!Auth::isUserAdmin()) {
             $sql = $sql . ' WHERE i.user_id = :user_id ';
             $params[':user_id'] = Auth::getUserLoggedID();
@@ -117,7 +114,13 @@ class IndexLogProvider extends AbstractProvider
             $sql .= " CONCAT(IFNULL(i.log_id,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(it.name,''), IFNULL(i.min_time,''), IFNULL(i.max_time,''), IFNULL(i.min_frequency,''), IFNULL(i.max_frequency,''), IFNULL(i.variable_type,''), IFNULL(i.variable_order,''), IFNULL(i.variable_name,''), IFNULL(i.variable_value,''), IFNULL(i.creation_date,''), IFNULL(i.version,'')) LIKE :search ";
         }
         $a = ['', 'i.log_id', 'r.name', 'u.name', 'it.name', 'i.version', 'i.min_time', 'i.max_time', 'i.min_frequency', 'i.max_frequency', 'i.variable_type', 'i.variable_order', 'i.variable_name', 'i.variable_value', 'i.creation_date'];
-        $sql .= " ORDER BY $a[$column] $dir LIMIT :length OFFSET :start ";
+        $sql .= " ORDER BY $a[$column] $dir";
+        // Only add LIMIT if length is not -1 (DataTables "All" option sends -1)
+        if ($length != '-1') {
+            $sql .= " LIMIT :length OFFSET :start";
+            $params[':length'] = $length;
+            $params[':start'] = $start;
+        }
         $this->database->prepareQuery($sql);
         if ($search) {
             $params[':search'] = '%' . $search . '%';
