@@ -1,5 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
 
+    // Set global DataTables defaults for the number of rows to show
+    if (typeof $.fn.dataTable !== 'undefined') {
+        $.extend(true, $.fn.dataTable.defaults, {
+            "lengthMenu": [[10, 25, 50, 100, 1000, -1], [10, 25, 50, 100, 1000, "All"]]
+        });
+    }
+    
     if (error) {
         alert(error)
         showAlert(error);
