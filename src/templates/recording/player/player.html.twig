@@ -79,6 +79,9 @@
                             <input type="checkbox" id="filter" name="filter">
                             <i class="fas fa-filter"></i>
                         </label>
+                        <label class="btn btn-link" title="AI Models" id="btn-ai-models">
+                            <i class="fas fa-robot"></i>
+                        </label>
                     </div>
                 </form>
             </div>
@@ -261,6 +264,42 @@
                 </div>
             </div>
         </div>
+        <!-- Hugging Face model execution modal -->
+        <div class="modal fade" id="modal-hf-exec" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Run model on recording</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="hf_exec_modelId" />
+                        <div class="form-group">
+                            <label>Model</label>
+                            <div id="hf_exec_modelTitle" class="font-weight-bold"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Pipeline</label>
+                            <div id="hf_exec_pipeline" class="small text-muted"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="hf_exec_param_note">Notes / model config</label>
+                            <pre id="hf_exec_modelConfig" style="max-height:200px;overflow:auto;background:#f8f9fa;padding:8px;border-radius:4px"></pre>
+                        </div>
+                        <div class="form-group">
+                            <label for="hf_exec_custom_params">Custom parameters (JSON)</label>
+                            <textarea id="hf_exec_custom_params" class="form-control" rows="3">{"confidence":0.5}</textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button id="hf_exec_run" type="button" class="btn btn-primary">Execute model</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <script>
             $(".loading").css("opacity", "0");
             $(document).ready(function () {
@@ -317,6 +356,279 @@
             $('.js-open-aa-modal').click(function () {
                 $('#modal-aa').modal('show');
             })
+
+            // Function to display segmentation results overlaid on spectrogram
+            function displaySegmentationResults(result) {
+                if (!result.result || !Array.isArray(result.result)) {
+                    alert('No segmentation results returned');
+                    return;
+                }
+
+                const segments = result.result;
+                if (segments.length === 0) {
+                    alert('Model ran successfully but detected no segments in the spectrogram.\n\nModel: ' + result.modelId);
+                    return;
+                }
+
+                // Get canvas and context
+                const canvas = document.getElementById('myCanvas');
+                if (!canvas) {
+                    alert('Canvas not found');
+                    return;
+                }
+
+                // Create a temporary canvas for compositing
+                const overlayCanvas = document.createElement('canvas');
+                overlayCanvas.width = canvas.offsetWidth;
+                overlayCanvas.height = canvas.offsetHeight;
+                const ctx = overlayCanvas.getContext('2d');
+
+                // Generate distinct colors for each segment
+                const colors = [
+                    'rgba(255, 0, 0, 0.4)',    // Red
+                    'rgba(0, 255, 0, 0.4)',    // Green
+                    'rgba(0, 0, 255, 0.4)',    // Blue
+                    'rgba(255, 255, 0, 0.4)',  // Yellow
+                    'rgba(255, 0, 255, 0.4)',  // Magenta
+                    'rgba(0, 255, 255, 0.4)',  // Cyan
+                    'rgba(255, 128, 0, 0.4)',  // Orange
+                    'rgba(128, 0, 255, 0.4)',  // Purple
+                ];
+
+                let processedCount = 0;
+                const totalSegments = segments.length;
+
+                // Process each segment
+                segments.forEach((segment, index) => {
+                    if (!segment.mask) {
+                        processedCount++;
+                        return;
+                    }
+
+                    // Decode base64 mask
+                    const maskImage = new Image();
+                    maskImage.onload = function() {
+                        // Draw mask with color overlay
+                        ctx.globalCompositeOperation = 'source-over';
+                        ctx.fillStyle = colors[index % colors.length];
+                        
+                        // Create a temporary canvas for the mask
+                        const maskCanvas = document.createElement('canvas');
+                        maskCanvas.width = maskImage.width;
+                        maskCanvas.height = maskImage.height;
+                        const maskCtx = maskCanvas.getContext('2d');
+                        maskCtx.drawImage(maskImage, 0, 0);
+                        
+                        // Get mask pixels
+                        const maskData = maskCtx.getImageData(0, 0, maskImage.width, maskImage.height);
+                        const pixels = maskData.data;
+                        
+                        // Scale mask to canvas size and draw colored overlay
+                        const scaleX = overlayCanvas.width / maskImage.width;
+                        const scaleY = overlayCanvas.height / maskImage.height;
+                        
+                        for (let y = 0; y < maskImage.height; y++) {
+                            for (let x = 0; x < maskImage.width; x++) {
+                                const i = (y * maskImage.width + x) * 4;
+                                // Check if pixel is part of mask (non-transparent)
+                                if (pixels[i + 3] > 128) { // Alpha channel
+                                    const canvasX = Math.floor(x * scaleX);
+                                    const canvasY = Math.floor(y * scaleY);
+                                    ctx.fillRect(canvasX, canvasY, Math.ceil(scaleX), Math.ceil(scaleY));
+                                }
+                            }
+                        }
+                        
+                        // Draw label
+                        const label = segment.label || 'Unknown';
+                        const score = segment.score ? (segment.score * 100).toFixed(1) + '%' : '';
+                        ctx.fillStyle = colors[index % colors.length].replace('0.4', '1.0');
+                        ctx.font = 'bold 14px Arial';
+                        ctx.strokeStyle = 'white';
+                        ctx.lineWidth = 3;
+                        const text = label + (score ? ' (' + score + ')' : '');
+                        const textY = 20 + (index * 25);
+                        ctx.strokeText(text, 10, textY);
+                        ctx.fillText(text, 10, textY);
+                        
+                        processedCount++;
+                        
+                        // When all segments processed, add overlay to canvas
+                        if (processedCount === totalSegments) {
+                            // Add overlay as a new div on top of canvas
+                            const existingOverlay = document.getElementById('segmentation-overlay');
+                            if (existingOverlay) {
+                                existingOverlay.remove();
+                            }
+                            
+                            const overlayDiv = document.createElement('div');
+                            overlayDiv.id = 'segmentation-overlay';
+                            overlayDiv.style.position = 'absolute';
+                            overlayDiv.style.top = '0';
+                            overlayDiv.style.left = '0';
+                            overlayDiv.style.width = '100%';
+                            overlayDiv.style.height = '100%';
+                            overlayDiv.style.pointerEvents = 'none';
+                            overlayDiv.style.zIndex = '10';
+                            
+                            const overlayImg = document.createElement('img');
+                            overlayImg.src = overlayCanvas.toDataURL();
+                            overlayImg.style.width = '100%';
+                            overlayImg.style.height = '100%';
+                            overlayDiv.appendChild(overlayImg);
+                            
+                            canvas.appendChild(overlayDiv);
+                            
+                            // Show summary alert
+                            alert('Segmentation overlay applied!\n\n' +
+                                  'Model: ' + result.modelId + '\n' +
+                                  'Segments found: ' + totalSegments + '\n\n' +
+                                  segments.map((s, i) => (i+1) + '. ' + s.label + ' (' + (s.score * 100).toFixed(1) + '%)').join('\n') +
+                                  '\n\nClick "Clear Overlay" button to remove.');
+                            
+                            // Add clear button if it doesn't exist
+                            if (!document.getElementById('clear-segmentation-overlay')) {
+                                const clearBtn = document.createElement('button');
+                                clearBtn.id = 'clear-segmentation-overlay';
+                                clearBtn.className = 'btn btn-sm btn-warning mt-2';
+                                clearBtn.textContent = 'Clear Overlay';
+                                clearBtn.onclick = function() {
+                                    const overlay = document.getElementById('segmentation-overlay');
+                                    if (overlay) overlay.remove();
+                                    clearBtn.remove();
+                                };
+                                document.getElementById('player_box').appendChild(clearBtn);
+                            }
+                        }
+                    };
+                    
+                    maskImage.onerror = function() {
+                        console.error('Failed to load mask for segment:', segment.label);
+                        processedCount++;
+                    };
+                    
+                    // Load base64 image
+                    maskImage.src = 'data:image/png;base64,' + segment.mask;
+                });
+            }
+
+            // Open Hugging Face modal via AI Models button
+            $('#btn-ai-models').on('click', function () {
+                if (typeof openHuggingFaceModal === 'function') {
+                    openHuggingFaceModal('');  // Empty string = show all image-segmentation models
+                }
+            });
+
+            // Handle selected model from Hugging Face modal
+            window.addEventListener('huggingface:model:selected', function (e) {
+                const model = e.detail || {};
+                console.log('HF model selected in player:', model);
+                // Open the HF execution modal and populate fields so user can set execution params
+                $('#hf_exec_modelId').val(model.modelId || model.id || '');
+                $('#hf_exec_modelTitle').text(model.modelId || model.id || '');
+                $('#hf_exec_pipeline').text(model.pipeline_tag || (model.tags || []).join(', '));
+                // Store pipeline_tag for later use
+                $('#hf_exec_modelId').data('pipeline-tag', model.pipeline_tag || '');
+                try {
+                    const cfg = model.config ? JSON.stringify(model.config, null, 2) : (model.cardData && model.cardData.modelDetails ? JSON.stringify(model.cardData.modelDetails, null, 2) : '');
+                    $('#hf_exec_modelConfig').text(cfg);
+                } catch (err) {
+                    $('#hf_exec_modelConfig').text('');
+                }
+                // prefill small default params
+                $('#hf_exec_custom_params').val(JSON.stringify({confidence:0.5}));
+                $('#modal-hf-exec').modal('show');
+            });
+
+            // Execute model button — run inference locally on server via AJAX
+            $('#hf_exec_run').on('click', function () {
+                const modelId = $('#hf_exec_modelId').val();
+                const pipelineTag = $('#hf_exec_modelId').data('pipeline-tag') || '';
+                let params = {};
+                try {
+                    params = JSON.parse($('#hf_exec_custom_params').val());
+                } catch (err) {
+                    alert('Custom parameters must be valid JSON');
+                    return;
+                }
+
+                // Get current spectrogram URL for image-segmentation models
+                let spectrogramUrl = '';
+                if (pipelineTag === 'image-segmentation') {
+                    // Get the spectrogram image src from the player
+                    const spectrogramImg = $('#cropbox');
+                    if (spectrogramImg.length > 0) {
+                        spectrogramUrl = spectrogramImg.attr('src');
+                    }
+                    if (!spectrogramUrl) {
+                        alert('Spectrogram URL not found. Please ensure the spectrogram is loaded.');
+                        return;
+                    }
+                }
+
+                // Hide modal and show loading
+                $('#modal-hf-exec').modal('hide');
+                $('.loading-grey').toggle();
+
+                // Call backend to execute model locally on this recording
+                const apiBase = (typeof baseUrl !== 'undefined' && baseUrl) ? baseUrl : '';
+                const requestBody = {
+                    modelId: modelId,
+                    recordingId: $('input[name=recording_id]').val(),
+                    params: params
+                };
+                
+                // Add pipelineTag and spectrogramUrl for image-segmentation models
+                if (pipelineTag) {
+                    requestBody.pipelineTag = pipelineTag;
+                }
+                if (spectrogramUrl) {
+                    requestBody.spectrogramUrl = spectrogramUrl;
+                }
+                
+                fetch(apiBase + '/api/huggingface/execute', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                })
+                .then(r => {
+                    if (!r.ok) return r.text().then(t => { throw new Error(t || r.status); });
+                    return r.json();
+                })
+                .then(result => {
+                    $('.loading-grey').toggle();
+                    if (result.error) {
+                        let errorMsg = 'Inference error: ' + (result.message || 'Unknown error');
+                        if (result.raw_response) {
+                            errorMsg += '\n\nRaw API response:\n' + result.raw_response;
+                        }
+                        if (result.debug_file_size_kb) {
+                            errorMsg += '\n\nFile size: ' + result.debug_file_size_kb + ' KB';
+                        }
+                        if (result.raw_output) {
+                            errorMsg += '\n\nRaw output:\n' + result.raw_output;
+                        }
+                        if (result.json_error) {
+                            errorMsg += '\n\nJSON error: ' + result.json_error;
+                        }
+                        alert(errorMsg);
+                    } else {
+                        // Display segmentation results
+                        displaySegmentationResults(result);
+                    }
+                })
+                .catch(err => {
+                    $('.loading-grey').toggle();
+                    let errorMsg = 'Inference failed: ' + (err.message || err.toString() || 'Unknown error');
+                    console.error('Inference error:', err);
+                    alert(errorMsg);
+                });
+            });
+
             $(".js-maad-modal").click(function (e) {
                 let data = []
                 let param = ''

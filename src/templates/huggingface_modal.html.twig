@@ -1,0 +1,40 @@
+<div class="modal fade" id="modal-hf" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content shadow">
+            <div class="modal-header">
+                <h5 class="modal-title">Hugging Face — AI models</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row mb-2">
+                    <div class="col-9">
+                        <input id="hf-search-box" class="form-control" placeholder="Search models (e.g. audio-classification, wav2vec2)" />
+                    </div>
+                    <div class="col-3">
+                        <button id="hf-search-btn" class="btn btn-primary btn-block">Search</button>
+                    </div>
+                </div>
+
+                <div id="hf-search-results" style="max-height:320px; overflow:auto;">
+                    <!-- results inserted here -->
+                </div>
+
+                <hr />
+
+                <div id="hf-model-details" style="display:none;">
+                    <h6 id="hf-model-title"></h6>
+                    <p id="hf-model-tags" class="small text-muted"></p>
+                    <div id="hf-model-meta" class="mb-2"></div>
+                    <a id="hf-model-link" href="#" target="_blank">Open on Hugging Face</a>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button id="hf-use-model" type="button" class="btn btn-primary" disabled>Use selected model</button>
+            </div>
+        </div>
+    </div>
+</div>
