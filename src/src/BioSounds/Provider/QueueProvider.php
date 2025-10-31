@@ -79,16 +79,18 @@ class QueueProvider extends AbstractProvider
         $a = ['', 'queue_id', 'type', 'completed', 'total', 'status', 'start_time', 'stop_time', 'warning', 'error'];
         $sql .= " ORDER BY $a[$column] $dir";
         // Only add LIMIT if length is not -1 (DataTables "All" option sends -1)
-        if ($length != '-1') {
-            $sql .= " LIMIT :length OFFSET :start";
-        }
-        $this->database->prepareQuery($sql);
         $params = [
             ':user_id' => Auth::getUserLoggedID(),
         ];
         if ($search) {
             $params[':search'] = '%' . $search . '%';
         }
+        if ($length != '-1') {
+            $sql .= " LIMIT :length OFFSET :start";
+            $params[':length'] = (int)$length;
+            $params[':start'] = (int)$start;
+        }
+        $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect($params);
         if (count($result)) {
             foreach ($result as $key => $value) {

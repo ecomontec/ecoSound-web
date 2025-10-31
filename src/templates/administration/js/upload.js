@@ -1,55 +1,47 @@
 let uploadDir = Math.floor(Math.random() * (10000000 - 100000) + 100000);
 var isUploading = false;
 var closeButtonClicked = false;
-
-$(document).ready(function() {
-    if (typeof $.fn.pluploadQueue === 'undefined') {
-        console.error('Plupload not loaded');
-        return;
-    }
-    
-    $("#file-uploader").pluploadQueue({
-        runtimes: 'html5',
-        url: baseUrl + '/scripts/uploaded.php?dir=' + uploadDir,
+$("#file-uploader").pluploadQueue({
+    runtimes: 'html5',
+    url: baseUrl + '/scripts/uploaded.php?dir=' + uploadDir,
+    max_file_size: '1000mb',
+    chunk_size: '1mb',
+    unique_names: false,
+    multiple_queues: true,
+    prevent_duplicates: true,
+    filters: {
         max_file_size: '1000mb',
-        chunk_size: '1mb',
-        unique_names: false,
-        multiple_queues: true,
-        prevent_duplicates: true,
-        filters: {
-            max_file_size: '1000mb',
-            mime_types: [
-                {title: "Recording files", extensions: "flac,wav,ogg,mp3"}
-            ]
+        mime_types: [
+            {title: "Recording files", extensions: "flac,wav,ogg,mp3"}
+        ]
+    },
+    init: {
+        UploadComplete: function (up) {
+            $("#save_button").prop("disabled", false);
+            isUploading = false;
+            $('.loading').hide()
         },
-        init: {
-            UploadComplete: function (up) {
-                $("#save_button").prop("disabled", false);
-                isUploading = false;
-                $('.loading').hide()
-            },
-            Error: function (up, args) {
-                showAlert(args.message.replace(/\.([^\.]*)$/, ": $1") + args.file.name);
-                $('.loading').hide()
-            },
-            FilesAdded: function (up, files) {
-                plupload.each(files, function (file) {
-                    if (file.name.replace(/\.[^/.]+$/, "").length > 150) {
-                        $(".plupload_start").addClass('plupload_disabled');
-                        up.removeFile(file);
-                        showAlert('File name: ' + file.name + ' too long. Maximum: 150 characters. File was skipped.', true);
-                    }
-                });
-                if (up.files.length > 0) {
-                    isUploading = true;
-                    document.querySelector('.plupload_start').click();
-                    $('#uploadForm').collapse('show');
-                    $("#save_button").prop("disabled", true);
+        Error: function (up, args) {
+            showAlert(args.message.replace(/\.([^\.]*)$/, ": $1") + args.file.name);
+            $('.loading').hide()
+        },
+        FilesAdded: function (up, files) {
+            plupload.each(files, function (file) {
+                if (file.name.replace(/\.[^/.]+$/, "").length > 150) {
+                    $(".plupload_start").addClass('plupload_disabled');
+                    up.removeFile(file);
+                    showAlert('File name: ' + file.name + ' too long. Maximum: 150 characters. File was skipped.', true);
                 }
-                $('.loading').hide()
+            });
+            if (up.files.length > 0) {
+                isUploading = true;
+                document.querySelector('.plupload_start').click();
+                $('#uploadForm').collapse('show');
+                $("#save_button").prop("disabled", true);
             }
+            $('.loading').hide()
         }
-    });
+    }
 });
 
 $('#closeButton').click(function () {
