@@ -22,12 +22,14 @@ class LoginController extends BaseController
                 } else {
                     header('Location: ' . APP_URL);
                 }
+                return true;
             }
         }
         if (!Auth::isUserLogged()) {
             throw new AuthenticationException();
         } else {
             header('Location: ' . APP_URL);
+            return true;
         }
     }
 
