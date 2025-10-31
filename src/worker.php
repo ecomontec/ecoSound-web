@@ -58,6 +58,9 @@ $callback = function ($msg) use ($config) {
                     if ($d['creator_type'] == 'batdetect2') {
                         $back = (new \BioSounds\Controller\RecordingController())->batdetect2($d);
                     }
+                    if ($d['creator_type'] == 'NatureLM-audio') {
+                        $back = (new \BioSounds\Controller\RecordingController())->NatureLMaudio($d);
+                    }
                 }
                 if ($headers['list_type'] == 'upload') {
                     $back = (new FileService())->process($d);

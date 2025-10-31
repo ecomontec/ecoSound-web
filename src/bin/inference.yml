@@ -1,0 +1,38 @@
+# Minimal NatureLM inference configuration
+# This file is required by NatureLM.infer.Pipeline
+# Based on EarthSpeciesProject/naturelm-audio repo configs
+
+generate:
+  max_new_tokens: 256
+  num_beams: 1
+  do_sample: false
+  min_length: 1
+  temperature: 1.0
+  repetition_penalty: 1.0
+  length_penalty: 1.0
+
+model:
+  llama_path: meta-llama/Meta-Llama-3.1-8B-Instruct
+  beats_path: null
+  beats_cfg: {}
+  ckpt: null
+  freeze_beats: true
+  use_audio_Qformer: true
+  max_pooling: false
+  downsample_factor: 4
+  freeze_audio_QFormer: false
+  window_level_Qformer: true
+  num_audio_query_token: 1
+  second_per_window: 0.333333
+  second_stride: 0.333333
+  audio_llama_proj_model: null
+  freeze_audio_llama_proj: false
+  device: cpu
+  lora: true
+  lora_rank: 8
+  lora_alpha: 32
+  lora_dropout: 0.1
+  flash_attn: eager
+  prompt_template: ""
+  max_txt_len: 128
+  end_sym: "</s>"

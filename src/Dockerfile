@@ -26,23 +26,34 @@ RUN apt-get install -y git zip unzip netcat \
 RUN docker-php-ext-install pdo_mysql bcmath sockets
 RUN composer install --no-plugins --no-scripts --optimize-autoloader --no-dev --no-progress
 RUN apt-get install -y python && curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py && python get-pip.py && python -m pip install --no-cache-dir numpy
-RUN apt-get install -y python3.9 && apt-get install -y python3-pip
+# Install Python 3.11 from source (with liblzma support for torchvision)
+RUN apt-get install -y build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev liblzma-dev && \
+    cd /tmp && \
+    wget https://www.python.org/ftp/python/3.11.9/Python-3.11.9.tgz && \
+    tar -xf Python-3.11.9.tgz && \
+    cd Python-3.11.9 && \
+    ./configure --enable-optimizations --with-ensurepip=install && \
+    make -j $(nproc) && \
+    make altinstall && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/local/bin/python3.11 1 && \
+    ln -sf /usr/local/bin/pip3.11 /usr/local/bin/pip3 && \
+    cd / && rm -rf /tmp/Python-3.11.9*
 # Upgrade pip first
-RUN pip3 install --no-cache-dir --upgrade pip setuptools wheel
+RUN pip3.11 install --no-cache-dir --upgrade pip setuptools wheel
 # Install PyTorch CPU first to avoid multiple versions (TensorFlow/batdetect2/autrainer may pull torch)
 # Install PyTorch CPU first to avoid multiple versions (TensorFlow/batdetect2/autrainer may pull torch)
-RUN pip3 install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.3.1 torchaudio==2.3.1 torchvision==0.18.1
+RUN pip3.11 install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.3.1 torchaudio==2.3.1 torchvision==0.18.1
 # Install numpy version compatible with autrainer before other packages
-RUN pip3 install --no-cache-dir "numpy>=1.24.1,<2.0.0"
+RUN pip3.11 install --no-cache-dir "numpy>=1.24.1,<2.0.0"
 # Install Transformers and soundfile for HuggingFace inference (force reinstall to ensure clean install)
-RUN pip3 install --no-cache-dir --force-reinstall transformers>=4.30.0 soundfile>=0.12.0
+RUN pip3.11 install --no-cache-dir --force-reinstall transformers>=4.30.0 soundfile>=0.12.0
 # Install remaining packages (they'll use the already-installed PyTorch and numpy)
-RUN pip3 install --no-cache-dir scikit-maad matplotlib tensorflow librosa batdetect2 autrainer
+RUN pip3.11 install --no-cache-dir scikit-maad matplotlib tensorflow librosa batdetect2 autrainer
 # (moved earlier) system libs already installed above
 RUN chown -R www-data:www-data /var/www/html/sounds /var/www/html/tmp /var/www/html/cache
 RUN chmod +x /var/www/html/bin/svt.py
 RUN chmod +x /var/www/html/bin/getMaad.py
-RUN chmod -R 777 /usr/local/lib/python3.9
+RUN chmod -R 777 /usr/local/lib/python3.11
 # Install Python 2-only tools dependencies with pip for python2
 RUN python -m pip install --no-cache-dir scikits.audiolab==0.8 Pillow
 

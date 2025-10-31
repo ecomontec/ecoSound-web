@@ -180,7 +180,7 @@
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title maad-title">Classifiers</h5>
+                        <h5 class="modal-title maad-title">AI Models (local)</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -312,7 +312,11 @@
                         html = html + '<div class="col-form-label">' +
                             '<strong>Description:</strong>' +
                             '<a class="col-form-label" href="{{ model.source_URL }}" target="_blank" title="Documentation"> <i class="fa fa-book"></i></a>' +
-                            '<div class="col-form-label-sm">{{ model.description }}</div></div>'
+                            '<div class="col-form-label-sm">{{ model.description }}</div>' +
+                            {% if model.attribution is defined and model.attribution %}
+                            '<div class="col-form-label-sm text-muted mt-1"><small>{{ model.attribution|raw }}</small></div>' +
+                            {% endif %}
+                            '</div>'
                         let data = '{{ model.parameter }}'.split('$').map(item => item.split('@'));
                         $.each(data, function (index, value) {
                             html = html + '<div class="form-inline">' +
@@ -359,14 +363,16 @@
 
             // Function to display segmentation results overlaid on spectrogram
             function displaySegmentationResults(result) {
-                if (!result.result || !Array.isArray(result.result)) {
+                // Result structure: {error: false, data: [...], model_id: ..., recording_id: ...}
+                const segments = result.data;
+                
+                if (!segments || !Array.isArray(segments)) {
                     alert('No segmentation results returned');
                     return;
                 }
-
-                const segments = result.result;
+                
                 if (segments.length === 0) {
-                    alert('Model ran successfully but detected no segments in the spectrogram.\n\nModel: ' + result.modelId);
+                    alert('Model ran successfully but detected no segments in the spectrogram.\n\nModel: ' + result.model_id);
                     return;
                 }
 
@@ -481,7 +487,7 @@
                             
                             // Show summary alert
                             alert('Segmentation overlay applied!\n\n' +
-                                  'Model: ' + result.modelId + '\n' +
+                                  'Model: ' + result.model_id + '\n' +
                                   'Segments found: ' + totalSegments + '\n\n' +
                                   segments.map((s, i) => (i+1) + '. ' + s.label + ' (' + (s.score * 100).toFixed(1) + '%)').join('\n') +
                                   '\n\nClick "Clear Overlay" button to remove.');
@@ -696,7 +702,46 @@
                         'temp': soundFilePath,
                         'user_id': '{{ user_id }}',
                     };
+                } else if ($('#tf').val() == 4) {
+                    // NatureLM-audio
+                    data = {
+                        'collection_id': $('input[name=collection_id]').val(),
+                        'recording_id': $('input[name=recording_id]').val(),
+                        'filename': $('input[name=filename]').val(),
+                        'creator_type': $("#tf option:selected").text(),
+                        'recording_directory': $('input[name=recording_directory]').val(),
+                        'threshold': $("#threshold").val(),
+                        'top_k': $("#top_k").val(),
+                        'min_time': minTime,
+                        'max_time': maxTime,
+                        'temp': soundFilePath,
+                        'user_id': '{{ user_id }}',
+                    };
+                } else {
+                    // Generic handler for other models
+                    data = {
+                        'collection_id': $('input[name=collection_id]').val(),
+                        'recording_id': $('input[name=recording_id]').val(),
+                        'filename': $('input[name=filename]').val(),
+                        'creator_type': $("#tf option:selected").text(),
+                        'recording_directory': $('input[name=recording_directory]').val(),
+                        'temp': soundFilePath,
+                        'user_id': '{{ user_id }}',
+                    };
+                    // Add any parameter inputs that were dynamically generated
+                    $('#tf').siblings('div.form-group').find('input').each(function() {
+                        data[$(this).attr('name')] = $(this).val();
+                    });
                 }
+                
+                // Check if data is populated
+                if (!data || (Array.isArray(data) && data.length === 0)) {
+                    $('.loading-grey').toggle();
+                    alert('Error: No data collected for model execution. Model ID: ' + $('#tf').val());
+                    e.preventDefault();
+                    return;
+                }
+                
                 $('#modal-tf').modal('hide');
                 data = jsToFormData(data)
                 $.ajax({
@@ -716,11 +761,12 @@
                     })
                     .fail(function (response) {
                         $('.loading-grey').toggle();
+                        console.error('AJAX error:', response);
                         if (!response.responseJSON) {
-                            showAlert('Error ' + response.message);
+                            showAlert('Error: ' + (response.statusText || response.message || 'Unknown error') + ' (Status: ' + response.status + ')');
                             return;
                         }
-                        showAlert(response.responseJSON.message);
+                        showAlert(response.responseJSON.message || 'Error: ' + response.status);
                     })
                 e.preventDefault();
             });

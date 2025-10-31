@@ -966,6 +966,126 @@ class RecordingController extends BaseController
         ]);
     }
 
+    public function NatureLMaudio($data = null)
+    {
+        if (isset($data)) {
+            $_POST = $data;
+        }
+        foreach ($_POST as $key => $value) {
+            $data[$key] = $value;
+        }
+        
+        // Get recording data to retrieve sampling rate
+        $recordingData = (new RecordingProvider())->get($data['recording_id'])[0];
+        $samplingRate = $recordingData[Recording::SAMPLING_RATE];
+        $nyquistFreq = $samplingRate / 2;
+        
+        $audioPath = ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['filename'];
+        $outputPath = ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . "-naturelm.json";
+        
+        // Build Python command
+        $cmd = 'python3 ' . ABSOLUTE_DIR . 'bin/naturelm_inference.py';
+        $cmd .= ' "' . $audioPath . '"';
+        $cmd .= ' --output "' . $outputPath . '"';
+        
+        // Add parameters if provided
+        if (isset($data['min_time']) && $data['min_time'] !== '') {
+            $cmd .= ' --start-sec ' . floatval($data['min_time']);
+        }
+        if (isset($data['max_time']) && $data['max_time'] !== '' && isset($data['min_time']) && $data['min_time'] !== '') {
+            $duration = floatval($data['max_time']) - floatval($data['min_time']);
+            $cmd .= ' --duration-sec ' . $duration;
+        }
+        if (isset($data['threshold']) && $data['threshold'] !== '') {
+            $cmd .= ' --threshold ' . floatval($data['threshold']);
+        } else {
+            $cmd .= ' --threshold 0.1';
+        }
+        if (isset($data['top_k']) && $data['top_k'] !== '') {
+            $cmd .= ' --top-k ' . intval($data['top_k']);
+        } else {
+            $cmd .= ' --top-k 5';
+        }
+        
+        // Execute
+        exec($cmd . " 2>&1", $out, $status);
+        
+        // Check for output file
+        if (!file_exists($outputPath)) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'NatureLM inference failed: Output file not created. ' . implode("\n", $out),
+            ]);
+        }
+        
+        // Read results
+        $jsonContent = file_get_contents($outputPath);
+        $result = json_decode($jsonContent, true);
+        
+        // Clean up
+        unlink($outputPath);
+        
+        if (!$result || !$result['success']) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'NatureLM inference failed: ' . ($result['error'] ?? 'Unknown error'),
+            ]);
+        }
+        
+        // Process predictions and insert as tags
+        // NatureLM generates free-form text labels (common names), so we store them all
+        // as "Unknown" species with the label in the comments field
+        $predictions = $result['predictions'] ?? [];
+        $list = [];
+        
+        // Get "Unknown" species ID
+        $species_id_unknown = (new Species())->getByName('Unknown');
+        $unknown_id = $species_id_unknown[0]['species_id'];
+        
+        foreach ($predictions as $pred) {
+            $label = $pred['label'];
+            $confidence = $pred['confidence'];
+            $start_time = $pred['start_time'];
+            $end_time = $pred['end_time'];
+            
+            $tag = [
+                'recording_id' => $data['recording_id'],
+                'species_id' => $unknown_id,
+                'sound_id' => '4',
+                'user_id' => $data['user_id'],
+                'creator_type' => 'NatureLM-audio',
+                'min_time' => $start_time,
+                'max_time' => $end_time,
+                'min_freq' => floatval($data['min_frequency'] ?? 0),
+                'max_freq' => floatval($data['max_frequency'] ?? $nyquistFreq),
+                'individuals' => 1,
+                'reference_call' => 0,
+                'comments' => $label,
+                'distance_not_estimable' => 1,
+            ];
+            
+            // Only add confidence if it's not null (NatureLM doesn't provide confidence scores)
+            if ($confidence !== null) {
+                $tag['confidence'] = $confidence;
+            }
+            
+            $list[] = $tag;
+        }
+        
+        // Insert tags
+        if (!empty($list)) {
+            (new TagProvider())->insertArr($list);
+        }
+        
+        $modelVersion = $result['model'] ?? 'NatureLM-audio';
+        $totalDetections = count($predictions);
+        
+        return json_encode([
+            'errorCode' => 0,
+            'message' => "$modelVersion found $totalDetections detections. All tags stored with species='Unknown' and labels in comments.",
+        ]);
+    }
+
     private function checkPermissions(): bool
     {
         if (!Auth::isUserLogged()) {
