@@ -233,7 +233,7 @@ class Utils
     {
         $files = array_diff(scandir($dir), array('.', '..'));
         foreach ($files as $file) {
-            (is_dir("$dir/$file")) ? self::deleteDirContents("$dir/$file") : unlink("$dir/$file");
+            (is_dir("$dir/$file")) ? self::deleteDirContents("$dir/$file") : @unlink("$dir/$file");
         }
     }
 
@@ -246,10 +246,10 @@ class Utils
             if (is_dir($dir . $file)) {
                 self::deleteOldFiles($dir . $file . "/", $days);
                 if ($now - filemtime($dir . $file) >= 60 * 60 * 24 * $days && empty($dir . $file))
-                    rmdir($dir . $file);
+                    @rmdir($dir . $file);
             } else {
                 if ($now - filemtime($dir . $file) >= 60 * 60 * 24 * $days)
-                    unlink($dir . $file);
+                    @unlink($dir . $file);
             }
         }
     }
