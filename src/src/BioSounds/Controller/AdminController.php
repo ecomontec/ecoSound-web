@@ -5,6 +5,7 @@ namespace BioSounds\Controller;
 use BioSounds\Controller\Administration\IndexLogController;
 use BioSounds\Controller\Administration\QueueController;
 use BioSounds\Controller\Administration\SiteCollectionController;
+use BioSounds\Controller\Administration\SpeciesController;
 use BioSounds\Controller\Administration\UserController;
 use BioSounds\Utils\Auth;
 use BioSounds\Controller\Administration\CollectionController as CollectionController;
@@ -207,6 +208,26 @@ class AdminController extends BaseController
     public function tagReviewMgr(string $action, int $id = null, string $str = '0')
     {
         return (new TagReviewController($this->twig))->$action($id, $str);
+    }
+
+    /**
+     * @param string|null $action
+     * @return false|string
+     * @throws \Exception
+     */
+    public function species()
+    {
+        return (new SpeciesController($this->twig))->show();
+    }
+
+    /**
+     * @param string $action
+     * @param int|null $id
+     * @return mixed
+     */
+    public function speciesMgr(string $action, int $id = null)
+    {
+        return (new SpeciesController($this->twig))->$action($id);
     }
 
     /**

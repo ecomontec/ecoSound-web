@@ -1,0 +1,357 @@
+{% extends 'administration/admin.html.twig' %}
+
+{% block admin_content %}
+    <div class="card mb-3" id="speciesList">
+        <div class="card-header border-light bg-white text-right">
+            <div class="form-inline mb-3">
+                <div class="col-8 form-inline">
+                    <label for="classFilter">Class:</label>
+                    <select id="classFilter" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
+                        <option value="">All</option>
+                        {% for class in classes %}
+                            <option value="{{ class.class }}">{{ class.class }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="orderFilter" class="ml-3">Order:</label>
+                    <select id="orderFilter" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
+                        <option value="">All</option>
+                        {% for order in orders %}
+                            <option value="{{ order.taxon_order }}">{{ order.taxon_order }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="familyFilter" class="ml-3">Family:</label>
+                    <select id="familyFilter" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
+                        <option value="">All</option>
+                        {% for family in families %}
+                            <option value="{{ family.family }}">{{ family.family }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-4 form-inline justify-content-end">
+                    <label class="mr-2">Search:</label>
+                    <input class="form-control-sm" id="search">
+                </div>
+            </div>
+            {% if is_admin %}
+                <button id="addButton" class="btn btn-outline-primary btn-sm mt-2" type="button">
+                    <i class="fas fa-plus"></i>
+                    Add
+                </button>
+                <button id="saveButton" class="btn btn-outline-primary btn-sm mt-2" type="button" disabled>
+                    <i class="fas fa-save"></i>
+                    Save Changes
+                </button>
+                <button id="deleteButton" class="btn btn-outline-primary btn-sm mt-2" type="button" disabled>
+                    <i class="fas fa-trash"></i>
+                    Delete
+                </button>
+            {% endif %}
+            <button id="speciesExport" class="btn btn-outline-primary btn-sm mt-2" type="button">
+                <i class="fa fa-file-csv"></i>
+                Export CSV
+            </button>
+        </div>
+        <table id="speciesTable" style="display:none;white-space: nowrap;">
+            <thead class="table-borderless">
+            <tr style="font-size: .875rem;">
+                <th style="{% if not is_admin %}display:none;{% endif %}">
+                    {% if is_admin %}
+                        <input type="checkbox" class="js-all-checkbox" name="check-all" id="check-all">
+                    {% endif %}
+                </th>
+                <th>#</th>
+                <th>Binomial Name</th>
+                <th>Common Name</th>
+                <th>Genus</th>
+                <th>Family</th>
+                <th>Order</th>
+                <th>Class</th>
+                <th>Tags</th>
+                <th>Recordings</th>
+            </tr>
+            </thead>
+            <tbody class="form-control-sm js-species-list"></tbody>
+        </table>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="modal-delete" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">Warning</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body ml-3">
+                    <div>
+                        <div class="form-group">
+                            <label id="delete_info">Are you sure you want to delete the selected species?</label>
+                            <p class="text-danger"><small>Note: Species with associated tags cannot be deleted.</small></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="js-close-button" type="button" class="btn btn-outline-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
+                    <button id="js-delete-button" type="button" class="btn btn-outline-danger">
+                        <i class="fas fa-trash-alt"></i>
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Species Modal -->
+    <div class="modal fade" id="modal-add" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Species</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="addSpeciesForm">
+                        <div class="form-group">
+                            <label for="new_binomial">Binomial Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-sm" id="new_binomial" name="binomial" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new_common_name">Common Name</label>
+                            <input type="text" class="form-control form-control-sm" id="new_common_name" name="common_name">
+                        </div>
+                        <div class="form-group">
+                            <label for="new_genus">Genus</label>
+                            <input type="text" class="form-control form-control-sm" id="new_genus" name="genus">
+                        </div>
+                        <div class="form-group">
+                            <label for="new_family">Family</label>
+                            <input type="text" class="form-control form-control-sm" id="new_family" name="family">
+                        </div>
+                        <div class="form-group">
+                            <label for="new_order">Order</label>
+                            <input type="text" class="form-control form-control-sm" id="new_order" name="taxon_order">
+                        </div>
+                        <div class="form-group">
+                            <label for="new_class">Class</label>
+                            <input type="text" class="form-control form-control-sm" id="new_class" name="class">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
+                    <button id="js-add-button" type="button" class="btn btn-outline-primary">
+                        <i class="fas fa-save"></i>
+                        Add Species
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block header %}
+    {{ parent() }}
+    <script>
+        $(document).ready(function () {
+            let changedRows = new Set();
+            
+            $('#speciesTable').show();
+            
+            {% if is_admin %}
+            let columnDefs = [
+                {
+                    "orderable": false,
+                    "targets": [0]
+                },
+                {
+                    "className": "dt-center",
+                    "targets": [0, 8, 9],
+                }
+            ];
+            {% else %}
+            let columnDefs = [
+                {
+                    "orderable": false,
+                    "targets": [0],
+                    "visible": false
+                },
+                {
+                    "className": "dt-center",
+                    "targets": [8, 9],
+                }
+            ];
+            {% endif %}
+            
+            let table = $('#speciesTable').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "ajax": {
+                    "url": '{{ baseUrl }}/admin/speciesMgr/getListByPage',
+                    "type": 'POST',
+                    "data": function(d) {
+                        d.classFilter = $('#classFilter').val();
+                        d.orderFilter = $('#orderFilter').val();
+                        d.familyFilter = $('#familyFilter').val();
+                    },
+                    "error": function (xhr, error, thrown) {
+                        if (xhr.status == 400 || xhr.status == 404 || xhr.status == 500) {
+                            location.reload();
+                        }
+                    }
+                },
+                "dom": 'lrtip',
+                "stateSave": true,
+                "StateDuration": -1,
+                "order": [[1, 'asc']],
+                "columnDefs": columnDefs,
+                "bAutoWidth": false,
+                "scrollX": true,
+            });
+
+            if (table.state.loaded()) {
+                $('#search').val(table.state.loaded().search.search);
+            }
+
+            $('#search').on('input', () => {
+                table.search($('#search').val()).draw();
+            });
+
+            // Filter handlers
+            $('#classFilter, #orderFilter, #familyFilter').on('change', function() {
+                $('.selectpicker').selectpicker('refresh');
+                table.ajax.reload();
+            });
+
+            {% if is_admin %}
+            // Track changes in editable fields
+            $(document).on('change', '#speciesTable input[type="text"]', function() {
+                let speciesId = $(this).data('id');
+                changedRows.add(speciesId);
+                $('#saveButton').prop('disabled', false);
+            });
+
+            // Checkbox selection
+            $('.js-all-checkbox').click(function () {
+                if ($(this).is(':checked')) {
+                    $('.js-checkbox').prop('checked', true);
+                } else {
+                    $('.js-checkbox').prop('checked', false);
+                }
+                updateButtonStates();
+            });
+
+            $(document).on('change', '.js-checkbox', function () {
+                updateButtonStates();
+            });
+
+            function updateButtonStates() {
+                let checkedCount = $('.js-checkbox:checked').length;
+                $('#deleteButton').prop('disabled', checkedCount === 0);
+            }
+            {% endif %}
+
+            {% if is_admin %}
+            // Save changes
+            $('#saveButton').click(function (e) {
+                e.preventDefault();
+                
+                let updates = [];
+                changedRows.forEach(speciesId => {
+                    let row = $('input[data-id="' + speciesId + '"]').first().closest('tr');
+                    let data = {
+                        species_id: speciesId,
+                        binomial: row.find('input[name="binomial"]').val(),
+                        common_name: row.find('input[name="common_name"]').val(),
+                        genus: row.find('input[name="genus"]').val(),
+                        family: row.find('input[name="family"]').val(),
+                        taxon_order: row.find('input[name="taxon_order"]').val(),
+                        class: row.find('input[name="class"]').val(),
+                    };
+                    updates.push(data);
+                });
+
+                if (updates.length === 0) {
+                    return;
+                }
+
+                // Save each update
+                let promises = updates.map(data => {
+                    return $.post('{{ baseUrl }}/api/admin/speciesMgr/save', data);
+                });
+
+                Promise.all(promises).then(() => {
+                    showAlert('Species updated successfully.');
+                    changedRows.clear();
+                    $('#saveButton').prop('disabled', true);
+                    table.ajax.reload(null, false);
+                }).catch((error) => {
+                    showAlert('Error updating species: ' + error.responseJSON.message);
+                });
+            });
+
+            // Add new species
+            $('#addButton').click(function (e) {
+                e.preventDefault();
+                $('#addSpeciesForm')[0].reset();
+                $('#modal-add').modal('show');
+            });
+
+            $('#js-add-button').click(function (e) {
+                e.preventDefault();
+                
+                let formData = $('#addSpeciesForm').serialize();
+                
+                postRequest('{{ baseUrl }}/api/admin/speciesMgr/save', formData, false, false, function (response) {
+                    $('#modal-add').modal('hide');
+                    showAlert('Species added successfully.');
+                    table.ajax.reload();
+                });
+            });
+
+            // Delete species
+            $('#deleteButton').click(function (e) {
+                e.preventDefault();
+                let selectedCount = $('.js-checkbox:checked').length;
+                if (selectedCount > 0) {
+                    $('#delete_info').html('Are you sure you want to delete <b class="text-danger">' + selectedCount + '</b> species?');
+                    $('#modal-delete').modal('show');
+                }
+            });
+
+            $('#js-delete-button').click(function (e) {
+                e.preventDefault();
+                
+                let id = [];
+                $('.js-checkbox:checked').each(function () {
+                    id.push($(this).data('id'));
+                });
+                
+                let data = {'id': id};
+                postRequest('{{ baseUrl }}/api/admin/speciesMgr/delete', data, false, false, function () {
+                    $('#modal-delete').modal('hide');
+                    showAlert('Species deleted successfully.');
+                    table.ajax.reload();
+                });
+            });
+            {% endif %}
+
+            // Export CSV
+            $('#speciesExport').click(function () {
+                window.location.href = '{{ baseUrl }}/api/admin/speciesMgr/export';
+            });
+
+            // Initialize select pickers
+            $('.selectpicker').selectpicker();
+        });
+    </script>
+{% endblock %}
