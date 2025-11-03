@@ -68,6 +68,9 @@ class BaseClass
         !defined('CACHE_DIR') && define('CACHE_DIR', $this->config['CACHE_DIR']);
         !defined('LOGO') && define('LOGO', IMAGES_URL . $this->config['LOGO']);
         !defined('TMP_DIR') && define('TMP_DIR', $this->config['TMP_DIR']);
+        !defined('SOUNDS_DIR') && define('SOUNDS_DIR', $this->config['SOUNDS_DIR']);
+        !defined('IMAGES_DIR') && define('IMAGES_DIR', $this->config['IMAGES_DIR']);
+        !defined('PROJECTS_DIR') && define('PROJECTS_DIR', $this->config['PROJECTS_DIR']);
 
         !defined('QUEUE_NAME') && define('QUEUE_NAME', $this->config['QUEUE_NAME']);
         !defined('QUEUE_HOST') && define('QUEUE_HOST', $this->config['QUEUE_HOST']);

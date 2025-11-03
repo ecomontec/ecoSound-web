@@ -456,7 +456,7 @@ class RecordingProvider extends AbstractProvider
         if (count($result)) {
             foreach ($result as $key => $value) {
                 if ($value['data_type'] == 'audio data') {
-                    $filePath = 'sounds/sounds/' . $value['path'];
+                    $filePath = SOUNDS_DIR . '/' . $value['path'];
                     $fileMeta = $getID3->analyze($filePath);
                 }
                 $str_user = '';
@@ -476,7 +476,7 @@ class RecordingProvider extends AbstractProvider
                     $str_license .= "<option value='$license[license_id]' " . ($license['license_id'] == $value['license_id'] ? 'selected' : '') . ">$license[name]</option>";
                 }
                 if ($value['data_type'] == 'audio data') {
-                    $arr[$key][] = "<input type='checkbox' class='js-checkbox' data-id='$value[recording_id]' data-type='$value[data_type]' name='cb[$value[recording_id]]' id='cb[$value[recording_id]]'><a id='download$value[recording_id]' href='" . APP_URL . "/sounds/sounds/$value[col_id]/$value[directory]/" . preg_replace('/\.[^.]+$/', '.wav', $value['filename']) . "' download hidden></a>";
+                    $arr[$key][] = "<input type='checkbox' class='js-checkbox' data-id='$value[recording_id]' data-type='$value[data_type]' name='cb[$value[recording_id]]' id='cb[$value[recording_id]]'><a id='download$value[recording_id]' href='" . APP_URL . "/" . SOUNDS_DIR . "/$value[col_id]/$value[directory]/" . preg_replace('/\.[^.]+$/', '.wav', $value['filename']) . "' download hidden></a>";
                 } else {
                     $arr[$key][] = "<input type='checkbox' class='js-checkbox' data-id='$value[recording_id]' data-type='$value[data_type]' name='cb[$value[recording_id]]' id='cb[$value[recording_id]]'>";
                 }

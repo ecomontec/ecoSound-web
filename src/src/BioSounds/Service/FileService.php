@@ -195,16 +195,16 @@ class FileService
                 $sound[Recording::ID] = (new RecordingProvider())->insert($sound);
                 $soundId = $sound[Recording::ID];
 
-                $path = ABSOLUTE_DIR . 'sounds/sounds/' . $file->getCollection() . '/' . $file->getDirectory();
+                $path = ABSOLUTE_DIR . SOUNDS_DIR . '/' . $file->getCollection() . '/' . $file->getDirectory();
                 if (!is_dir(ABSOLUTE_DIR)) {
                     throw new FileNotFoundException(ABSOLUTE_DIR);
                 }
 
                 if (
-                    !is_dir(ABSOLUTE_DIR . 'sounds/sounds/' . $file->getCollection()) &&
-                    !mkdir(ABSOLUTE_DIR . 'sounds/sounds/' . $file->getCollection(), 0755, true)
+                    !is_dir(ABSOLUTE_DIR . SOUNDS_DIR . '/' . $file->getCollection()) &&
+                    !mkdir(ABSOLUTE_DIR . SOUNDS_DIR . '/' . $file->getCollection(), 0755, true)
                 ) {
-                    throw new FolderCreationException(ABSOLUTE_DIR . 'sounds/sounds/' . $file->getCollection());
+                    throw new FolderCreationException(ABSOLUTE_DIR . SOUNDS_DIR . '/' . $file->getCollection());
                 }
 
                 if (!is_dir($path) && !mkdir($path, 0755, true)) {
