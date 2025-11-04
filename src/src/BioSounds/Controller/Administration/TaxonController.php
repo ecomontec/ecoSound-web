@@ -25,6 +25,7 @@ class TaxonController extends BaseController
         
         return $this->twig->render('administration/taxon.html.twig', [
             'taxa' => $taxonProvider->getTaxonStatistics(),
+            'phyla' => $taxonProvider->getDistinctPhylum(),
             'classes' => $taxonProvider->getDistinctClassis(),
             'orders' => $taxonProvider->getDistinctOrdo(),
             'families' => $taxonProvider->getDistinctFamilia(),
@@ -51,6 +52,7 @@ class TaxonController extends BaseController
         $dir = $_POST['order'][0]['dir'];
 
         // Get filter values if provided
+        $phylumFilter = isset($_POST['phylumFilter']) ? $_POST['phylumFilter'] : '';
         $classisFilter = isset($_POST['classisFilter']) ? $_POST['classisFilter'] : '';
         $ordoFilter = isset($_POST['ordoFilter']) ? $_POST['ordoFilter'] : '';
         $familiaFilter = isset($_POST['familiaFilter']) ? $_POST['familiaFilter'] : '';
@@ -59,8 +61,8 @@ class TaxonController extends BaseController
         $isEditable = Auth::isUserAdmin();
 
         $total = $taxonProvider->getTotalCount();
-        $data = $taxonProvider->getListByPage($start, $length, $search, $column, $dir, $classisFilter, $ordoFilter, $familiaFilter, $isEditable);
-        $filteredCount = $taxonProvider->getFilteredCount($search, $classisFilter, $ordoFilter, $familiaFilter);
+        $data = $taxonProvider->getListByPage($start, $length, $search, $column, $dir, $phylumFilter, $classisFilter, $ordoFilter, $familiaFilter, $isEditable);
+        $filteredCount = $taxonProvider->getFilteredCount($search, $phylumFilter, $classisFilter, $ordoFilter, $familiaFilter);
 
         if (count($data) == 0) {
             $data = [];
@@ -99,10 +101,10 @@ class TaxonController extends BaseController
         $phylum = $_POST['phylum'] ?? '';
         $source = $_POST['source'] ?? '';
 
-        if (empty($binomial)) {
+        if (empty($phylum)) {
             return json_encode([
                 'errorCode' => 1,
-                'message' => 'Binomial name is required.',
+                'message' => 'Phylum is required.',
             ]);
         }
 
@@ -193,23 +195,22 @@ class TaxonController extends BaseController
         header('Content-Disposition: attachment; filename=' . $fileName);
 
         // CSV headers
-        $headers = ['ID', 'Binomial Name', 'Common Name', 'Genus', 'Familia', 'Ordo', 'Classis', 'Phylum', 'Source', 'Tags', 'Recordings'];
+        $headers = ['ID', 'Phylum', 'Classis', 'Ordo', 'Familia', 'Genus', 'Binomial Name', 'Common Name', 'Source', 'Tags'];
         fputcsv($fp, $headers);
 
         // CSV data
         foreach ($taxa as $item) {
             fputcsv($fp, [
                 $item['taxon_id'],
+                $item['phylum'] ?? '',
+                $item['classis'] ?? '',
+                $item['ordo'] ?? '',
+                $item['familia'] ?? '',
+                $item['genus'] ?? '',
                 $item['binomial'],
                 $item['common_name'] ?? '',
-                $item['genus'] ?? '',
-                $item['familia'] ?? '',
-                $item['ordo'] ?? '',
-                $item['classis'] ?? '',
-                $item['phylum'] ?? '',
                 $item['source'] ?? '',
                 $item['tag_count'],
-                $item['recording_count'],
             ]);
         }
 
@@ -262,5 +263,42 @@ class TaxonController extends BaseController
         $ranks = $taxonProvider->getHigherRanks($field, $value);
 
         return json_encode($ranks ?? []);
+    }
+
+    /**
+     * Get taxonomy hierarchy for hierarchical dropdowns
+     * @return string
+     * @throws \Exception
+     */
+    public function getTaxonomyHierarchy()
+    {
+        if (!Auth::isUserLogged()) {
+            throw new ForbiddenException();
+        }
+
+        $taxonProvider = new TaxonProvider();
+        $hierarchy = $taxonProvider->getTaxonomyHierarchy();
+
+        return json_encode($hierarchy);
+    }
+
+    /**
+     * Get distinct values for genus and binomial for autocomplete
+     * @return string
+     * @throws \Exception
+     */
+    public function getDistinctValues()
+    {
+        if (!Auth::isUserLogged()) {
+            throw new ForbiddenException();
+        }
+
+        $taxonProvider = new TaxonProvider();
+        $result = [
+            'genus' => $taxonProvider->getDistinctGenus(),
+            'binomial' => $taxonProvider->getDistinctBinomial()
+        ];
+
+        return json_encode($result);
     }
 }

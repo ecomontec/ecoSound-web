@@ -131,10 +131,9 @@ VALUES (1, '(Bird) Call - unspecific', 'AVES', ''),
 -- Dumping data for table `taxon`
 --
 INSERT INTO `taxon` (`taxon_id`, `binomial`, `genus`, `familia`, `ordo`, `classis`, `phylum`, `common_name`, `source`)
-VALUES (1, 'Unknown', '', '', '', '', '', '', ''),
-       (2, 'Test bird', 'Test Genus', 'Test Family', '', 'AVES', 'Chordata', 'common bird name', 'Test'),
-       (3, 'Test amphibian', 'Test Genus', 'Test Family', '', 'AMPHIBIA', 'Chordata', 'common amphibian name', 'Test'),
-       (4, 'Test primate', 'Test Genus', 'Test Family', 'PRIMATA', 'MAMMALIA', 'Chordata', 'common primate name', 'Test');
+VALUES (1, 'Test bird', 'Test Genus', 'Test Family', NULL, 'AVES', 'Chordata', 'common bird name', 'Test'),
+       (2, 'Test amphibian', 'Test Genus', 'Test Family', NULL, 'AMPHIBIA', 'Chordata', 'common amphibian name', 'Test'),
+       (3, 'Test primate', 'Test Genus', 'Test Family', 'PRIMATA', 'MAMMALIA', 'Chordata', 'common primate name', 'Test');
 --
 -- Dumping data for table `tag_review_status`
 --

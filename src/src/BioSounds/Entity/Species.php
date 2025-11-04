@@ -6,16 +6,16 @@ use BioSounds\Provider\BaseProvider;
 
 class Species extends BaseProvider
 {
-    const TABLE_NAME = 'species';
-    const ID = 'species_id';
+    const TABLE_NAME = 'taxon';
+    const ID = 'taxon_id';
     const BINOMIAL = 'binomial';
     const GENUS = 'genus';
-    const FAMILY = 'family';
+    const FAMILY = 'familia';
     const NAME = 'common_name';
-    const ORDER = 'taxon_order';
-    const SPECIES_CLASS = 'class';
-    const LEVEL = 'level';
-    const REGION = 'region';
+    const ORDER = 'ordo';
+    const SPECIES_CLASS = 'classis';
+    const PHYLUM = 'phylum';
+    const SOURCE = 'source';
 
     public function get()
     {
@@ -27,7 +27,7 @@ class Species extends BaseProvider
 
     public function getByName(string $name)
     {
-        $query = 'SELECT * FROM species WHERE binomial= :name ';
+        $query = 'SELECT * FROM taxon WHERE binomial= :name ';
         $this->database->prepareQuery($query);
         $result = $this->database->executeSelect([':name' => $name]);
         return $result;

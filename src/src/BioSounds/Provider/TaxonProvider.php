@@ -23,7 +23,7 @@ class TaxonProvider extends AbstractProvider
                     COUNT(DISTINCT tag.tag_id) as tag_count,
                     COUNT(DISTINCT tag.recording_id) as recording_count
                 FROM taxon t
-                LEFT JOIN tag ON t.taxon_id = tag.taxon_id
+                LEFT JOIN tag ON t.taxon_id = tag.species_id
                 GROUP BY t.taxon_id, t.binomial, t.common_name, t.genus, t.familia, t.ordo, t.classis, t.phylum, t.source
                 HAVING tag_count > 0
                 ORDER BY tag_count DESC, t.binomial ASC";
@@ -36,7 +36,7 @@ class TaxonProvider extends AbstractProvider
     {
         $sql = "SELECT COUNT(DISTINCT t.taxon_id) as count
                 FROM taxon t
-                INNER JOIN tag ON t.taxon_id = tag.taxon_id";
+                INNER JOIN tag ON t.taxon_id = tag.species_id";
         
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
@@ -51,11 +51,11 @@ class TaxonProvider extends AbstractProvider
         return (int) ($result[0]['count'] ?? 0);
     }
 
-    public function getFilteredCount(string $search = '', string $classisFilter = '', string $ordoFilter = '', string $familiaFilter = ''): int
+    public function getFilteredCount(string $search = '', string $phylumFilter = '', string $classisFilter = '', string $ordoFilter = '', string $familiaFilter = ''): int
     {
         $sql = "SELECT COUNT(*) as count
                 FROM taxon t
-                LEFT JOIN tag ON t.taxon_id = tag.taxon_id
+                LEFT JOIN tag ON t.taxon_id = tag.species_id
                 WHERE 1=1";
         
         $params = [];
@@ -63,6 +63,11 @@ class TaxonProvider extends AbstractProvider
         if (!empty($search)) {
             $sql .= " AND (t.binomial LIKE :search OR t.common_name LIKE :search OR t.genus LIKE :search OR t.familia LIKE :search)";
             $params[':search'] = "%$search%";
+        }
+        
+        if (!empty($phylumFilter)) {
+            $sql .= " AND t.phylum = :phylum";
+            $params[':phylum'] = $phylumFilter;
         }
         
         if (!empty($classisFilter)) {
@@ -87,24 +92,23 @@ class TaxonProvider extends AbstractProvider
         return count($result);
     }
 
-    public function getListByPage(string $start = '0', string $length = '10', string $search = '', string $column = '1', string $dir = 'asc', string $classisFilter = '', string $ordoFilter = '', string $familiaFilter = '', bool $isEditable = false): array
+    public function getListByPage(string $start = '0', string $length = '10', string $search = '', string $column = '1', string $dir = 'asc', string $phylumFilter = '', string $classisFilter = '', string $ordoFilter = '', string $familiaFilter = '', bool $isEditable = false): array
     {
         $dir = ($dir === 'asc' || $dir === 'desc') ? $dir : 'asc';
         
         $sql = "SELECT 
                     t.taxon_id,
+                    t.phylum,
+                    t.classis,
+                    t.ordo,
+                    t.familia,
+                    t.genus,
                     t.binomial,
                     t.common_name,
-                    t.genus,
-                    t.familia,
-                    t.ordo,
-                    t.classis,
-                    t.phylum,
                     t.source,
-                    COUNT(DISTINCT tag.tag_id) as tag_count,
-                    COUNT(DISTINCT tag.recording_id) as recording_count
+                    COUNT(DISTINCT tag.tag_id) as tag_count
                 FROM taxon t
-                LEFT JOIN tag ON t.taxon_id = tag.taxon_id
+                LEFT JOIN tag ON t.taxon_id = tag.species_id
                 WHERE 1=1";
         
         $params = [];
@@ -112,6 +116,11 @@ class TaxonProvider extends AbstractProvider
         if (!empty($search)) {
             $sql .= " AND (t.binomial LIKE :search OR t.common_name LIKE :search OR t.genus LIKE :search OR t.familia LIKE :search)";
             $params[':search'] = "%$search%";
+        }
+        
+        if (!empty($phylumFilter)) {
+            $sql .= " AND t.phylum = :phylum";
+            $params[':phylum'] = $phylumFilter;
         }
         
         if (!empty($classisFilter)) {
@@ -129,9 +138,9 @@ class TaxonProvider extends AbstractProvider
             $params[':familia'] = $familiaFilter;
         }
         
-        $sql .= " GROUP BY t.taxon_id, t.binomial, t.common_name, t.genus, t.familia, t.ordo, t.classis, t.phylum, t.source";
+        $sql .= " GROUP BY t.taxon_id, t.phylum, t.classis, t.ordo, t.familia, t.genus, t.binomial, t.common_name, t.source";
         
-        $columns = ['', 't.taxon_id', 't.binomial', 't.common_name', 't.genus', 't.familia', 't.ordo', 't.classis', 't.phylum', 't.source', 'tag_count', 'recording_count'];
+        $columns = ['', 't.taxon_id', 't.phylum', 't.classis', 't.ordo', 't.familia', 't.genus', 't.binomial', 't.common_name', 't.source', 'tag_count'];
         if (isset($columns[$column])) {
             $sql .= " ORDER BY " . $columns[$column] . " $dir";
         }
@@ -154,31 +163,37 @@ class TaxonProvider extends AbstractProvider
                 $arr[$key][] = $value['taxon_id'];
                 
                 if ($isEditable) {
+                    $arr[$key][] = '<input type="text" class="form-control form-control-sm" name="phylum" value="' . htmlspecialchars($value['phylum'] ?? '') . '" data-id="' . $value['taxon_id'] . '" required>';
+                    $arr[$key][] = '<input type="text" class="form-control form-control-sm" name="classis" value="' . htmlspecialchars($value['classis'] ?? '') . '" data-id="' . $value['taxon_id'] . '" required>';
+                    $arr[$key][] = '<input type="text" class="form-control form-control-sm" name="ordo" value="' . htmlspecialchars($value['ordo'] ?? '') . '" data-id="' . $value['taxon_id'] . '">';
+                    $arr[$key][] = '<input type="text" class="form-control form-control-sm" name="familia" value="' . htmlspecialchars($value['familia'] ?? '') . '" data-id="' . $value['taxon_id'] . '">';
+                    $arr[$key][] = '<input type="text" class="form-control form-control-sm" name="genus" value="' . htmlspecialchars($value['genus'] ?? '') . '" data-id="' . $value['taxon_id'] . '">';
                     $arr[$key][] = '<input type="text" class="form-control form-control-sm" name="binomial" value="' . htmlspecialchars($value['binomial']) . '" data-id="' . $value['taxon_id'] . '">';
                     $arr[$key][] = '<input type="text" class="form-control form-control-sm" name="common_name" value="' . htmlspecialchars($value['common_name'] ?? '') . '" data-id="' . $value['taxon_id'] . '">';
-                    $arr[$key][] = '<input type="text" class="form-control form-control-sm" name="genus" value="' . htmlspecialchars($value['genus'] ?? '') . '" data-id="' . $value['taxon_id'] . '">';
-                    $arr[$key][] = '<input type="text" class="form-control form-control-sm" name="familia" value="' . htmlspecialchars($value['familia'] ?? '') . '" data-id="' . $value['taxon_id'] . '">';
-                    $arr[$key][] = '<input type="text" class="form-control form-control-sm" name="ordo" value="' . htmlspecialchars($value['ordo'] ?? '') . '" data-id="' . $value['taxon_id'] . '">';
-                    $arr[$key][] = '<input type="text" class="form-control form-control-sm" name="classis" value="' . htmlspecialchars($value['classis'] ?? '') . '" data-id="' . $value['taxon_id'] . '" required>';
-                    $arr[$key][] = '<input type="text" class="form-control form-control-sm" name="phylum" value="' . htmlspecialchars($value['phylum'] ?? '') . '" data-id="' . $value['taxon_id'] . '">';
                     $arr[$key][] = '<input type="text" class="form-control form-control-sm" name="source" value="' . htmlspecialchars($value['source'] ?? '') . '" data-id="' . $value['taxon_id'] . '">';
                 } else {
+                    $arr[$key][] = htmlspecialchars($value['phylum'] ?? '-');
+                    $arr[$key][] = htmlspecialchars($value['classis'] ?? '-');
+                    $arr[$key][] = htmlspecialchars($value['ordo'] ?? '-');
+                    $arr[$key][] = htmlspecialchars($value['familia'] ?? '-');
+                    $arr[$key][] = htmlspecialchars($value['genus'] ?? '-');
                     $arr[$key][] = '<em>' . htmlspecialchars($value['binomial']) . '</em>';
                     $arr[$key][] = htmlspecialchars($value['common_name'] ?? '-');
-                    $arr[$key][] = htmlspecialchars($value['genus'] ?? '-');
-                    $arr[$key][] = htmlspecialchars($value['familia'] ?? '-');
-                    $arr[$key][] = htmlspecialchars($value['ordo'] ?? '-');
-                    $arr[$key][] = htmlspecialchars($value['classis'] ?? '-');
-                    $arr[$key][] = htmlspecialchars($value['phylum'] ?? '-');
                     $arr[$key][] = htmlspecialchars($value['source'] ?? '-');
                 }
                 
                 $arr[$key][] = $value['tag_count'];
-                $arr[$key][] = $value['recording_count'];
             }
         }
         
         return $arr;
+    }
+
+    public function getDistinctPhylum(): array
+    {
+        $sql = "SELECT DISTINCT phylum FROM taxon WHERE phylum IS NOT NULL AND phylum != '' ORDER BY phylum";
+        $this->database->prepareQuery($sql);
+        return $this->database->executeSelect();
     }
 
     public function getDistinctClassis(): array
@@ -207,6 +222,57 @@ class TaxonProvider extends AbstractProvider
         $sql = "SELECT DISTINCT source FROM taxon WHERE source IS NOT NULL AND source != '' ORDER BY source";
         $this->database->prepareQuery($sql);
         return $this->database->executeSelect();
+    }
+
+    public function getDistinctGenus(): array
+    {
+        $sql = "SELECT DISTINCT genus FROM taxon WHERE genus IS NOT NULL AND genus != '' ORDER BY genus";
+        $this->database->prepareQuery($sql);
+        $result = $this->database->executeSelect();
+        return array_column($result, 'genus');
+    }
+
+    public function getDistinctBinomial(): array
+    {
+        $sql = "SELECT DISTINCT binomial FROM taxon WHERE binomial IS NOT NULL AND binomial != '' ORDER BY binomial";
+        $this->database->prepareQuery($sql);
+        $result = $this->database->executeSelect();
+        return array_column($result, 'binomial');
+    }
+
+    public function getTaxonomyHierarchy(): array
+    {
+        $sql = "SELECT DISTINCT phylum, classis, ordo, familia 
+                FROM taxon 
+                WHERE phylum IS NOT NULL AND phylum != '' 
+                AND classis IS NOT NULL AND classis != ''
+                ORDER BY phylum, classis, ordo, familia";
+        
+        $this->database->prepareQuery($sql);
+        $result = $this->database->executeSelect();
+        
+        $hierarchy = [];
+        foreach ($result as $row) {
+            $phylum = $row['phylum'];
+            $classis = $row['classis'];
+            $ordo = $row['ordo'] ?? '';
+            $familia = $row['familia'] ?? '';
+            
+            if (!isset($hierarchy[$phylum])) {
+                $hierarchy[$phylum] = [];
+            }
+            if (!isset($hierarchy[$phylum][$classis])) {
+                $hierarchy[$phylum][$classis] = [];
+            }
+            if ($ordo && !isset($hierarchy[$phylum][$classis][$ordo])) {
+                $hierarchy[$phylum][$classis][$ordo] = [];
+            }
+            if ($ordo && $familia && !in_array($familia, $hierarchy[$phylum][$classis][$ordo])) {
+                $hierarchy[$phylum][$classis][$ordo][] = $familia;
+            }
+        }
+        
+        return $hierarchy;
     }
 
     public function getHigherRanks(string $fieldName, string $fieldValue): ?array
@@ -255,13 +321,13 @@ class TaxonProvider extends AbstractProvider
         
         $this->database->prepareQuery($sql);
         return $this->database->executeInsert([
-            ':binomial' => $data['binomial'],
-            ':common_name' => $data['common_name'] ?? '',
-            ':genus' => $data['genus'] ?? '',
-            ':familia' => $data['familia'] ?? '',
-            ':ordo' => $data['ordo'] ?? '',
+            ':binomial' => !empty($data['binomial']) ? $data['binomial'] : null,
+            ':common_name' => !empty($data['common_name']) ? $data['common_name'] : null,
+            ':genus' => !empty($data['genus']) ? $data['genus'] : null,
+            ':familia' => !empty($data['familia']) ? $data['familia'] : null,
+            ':ordo' => !empty($data['ordo']) ? $data['ordo'] : null,
             ':classis' => $data['classis'],
-            ':phylum' => $data['phylum'] ?? '',
+            ':phylum' => $data['phylum'],
             ':source' => $data['source'] ?? '',
         ]);
     }
@@ -282,14 +348,14 @@ class TaxonProvider extends AbstractProvider
         $this->database->prepareQuery($sql);
         return $this->database->executeUpdate([
             ':taxon_id' => $taxonId,
-            ':binomial' => $data['binomial'],
-            ':common_name' => $data['common_name'] ?? '',
-            ':genus' => $data['genus'] ?? '',
-            ':familia' => $data['familia'] ?? '',
-            ':ordo' => $data['ordo'] ?? '',
+            ':binomial' => !empty($data['binomial']) ? $data['binomial'] : null,
+            ':common_name' => !empty($data['common_name']) ? $data['common_name'] : null,
+            ':genus' => !empty($data['genus']) ? $data['genus'] : null,
+            ':familia' => !empty($data['familia']) ? $data['familia'] : null,
+            ':ordo' => !empty($data['ordo']) ? $data['ordo'] : null,
             ':classis' => $data['classis'],
-            ':phylum' => $data['phylum'] ?? '',
-            ':source' => $data['source'] ?? '',
+            ':phylum' => $data['phylum'],
+            ':source' => !empty($data['source']) ? $data['source'] : null,
         ]);
     }
 

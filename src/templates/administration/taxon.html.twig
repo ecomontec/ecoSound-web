@@ -5,23 +5,30 @@
         <div class="card-header border-light bg-white text-right">
             <div class="form-inline mb-3">
                 <div class="col-8 form-inline">
-                    <label for="classisFilter">Classis:</label>
+                    <label for="phylumFilter">Phylum:</label>
+                    <select id="phylumFilter" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
+                        <option value=""></option>
+                        {% for phylum in phyla %}
+                            <option value="{{ phylum.phylum }}">{{ phylum.phylum }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="classisFilter" class="ml-3">Classis:</label>
                     <select id="classisFilter" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
-                        <option value="">All</option>
+                        <option value=""></option>
                         {% for class in classes %}
                             <option value="{{ class.classis }}">{{ class.classis }}</option>
                         {% endfor %}
                     </select>
                     <label for="ordoFilter" class="ml-3">Ordo:</label>
                     <select id="ordoFilter" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
-                        <option value="">All</option>
+                        <option value=""></option>
                         {% for order in orders %}
                             <option value="{{ order.ordo }}">{{ order.ordo }}</option>
                         {% endfor %}
                     </select>
                     <label for="familiaFilter" class="ml-3">Familia:</label>
                     <select id="familiaFilter" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
-                        <option value="">All</option>
+                        <option value=""></option>
                         {% for family in families %}
                             <option value="{{ family.familia }}">{{ family.familia }}</option>
                         {% endfor %}
@@ -41,7 +48,7 @@
                     <i class="fas fa-save"></i>
                     Save Changes
                 </button>
-                <button id="deleteButton" class="btn btn-outline-primary btn-sm mt-2" type="button" disabled>
+                <button id="deleteButton" class="btn btn-outline-danger btn-sm mt-2" type="button" disabled>
                     <i class="fas fa-trash"></i>
                     Delete
                 </button>
@@ -60,16 +67,15 @@
                     {% endif %}
                 </th>
                 <th>#</th>
+                <th>Phylum</th>
+                <th>Classis</th>
+                <th>Ordo</th>
+                <th>Familia</th>
+                <th>Genus</th>
                 <th>Binomial Name</th>
                 <th>Common Name</th>
-                <th>Genus</th>
-                <th>Familia</th>
-                <th>Ordo</th>
-                <th>Classis</th>
-                <th>Phylum</th>
                 <th>Source</th>
                 <th>Tags</th>
-                <th>Recordings</th>
             </tr>
             </thead>
             <tbody class="form-control-sm js-taxon-list"></tbody>
@@ -121,36 +127,36 @@
                 <div class="modal-body">
                     <form id="addTaxonForm">
                         <div class="form-group">
-                            <label for="new_binomial">Binomial Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control form-control-sm autocomplete-field" id="new_binomial" name="binomial" data-field="binomial" required>
+                            <label for="new_phylum">Phylum <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-sm" id="new_phylum" name="phylum" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new_classis">Classis <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-sm" id="new_classis" name="classis" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new_ordo">Ordo</label>
+                            <input type="text" class="form-control form-control-sm" id="new_ordo" name="ordo">
+                        </div>
+                        <div class="form-group">
+                            <label for="new_familia">Familia</label>
+                            <input type="text" class="form-control form-control-sm" id="new_familia" name="familia">
+                        </div>
+                        <div class="form-group">
+                            <label for="new_genus">Genus</label>
+                            <input type="text" class="form-control form-control-sm" id="new_genus" name="genus">
+                        </div>
+                        <div class="form-group">
+                            <label for="new_binomial">Binomial Name</label>
+                            <input type="text" class="form-control form-control-sm" id="new_binomial" name="binomial">
                         </div>
                         <div class="form-group">
                             <label for="new_common_name">Common Name</label>
                             <input type="text" class="form-control form-control-sm" id="new_common_name" name="common_name">
                         </div>
                         <div class="form-group">
-                            <label for="new_genus">Genus</label>
-                            <input type="text" class="form-control form-control-sm autocomplete-field" id="new_genus" name="genus" data-field="genus">
-                        </div>
-                        <div class="form-group">
-                            <label for="new_familia">Familia</label>
-                            <input type="text" class="form-control form-control-sm autocomplete-field" id="new_familia" name="familia" data-field="familia">
-                        </div>
-                        <div class="form-group">
-                            <label for="new_ordo">Ordo</label>
-                            <input type="text" class="form-control form-control-sm autocomplete-field" id="new_ordo" name="ordo" data-field="ordo">
-                        </div>
-                        <div class="form-group">
-                            <label for="new_classis">Classis <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control form-control-sm autocomplete-field" id="new_classis" name="classis" data-field="classis" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="new_phylum">Phylum</label>
-                            <input type="text" class="form-control form-control-sm autocomplete-field" id="new_phylum" name="phylum" data-field="phylum">
-                        </div>
-                        <div class="form-group">
                             <label for="new_source">Source</label>
-                            <input type="text" class="form-control form-control-sm autocomplete-field" id="new_source" name="source" data-field="source">
+                            <input type="text" class="form-control form-control-sm" id="new_source" name="source">
                         </div>
                     </form>
                 </div>
@@ -185,7 +191,7 @@
                 },
                 {
                     "className": "dt-center",
-                    "targets": [0, 10, 11],
+                    "targets": [0, 10],
                 }
             ];
             {% else %}
@@ -197,7 +203,7 @@
                 },
                 {
                     "className": "dt-center",
-                    "targets": [10, 11],
+                    "targets": [10],
                 }
             ];
             {% endif %}
@@ -209,6 +215,7 @@
                     "url": '{{ baseUrl }}/admin/taxonMgr/getListByPage',
                     "type": 'POST',
                     "data": function(d) {
+                        d.phylumFilter = $('#phylumFilter').val();
                         d.classisFilter = $('#classisFilter').val();
                         d.ordoFilter = $('#ordoFilter').val();
                         d.familiaFilter = $('#familiaFilter').val();
@@ -237,7 +244,7 @@
             });
 
             // Filter handlers
-            $('#classisFilter, #ordoFilter, #familiaFilter').on('change', function() {
+            $('#phylumFilter, #classisFilter, #ordoFilter, #familiaFilter').on('change', function() {
                 $('.selectpicker').selectpicker('refresh');
                 table.ajax.reload();
             });
@@ -270,69 +277,166 @@
             }
             {% endif %}
 
-            // Autocomplete functionality
-            function setupAutocomplete(selector) {
-                $(document).on('focus', selector, function() {
-                    let $this = $(this);
-                    if ($this.data('autocomplete-initialized')) {
-                        return;
+            // Autocomplete functionality with hierarchical filtering
+            let existingPhyla = [];
+            let existingClasses = [];
+            let existingOrders = [];
+            let existingFamilies = [];
+            let existingGenera = [];
+            let existingBinomials = [];
+            let taxonomyData = {};
+            
+            // Load all taxonomy data when modal opens
+            $('#addButton').on('click', function() {
+                $('#addTaxonForm')[0].reset();
+                // Destroy any existing autocomplete instances (check if they exist first)
+                $('#new_phylum, #new_classis, #new_ordo, #new_familia, #new_genus, #new_binomial').each(function() {
+                    if ($(this).hasClass('ui-autocomplete-input')) {
+                        $(this).autocomplete('destroy');
                     }
-                    
-                    $this.data('autocomplete-initialized', true);
-                    
-                    let field = $this.data('field');
-                    
-                    $this.autocomplete({
-                        source: function(request, response) {
-                            $.ajax({
-                                url: '{{ baseUrl }}/api/admin/taxonMgr/autocomplete',
-                                data: {
-                                    field: field,
-                                    term: request.term
-                                },
-                                success: function(data) {
-                                    response(data);
+                });
+                $('#modal-add').modal('show');
+                
+                $.ajax({
+                    url: '{{ baseUrl }}/api/admin/taxonMgr/getTaxonomyHierarchy',
+                    success: function(data) {
+                        taxonomyData = data;
+                        
+                        // Extract unique values from hierarchy
+                        existingPhyla = Object.keys(data);
+                        existingClasses = [];
+                        existingOrders = [];
+                        existingFamilies = [];
+                        
+                        Object.keys(data).forEach(function(phylum) {
+                            Object.keys(data[phylum]).forEach(function(classis) {
+                                if (existingClasses.indexOf(classis) === -1) {
+                                    existingClasses.push(classis);
                                 }
-                            });
-                        },
-                        minLength: 1,
-                        select: function(event, ui) {
-                            // Auto-fill higher taxonomic ranks
-                            $.ajax({
-                                url: '{{ baseUrl }}/api/admin/taxonMgr/getHigherRanks',
-                                data: {
-                                    field: field,
-                                    value: ui.item.value
-                                },
-                                success: function(ranks) {
-                                    if (ranks && Object.keys(ranks).length > 0) {
-                                        let formId = $this.closest('form').attr('id');
-                                        if (formId === 'addTaxonForm') {
-                                            if (ranks.genus && !$('#new_genus').val()) {
-                                                $('#new_genus').val(ranks.genus);
-                                            }
-                                            if (ranks.familia && !$('#new_familia').val()) {
-                                                $('#new_familia').val(ranks.familia);
-                                            }
-                                            if (ranks.ordo && !$('#new_ordo').val()) {
-                                                $('#new_ordo').val(ranks.ordo);
-                                            }
-                                            if (ranks.classis && !$('#new_classis').val()) {
-                                                $('#new_classis').val(ranks.classis);
-                                            }
-                                            if (ranks.phylum && !$('#new_phylum').val()) {
-                                                $('#new_phylum').val(ranks.phylum);
-                                            }
-                                        }
+                                Object.keys(data[phylum][classis]).forEach(function(ordo) {
+                                    if (existingOrders.indexOf(ordo) === -1) {
+                                        existingOrders.push(ordo);
                                     }
-                                }
+                                    data[phylum][classis][ordo].forEach(function(familia) {
+                                        if (existingFamilies.indexOf(familia) === -1) {
+                                            existingFamilies.push(familia);
+                                        }
+                                    });
+                                });
                             });
+                        });
+                        
+                        // Setup autocomplete for phylum
+                        setupAutocomplete('#new_phylum', existingPhyla);
+                        
+                        // Setup autocomplete with hierarchical filtering
+                        setupHierarchicalAutocomplete();
+                    },
+                    error: function() {
+                        showAlert('Error loading taxonomy data');
+                    }
+                });
+                
+                // Load genus and binomial values
+                $.ajax({
+                    url: '{{ baseUrl }}/api/admin/taxonMgr/getDistinctValues',
+                    success: function(data) {
+                        existingGenera = data.genus || [];
+                        existingBinomials = data.binomial || [];
+                        setupAutocomplete('#new_genus', existingGenera);
+                        setupAutocomplete('#new_binomial', existingBinomials);
+                    }
+                });
+            });
+            
+            // Setup hierarchical autocomplete that filters based on parent selections
+            function setupHierarchicalAutocomplete() {
+                // Classis autocomplete - filtered by phylum
+                $('#new_classis').autocomplete({
+                    source: function(request, response) {
+                        let phylum = $('#new_phylum').val();
+                        let available = [];
+                        
+                        if (phylum && taxonomyData[phylum]) {
+                            available = Object.keys(taxonomyData[phylum]);
+                        } else {
+                            available = existingClasses;
                         }
-                    });
+                        
+                        let matches = $.ui.autocomplete.filter(available, request.term);
+                        response(matches);
+                    },
+                    minLength: 0
+                }).focus(function() {
+                    $(this).autocomplete('search', $(this).val());
+                });
+                
+                // Ordo autocomplete - filtered by phylum and classis
+                $('#new_ordo').autocomplete({
+                    source: function(request, response) {
+                        let phylum = $('#new_phylum').val();
+                        let classis = $('#new_classis').val();
+                        let available = [];
+                        
+                        if (phylum && classis && taxonomyData[phylum] && taxonomyData[phylum][classis]) {
+                            available = Object.keys(taxonomyData[phylum][classis]);
+                        } else {
+                            available = existingOrders;
+                        }
+                        
+                        let matches = $.ui.autocomplete.filter(available, request.term);
+                        response(matches);
+                    },
+                    minLength: 0
+                }).focus(function() {
+                    $(this).autocomplete('search', $(this).val());
+                });
+                
+                // Familia autocomplete - filtered by phylum, classis, and ordo
+                $('#new_familia').autocomplete({
+                    source: function(request, response) {
+                        let phylum = $('#new_phylum').val();
+                        let classis = $('#new_classis').val();
+                        let ordo = $('#new_ordo').val();
+                        let available = [];
+                        
+                        if (phylum && classis && ordo && taxonomyData[phylum] && taxonomyData[phylum][classis] && taxonomyData[phylum][classis][ordo]) {
+                            available = taxonomyData[phylum][classis][ordo];
+                        } else {
+                            available = existingFamilies;
+                        }
+                        
+                        let matches = $.ui.autocomplete.filter(available, request.term);
+                        response(matches);
+                    },
+                    minLength: 0
+                }).focus(function() {
+                    $(this).autocomplete('search', $(this).val());
+                });
+                
+                // Update autocomplete when parent fields change
+                $('#new_phylum').on('change', function() {
+                    $('#new_classis').autocomplete('search', $('#new_classis').val());
+                });
+                
+                $('#new_classis').on('change', function() {
+                    $('#new_ordo').autocomplete('search', $('#new_ordo').val());
+                });
+                
+                $('#new_ordo').on('change', function() {
+                    $('#new_familia').autocomplete('search', $('#new_familia').val());
                 });
             }
-
-            setupAutocomplete('.autocomplete-field');
+            
+            // Setup autocomplete helper function
+            function setupAutocomplete(selector, source) {
+                $(selector).autocomplete({
+                    source: source,
+                    minLength: 0
+                }).focus(function() {
+                    $(this).autocomplete('search', $(this).val());
+                });
+            }
 
             {% if is_admin %}
             // Save changes
@@ -375,23 +479,89 @@
                 });
             });
 
-            // Add new taxon
-            $('#addButton').click(function (e) {
-                e.preventDefault();
-                $('#addTaxonForm')[0].reset();
-                $('#modal-add').modal('show');
-            });
+            // Add new taxon - note: click handler is already defined above for loading taxonomy data
 
             $('#js-add-button').click(function (e) {
                 e.preventDefault();
                 
-                let formData = new FormData($('#addTaxonForm')[0]);
+                // Validate required fields
+                let phylum = $('#new_phylum').val();
+                let classis = $('#new_classis').val();
                 
-                postRequest('{{ baseUrl }}/api/admin/taxonMgr/save', formData, false, false, function (response) {
-                    $('#modal-add').modal('hide');
-                    showAlert('Taxon added successfully.');
-                    table.ajax.reload();
-                });
+                if (!phylum || !classis) {
+                    showAlert('Phylum and Classis are required fields.');
+                    return;
+                }
+                
+                // Check for new values and prepare confirmation message
+                let newValues = [];
+                
+                if (phylum && existingPhyla.indexOf(phylum) === -1) {
+                    newValues.push('Phylum: ' + phylum);
+                }
+                if (classis && existingClasses.indexOf(classis) === -1) {
+                    newValues.push('Classis: ' + classis);
+                }
+                
+                let ordo = $('#new_ordo').val();
+                if (ordo && existingOrders.indexOf(ordo) === -1) {
+                    newValues.push('Ordo: ' + ordo);
+                }
+                
+                let familia = $('#new_familia').val();
+                if (familia && existingFamilies.indexOf(familia) === -1) {
+                    newValues.push('Familia: ' + familia);
+                }
+                
+                let genus = $('#new_genus').val();
+                if (genus && existingGenera.indexOf(genus) === -1) {
+                    newValues.push('Genus: ' + genus);
+                }
+                
+                let binomial = $('#new_binomial').val();
+                if (binomial && existingBinomials.indexOf(binomial) === -1) {
+                    newValues.push('Binomial: ' + binomial);
+                }
+                
+                // If there are new values, show confirmation
+                if (newValues.length > 0) {
+                    let confirmMsg = 'You are adding new values to the database:\n\n' + newValues.join('\n') + '\n\nDo you want to continue?';
+                    if (!confirm(confirmMsg)) {
+                        return;
+                    }
+                }
+                
+                let data = {
+                    phylum: phylum,
+                    classis: classis,
+                    ordo: ordo || '',
+                    familia: familia || '',
+                    genus: genus || '',
+                    binomial: binomial || '',
+                    common_name: $('#new_common_name').val() || '',
+                    source: $('#new_source').val() || ''
+                };
+                
+                $.post('{{ baseUrl }}/api/admin/taxonMgr/save', data)
+                    .done(function(response) {
+                        $('#modal-add').modal('hide');
+                        $('#addTaxonForm')[0].reset();
+                        // Destroy autocomplete to clear any lingering text
+                        $('#new_phylum, #new_classis, #new_ordo, #new_familia, #new_genus, #new_binomial').each(function() {
+                            if ($(this).hasClass('ui-autocomplete-input')) {
+                                $(this).autocomplete('destroy');
+                            }
+                        });
+                        showAlert('Taxon added successfully.');
+                        table.ajax.reload(null, false); // false = stay on current page
+                    })
+                    .fail(function(xhr) {
+                        let errorMsg = 'Error adding taxon';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg += ': ' + xhr.responseJSON.message;
+                        }
+                        showAlert(errorMsg);
+                    });
             });
 
             // Delete taxa
@@ -413,17 +583,39 @@
                 });
                 
                 let data = {'id': id};
-                postRequest('{{ baseUrl }}/api/admin/taxonMgr/delete', data, false, false, function () {
-                    $('#modal-delete').modal('hide');
-                    showAlert('Taxa deleted successfully.');
-                    table.ajax.reload();
-                });
+                
+                $.post('{{ baseUrl }}/api/admin/taxonMgr/delete', data)
+                    .done(function(response) {
+                        $('#modal-delete').modal('hide');
+                        showAlert('Taxa deleted successfully.');
+                        table.ajax.reload();
+                    })
+                    .fail(function(xhr) {
+                        $('#modal-delete').modal('hide');
+                        let errorMsg = 'Error deleting taxa';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg += ': ' + xhr.responseJSON.message;
+                        } else if (xhr.responseText) {
+                            errorMsg += ': ' + xhr.responseText;
+                        }
+                        showAlert(errorMsg);
+                    });
             });
             {% endif %}
 
             // Export CSV
             $('#taxonExport').click(function () {
                 window.location.href = '{{ baseUrl }}/api/admin/taxonMgr/export';
+            });
+
+            // Clean up autocomplete when modal is closed
+            $('#modal-add').on('hidden.bs.modal', function () {
+                $('#addTaxonForm')[0].reset();
+                $('#new_phylum, #new_classis, #new_ordo, #new_familia, #new_genus, #new_binomial').each(function() {
+                    if ($(this).hasClass('ui-autocomplete-input')) {
+                        $(this).autocomplete('destroy');
+                    }
+                });
             });
 
             // Initialize select pickers

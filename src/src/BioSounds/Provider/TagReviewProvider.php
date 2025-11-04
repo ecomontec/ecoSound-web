@@ -20,7 +20,7 @@ class TagReviewProvider extends AbstractProvider
                 LEFT JOIN recording r ON r.recording_id = t.recording_id 
                 LEFT JOIN `user` u ON u.user_id = tr.user_id
                 LEFT JOIN tag_review_status trs ON trs.tag_review_status_id = tr.tag_review_status_id
-                LEFT JOIN species s ON s.species_id = tr.species_id WHERE r.col_id = $collectionId";
+                LEFT JOIN taxon s ON s.taxon_id = tr.species_id WHERE r.col_id = $collectionId";
         if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
             $sql .= " AND tr.user_id = " . Auth::getUserID();
         }
@@ -35,7 +35,7 @@ class TagReviewProvider extends AbstractProvider
                 LEFT JOIN recording r ON r.recording_id = t.recording_id 
                 LEFT JOIN `user` u ON u.user_id = tr.user_id
                 LEFT JOIN tag_review_status trs ON trs.tag_review_status_id = tr.tag_review_status_id
-                LEFT JOIN species s ON s.species_id = tr.species_id WHERE r.col_id = $collectionId";
+                LEFT JOIN taxon s ON s.taxon_id = tr.species_id WHERE r.col_id = $collectionId";
         if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
             $sql .= " AND tr.user_id = " . Auth::getUserID();
         }
@@ -57,12 +57,13 @@ class TagReviewProvider extends AbstractProvider
     public function getListByPage(string $collectionId, string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
     {
         $arr = [];
+        $dir = ($dir === 'asc' || $dir === 'desc') ? $dir : 'asc';
         $sql = "SELECT tr.*,t.species_id AS tag_species,t.min_time,t.max_time,t.min_freq,t.max_freq,r.`name` AS recording,r.recording_id,u.`name` AS username,trs.`name` as state,s.binomial as specie FROM tag_review tr 
                 LEFT JOIN tag t ON t.tag_id = tr.tag_id 
                 LEFT JOIN recording r ON r.recording_id = t.recording_id 
                 LEFT JOIN `user` u ON u.user_id = tr.user_id
                 LEFT JOIN tag_review_status trs ON trs.tag_review_status_id = tr.tag_review_status_id
-                LEFT JOIN species s ON s.species_id = tr.species_id WHERE r.col_id = $collectionId";
+                LEFT JOIN taxon s ON s.taxon_id = tr.species_id WHERE r.col_id = $collectionId";
         if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
             $sql .= " AND tr.user_id = " . Auth::getUserID();
         }

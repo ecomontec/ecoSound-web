@@ -15,16 +15,12 @@ SET time_zone = "+00:00";
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
-DROP DATABASE `biosounds`;
+DROP DATABASE IF EXISTS `biosounds`;
 --
 -- Database: `biosounds`
 --
 CREATE DATABASE IF NOT EXISTS `biosounds` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 USE `biosounds`;
-
-SELECT concat('DROP TABLE IF EXISTS ', table_name, ';')
-FROM information_schema.tables
-WHERE table_schema = 'biosounds';
 -- --------------------------------------------------------
 
 --
@@ -313,12 +309,12 @@ CREATE TABLE `sound_type`
 CREATE TABLE `taxon`
 (
     `taxon_id`    int(11) NOT NULL AUTO_INCREMENT,
-    `binomial`    varchar(255) COLLATE utf8_unicode_ci NOT NULL UNIQUE,
+    `binomial`    varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
     `genus`       varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
     `familia`     varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
     `ordo`        varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
     `classis`     varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-    `phylum`      varchar(255) COLLATE utf8_unicode_ci DEFAULT 'Chordata',
+    `phylum`      varchar(255) COLLATE utf8_unicode_ci NOT NULL,
     `common_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
     `source`      varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
     PRIMARY KEY (`taxon_id`)
@@ -573,9 +569,10 @@ ALTER TABLE `sound_type`
 --
 -- Indexes for table `taxon`
 --
-ALTER TABLE `taxon`
-    ADD PRIMARY KEY (`taxon_id`),
-  ADD UNIQUE KEY `binomial` (`binomial`);
+-- Note: PRIMARY KEY already defined in CREATE TABLE statement
+-- ALTER TABLE `taxon`
+--     ADD PRIMARY KEY (`taxon_id`),
+--   ADD UNIQUE KEY `binomial` (`binomial`);
 
 --
 -- Indexes for table `spectrogram`

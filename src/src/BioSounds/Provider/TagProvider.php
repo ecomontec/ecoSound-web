@@ -30,7 +30,7 @@ class TagProvider extends AbstractProvider
      */
     public function get(int $tagId): Tag
     {
-        $query = 'SELECT tag.*,sound.soundscape_component,sound.sound_type, species.taxon_order, species.class, user.name ';
+        $query = 'SELECT tag.*,sound.soundscape_component,sound.sound_type, taxon.ordo as taxon_order, taxon.classis as class, user.name ';
         $query .= ', ' . Species::BINOMIAL . ' as species_name , c.public_tags ';
         $query .= 'FROM ' . self::TABLE_NAME . ' ';
         $query .= 'LEFT JOIN ' . Species::TABLE_NAME . ' ON ';
@@ -61,10 +61,10 @@ class TagProvider extends AbstractProvider
         $result = [];
 
         $query = 'SELECT tag.tag_id, tag.recording_id, tag.min_time, tag.max_time, tag.min_freq, tag.max_freq, tag.user_id, tag.uncertain,sound.soundscape_component,sound.sound_type, ';
-        $query .= 'species.binomial as species_name, tag.sound_distance_m, tag.distance_not_estimable, ';
+        $query .= 'taxon.binomial as species_name, tag.sound_distance_m, tag.distance_not_estimable, ';
         $query .= '(SELECT COUNT(*) FROM tag_review WHERE tag_id = tag.tag_id) AS review_number, ';
         $query .= '(( tag.max_time - tag.min_time ) + (tag.max_freq - tag.min_time )) AS time ';
-        $query .= 'FROM tag LEFT JOIN species ON tag.species_id = species.species_id ';
+        $query .= 'FROM tag LEFT JOIN taxon ON tag.species_id = taxon.taxon_id ';
         $query .= 'LEFT JOIN sound ON tag.sound_id = sound.sound_id ';
         $query .= 'LEFT JOIN recording r ON r.recording_id = tag.recording_id ';
         $query .= 'LEFT JOIN collection c ON c.collection_id = r.col_id ';
@@ -93,10 +93,10 @@ class TagProvider extends AbstractProvider
         $result = [];
 
         $query = 'SELECT tag.tag_id, tag.recording_id, tag.min_time, tag.max_time, tag.min_freq, tag.max_freq, tag.user_id, tag.uncertain,sound.soundscape_component,sound.sound_type, ';
-        $query .= 'species.binomial as species_name, tag.sound_distance_m, tag.distance_not_estimable, ';
+        $query .= 'taxon.binomial as species_name, tag.sound_distance_m, tag.distance_not_estimable, ';
         $query .= '(SELECT COUNT(*) FROM tag_review WHERE tag_id = tag.tag_id) AS review_number, ';
         $query .= '(( tag.max_time - tag.min_time ) + (tag.max_freq - tag.min_time )) AS time ';
-        $query .= 'FROM tag LEFT JOIN species ON tag.species_id = species.species_id ';
+        $query .= 'FROM tag LEFT JOIN taxon ON tag.species_id = taxon.taxon_id ';
         $query .= 'LEFT JOIN sound ON tag.sound_id = sound.sound_id ';
         $query .= 'LEFT JOIN recording r ON r.recording_id = tag.recording_id ';
         $query .= 'LEFT JOIN collection c ON c.collection_id = r.col_id ';
@@ -213,9 +213,9 @@ class TagProvider extends AbstractProvider
 
     public function getTagPagesByCollection(int $colId): array
     {
-        $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass FROM tag t 
+        $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.ordo AS TaxonOrder,s.classis AS TaxonClass FROM tag t 
             INNER JOIN recording r ON r.recording_id = t.recording_id
-            LEFT JOIN species s ON s.species_id = t.species_id
+            LEFT JOIN taxon s ON s.taxon_id = t.species_id
             LEFT JOIN collection c ON c.collection_id = r.col_id
             LEFT JOIN user u ON u.user_id = t.user_id
             LEFT JOIN sound ON sound.sound_id = t.sound_id
@@ -270,7 +270,7 @@ class TagProvider extends AbstractProvider
         $this->database->prepareQuery(
             "SELECT t.*,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName FROM tag t 
             INNER JOIN recording r ON r.recording_id = t.recording_id
-            LEFT JOIN species s ON s.species_id = t.species_id
+            LEFT JOIN taxon s ON s.taxon_id = t.species_id
             LEFT JOIN collection c ON c.collection_id = r.col_id
             LEFT JOIN user u ON u.user_id = t.user_id
             LEFT JOIN sound_type st ON st.sound_type_id = t.animal_sound_type
@@ -306,9 +306,9 @@ class TagProvider extends AbstractProvider
 
     public function getTag(string $collectionId): array
     {
-        $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass FROM tag t 
+        $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.ordo AS TaxonOrder,s.classis AS TaxonClass FROM tag t 
             INNER JOIN recording r ON r.recording_id = t.recording_id
-            LEFT JOIN species s ON s.species_id = t.species_id
+            LEFT JOIN taxon s ON s.taxon_id = t.species_id
             LEFT JOIN collection c ON c.collection_id = r.col_id
             LEFT JOIN user u ON u.user_id = t.user_id
             LEFT JOIN sound ON sound.sound_id = t.sound_id
@@ -323,9 +323,9 @@ class TagProvider extends AbstractProvider
 
     public function getFilterCount(string $collectionId, string $search): int
     {
-        $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass FROM tag t 
+        $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.ordo AS TaxonOrder,s.classis AS TaxonClass FROM tag t 
             INNER JOIN recording r ON r.recording_id = t.recording_id
-            LEFT JOIN species s ON s.species_id = t.species_id
+            LEFT JOIN taxon s ON s.taxon_id = t.species_id
             LEFT JOIN collection c ON c.collection_id = r.col_id
             LEFT JOIN user u ON u.user_id = t.user_id
             LEFT JOIN sound ON sound.sound_id = t.sound_id
@@ -346,9 +346,9 @@ class TagProvider extends AbstractProvider
     public function getListByPage(string $collectionId, string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
     {
         $arr = [];
-        $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass FROM tag t 
+        $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.ordo AS TaxonOrder,s.classis AS TaxonClass FROM tag t 
             INNER JOIN recording r ON r.recording_id = t.recording_id
-            LEFT JOIN species s ON s.species_id = t.species_id
+            LEFT JOIN taxon s ON s.taxon_id = t.species_id
             LEFT JOIN collection c ON c.collection_id = r.col_id
             LEFT JOIN user u ON u.user_id = t.user_id
             LEFT JOIN sound ON sound.sound_id = t.sound_id

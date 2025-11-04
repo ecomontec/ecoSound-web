@@ -439,7 +439,7 @@ class RecordingProvider extends AbstractProvider
         $sql .= " ORDER BY $a[$column] $dir";
         // Only add LIMIT if length is not -1 (DataTables "All" option sends -1)
         if ($length != '-1') {
-            $sql .= " LIMIT :length OFFSET :start";
+            $sql .= " LIMIT $length OFFSET $start";
         }
         $this->database->prepareQuery($sql);
         $params = [
