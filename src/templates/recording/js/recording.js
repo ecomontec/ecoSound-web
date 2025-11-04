@@ -189,14 +189,18 @@ $(function () {
         const zoom_info = JSON.parse(decodeURIComponent($.cookie('zoom_info')));
         if (zoom_info[0] == 1) {
             $('#zoom-btn').html('<i class="fa-solid fa-magnifying-glass-plus"></i>');
+            $('#zoom-btn').attr('title', 'Zoom in by ' + $('#zoom_in_input').val() + '%')
             $("#zoom-btn").removeClass("a-disabled");
         } else if (zoom_info[0] == 2) {
             $('#zoom-btn').html('<i class="fa-solid fa-magnifying-glass-minus"></i>');
+            $('#zoom-btn').attr('title', 'Zoom out by ' + $('#zoom_out_input').val() + '%')
             $("#zoom-btn").removeClass("a-disabled");
         } else if (zoom_info[0] == 3) {
             $('#zoom-btn').html('<i class="fa-solid fa-magnifying-glass"></i>');
+            $('#zoom-btn').attr('title', 'Zoom into selection')
         } else if (zoom_info[0] == 4) {
             $('#zoom-btn').html('<i class="fa-solid fa-magnifying-glass-arrow-right"></i>');
+            $('#zoom-btn').attr('title', 'Zoom into ' + $('#zoom_input').val() + 'px/s')
             $("#zoom-btn").removeClass("a-disabled");
         }
         $('#zoom_in_input').val(zoom_info[1])

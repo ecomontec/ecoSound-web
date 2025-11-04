@@ -136,7 +136,7 @@ $(function () {
             });
         }
     });
-    document.addEventListener('wheel', function (e) {
+    document.getElementById('player_box').addEventListener('wheel', function (e) {
         if (canExec) {
             if (e.shiftKey) {
                 if (e.deltaY < 0) {
