@@ -5,7 +5,7 @@ namespace BioSounds\Controller;
 use BioSounds\Controller\Administration\IndexLogController;
 use BioSounds\Controller\Administration\QueueController;
 use BioSounds\Controller\Administration\SiteCollectionController;
-use BioSounds\Controller\Administration\SpeciesController;
+use BioSounds\Controller\Administration\TaxonController;
 use BioSounds\Controller\Administration\UserController;
 use BioSounds\Utils\Auth;
 use BioSounds\Controller\Administration\CollectionController as CollectionController;
@@ -211,13 +211,13 @@ class AdminController extends BaseController
     }
 
     /**
-     * @param string|null $action
+    /**
      * @return false|string
      * @throws \Exception
      */
-    public function species()
+    public function taxon()
     {
-        return (new SpeciesController($this->twig))->show();
+        return (new TaxonController($this->twig))->show();
     }
 
     /**
@@ -225,9 +225,9 @@ class AdminController extends BaseController
      * @param int|null $id
      * @return mixed
      */
-    public function speciesMgr(string $action, int $id = null)
+    public function taxonMgr(string $action, int $id = null)
     {
-        return (new SpeciesController($this->twig))->$action($id);
+        return (new TaxonController($this->twig))->$action($id);
     }
 
     /**

@@ -128,13 +128,13 @@ VALUES (1, '(Bird) Call - unspecific', 'AVES', ''),
        (26, '(Primate) Adult - offspring', 'MAMMALIA', 'PRIMATA');
 
 --
--- Dumping data for table `species`
+-- Dumping data for table `taxon`
 --
-INSERT INTO `species` (`species_id`, `binomial`, `genus`, `family`, `taxon_order`, `class`, `common_name`, `level`,`source`)
-VALUES (1, 'Unknown', '', '', '', '', '', 1,''),
-       (2, 'Test bird', 'Test Genus', 'Test Family', '', 'AVES', 'common bird name', 1,''),
-       (3, 'Test amphibian', 'Test Genus', 'Test Family', '', 'AMPHIBIA', 'common amphibian name', 1,''),
-       (4, 'Test primate', 'Test Genus', 'Test Family', 'PRIMATA', 'MAMMALIA', 'common primate name', 1,'');
+INSERT INTO `taxon` (`taxon_id`, `binomial`, `genus`, `familia`, `ordo`, `classis`, `phylum`, `common_name`, `source`)
+VALUES (1, 'Unknown', '', '', '', '', '', '', ''),
+       (2, 'Test bird', 'Test Genus', 'Test Family', '', 'AVES', 'Chordata', 'common bird name', 'Test'),
+       (3, 'Test amphibian', 'Test Genus', 'Test Family', '', 'AMPHIBIA', 'Chordata', 'common amphibian name', 'Test'),
+       (4, 'Test primate', 'Test Genus', 'Test Family', 'PRIMATA', 'MAMMALIA', 'Chordata', 'common primate name', 'Test');
 --
 -- Dumping data for table `tag_review_status`
 --
@@ -530,3 +530,4 @@ VALUES (35, 'SWIFT', NULL, NULL, NULL);
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+

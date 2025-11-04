@@ -1,29 +1,29 @@
 {% extends 'administration/admin.html.twig' %}
 
 {% block admin_content %}
-    <div class="card mb-3" id="speciesList">
+    <div class="card mb-3" id="taxonList">
         <div class="card-header border-light bg-white text-right">
             <div class="form-inline mb-3">
                 <div class="col-8 form-inline">
-                    <label for="classFilter">Class:</label>
-                    <select id="classFilter" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
+                    <label for="classisFilter">Classis:</label>
+                    <select id="classisFilter" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
                         <option value="">All</option>
                         {% for class in classes %}
-                            <option value="{{ class.class }}">{{ class.class }}</option>
+                            <option value="{{ class.classis }}">{{ class.classis }}</option>
                         {% endfor %}
                     </select>
-                    <label for="orderFilter" class="ml-3">Order:</label>
-                    <select id="orderFilter" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
+                    <label for="ordoFilter" class="ml-3">Ordo:</label>
+                    <select id="ordoFilter" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
                         <option value="">All</option>
                         {% for order in orders %}
-                            <option value="{{ order.taxon_order }}">{{ order.taxon_order }}</option>
+                            <option value="{{ order.ordo }}">{{ order.ordo }}</option>
                         {% endfor %}
                     </select>
-                    <label for="familyFilter" class="ml-3">Family:</label>
-                    <select id="familyFilter" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
+                    <label for="familiaFilter" class="ml-3">Familia:</label>
+                    <select id="familiaFilter" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
                         <option value="">All</option>
                         {% for family in families %}
-                            <option value="{{ family.family }}">{{ family.family }}</option>
+                            <option value="{{ family.familia }}">{{ family.familia }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -46,12 +46,12 @@
                     Delete
                 </button>
             {% endif %}
-            <button id="speciesExport" class="btn btn-outline-primary btn-sm mt-2" type="button">
+            <button id="taxonExport" class="btn btn-outline-primary btn-sm mt-2" type="button">
                 <i class="fa fa-file-csv"></i>
                 Export CSV
             </button>
         </div>
-        <table id="speciesTable" style="display:none;white-space: nowrap;">
+        <table id="taxonTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
             <tr style="font-size: .875rem;">
                 <th style="{% if not is_admin %}display:none;{% endif %}">
@@ -63,14 +63,16 @@
                 <th>Binomial Name</th>
                 <th>Common Name</th>
                 <th>Genus</th>
-                <th>Family</th>
-                <th>Order</th>
-                <th>Class</th>
+                <th>Familia</th>
+                <th>Ordo</th>
+                <th>Classis</th>
+                <th>Phylum</th>
+                <th>Source</th>
                 <th>Tags</th>
                 <th>Recordings</th>
             </tr>
             </thead>
-            <tbody class="form-control-sm js-species-list"></tbody>
+            <tbody class="form-control-sm js-taxon-list"></tbody>
         </table>
     </div>
 
@@ -87,8 +89,8 @@
                 <div class="modal-body ml-3">
                     <div>
                         <div class="form-group">
-                            <label id="delete_info">Are you sure you want to delete the selected species?</label>
-                            <p class="text-danger"><small>Note: Species with associated tags cannot be deleted.</small></p>
+                            <label id="delete_info">Are you sure you want to delete the selected taxa?</label>
+                            <p class="text-danger"><small>Note: Taxa with associated tags cannot be deleted.</small></p>
                         </div>
                     </div>
                 </div>
@@ -106,21 +108,21 @@
         </div>
     </div>
 
-    <!-- Add Species Modal -->
+    <!-- Add Taxon Modal -->
     <div class="modal fade" id="modal-add" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Add New Species</h5>
+                    <h5 class="modal-title">Add New Taxon</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="addSpeciesForm">
+                    <form id="addTaxonForm">
                         <div class="form-group">
                             <label for="new_binomial">Binomial Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control form-control-sm" id="new_binomial" name="binomial" required>
+                            <input type="text" class="form-control form-control-sm autocomplete-field" id="new_binomial" name="binomial" data-field="binomial" required>
                         </div>
                         <div class="form-group">
                             <label for="new_common_name">Common Name</label>
@@ -128,19 +130,27 @@
                         </div>
                         <div class="form-group">
                             <label for="new_genus">Genus</label>
-                            <input type="text" class="form-control form-control-sm" id="new_genus" name="genus">
+                            <input type="text" class="form-control form-control-sm autocomplete-field" id="new_genus" name="genus" data-field="genus">
                         </div>
                         <div class="form-group">
-                            <label for="new_family">Family</label>
-                            <input type="text" class="form-control form-control-sm" id="new_family" name="family">
+                            <label for="new_familia">Familia</label>
+                            <input type="text" class="form-control form-control-sm autocomplete-field" id="new_familia" name="familia" data-field="familia">
                         </div>
                         <div class="form-group">
-                            <label for="new_order">Order</label>
-                            <input type="text" class="form-control form-control-sm" id="new_order" name="taxon_order">
+                            <label for="new_ordo">Ordo</label>
+                            <input type="text" class="form-control form-control-sm autocomplete-field" id="new_ordo" name="ordo" data-field="ordo">
                         </div>
                         <div class="form-group">
-                            <label for="new_class">Class</label>
-                            <input type="text" class="form-control form-control-sm" id="new_class" name="class">
+                            <label for="new_classis">Classis <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-sm autocomplete-field" id="new_classis" name="classis" data-field="classis" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new_phylum">Phylum</label>
+                            <input type="text" class="form-control form-control-sm autocomplete-field" id="new_phylum" name="phylum" data-field="phylum">
+                        </div>
+                        <div class="form-group">
+                            <label for="new_source">Source</label>
+                            <input type="text" class="form-control form-control-sm autocomplete-field" id="new_source" name="source" data-field="source">
                         </div>
                     </form>
                 </div>
@@ -151,7 +161,7 @@
                     </button>
                     <button id="js-add-button" type="button" class="btn btn-outline-primary">
                         <i class="fas fa-save"></i>
-                        Add Species
+                        Add Taxon
                     </button>
                 </div>
             </div>
@@ -159,13 +169,13 @@
     </div>
 {% endblock %}
 
-{% block header %}
+{% block scripts %}
     {{ parent() }}
     <script>
         $(document).ready(function () {
             let changedRows = new Set();
             
-            $('#speciesTable').show();
+            $('#taxonTable').show();
             
             {% if is_admin %}
             let columnDefs = [
@@ -175,7 +185,7 @@
                 },
                 {
                     "className": "dt-center",
-                    "targets": [0, 8, 9],
+                    "targets": [0, 10, 11],
                 }
             ];
             {% else %}
@@ -187,21 +197,21 @@
                 },
                 {
                     "className": "dt-center",
-                    "targets": [8, 9],
+                    "targets": [10, 11],
                 }
             ];
             {% endif %}
             
-            let table = $('#speciesTable').DataTable({
+            let table = $('#taxonTable').DataTable({
                 "processing": true,
                 "serverSide": true,
                 "ajax": {
-                    "url": '{{ baseUrl }}/admin/speciesMgr/getListByPage',
+                    "url": '{{ baseUrl }}/admin/taxonMgr/getListByPage',
                     "type": 'POST',
                     "data": function(d) {
-                        d.classFilter = $('#classFilter').val();
-                        d.orderFilter = $('#orderFilter').val();
-                        d.familyFilter = $('#familyFilter').val();
+                        d.classisFilter = $('#classisFilter').val();
+                        d.ordoFilter = $('#ordoFilter').val();
+                        d.familiaFilter = $('#familiaFilter').val();
                     },
                     "error": function (xhr, error, thrown) {
                         if (xhr.status == 400 || xhr.status == 404 || xhr.status == 500) {
@@ -227,16 +237,16 @@
             });
 
             // Filter handlers
-            $('#classFilter, #orderFilter, #familyFilter').on('change', function() {
+            $('#classisFilter, #ordoFilter, #familiaFilter').on('change', function() {
                 $('.selectpicker').selectpicker('refresh');
                 table.ajax.reload();
             });
 
             {% if is_admin %}
             // Track changes in editable fields
-            $(document).on('change', '#speciesTable input[type="text"]', function() {
-                let speciesId = $(this).data('id');
-                changedRows.add(speciesId);
+            $(document).on('change', '#taxonTable input[type="text"]', function() {
+                let taxonId = $(this).data('id');
+                changedRows.add(taxonId);
                 $('#saveButton').prop('disabled', false);
             });
 
@@ -260,22 +270,88 @@
             }
             {% endif %}
 
+            // Autocomplete functionality
+            function setupAutocomplete(selector) {
+                $(document).on('focus', selector, function() {
+                    let $this = $(this);
+                    if ($this.data('autocomplete-initialized')) {
+                        return;
+                    }
+                    
+                    $this.data('autocomplete-initialized', true);
+                    
+                    let field = $this.data('field');
+                    
+                    $this.autocomplete({
+                        source: function(request, response) {
+                            $.ajax({
+                                url: '{{ baseUrl }}/api/admin/taxonMgr/autocomplete',
+                                data: {
+                                    field: field,
+                                    term: request.term
+                                },
+                                success: function(data) {
+                                    response(data);
+                                }
+                            });
+                        },
+                        minLength: 1,
+                        select: function(event, ui) {
+                            // Auto-fill higher taxonomic ranks
+                            $.ajax({
+                                url: '{{ baseUrl }}/api/admin/taxonMgr/getHigherRanks',
+                                data: {
+                                    field: field,
+                                    value: ui.item.value
+                                },
+                                success: function(ranks) {
+                                    if (ranks && Object.keys(ranks).length > 0) {
+                                        let formId = $this.closest('form').attr('id');
+                                        if (formId === 'addTaxonForm') {
+                                            if (ranks.genus && !$('#new_genus').val()) {
+                                                $('#new_genus').val(ranks.genus);
+                                            }
+                                            if (ranks.familia && !$('#new_familia').val()) {
+                                                $('#new_familia').val(ranks.familia);
+                                            }
+                                            if (ranks.ordo && !$('#new_ordo').val()) {
+                                                $('#new_ordo').val(ranks.ordo);
+                                            }
+                                            if (ranks.classis && !$('#new_classis').val()) {
+                                                $('#new_classis').val(ranks.classis);
+                                            }
+                                            if (ranks.phylum && !$('#new_phylum').val()) {
+                                                $('#new_phylum').val(ranks.phylum);
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    });
+                });
+            }
+
+            setupAutocomplete('.autocomplete-field');
+
             {% if is_admin %}
             // Save changes
             $('#saveButton').click(function (e) {
                 e.preventDefault();
                 
                 let updates = [];
-                changedRows.forEach(speciesId => {
-                    let row = $('input[data-id="' + speciesId + '"]').first().closest('tr');
+                changedRows.forEach(taxonId => {
+                    let row = $('input[data-id="' + taxonId + '"]').first().closest('tr');
                     let data = {
-                        species_id: speciesId,
+                        taxon_id: taxonId,
                         binomial: row.find('input[name="binomial"]').val(),
                         common_name: row.find('input[name="common_name"]').val(),
                         genus: row.find('input[name="genus"]').val(),
-                        family: row.find('input[name="family"]').val(),
-                        taxon_order: row.find('input[name="taxon_order"]').val(),
-                        class: row.find('input[name="class"]').val(),
+                        familia: row.find('input[name="familia"]').val(),
+                        ordo: row.find('input[name="ordo"]').val(),
+                        classis: row.find('input[name="classis"]').val(),
+                        phylum: row.find('input[name="phylum"]').val(),
+                        source: row.find('input[name="source"]').val(),
                     };
                     updates.push(data);
                 });
@@ -286,44 +362,44 @@
 
                 // Save each update
                 let promises = updates.map(data => {
-                    return $.post('{{ baseUrl }}/api/admin/speciesMgr/save', data);
+                    return $.post('{{ baseUrl }}/api/admin/taxonMgr/save', data);
                 });
 
                 Promise.all(promises).then(() => {
-                    showAlert('Species updated successfully.');
+                    showAlert('Taxa updated successfully.');
                     changedRows.clear();
                     $('#saveButton').prop('disabled', true);
                     table.ajax.reload(null, false);
                 }).catch((error) => {
-                    showAlert('Error updating species: ' + error.responseJSON.message);
+                    showAlert('Error updating taxa: ' + (error.responseJSON ? error.responseJSON.message : 'Unknown error'));
                 });
             });
 
-            // Add new species
+            // Add new taxon
             $('#addButton').click(function (e) {
                 e.preventDefault();
-                $('#addSpeciesForm')[0].reset();
+                $('#addTaxonForm')[0].reset();
                 $('#modal-add').modal('show');
             });
 
             $('#js-add-button').click(function (e) {
                 e.preventDefault();
                 
-                let formData = $('#addSpeciesForm').serialize();
+                let formData = new FormData($('#addTaxonForm')[0]);
                 
-                postRequest('{{ baseUrl }}/api/admin/speciesMgr/save', formData, false, false, function (response) {
+                postRequest('{{ baseUrl }}/api/admin/taxonMgr/save', formData, false, false, function (response) {
                     $('#modal-add').modal('hide');
-                    showAlert('Species added successfully.');
+                    showAlert('Taxon added successfully.');
                     table.ajax.reload();
                 });
             });
 
-            // Delete species
+            // Delete taxa
             $('#deleteButton').click(function (e) {
                 e.preventDefault();
                 let selectedCount = $('.js-checkbox:checked').length;
                 if (selectedCount > 0) {
-                    $('#delete_info').html('Are you sure you want to delete <b class="text-danger">' + selectedCount + '</b> species?');
+                    $('#delete_info').html('Are you sure you want to delete <b class="text-danger">' + selectedCount + '</b> taxa?');
                     $('#modal-delete').modal('show');
                 }
             });
@@ -337,17 +413,17 @@
                 });
                 
                 let data = {'id': id};
-                postRequest('{{ baseUrl }}/api/admin/speciesMgr/delete', data, false, false, function () {
+                postRequest('{{ baseUrl }}/api/admin/taxonMgr/delete', data, false, false, function () {
                     $('#modal-delete').modal('hide');
-                    showAlert('Species deleted successfully.');
+                    showAlert('Taxa deleted successfully.');
                     table.ajax.reload();
                 });
             });
             {% endif %}
 
             // Export CSV
-            $('#speciesExport').click(function () {
-                window.location.href = '{{ baseUrl }}/api/admin/speciesMgr/export';
+            $('#taxonExport').click(function () {
+                window.location.href = '{{ baseUrl }}/api/admin/taxonMgr/export';
             });
 
             // Initialize select pickers
