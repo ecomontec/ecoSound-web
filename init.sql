@@ -308,19 +308,20 @@ CREATE TABLE `sound_type`
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
--- Table structure for table `species`
+-- Table structure for table `taxon`
 --
-CREATE TABLE `species`
+CREATE TABLE `taxon`
 (
-    `species_id`  int(11) NOT NULL,
-    `binomial`    varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-    `genus`       varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `family`      varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `taxon_order` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `class`       varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `common_name` varchar(200) COLLATE utf8_unicode_ci NOT NULL,
-    `level`       int(11) NOT NULL,
-    `source`      varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL
+    `taxon_id`    int(11) NOT NULL AUTO_INCREMENT,
+    `binomial`    varchar(255) COLLATE utf8_unicode_ci NOT NULL UNIQUE,
+    `genus`       varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `familia`     varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `ordo`        varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `classis`     varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+    `phylum`      varchar(255) COLLATE utf8_unicode_ci DEFAULT 'Chordata',
+    `common_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `source`      varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+    PRIMARY KEY (`taxon_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
@@ -570,10 +571,11 @@ ALTER TABLE `sound_type`
     ADD PRIMARY KEY (`sound_type_id`);
 
 --
--- Indexes for table `species`
+-- Indexes for table `taxon`
 --
-ALTER TABLE `species`
-    ADD PRIMARY KEY (`species_id`);
+ALTER TABLE `taxon`
+    ADD PRIMARY KEY (`taxon_id`),
+  ADD UNIQUE KEY `binomial` (`binomial`);
 
 --
 -- Indexes for table `spectrogram`
@@ -738,7 +740,7 @@ ALTER TABLE `spectrogram`
 --
 ALTER TABLE `tag`
     ADD CONSTRAINT `tag_recording_id_fk` FOREIGN KEY (`recording_id`) REFERENCES `recording` (`recording_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `tag_species_id_fk` FOREIGN KEY (`species_id`) REFERENCES `species` (`species_id`) ON
+  ADD CONSTRAINT `tag_taxon_id_fk` FOREIGN KEY (`species_id`) REFERENCES `taxon` (`taxon_id`) ON
 DELETE
 CASCADE ON
 UPDATE CASCADE,
@@ -752,7 +754,7 @@ UPDATE CASCADE;
 -- Constraints for table `tag_review`
 --
 ALTER TABLE `tag_review`
-    ADD CONSTRAINT `tag_review_species_id_fk` FOREIGN KEY (`species_id`) REFERENCES `species` (`species_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    ADD CONSTRAINT `tag_review_taxon_id_fk` FOREIGN KEY (`species_id`) REFERENCES `taxon` (`taxon_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `tag_review_status_id_fk` FOREIGN KEY (`tag_review_status_id`) REFERENCES `tag_review_status` (`tag_review_status_id`) ON
 DELETE
 CASCADE ON
