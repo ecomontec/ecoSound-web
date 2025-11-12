@@ -789,9 +789,10 @@ class RecordingController extends BaseController
         }
         $i = 0;
         $j = 0;
+        $timestamp = time();
         $str = 'python3 ' . ABSOLUTE_DIR . 'BirdNET-Analyzer/analyze.py' .
             ' --i ' . ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['filename'] .
-            ' --o ' . ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv" .
+            ' --o ' . ABSOLUTE_DIR . 'tmp/' . $timestamp . '/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv" .
             ' --rtype "csv"';
         if ($data['lat'] != '') {
             $str = $str . ' --lat ' . $data['lat'];
@@ -817,7 +818,7 @@ class RecordingController extends BaseController
         exec($str . " 2>&1", $out, $status);
         $result = [];
         if ($status == 0) {
-            $handle = fopen(ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv", "rb");
+            $handle = fopen(ABSOLUTE_DIR . 'tmp/' . $timestamp . '/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv", "rb");
             while (!feof($handle)) {
                 $d = fgetcsv($handle);
                 $result[] = $d;
@@ -879,7 +880,7 @@ class RecordingController extends BaseController
                 $list = json_decode($output, true);
             }
             (new TagProvider())->insertArr($list);
-            unlink(ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv");
+            unlink(ABSOLUTE_DIR . 'tmp/' . $timestamp . '/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv");
             return json_encode([
                 'errorCode' => 0,
                 'message' => "BirdNET v$maxValue found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. " . (is_array($list) ? count($list) : 0) . " tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
@@ -901,12 +902,13 @@ class RecordingController extends BaseController
         }
         $i = 0;
         $j = 0;
-        $soundPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . "/sounds";
+        $timestamp = time();
+        $soundPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . '/' . $timestamp . "/sounds";
         if (!file_exists($soundPath)) {
             mkdir($soundPath, 0777, true);
         }
         copy(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav', $soundPath . '/' . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav');
-        $resultPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'];
+        $resultPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . '/' . $timestamp;
         $str = 'batdetect2 detect ' . $soundPath . ' ' . $resultPath . ' ';
         if ($data['detection_threshold'] != 'undefined' && $data['detection_threshold'] != '') {
             $str = $str . $data['detection_threshold'];
@@ -1006,12 +1008,13 @@ class RecordingController extends BaseController
         }
         $i = 0;
         $j = 0;
-        $soundPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . "/sounds";
+        $timestamp = time();
+        $soundPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . '/' . $timestamp . "/sounds";
         if (!file_exists($soundPath)) {
             mkdir($soundPath, 0777, true);
         }
         copy(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav', $soundPath . '/' . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav');
-        $resultPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'];
+        $resultPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . '/' . $timestamp;
         $str = "autrainer inference " . escapeshellarg("hf:AlexanderGbd/insects-base-cnn10-96k-t") . " -sr " . escapeshellarg(Utils::getFileSamplingRate($soundPath . '/' . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav'));
         $windowSize = (!empty($data['window_size']) && $data['window_size'] != 'undefined') ? escapeshellarg($data['window_size']) : escapeshellarg("4.0");
         $strideSize = (!empty($data['stride_length']) && $data['stride_length'] != 'undefined') ? escapeshellarg($data['stride_length']) : escapeshellarg("4.0");
