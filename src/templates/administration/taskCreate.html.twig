@@ -10,7 +10,8 @@
             <div class="modal-body ml-3">
                 <div>
                     <div class="form-group">
-                        <select id="assign" name="assign_id" class=" mb-3" data-selected-text-format="count" multiple required>
+                        <div>Available users with review privileges</div>
+                        <select id="assign" name="assign_id" class=" my-3" data-selected-text-format="count" multiple required>
                             {% for user in users %}
                                 {% if user.user_id != user_id %}
                                     <option value="{{ user.user_id }}" {{ user.checked?' disabled ':'' }}>{{ user.name }}{{ user.checked == count ?' (assigned)':user.checked?' (partially assigned)':'' }}</option>
