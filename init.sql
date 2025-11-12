@@ -358,7 +358,7 @@ CREATE TABLE `tag`
     `individuals`            int(2) NOT NULL,
     `animal_sound_type`      varchar(128) COLLATE utf8_unicode_ci         DEFAULT NULL,
     `reference_call`         tinyint(1) NOT NULL,
-    `comments`               varchar(500) COLLATE utf8_unicode_ci         DEFAULT NULL,
+    `comments`               text COLLATE utf8_unicode_ci                 DEFAULT NULL,
     `creation_date`          timestamp                           NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 

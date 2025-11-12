@@ -274,7 +274,7 @@
                     $(this).siblings().remove();
                     {% for model in models %}
                     if ($(this).val() == '{{ model.tf_model_id }}') {
-                        $('#model-btn').attr("href", "{{ baseUrl }}/recording/{{ model.name|replace({'-': ''}) }}");
+                        $('#model-btn').attr("href", "{{ baseUrl }}/api/recording/{{ model.name|replace({'-': ''}) }}");
                         html = html + '<div class="col-form-label">' +
                             '<strong>Description:</strong>' +
                             '<a class="col-form-label" href="{{ model.source_URL }}" target="_blank" title="Documentation"> <i class="fa fa-book"></i></a>' +
@@ -301,6 +301,7 @@
                 })
                 $("#acoustic_analysis").change();
             });
+            $('#is_merged').prop('checked', false);
             $('#is_merged').on('change', function () {
                 if ($(this).is(':checked')) {
                     $('.merged-box').show();
@@ -324,6 +325,9 @@
             })
             $('.js-open-tf-modal').click(function () {
                 $('#modal-tf').modal('show');
+                $('#is_merged').prop('checked', false);
+                $('.merged-box').hide();
+                $('#max_gap').val('');
             })
             $('.js-open-aa-modal').click(function () {
                 $('#modal-aa').modal('show');

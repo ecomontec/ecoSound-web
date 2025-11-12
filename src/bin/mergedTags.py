@@ -74,11 +74,14 @@ def merge_tags(tags, unknown_id, model, max_gap=0, keep_only_merged=True):
     return result
 
 
-tags = json.loads(sys.argv[1])
+json_file = sys.argv[1]
 unknown_id = int(sys.argv[2])
 model = sys.argv[3]
 max_gap = float(sys.argv[4]) if len(sys.argv) > 4 else 0
 keep_only_merged = bool(int(sys.argv[5])) if len(sys.argv) > 5 else False
+
+with open(json_file, 'r', encoding='utf-8') as f:
+    tags = json.load(f)
 
 merged_tags = merge_tags(tags, unknown_id, model, max_gap, keep_only_merged)
 print(json.dumps(merged_tags))
