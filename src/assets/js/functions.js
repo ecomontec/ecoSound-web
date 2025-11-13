@@ -91,6 +91,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     taxon_order: ui.item.taxon_order
                 })
                     .done(function (data) {
+                        console.log(ui.item)
+                        $('#order' + id).text(ui.item.taxon_order)
+                        $('#family' + id).text(ui.item.family)
+                        $('#genus' + id).text(ui.item.genus)
                         if (data == '') {
                             $("#animal_sound_type" + id).empty()
                             $("#animal_sound_type" + id).attr('disabled', true)

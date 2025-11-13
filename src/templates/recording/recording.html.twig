@@ -151,6 +151,10 @@
                         <i class="fas fa-eye"></i>
                         View
                     </button>
+                    <button id="assignments" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" data-target="#assignments" disabled>
+                        <i class="fas fa-tasks"></i>
+                        Assignments
+                    </button>
                     <button id="deletion" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#deletion" disabled>
                         <i class="fas fa-trash"></i>
                         Delete
@@ -169,7 +173,6 @@
                         <th>#</th>
                         <th>Soundscape Component</th>
                         <th>Sound Type</th>
-                        <th>Recording</th>
                         <th>User</th>
                         <th>Creator Type</th>
                         <th>Confidence</th>
@@ -178,6 +181,9 @@
                         <th>Min Freq</th>
                         <th>Max Freq</th>
                         <th>Species</th>
+                        <th>Order</th>
+                        <th>Family</th>
+                        <th>Genus</th>
                         <th>Uncertain</th>
                         <th>Call Distance</th>
                         <th>Distance Not Estimable</th>
@@ -321,7 +327,6 @@
                             }
                         }
                     },
-                    "scrollY": Math.max(($(window).height() - $('#tagsTable').offset().top), 100),
                     "stateSave": true,
                     "StateDuration": -1,
                     "order": [[1, 'asc']],
@@ -385,7 +390,6 @@
                 }
                 saveFormList($(this), 'api/admin/tagMgr/save');
             });
-
             $('#tagsTable tbody').on('click', 'input[name=distance_not_estimable]', function () {
                 var id = $(this).attr('id').split('_')[3]
                 let callDistance = $('#sound_distance_m' + id);
@@ -425,12 +429,21 @@
                 }
                 $("#modal-delete").modal('show');
             })
+            $('button[name="table-btn"][data-target="#assignments"]').click(function (e) {
+                let id = [];
+                $('.js-checkbox:checked').each(function () {
+                    id.push($(this).data('id'));
+                });
+                let data = {'id': id, 'type': 'tag', 'collection_id': {{ player.recording.col_id }}};
+                requestModal("{{ baseUrl }}/admin/taskMgr/assign", data);
+                e.preventDefault();
+            })
             $('#tagsTable tbody').on('mouseenter', 'tr', function () {
                 let tagId = $(this).find('[name="tag_id"]').val();
                 if (tagId) {
                     $('#' + tagId).css({
                         'background-color': 'white',
-                        'opacity': '0.3'
+                        'opacity': '0.5'
                     });
                 }
             });
@@ -443,6 +456,23 @@
                         'opacity': ''
                     });
                 }
+            });
+
+            $('.tag-controls').on('mouseenter', function () {
+                let tagId = $(this).attr('id');
+                let $row = $('#tagsTable tbody').find('[name="tag_id"][value="' + tagId + '"]').closest('tr');
+                $row.css({
+                    'background-color': '#ffff99'
+                });
+            });
+
+
+            $('.tag-controls').on('mouseleave', function () {
+                let tagId = $(this).attr('id');
+                let $row = $('#tagsTable tbody').find('[name="tag_id"][value="' + tagId + '"]').closest('tr');
+                $row.css({
+                    'background-color': ''
+                });
             });
         });
     </script>

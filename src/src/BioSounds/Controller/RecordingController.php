@@ -1154,7 +1154,7 @@ class RecordingController extends BaseController
         $search = $_POST['search']['value'];
         $column = $_POST['order'][0]['column'];
         $dir = $_POST['order'][0]['dir'];
-        $data = (new TagProvider())->getViewListByPage($collectionId, $recordingId, $_GET['minTime'], $_GET['maxTime'], $_GET['minFrequency'], $_GET['maxFrequency'], $start, $length, $search, $column, $dir);
+        $data = (new TagProvider())->getRecrdingViewListByPage($collectionId, $recordingId, $_GET['minTime'], $_GET['maxTime'], $_GET['minFrequency'], $_GET['maxFrequency'], $start, $length, $search, $column, $dir);
         if (count($data) == 0) {
             $data = [];
         }
