@@ -480,9 +480,11 @@ class RecordingController extends BaseController
                         $freq_i = ((($viewFreqRange + $viewFreqMin) - $tagFreqMax) / $viewFreqRange) * SPECTROGRAM_HEIGHT;
 
                     $freq_w = $tagFreqMin < $viewFreqMin ? SPECTROGRAM_HEIGHT - $freq_i : (($tagFreqMax - $tagFreqMin) / $viewFreqRange) * SPECTROGRAM_HEIGHT;
-
-                    $time_w = (($tagTimeMax - $tagTimeMin) / $viewTotalTime) * $specWidth;
-
+                    if ($viewTotalTime > 0) {
+                        $time_w = (($tagTimeMax - $tagTimeMin) / $viewTotalTime) * $specWidth;
+                    } else {
+                        $time_w = 0;
+                    }
                     $pos = $i + 800;
                     $listTags[] = (new TagPresenter())
                         ->setId($tagID)

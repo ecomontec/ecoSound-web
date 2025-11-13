@@ -174,7 +174,7 @@ $(function () {
     $('.js-new-tag').click(function (e) {
         e.preventDefault();
 
-        if ($('#zoom-submit').is(':disabled')) {
+        if ($('#zoom-submit').hasClass('a-disabled')) {
             showAlert('Please, select an area of the spectrogram.');
             return;
         }
