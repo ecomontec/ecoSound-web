@@ -794,13 +794,13 @@ class RecordingController extends BaseController
             ' --i ' . ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['filename'] .
             ' --o ' . ABSOLUTE_DIR . 'tmp/' . $timestamp . '/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv" .
             ' --rtype "csv"';
-        if ($data['lat'] != '') {
+        if ((string)$data['lat'] != '') {
             $str = $str . ' --lat ' . $data['lat'];
         }
-        if ($data['lon'] != '') {
+        if ((string)$data['lon'] != '') {
             $str = $str . ' --lon ' . $data['lon'];
         }
-        if ($data['file_date'] != '') {
+        if ($data['file_date'] != '' && $data['file_date'] != '1970-01-01') {
             $str = $str . ' --week ' . date('W', $data['file_date']);
         }
         if ($data['sensitivity'] != '') {
