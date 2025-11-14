@@ -444,6 +444,8 @@ class RecordingProvider extends AbstractProvider
         $this->database->prepareQuery($sql);
         $params = [
             ':collectionId' => $collectionId,
+            ':start' => (int)$start,
+            ':length' => (int)$length,
         ];
         if ($search) {
             $params[':search'] = '%' . $search . '%';

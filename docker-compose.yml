@@ -1,16 +1,16 @@
 ---
 x-volumes: &volumes
-  - ./src:/var/www/html:cached
-  - ./media/sounds:/var/www/html/sounds/sounds
-  - ./media/images:/var/www/html/sounds/images
-  - ./media/projects:/var/www/html/sounds/projects
+  - ./src:/var/www/html
+  - ./sounds:/var/www/html/sounds/sounds
+  - ./sound_images:/var/www/html/sounds/images
+  - ./project_images:/var/www/html/sounds/projects
   - biosounds-vendor:/var/www/html/vendor
 
 services:
   database:
     image: mysql
     volumes:
-      - ./data/mysql:/var/lib/mysql
+      - ./mysql:/var/lib/mysql
     ports:
       - 13306:3306
     environment:

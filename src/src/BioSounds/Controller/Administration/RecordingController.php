@@ -78,26 +78,38 @@ class RecordingController extends BaseController
         ]);
     }
 
-    public function getListByPage($projectId = null, $collectionId = null)
+    public function getListByPage($projectId = null, $collectionId = null, $unused = null)
     {
-        $collectionId = isset($collectionId) ? $collectionId : 'NULL';
-        $total = count((new RecordingProvider())->getRecording($collectionId));
-        $start = $_POST['start'];
-        $length = $_POST['length'];
-        $search = $_POST['search']['value'];
-        $column = $_POST['order'][0]['column'];
-        $dir = $_POST['order'][0]['dir'];
-        $data = (new RecordingProvider())->getListByPage($projectId, $collectionId, $start, $length, $search, $column, $dir);
-        if (count($data) == 0) {
-            $data = [];
+        try {
+            $projectId = isset($projectId) ? (string)$projectId : 'NULL';
+            $collectionId = isset($collectionId) ? (string)$collectionId : 'NULL';
+            $total = count((new RecordingProvider())->getRecording($collectionId));
+            $start = isset($_POST['start']) ? (string)$_POST['start'] : '0';
+            $length = isset($_POST['length']) ? (string)$_POST['length'] : '10';
+            $search = isset($_POST['search']['value']) ? (string)$_POST['search']['value'] : '';
+            $column = isset($_POST['order'][0]['column']) ? (string)$_POST['order'][0]['column'] : '0';
+            $dir = isset($_POST['order'][0]['dir']) ? (string)$_POST['order'][0]['dir'] : 'asc';
+            $data = (new RecordingProvider())->getListByPage($projectId, $collectionId, $start, $length, $search, $column, $dir);
+            if (count($data) == 0) {
+                $data = [];
+            }
+            $result = [
+                'draw' => isset($_POST['draw']) ? $_POST['draw'] : '1',
+                'recordsTotal' => $total,
+                'recordsFiltered' => (new RecordingProvider())->getFilterCount($collectionId, $search),
+                'data' => $data,
+            ];
+            return json_encode($result);
+        } catch (\Exception $e) {
+            error_log('RecordingController::getListByPage error: ' . $e->getMessage());
+            return json_encode([
+                'draw' => isset($_POST['draw']) ? $_POST['draw'] : '1',
+                'recordsTotal' => 0,
+                'recordsFiltered' => 0,
+                'data' => [],
+                'error' => $e->getMessage(),
+            ]);
         }
-        $result = [
-            'draw' => $_POST['draw'],
-            'recordsTotal' => $total,
-            'recordsFiltered' => (new RecordingProvider())->getFilterCount($collectionId, $search),
-            'data' => $data,
-        ];
-        return json_encode($result);
     }
 
     /**

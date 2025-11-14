@@ -39,38 +39,68 @@ If you're upgrading to this version and have existing data, you need to migrate 
 **Important: Back up your data first!**
 
 ```bash
-# 1. Back up database
-docker-compose exec database mysqldump -ubiosounds -pbiosounds biosounds > backup.sql
+# 1. Pull the latest changes
+git pull origin audio-variable-access-point
 
-# 2. Back up media files
+# 2. Back up database
+docker-compose exec database mysqldump -ubiosounds -pbiosounds --single-transaction --quick biosounds > backup.sql
+
+# 3. Back up media files
 tar -czf sounds_backup.tar.gz src/sounds/
 
-# 3. Stop containers
+# 4. Stop containers
 docker-compose down
 
-# 4. Switch to this branch
-git checkout audio-variable-access-point
+# 5. Switch to this branch (use -f to force overwrite Docker-created root-owned files)
+git checkout -f audio-variable-access-point
 
-# 5. Initialize new data and media directories
+# 6. Initialize new data directories
 bash init-data-dirs.sh
 
-# 6. Migrate database from old named volume to new bind mount
-mkdir -p data/mysql
-docker run --rm -v biosounds-mysql:/source -v $(pwd)/data/mysql:/target \
-  alpine sh -c "cp -r /source/* /target/"
-
-# 7. Restore media files to new media folder
-tar -xzf sounds_backup.tar.gz
-mv src/sounds/sounds/* media/sounds/ 2>/dev/null || true
-mv src/sounds/images/* media/images/ 2>/dev/null || true
-mv src/sounds/projects/* media/projects/ 2>/dev/null || true
-
-# 8. Start containers and verify
+# 7. Start containers and initialize database schema
 docker-compose up -d
-docker-compose exec database mysql -ubiosounds -pbiosounds biosounds -e "SHOW TABLES;"
 
-# 9. Clean up old volume (after verification)
-docker volume rm biosounds-mysql
+# 8. Wait for database to be ready
+docker-compose exec apache bash -c 'while ! (nc -z database 3306); do echo "Database is not ready..."; sleep 2; done;'
+
+# 9. Initialize database schema (required for fresh database)
+docker-compose exec -i database mysql -ubiosounds -pbiosounds biosounds < init.sql
+docker-compose exec -i database mysql -ubiosounds -pbiosounds biosounds < data.sql
+docker-compose exec -i database mysql -ubiosounds -pbiosounds biosounds < gadm.sql
+docker-compose exec -i database mysql -ubiosounds -pbiosounds biosounds < world_seas.sql
+
+# 10. Restore your backed-up database data (optional, if you have backup.sql from step 2)
+# Only run this if you want to restore your previous recordings and data
+# cat backup.sql | docker-compose exec -T database mysql -uroot -proot biosounds
+
+# 11. Restore media files to new folders
+tar -xzf sounds_backup.tar.gz
+sudo mv src/sounds/sounds/* sounds/ 2>/dev/null || true
+sudo mv src/sounds/images/* sound_images/ 2>/dev/null || true
+sudo mv src/sounds/projects/* project_images/ 2>/dev/null || true
+
+# 12. Verify database and media
+docker-compose exec database mysql -ubiosounds -pbiosounds biosounds -e "SHOW TABLES;"
+ls -la sounds/ sound_images/ project_images/
+
+# 13. Restart the queue worker to reconnect to migrated database
+docker-compose restart apache
+# Wait for Apache to be ready
+docker-compose exec apache bash -c 'while ! (nc -z database 3306); do echo "Database is not ready..."; sleep 2; done;'
+# Start the worker process
+docker-compose exec -T -u www-data apache nohup php worker.php > files_update.log 2>&1 &
+
+# 14. Clear browser cache and localStorage (important!)
+# In your browser console (F12 → Console):
+# localStorage.clear()
+# Then refresh the page (Ctrl+R or Cmd+R)
+
+# 15. Test file uploads
+# Try uploading a new recording to verify the worker is processing uploads correctly
+
+# 16. Clean up old files (optional)
+rm -rf src/sounds
+docker volume rm biosounds-mysql 2>/dev/null || true
 ```
 
 If you have no existing data, simply run `./install.sh` normally.
