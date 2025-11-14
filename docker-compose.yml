@@ -7,7 +7,7 @@ services:
   database:
     image: mysql
     volumes:
-      - biosounds-mysql:/var/lib/mysql
+      - ./data/mysql:/var/lib/mysql
     ports:
       - 13306:3306
     environment:
@@ -48,6 +48,4 @@ services:
 
 volumes:
     biosounds-vendor:
-    biosounds-mysql:
     biosounds-queue:
-    biosounds-apache:

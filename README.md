@@ -32,6 +32,43 @@ Important: this setup is intended for developing and testing purposes **ONLY**. 
 
 ```sh install.sh```
 
+### Upgrading from older versions
+
+If you're upgrading to this version and have existing data, you need to migrate your database from the old Docker named volume to a bind mount before running install.sh.
+
+**Important: Back up your data first!**
+
+```bash
+# 1. Back up database
+docker-compose exec database mysqldump -ubiosounds -pbiosounds biosounds > backup.sql
+
+# 2. Back up media files
+tar -czf sounds_backup.tar.gz src/sounds/
+
+# 3. Stop containers
+docker-compose down
+
+# 4. Switch to this branch
+git checkout audio-variable-access-point
+
+# 5. Migrate database from old named volume to new bind mount
+mkdir -p data/mysql
+docker run --rm -v biosounds-mysql:/source -v $(pwd)/data/mysql:/target \
+  alpine sh -c "cp -r /source/* /target/"
+
+# 6. Verify files were copied
+ls -la data/mysql/
+
+# 7. Start containers and verify
+docker-compose up -d
+docker-compose exec database mysql -ubiosounds -pbiosounds biosounds -e "SHOW TABLES;"
+
+# 8. Clean up old volume (after verification)
+docker volume rm biosounds-mysql
+```
+
+If you have no existing data, simply run `./install.sh` normally.
+
 ### Run
 
 ```sh run.sh```
