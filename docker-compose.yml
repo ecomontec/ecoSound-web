@@ -1,6 +1,9 @@
 ---
 x-volumes: &volumes
   - ./src:/var/www/html:cached
+  - ./media/sounds:/var/www/html/sounds/sounds
+  - ./media/images:/var/www/html/sounds/images
+  - ./media/projects:/var/www/html/sounds/projects
   - biosounds-vendor:/var/www/html/vendor
 
 services:

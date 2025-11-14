@@ -51,19 +51,25 @@ docker-compose down
 # 4. Switch to this branch
 git checkout audio-variable-access-point
 
-# 5. Migrate database from old named volume to new bind mount
+# 5. Initialize new data and media directories
+bash init-data-dirs.sh
+
+# 6. Migrate database from old named volume to new bind mount
 mkdir -p data/mysql
 docker run --rm -v biosounds-mysql:/source -v $(pwd)/data/mysql:/target \
   alpine sh -c "cp -r /source/* /target/"
 
-# 6. Verify files were copied
-ls -la data/mysql/
+# 7. Restore media files to new media folder
+tar -xzf sounds_backup.tar.gz
+mv src/sounds/sounds/* media/sounds/ 2>/dev/null || true
+mv src/sounds/images/* media/images/ 2>/dev/null || true
+mv src/sounds/projects/* media/projects/ 2>/dev/null || true
 
-# 7. Start containers and verify
+# 8. Start containers and verify
 docker-compose up -d
 docker-compose exec database mysql -ubiosounds -pbiosounds biosounds -e "SHOW TABLES;"
 
-# 8. Clean up old volume (after verification)
+# 9. Clean up old volume (after verification)
 docker volume rm biosounds-mysql
 ```
 
