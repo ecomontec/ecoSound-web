@@ -83,8 +83,8 @@ $(function () {
                 const arr = [1, $('#zoom_in_input').val(), $('#zoom_out_input').val(), $('#zoom_input').val()]
                 $.cookie('zoom_info', encodeURIComponent(JSON.stringify(arr)), {path: '/', expires: 180, samesite: 'None'});
             }
-            const x = parseInt($('input[name=minTimeView]').val());
-            const w = parseInt($('input[name=maxTimeView]').val());
+            const x = parseFloat($('input[name=minTimeView]').val());
+            const w = parseFloat($('input[name=maxTimeView]').val());
             const y = parseInt($('input[name=minFreqView]').val());
             const h = parseInt($('input[name=maxFreqView]').val());
             const p = 1 - $("#zoom_in_input").val() / 100
@@ -92,8 +92,8 @@ $(function () {
             const centerY = (y + h) / 2;
             const newW = (w - x) * p;
             const newH = (h - y) * p;
-            $("#x").val(Math.max(parseInt(centerX - newW / 2), 0));
-            $("#w").val(Math.min(parseInt(centerX + newW / 2), fileDuration));
+            $("#x").val(Math.max(parseFloat(centerX - newW / 2), 0));
+            $("#w").val(Math.min(parseFloat(centerX + newW / 2), fileDuration));
             $("#y").val(Math.max(parseInt(centerY - newH / 2), 1));
             $("#h").val(Math.min(parseInt(centerY + newH / 2), fileFreqMax));
             $("input[name=continuous_play]").prop("checked", false);
@@ -108,8 +108,8 @@ $(function () {
                 const arr = [2, $('#zoom_in_input').val(), $('#zoom_out_input').val(), $('#zoom_input').val()]
                 $.cookie('zoom_info', encodeURIComponent(JSON.stringify(arr)), {path: '/', expires: 180, samesite: 'None'});
             }
-            const x = parseInt($('input[name=minTimeView]').val());
-            const w = parseInt($('input[name=maxTimeView]').val());
+            const x = parseFloat($('input[name=minTimeView]').val());
+            const w = parseFloat($('input[name=maxTimeView]').val());
             const y = parseInt($('input[name=minFreqView]').val());
             const h = parseInt($('input[name=maxFreqView]').val());
             const p = 1 + $("#zoom_out_input").val() / 100
@@ -117,8 +117,8 @@ $(function () {
             const centerY = (y + h) / 2;
             const newW = (w - x) * p;
             const newH = (h - y) * p;
-            $("#x").val(Math.max(parseInt(centerX - newW / 2), 0));
-            $("#w").val(Math.min(parseInt(centerX + newW / 2), fileDuration));
+            $("#x").val(Math.max(parseFloat(centerX - newW / 2), 0));
+            $("#w").val(Math.min(parseFloat(centerX + newW / 2), fileDuration));
             $("#y").val(Math.max(parseInt(centerY - newH / 2), 1));
             $("#h").val(Math.min(parseInt(centerY + newH / 2), fileFreqMax));
             $("input[name=continuous_play]").prop("checked", false);

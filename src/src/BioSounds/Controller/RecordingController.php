@@ -316,8 +316,8 @@ class RecordingController extends BaseController
             $this->recordingPresenter->getChannel(),
             $minFrequency
         );
-        $this->recordingPresenter->setMinTime(round($minTime, 1));
-        $this->recordingPresenter->setMaxTime(round($maxTime, 1));
+        $this->recordingPresenter->setMinTime($minTime);
+        $this->recordingPresenter->setMaxTime($maxTime);
         $this->recordingPresenter->setMinFrequency($minFrequency);
         $this->recordingPresenter->setMaxFrequency($maxFrequency);
         $this->recordingPresenter->setDuration($duration);
