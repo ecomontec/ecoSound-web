@@ -31,7 +31,8 @@
                 <th>#</th>
                 <th>Type</th>
                 <th>Recording</th>
-                <th>Assigned ID</th>
+                <th>Recording ID</th>
+                <th>Tag ID</th>
                 <th>Assigner</th>
                 <th>Assignee</th>
                 <th>Status <i class="fa fa-info-circle" title='Value is "assigned" when the recording has a label or the tag has a review, and "assigned" otherwise.' data-toggle="tooltip"></i></th>
@@ -130,7 +131,7 @@
                         if ($(this).data('type') == 'recording') {
                             window.open('{{ baseUrl }}/recording/show/' + $(this).data('recording'), '_blank');
                         } else if ($(this).data('type') == 'tag') {
-                            window.open('{{ baseUrl }}/recording/show/' + $(this).data('recording') + '?type=task&open=' + $(this).data('assigned') + '&t_min=' + $(this).data('tmin') + '&t_max=' + $(this).data('tmax') + '&f_min=' + $(this).data('fmin') + '&f_max=' + $(this).data('fmax'), '_blank');
+                            window.open('{{ baseUrl }}/recording/show/' + $(this).data('recording') + '?type=task&open=' + $(this).data('tag') + '&t_min=' + $(this).data('tmin') + '&t_max=' + $(this).data('tmax') + '&f_min=' + $(this).data('fmin') + '&f_max=' + $(this).data('fmax'), '_blank');
                         }
                     } else {
                         showAlert('Only the assignee can view the task.')

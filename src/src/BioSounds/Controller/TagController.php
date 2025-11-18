@@ -212,4 +212,10 @@ class TagController extends BaseController
             'message' => 'Tag deleted successfully.',
         ]);
     }
+
+    public function count()
+    {
+        $count = count((new tagProvider())->getList($_POST['id']));
+        return $count;
+    }
 }

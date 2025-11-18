@@ -17,7 +17,6 @@ class Task extends AbstractProvider
 
         $batchData = isset($data[0]) ? $data : [$data];
         $fields = array_keys($batchData[0]);
-
         $sql = "INSERT INTO task (" . implode(', ', $fields) . ") VALUES ";
         $values = [];
         $valueParts = [];

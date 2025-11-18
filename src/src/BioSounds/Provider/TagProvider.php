@@ -93,7 +93,7 @@ class TagProvider extends AbstractProvider
         $query .= 'LEFT JOIN sound ON tag.sound_id = sound.sound_id ';
         $query .= 'LEFT JOIN recording r ON r.recording_id = tag.recording_id ';
         $query .= 'LEFT JOIN collection c ON c.collection_id = r.col_id ';
-        $query .= "LEFT JOIN task ON task.type = 'tag' AND task.assigned_id = tag.tag_id ";
+        $query .= "LEFT JOIN task ON task.type = 'tag' AND task.tag_id = tag.tag_id ";
         $query .= " WHERE task.status='assigned' AND task.assignee_id = " . Auth::getUserLoggedID();
         $query .= ' ORDER BY task.task_id';
         $this->database->prepareQuery($query);

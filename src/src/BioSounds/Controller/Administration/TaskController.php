@@ -70,15 +70,23 @@ class TaskController extends BaseController
         $assigner_id = Auth::getUserLoggedID();
         $datetime = date('Y-m-d H:i:s');
         foreach ($jsons as $json) {
+            $data = [];
             foreach ($assigned_ids as $assigned_id) {
-                $data[] = [
+                $item = [
                     'assigner_id' => $assigner_id,
                     'assignee_id' => $json->user_id,
                     'datetime' => $datetime,
                     'type' => $type,
-                    'assigned_id' => $assigned_id,
                     'comment' => $json->comment,
+                    'recording_id' => null,
+                    'tag_id' => null,
                 ];
+                if ($type === 'tag') {
+                    $item['tag_id'] = $assigned_id;
+                } elseif ($type === 'recording') {
+                    $item['recording_id'] = $assigned_id;
+                }
+                $data[] = $item;
             }
         }
         $task->insert($data);
