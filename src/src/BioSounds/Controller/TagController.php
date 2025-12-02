@@ -74,6 +74,7 @@ class TagController extends BaseController
      */
     public function edit(int $tagId)
     {
+        $isTask = false;
         $tag = (new TagProvider())->get($tagId);
         if (empty($tagId)) {
             throw new \Exception(ERROR_EMPTY_ID);
@@ -96,7 +97,10 @@ class TagController extends BaseController
         }
         /**********************/
         $tagProvider = new TagProvider();
-        if (Auth::isUserAdmin() || $isReviewGranted || $isViewGranted || $isManageGranted) {
+        if ($_POST['type'] ?? $_GET['type'] ?? '' == 'task') {
+            $isTask = true;
+            $tags = $tagProvider->getListByTask();
+        } elseif (Auth::isUserAdmin() || $isReviewGranted || $isViewGranted || $isManageGranted) {
             $tags = $tagProvider->getList($tag->getRecording());
         } else {
             $tags = $tagProvider->getList($tag->getRecording(), Auth::getUserLoggedID());
@@ -131,6 +135,7 @@ class TagController extends BaseController
                 'edit' => 1,
                 'previous' => $previous,
                 'next' => $next,
+                'isTask' => $isTask,
             ]),
         ]);
     }
@@ -206,5 +211,11 @@ class TagController extends BaseController
             'errorCode' => 0,
             'message' => 'Tag deleted successfully.',
         ]);
+    }
+
+    public function count()
+    {
+        $count = count((new tagProvider())->getList($_POST['id']));
+        return $count;
     }
 }

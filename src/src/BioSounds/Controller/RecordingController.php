@@ -9,6 +9,7 @@ use BioSounds\Entity\Species;
 use BioSounds\Entity\UserPermission;
 use BioSounds\Entity\Permission;
 use BioSounds\Entity\User;
+use BioSounds\Exception\ForbiddenException;
 use BioSounds\Exception\NotAuthenticatedException;
 use BioSounds\Presenter\FrequencyScalePresenter;
 use BioSounds\Presenter\RecordingPresenter;
@@ -20,11 +21,13 @@ use BioSounds\Provider\LabelAssociationProvider;
 use BioSounds\Provider\LabelProvider;
 use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\RecordingProvider;
+use BioSounds\Provider\SoundProvider;
+use BioSounds\Provider\SoundTypeProvider;
 use BioSounds\Provider\TagProvider;
+use BioSounds\Provider\TaskProvider;
 use BioSounds\Service\RecordingService;
 use BioSounds\Utils\Auth;
 use BioSounds\Utils\Utils;
-use Cassandra\Varint;
 use Twig\Environment;
 use Symfony\Component\Process\Process;
 
@@ -78,7 +81,6 @@ class RecordingController extends BaseController
             throw new \Exception(ERROR_EMPTY_ID);
         }
 
-
         $this->recordingId = $id;
         $recordingData = (new RecordingProvider())->get($this->recordingId)[0];
 
@@ -111,6 +113,11 @@ class RecordingController extends BaseController
                 $this->recordingPresenter->setEstimateDistID(filter_var($_POST['estimateDistID'], FILTER_VALIDATE_INT));
             }
             $this->setCanvas($recordingData);
+            $arr = [];
+            $animal_sound_types = (new SoundTypeProvider())->getAllList();
+            foreach ($animal_sound_types as $animal_sound_type) {
+                $arr[$animal_sound_type->getTaxonClass() . $animal_sound_type->getTaxonOrder()][$animal_sound_type->getSoundTypeId()] = [$animal_sound_type->getSoundTypeId(), $animal_sound_type->getName()];
+            }
             return $this->twig->render('recording/recording.html.twig', [
                 'project' => (new ProjectProvider())->get($this->recordingPresenter->getRecording()['collection']->getProject()),
                 'player' => $this->recordingPresenter,
@@ -122,10 +129,14 @@ class RecordingController extends BaseController
                 'indexs' => Auth::isUserLogged() ? (new IndexTypeProvider())->getList() : '',
                 'ffts' => [4096, 2048, 1024, 512, 256, 128,],
                 'fftsize' => $this->fftSize,
-                'open' => $_POST['open'],
+                'open' => $_POST['open'] ?? $_GET['open'] ?? null,
                 'modalX' => $_POST['modalX'],
                 'modalY' => $_POST['modalY'],
                 'models' => (new RecordingProvider())->getModel(),
+                'animal_sound_types' => $arr,
+                'soundTypes' => (new SoundProvider())->getAll(),
+                'soundscape_components' => (new SoundProvider())->get(),
+                'type' => $_POST['type'] ?? $_GET['type'] ?? '',
             ]);
         } else {
             return $this->twig->render('collection/noaccess.html.twig');
@@ -305,8 +316,8 @@ class RecordingController extends BaseController
             $this->recordingPresenter->getChannel(),
             $minFrequency
         );
-        $this->recordingPresenter->setMinTime(round($minTime, 1));
-        $this->recordingPresenter->setMaxTime(round($maxTime, 1));
+        $this->recordingPresenter->setMinTime($minTime);
+        $this->recordingPresenter->setMaxTime($maxTime);
         $this->recordingPresenter->setMinFrequency($minFrequency);
         $this->recordingPresenter->setMaxFrequency($maxFrequency);
         $this->recordingPresenter->setDuration($duration);
@@ -469,9 +480,11 @@ class RecordingController extends BaseController
                         $freq_i = ((($viewFreqRange + $viewFreqMin) - $tagFreqMax) / $viewFreqRange) * SPECTROGRAM_HEIGHT;
 
                     $freq_w = $tagFreqMin < $viewFreqMin ? SPECTROGRAM_HEIGHT - $freq_i : (($tagFreqMax - $tagFreqMin) / $viewFreqRange) * SPECTROGRAM_HEIGHT;
-
-                    $time_w = (($tagTimeMax - $tagTimeMin) / $viewTotalTime) * $specWidth;
-
+                    if ($viewTotalTime > 0) {
+                        $time_w = (($tagTimeMax - $tagTimeMin) / $viewTotalTime) * $specWidth;
+                    } else {
+                        $time_w = 0;
+                    }
                     $pos = $i + 800;
                     $listTags[] = (new TagPresenter())
                         ->setId($tagID)
@@ -505,6 +518,7 @@ class RecordingController extends BaseController
         }
 
         if ((new LabelAssociationProvider())->setEntry($data) > 0) {
+            (new TaskProvider())->status($data['recording_id'], Auth::getUserLoggedID(), 'recording', $data['label_id'] == 1 ? 'assigned' : 'reviewed');
             return json_encode([
                 'errorCode' => 0,
                 'message' => 'Recording Label set successfully.'
@@ -559,7 +573,7 @@ class RecordingController extends BaseController
                     array_shift($out);
                     foreach ($out as $line) {
                         $values = preg_split('/\s+/', trim($line));
-                        $arr['sound_id'] = '15';
+                        $arr['sound_id'] = '22';
                         $arr['recording_id'] = $data['recording_id'];
                         $arr['user_id'] = Auth::getUserID();
                         $arr['creator_type'] = "template_matching";
@@ -777,17 +791,18 @@ class RecordingController extends BaseController
         }
         $i = 0;
         $j = 0;
+        $timestamp = time();
         $str = 'python3 ' . ABSOLUTE_DIR . 'BirdNET-Analyzer/analyze.py' .
             ' --i ' . ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['filename'] .
-            ' --o ' . ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv" .
+            ' --o ' . ABSOLUTE_DIR . 'tmp/' . $timestamp . '/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv" .
             ' --rtype "csv"';
-        if ($data['lat'] != '') {
+        if ((string)$data['lat'] != '') {
             $str = $str . ' --lat ' . $data['lat'];
         }
-        if ($data['lon'] != '') {
+        if ((string)$data['lon'] != '') {
             $str = $str . ' --lon ' . $data['lon'];
         }
-        if ($data['file_date'] != '') {
+        if ($data['file_date'] != '' && $data['file_date'] != '1970-01-01') {
             $str = $str . ' --week ' . date('W', $data['file_date']);
         }
         if ($data['sensitivity'] != '') {
@@ -805,7 +820,7 @@ class RecordingController extends BaseController
         exec($str . " 2>&1", $out, $status);
         $result = [];
         if ($status == 0) {
-            $handle = fopen(ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv", "rb");
+            $handle = fopen(ABSOLUTE_DIR . 'tmp/' . $timestamp . '/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv", "rb");
             while (!feof($handle)) {
                 $d = fgetcsv($handle);
                 $result[] = $d;
@@ -845,7 +860,7 @@ class RecordingController extends BaseController
                         $unmatched_species[] = $r[2];
                         $j = $j + 1;
                     }
-                    $arr['sound_id'] = '4';
+                    $arr['sound_id'] = '6';
                     $arr['recording_id'] = $data['recording_id'];
                     $arr['user_id'] = $data['user_id'];
                     $arr['creator_type'] = $data['creator_type'] . ' ' . $maxValue;
@@ -861,12 +876,26 @@ class RecordingController extends BaseController
                     $i = $i + 1;
                 }
             }
+            if ($data['is_merged']) {
+                $filePath = ABSOLUTE_DIR . 'tmp/' . $timestamp . '/' . $data['recording_id'] . '-' . $data['user_id'] . '.json';
+                if (!is_dir(dirname($filePath))) {
+                    mkdir(dirname($filePath), 0777, true);
+                }
+                file_put_contents($filePath, json_encode($list, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+                $cmd = 'python3 ' . ABSOLUTE_DIR . 'bin/mergedTags.py ' . escapeshellarg($filePath) . " " . $species_id[0]['species_id'] . ' BirdNET ' . $data['max_gap'] . ' ' . $data['keep_merged'];
+                $output = shell_exec($cmd);
+                $list = json_decode($output, true);
+            }
             (new TagProvider())->insertArr($list);
-            unlink(ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv");
+            unlink(ABSOLUTE_DIR . 'tmp/' . $timestamp . '/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv");
+            return json_encode([
+                'errorCode' => 0,
+                'message' => "BirdNET v$maxValue found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. " . (is_array($list) ? count($list) : 0) . " tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
+            ]);
         }
         return json_encode([
-            'errorCode' => 0,
-            'message' => "BirdNET v$maxValue found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. $i tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
+            'errorCode' => 1,
+            'message' => "BirdNET execution error.",
         ]);
     }
 
@@ -880,12 +909,13 @@ class RecordingController extends BaseController
         }
         $i = 0;
         $j = 0;
-        $soundPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . "/sounds";
+        $timestamp = time();
+        $soundPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . '/' . $timestamp . "/sounds";
         if (!file_exists($soundPath)) {
             mkdir($soundPath, 0777, true);
         }
         copy(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav', $soundPath . '/' . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav');
-        $resultPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'];
+        $resultPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . '/' . $timestamp;
         $str = 'batdetect2 detect ' . $soundPath . ' ' . $resultPath . ' ';
         if ($data['detection_threshold'] != 'undefined' && $data['detection_threshold'] != '') {
             $str = $str . $data['detection_threshold'];
@@ -934,7 +964,7 @@ class RecordingController extends BaseController
                             $unmatched_species[] = $r[6];
                             $j = $j + 1;
                         }
-                        $arr['sound_id'] = '4';
+                        $arr['sound_id'] = '6';
                         $arr['recording_id'] = $data['recording_id'];
                         $arr['user_id'] = $data['user_id'];
                         $arr['creator_type'] = $data['creator_type'] . ' ' . $version;
@@ -950,7 +980,22 @@ class RecordingController extends BaseController
                         $i = $i + 1;
                     }
                 }
+                if ($data['is_merged']) {
+                    $filePath = $resultPath . '/list.json';
+                    if (!is_dir(dirname($filePath))) {
+                        mkdir(dirname($filePath), 0777, true);
+                    }
+                    file_put_contents($filePath, json_encode($list, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+                    $cmd = 'python3 ' . ABSOLUTE_DIR . 'bin/mergedTags.py ' . escapeshellarg($filePath) . " " . $species_id[0]['species_id'] . ' batdetect2 ' . $data['max_gap'] . ' ' . $data['keep_merged'];
+                    $output = shell_exec($cmd);
+                    $list = json_decode($output, true);
+                }
                 (new TagProvider())->insertArr($list);
+                Utils::deleteDirContents($resultPath);
+                return json_encode([
+                    'errorCode' => 0,
+                    'message' => "Batdetect2 $version found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. " . (is_array($list) ? count($list) : 0) . " tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
+                ]);
             } else {
                 Utils::deleteDirContents($resultPath);
                 return json_encode([
@@ -959,10 +1004,115 @@ class RecordingController extends BaseController
                 ]);
             }
         }
-        Utils::deleteDirContents($resultPath);
         return json_encode([
-            'errorCode' => 0,
-            'message' => "Batdetect2 $version found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. $i tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
+            'errorCode' => 1,
+            'message' => "Batdetect2 execution error.",
+        ]);
+    }
+
+    public function insectsbasecnn1096kt($data = null)
+    {
+        if (isset($data)) {
+            $_POST = $data;
+        }
+        foreach ($_POST as $key => $value) {
+            $data[$key] = $value;
+        }
+        $i = 0;
+        $j = 0;
+        $timestamp = time();
+        $soundPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . '/' . $timestamp . "/sounds";
+        if (!file_exists($soundPath)) {
+            mkdir($soundPath, 0777, true);
+        }
+        copy(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav', $soundPath . '/' . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav');
+        $resultPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . '/' . $timestamp;
+        $str = "autrainer inference " . escapeshellarg("hf:AlexanderGbd/insects-base-cnn10-96k-t") . " -sr " . escapeshellarg(Utils::getFileSamplingRate($soundPath . '/' . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav'));
+        $windowSize = (!empty($data['window_size']) && $data['window_size'] != 'undefined') ? escapeshellarg($data['window_size']) : escapeshellarg("4.0");
+        $strideSize = (!empty($data['stride_length']) && $data['stride_length'] != 'undefined') ? escapeshellarg($data['stride_length']) : escapeshellarg("4.0");
+
+        $str .= ' -w ' . $windowSize . ' -s ' . $strideSize . ' ' . escapeshellarg($soundPath) . ' ' . escapeshellarg($resultPath);
+        exec($str . " 2>&1", $out, $status);
+        if ($status == 0) {
+            if (file_exists($resultPath . "/results.csv")) {
+                $json = [];
+                $handle = fopen($resultPath . "/results.csv", "rb");
+                $header = fgetcsv($handle);
+                while (($row = fgetcsv($handle)) !== FALSE) {
+                    if (count($row) == count($header)) {
+                        $json[] = array_combine($header, $row);
+                    }
+                }
+                fclose($handle);
+                $species = (new Species())->get();
+                $species_id = (new Species())->getByName('Unknown');
+                $arr_specie = [];
+                $arr_specie_id = [];
+                $unmatched_species = [];
+                $list = [];
+
+                foreach ($species as $specie) {
+                    $arr_specie[] = $specie['binomial'];
+                    $arr_specie_id[$specie['binomial']] = $specie['species_id'];
+                }
+                foreach ($json as $d) {
+                    if ($d['prediction'] != '[]' && $d['offset'] != 'majority' && $d != null) {
+                        $result = json_decode(str_replace("'", '"', $d['prediction']));
+                        foreach ($result as $r) {
+                            if (in_array($r, $arr_specie)) {
+                                $arr['species_id'] = $arr_specie_id[$r];
+                                $arr['comments'] = '';
+                            } else {
+                                $arr['species_id'] = $species_id[0]['species_id'];
+                                $arr['comments'] = $r;
+                                $unmatched_species[] = $r;
+                                $j = $j + 1;
+                            }
+                            list($start, $end) = explode('-', $d['offset']);
+                            $arr['sound_id'] = '6';
+                            $arr['recording_id'] = $data['recording_id'];
+                            $arr['user_id'] = $data['user_id'];
+                            $arr['creator_type'] = $data['creator_type'];
+                            $arr['min_time'] = $start;
+                            $arr['max_time'] = $end;
+                            $arr['min_freq'] = 1;
+                            $arr['max_freq'] = $data['max_freq'];
+                            $arr['distance_not_estimable'] = 1;
+                            $arr['confidence'] = $d[$r];
+                            $arr['individuals'] = 1;
+                            $arr['reference_call'] = 0;
+                            $list[] = $arr;
+                            $i = $i + 1;
+                        }
+                    }
+                }
+                if ($data['is_merged']) {
+                    $filePath = $resultPath . '/list.json';
+                    if (!is_dir(dirname($filePath))) {
+                        mkdir(dirname($filePath), 0777, true);
+                    }
+                    file_put_contents($filePath, json_encode($list, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+                    $cmd = 'python3 ' . ABSOLUTE_DIR . 'bin/mergedTags.py ' . escapeshellarg($filePath) . " " . $species_id[0]['species_id'] . ' insects-base-cnn10-96k-t ' . $data['max_gap'] . ' ' . $data['keep_merged'];
+                    $output = shell_exec($cmd);
+                    $list = json_decode($output, true);
+                }
+                (new TagProvider())->insertArr($list);
+                Utils::deleteDirContents($resultPath);
+                return json_encode([
+                    'errorCode' => 0,
+                    'message' => "insects-base-cnn10-96k-t found $i detections. " . (is_array($list) ? count($list) : 0) . " tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
+                ]);
+            } else {
+                Utils::deleteDirContents($resultPath);
+                return json_encode([
+                    'errorCode' => 0,
+                    'message' => "insects-base-cnn10-96k-t found 0 detections. 0 tags were inserted.",
+                ]);
+            }
+        }
+        return json_encode([
+            'errorCode' => 1,
+            'message' => "insects-base-cnn10-96k-t execution error.",
         ]);
     }
 
@@ -996,4 +1146,81 @@ class RecordingController extends BaseController
         return true;
     }
 
+    public function getListByPage($collectionId, $recordingId)
+    {
+        $total = count((new TagProvider())->getViewTag($collectionId, $recordingId, $_GET['minTime'], $_GET['maxTime'], $_GET['minFrequency'], $_GET['maxFrequency']));
+        $start = $_POST['start'];
+        $length = $_POST['length'];
+        $search = $_POST['search']['value'];
+        $column = $_POST['order'][0]['column'];
+        $dir = $_POST['order'][0]['dir'];
+        $data = (new TagProvider())->getRecrdingViewListByPage($collectionId, $recordingId, $_GET['minTime'], $_GET['maxTime'], $_GET['minFrequency'], $_GET['maxFrequency'], $start, $length, $search, $column, $dir);
+        if (count($data) == 0) {
+            $data = [];
+        }
+        $result = [
+            'draw' => $_POST['draw'],
+            'recordsTotal' => $total,
+            'recordsFiltered' => (new TagProvider())->getViewFilterCount($collectionId, $recordingId, $_GET['minTime'], $_GET['maxTime'], $_GET['minFrequency'], $_GET['maxFrequency'], $search),
+            'data' => $data,
+        ];
+        return json_encode($result);
+    }
+
+    public function export($collection_id, $recording_id)
+    {
+        if (!Auth::isUserLogged()) {
+            throw new ForbiddenException();
+        }
+        $colArr = [];
+        $file_name = "tags.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        $columns = (new TagProvider())->getColumns();
+        foreach ($columns as $column) {
+            $colArr[] = $column['COLUMN_NAME'];
+        }
+
+        array_splice($colArr, 2, 0, 'soundscape component');
+        array_splice($colArr, 3, 0, 'sound type');
+        array_splice($colArr, 5, 0, 'recording');
+        array_splice($colArr, 7, 0, 'user');
+        array_splice($colArr, 15, 0, 'species');
+        array_splice($colArr, 21, 0, 'animal sound type');
+
+        $Als[] = $colArr;
+        $List = (new TagProvider())->getExportTag($collection_id, $recording_id);
+        foreach ($List as $Item) {
+            unset($Item['TaxonOrder']);
+            unset($Item['TaxonClass']);
+
+            $valueToMove = $Item['soundscape_component'] == null ? '' : $Item['soundscape_component'];
+            unset($Item['soundscape_component']);
+            array_splice($Item, 2, 0, $valueToMove);
+            $valueToMove = $Item['sound_type'] == null ? '' : $Item['sound_type'];
+            unset($Item['sound_type']);
+            array_splice($Item, 3, 0, $valueToMove);
+            $valueToMove = $Item['recordingName'] == null ? '' : $Item['recordingName'];
+            unset($Item['recordingName']);
+            array_splice($Item, 5, 0, $valueToMove);
+            $valueToMove = $Item['userName'] == null ? '' : $Item['userName'];
+            unset($Item['userName']);
+            array_splice($Item, 7, 0, $valueToMove);
+            $valueToMove = $Item['speciesName'] == null ? '' : $Item['speciesName'];
+            unset($Item['speciesName']);
+            array_splice($Item, 15, 0, $valueToMove);
+            $valueToMove = $Item['typeName'] == null ? '' : $Item['typeName'];
+            unset($Item['typeName']);
+            array_splice($Item, 21, 0, $valueToMove);
+
+            $Als[] = $Item;
+        }
+        foreach ($Als as $line) {
+            fputcsv($fp, $line);
+        }
+        fclose($fp);
+        exit();
+    }
 }

@@ -3,12 +3,12 @@
     <div id="player_box" class="col-9">
         <div id="myCanvas" class="canvas">
             {% include 'recording/player/tagBoxes.html.twig' with {'tags': player.tags, 'show_tags': player.isShowTags} %}
-            <div id="playerCursor" class="player-line"></div>
-            <img class="player_img" src="{{ player.imageFilePath }}" id="cropbox"/>
+            <div id="playerCursor" class="player-line" title="Drag or Ctrl+mouse click to place cursor"></div>
+            <img class="player_img" src="{{ player.imageFilePath }}" id="cropbox" draggable="false"/>
         </div>
         <div class="row no-gutters mt-1">
             <div class="col-auto mr-auto form-inline">
-                <button id="play" class="btn btn-link btn-sm" data-playing="false" role="switch" aria-checked="false">
+                <button id="play" class="btn btn-link btn-sm" data-playing="false" role="switch" aria-checked="false" title="Space for play/pause">
                     <i class="fas fa-play"></i>
                 </button>
                 <div class="dropdown" id="play-dropdown">
@@ -55,6 +55,7 @@
                     <input type="hidden" name="lat" id="lat" value="{{ player.recording.latitude_WGS84_dd_dddd }}">
                     <input type="hidden" name="lon" id="lon" value="{{ player.recording.longitude_WGS84_dd_dddd }}">
                     <input type="hidden" name="file_date" id="file_date" value="{{ player.recording.file_date }}">
+                    <input type="hidden" name="type" id="type" value="{{ type }}">
                     {% include 'recording/player/timeBoxes.html.twig' with {
                         'minTime': player.minTime,
                         'maxTime': player.maxTime,
@@ -66,9 +67,6 @@
                         <a href="#" id="exportCoordinates" class="btn btn-link" title="Export coordinates to clipboard">
                             <i class="fas fa-clipboard"></i>
                         </a>
-                        <button id="zoom-submit" class="btn btn-link" type="button" title="Zoom" disabled>
-                            <i class="fas fa-search-plus"></i>
-                        </button>
                     </div>
                     <div class="btn-group btn-group-toggle dark-buttons" data-toggle="buttons">
                         <label for="continuous-play" id="btn-playback" class="btn btn-link {{ player.isContinuousPlay ? 'active':'' }}" title="Continuous playback" hidden>
@@ -191,6 +189,13 @@
                                     {% endfor %}
                                 </select>
                             </div>
+                            <hr>
+                            <div class="form-inline"><input id="is_merged" name="is_merged" class="form-control form-control-sm" type="checkbox"><label class="ml-1 col-form-label-sm" for="is_merged">Merge resulting conspecific tags</label></div>
+                            <div class="merged-box mt-2" style="display: none;">
+                                <div class="form-inline"><label class="ml-1 col-form-label-sm" for="max_gap">Duration between separate tags, in seconds (default: 0)</label></div>
+                                <div class="form-group form-inline"><input id="max_gap" name="max_gap" class="form-control form-control-sm" type="text"></div>
+                                <div class="form-inline"><input id="keep_merged" name="keep_merged" class="form-control form-control-sm" type="checkbox"><label class="ml-1 col-form-label-sm" for="keep_merged">Keep only merged and separate tags</label></div>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -269,7 +274,7 @@
                     $(this).siblings().remove();
                     {% for model in models %}
                     if ($(this).val() == '{{ model.tf_model_id }}') {
-                        $('#model-btn').attr("href", "{{ baseUrl }}/recording/{{ model.name|replace({'-': ''}) }}");
+                        $('#model-btn').attr("href", "{{ baseUrl }}/api/recording/{{ model.name|replace({'-': ''}) }}");
                         html = html + '<div class="col-form-label">' +
                             '<strong>Description:</strong>' +
                             '<a class="col-form-label" href="{{ model.source_URL }}" target="_blank" title="Documentation"> <i class="fa fa-book"></i></a>' +
@@ -296,7 +301,14 @@
                 })
                 $("#acoustic_analysis").change();
             });
-
+            $('#is_merged').prop('checked', false);
+            $('#is_merged').on('change', function () {
+                if ($(this).is(':checked')) {
+                    $('.merged-box').show();
+                } else {
+                    $('.merged-box').hide();
+                }
+            });
             $("#maad").change(function () {
                 $.ajax({
                     url: "{{ baseUrl }}/recording/getMaadlabel/" + $("#maad").val(),
@@ -313,6 +325,9 @@
             })
             $('.js-open-tf-modal').click(function () {
                 $('#modal-tf').modal('show');
+                $('#is_merged').prop('checked', false);
+                $('.merged-box').hide();
+                $('#max_gap').val('');
             })
             $('.js-open-aa-modal').click(function () {
                 $('#modal-aa').modal('show');
@@ -368,9 +383,11 @@
                         'min_conf': $("#min_conf").val(),
                         'overlap': $("#overlap").val(),
                         'sf_thresh': $("#sf_thresh").val(),
-                        'temp': soundFilePath,
                         'max_freq': fileFreqMax,
                         'user_id': '{{ user_id }}',
+                        'max_gap': $("#max_gap").val() || 0,
+                        'is_merged': $("#is_merged").is(":checked") ? 1 : 0,
+                        'keep_merged': $("#keep_merged").is(":checked") ? 1 : 0
                     };
                 } else if ($('#tf').val() == 2) {
                     data = {
@@ -379,10 +396,26 @@
                         'filename': $('input[name=filename]').val(),
                         'creator_type': $("#tf option:selected").text(),
                         'recording_directory': $('input[name=recording_directory]').val(),
-                        'file_date': $("#file_date").val(),
                         'detection_threshold': $("#detection_threshold").val(),
-                        'temp': soundFilePath,
                         'user_id': '{{ user_id }}',
+                        'max_gap': $("#max_gap").val() || 0,
+                        'is_merged': $("#is_merged").is(":checked") ? 1 : 0,
+                        'keep_merged': $("#keep_merged").is(":checked") ? 1 : 0
+                    };
+                } else if ($('#tf').val() == 3) {
+                    data = {
+                        'collection_id': $('input[name=collection_id]').val(),
+                        'recording_id': $('input[name=recording_id]').val(),
+                        'filename': $('input[name=filename]').val(),
+                        'creator_type': $("#tf option:selected").text(),
+                        'recording_directory': $('input[name=recording_directory]').val(),
+                        'window_size': $("#window_size").val(),
+                        'stride_length': $("#stride_length").val(),
+                        'max_freq': fileFreqMax,
+                        'user_id': '{{ user_id }}',
+                        'max_gap': $("#max_gap").val() || 0,
+                        'is_merged': $("#is_merged").is(":checked") ? 1 : 0,
+                        'keep_merged': $("#keep_merged").is(":checked") ? 1 : 0
                     };
                 }
                 $('#modal-tf').modal('hide');

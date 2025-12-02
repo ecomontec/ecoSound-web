@@ -20,10 +20,7 @@ class IndexLogController extends BaseController
         if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
         }
-        $indexLogProvider = new IndexLogProvider();
-        return $this->twig->render('administration/indexLogs.html.twig', [
-            'indexLogs' => $indexLogProvider->getList(),
-        ]);
+        return $this->twig->render('administration/indexLogs.html.twig');
     }
 
     public function getListByPage()

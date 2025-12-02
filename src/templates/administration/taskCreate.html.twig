@@ -1,0 +1,94 @@
+<div class="modal fade" id="modal-div" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ type|capitalize }} Assignment</h5>
+                <button class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body ml-3">
+                <div>
+                    <div class="form-group">
+                        <div>Available users with review privileges</div>
+                        <select id="assign" name="assign_id" class=" my-3" data-selected-text-format="count" multiple required>
+                            {% for user in users %}
+                                {% if user.user_id != user_id %}
+                                    <option value="{{ user.user_id }}" {{ user.checked?' disabled ':'' }}>{{ user.name }}{{ user.checked == count ?' (assigned)':user.checked?' (partially assigned)':'' }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div id="assign-box" style="max-height: 600px;overflow: auto"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="js-close-button" class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                    Close
+                </button>
+                <a href="#" class="js-assign-modal btn btn-outline-primary">
+                    <i class="fas fa-save"></i>
+                    Save
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $('#assign').selectpicker();
+    $('#assign').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+        let selectedOption = $(this).find('option').eq(clickedIndex);
+        let id = selectedOption.val();
+        let text = selectedOption.text()
+        if (isSelected) {
+            let html = `
+            <div id="assign${id}" class="border mt-3 mr-3">
+                <div class="m-4">
+                    <div class="col-form-label">
+                        <b>${text}</b>
+                    </div>
+                        <label class="ml-1 col-form-label-sm" for="">Comment</label>
+                        <input name="comment[${id}][]" class="form-control form-control-sm" type="text">
+                </div>
+            </div>
+            `
+            $('#assign-box').append(html);
+        } else {
+            $('#assign' + id).remove();
+        }
+    });
+    $(".js-assign-modal").click(function (e) {
+        if ($('#assign-box').text() == '') {
+            showAlert('Select at least one index.')
+            e.preventDefault();
+            return
+        }
+        let id = []
+        let data = []
+        let arr = []
+        $('.js-checkbox:checked').each(function () {
+            {% if type=='recording' %}
+            if ($(this).data('type') == 'audio data') {
+                id.push($(this).data('id'));
+            }
+            {% else %}
+            id.push($(this).data('id'));
+            {% endif %}
+        });
+        id = id.join(',')
+        $('input[name^="comment["]').each(function () {
+            arr = {
+                'user_id': $(this).attr('name').match(/comment\[(\d+)\]/)[1],
+                'comment': $(this).val(),
+            };
+            data.push(arr)
+        })
+        data = JSON.stringify(data)
+        postRequest('{{ baseUrl }}/api/admin/taskMgr/save', {'id': id, 'data': data, 'type': '{{ type }}'}, false, false, function (data) {
+            $("#modal-div").modal('hide');
+            showAlert(data.message)
+        });
+    });
+</script>
+

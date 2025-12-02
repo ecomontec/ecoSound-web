@@ -574,4 +574,15 @@ class User extends AbstractProvider
         $result = $this->database->executeSelect($params);
         return $result[0]['COUNT(DISTINCT u.user_id)'];
     }
+
+    public function getTaskUser(string $assigned_id, string $collection_id, string $type)
+    {
+        $sql = "SELECT u.user_id,u.name,COUNT(t.task_id) AS checked FROM user u LEFT JOIN user_permission up ON up.user_id = u.user_id AND ( up.collection_id = :collection_id " . ($type == 'tag' ? ' AND up.permission_id IN (2,4) ' : '') . ') LEFT JOIN task t ON t.type = :type AND FIND_IN_SET(t.' . ($type == 'tag' ? 'tag_id' : 'recording_id') . ', :assigned_id) AND t.assignee_id=u.user_id WHERE u.role_id = 1 OR up.user_id IS NOT NULL GROUP BY u.user_id ORDER BY u.name ';
+        $this->database->prepareQuery($sql);
+        return $this->database->executeSelect([
+            ":type" => $type,
+            ":assigned_id" => $assigned_id,
+            ":collection_id" => $collection_id,
+        ]);
+    }
 }

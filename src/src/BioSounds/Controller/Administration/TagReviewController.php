@@ -9,6 +9,7 @@ use BioSounds\Entity\Tag;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\ProjectProvider;
+use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\SoundProvider;
 use BioSounds\Provider\SoundTypeProvider;
 use BioSounds\Provider\TagProvider;
@@ -24,13 +25,16 @@ class TagReviewController extends BaseController
      * @return string
      * @throws \Exception
      */
-    public function show(int $pId = null, int $cId = null)
+    public function show(int $pId = null, int $cId = null, int $rId = null)
     {
         if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
         }
         if (isset($_GET['projectId'])) {
             $projectId = $_GET['projectId'];
+        }
+        if (isset($_GET['recordingId'])) {
+            $rId = $_GET['recordingId'];
         }
         if (isset($_GET['colId'])) {
             $colId = $_GET['colId'];
@@ -41,11 +45,15 @@ class TagReviewController extends BaseController
         if (!empty($cId)) {
             $colId = $cId;
         }
+        if (!empty($rId)) {
+            $recordingId = $rId;
+        }
 
         $projects = (new ProjectProvider())->getWithPermission(Auth::getUserID(), 0);
         if (empty($projects)) {
             $projectId = null;
             $colId = null;
+            $recordingId = null;
         } else {
             if (empty($projectId)) {
                 $projectId = $projects[0]->getId();
@@ -53,6 +61,10 @@ class TagReviewController extends BaseController
             $collections = (new CollectionProvider())->getByProject($projectId, Auth::getUserID());
             if (empty($colId) && $collections) {
                 $colId = $collections[0]->getId();
+            }
+            $recordings = (new RecordingProvider())->getHasTags($colId);
+            if (empty($recordingId)) {
+                $recordingId = 0;
             }
         }
         $arr = [];
@@ -66,29 +78,31 @@ class TagReviewController extends BaseController
             'projects' => $projects,
             'colId' => $colId,
             'collections' => $collections,
+            'recordingId' => $recordingId,
+            'recordings' => $recordings,
             'animal_sound_types' => $arr,
         ]);
     }
 
-    public function getListByPage($collectionId)
+    public function getListByPage($collectionId, $recordingId)
     {
         if ($collectionId == null) {
             $collectionId = 0;
         }
-        $total = count((new TagReviewProvider())->getReview($collectionId));
+        $total = count((new TagReviewProvider())->getReview($collectionId, $recordingId));
         $start = $_POST['start'];
         $length = $_POST['length'];
         $search = $_POST['search']['value'];
         $column = $_POST['order'][0]['column'];
         $dir = $_POST['order'][0]['dir'];
-        $data = (new TagReviewProvider())->getListByPage($collectionId, $start, $length, $search, $column, $dir);
+        $data = (new TagReviewProvider())->getListByPage($collectionId, $recordingId, $start, $length, $search, $column, $dir);
         if (count($data) == 0) {
             $data = [];
         }
         $result = [
             'draw' => $_POST['draw'],
             'recordsTotal' => $total,
-            'recordsFiltered' => (new TagReviewProvider())->getFilterCount($collectionId, $search),
+            'recordsFiltered' => (new TagReviewProvider())->getFilterCount($collectionId, $recordingId, $search),
             'data' => $data,
         ];
         return json_encode($result);
@@ -186,26 +200,6 @@ class TagReviewController extends BaseController
         return json_encode([
             'errorCode' => 0,
             'message' => 'Tag updated successfully.'
-        ]);
-    }
-
-    public function delete()
-    {
-        if (!Auth::isUserLogged()) {
-            throw new ForbiddenException();
-        }
-
-        $id = $_POST['id'];
-
-        if (empty($id)) {
-            throw new \Exception(ERROR_EMPTY_ID);
-        }
-
-        (new TagProvider())->delete($id);
-
-        return json_encode([
-            'errorCode' => 0,
-            'message' => 'Tag deleted successfully.',
         ]);
     }
 }

@@ -216,7 +216,13 @@ class RecordingProvider extends AbstractProvider
      */
     public function getSimple(int $id): Recording
     {
-        $query = 'SELECT * FROM recording WHERE ' . Recording::ID . ' = :id';
+        $query = 'SELECT r.*,u.name AS user_name,s.name AS site_name,re.model AS recorderName,m.name AS microphoneName,l.name AS license_name FROM recording r '
+            . ' LEFT JOIN user u ON u.user_id = r.user_id '
+            . ' LEFT JOIN site s ON s.site_id = r.site_id '
+            . ' LEFT JOIN recorder re ON re.recorder_id = r.recorder_id '
+            . ' LEFT JOIN microphone m ON m.microphone_id = r.microphone_id '
+            . ' LEFT JOIN license l ON l.license_id = r.license_id '
+            . ' WHERE r.recording_id = :id';
 
         $this->database->prepareQuery($query);
         if (empty($result = $this->database->executeSelect([':id' => $id]))) {
@@ -230,6 +236,20 @@ class RecordingProvider extends AbstractProvider
         $query = 'SELECT COUNT(*) AS count FROM recording';
         $this->database->prepareQuery($query);
         return $this->database->executeSelect()[0]['count'];
+    }
+
+    public function getHasTags($col_id)
+    {
+        $query = 'SELECT r.* FROM recording r JOIN tag t ON r.recording_id = t.recording_id WHERE r.col_id = :col_id GROUP BY r.recording_id';
+        $this->database->prepareQuery($query);
+        return $this->database->executeSelect([':col_id' => $col_id]);
+    }
+
+    public function getHasReviewTags($col_id)
+    {
+        $query = 'SELECT r.* FROM recording r JOIN tag_review tr ON r.recording_id = tr.recording_id WHERE tr.col_id = :col_id GROUP BY r.recording_id';
+        $this->database->prepareQuery($query);
+        return $this->database->executeSelect([':col_id' => $col_id]);
     }
 
     public function getCountByCollection(string $id, string $site = null)

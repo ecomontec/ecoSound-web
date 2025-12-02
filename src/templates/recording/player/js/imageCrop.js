@@ -45,6 +45,27 @@ let setSelectionData = function (coordinates) {
 selectData = function (coordinates) {
     enableZoom();
     setSelectionData(coordinates);
+    $("#zoom-submit").removeClass("a-disabled");
+    if ($.cookie('zoom_info')) {
+        const zoom_info = JSON.parse(decodeURIComponent($.cookie('zoom_info')));
+        if (zoom_info[0] == 3) {
+            $("#zoom-btn").removeClass("a-disabled");
+        }
+    } else {
+        $("#zoom-btn").removeClass("a-disabled");
+    }
+}
+
+onRelease = function () {
+    $("#zoom-submit").addClass("a-disabled");
+    if ($.cookie('zoom_info')) {
+        const zoom_info = JSON.parse(decodeURIComponent($.cookie('zoom_info')));
+        if (zoom_info[0] == 3) {
+            $("#zoom-btn").addClass("a-disabled");
+        }
+    } else {
+        $("#zoom-btn").addClass("a-disabled");
+    }
 }
 
 
@@ -63,9 +84,80 @@ $(function () {
         resizeTimer = setTimeout(function () {
             myJcrop.destroy()
             myJcrop = img_jcrop()
+            playerCursor.style.left = (currentTime < 0 ? 0 : currentTime / selectionDuration) * specWidth + 'px';
             $('.loading-grey').hide();
         }, 200);
     })
+
+    let canExec = true;
+    $(document).on('keydown', function (e) {
+        if ($('.jcrop-holder') && e.key == 'Control' && $('#play').attr('data-playing') === 'false') {
+            myJcrop.destroy()
+        }
+        if (canExec) {
+            if (e.code === 'Enter' && !$('#modal-div').hasClass('show')) {
+                const coords = myJcrop.tellSelect() || {};
+                if (coords.w > 0 && coords.h > 0) {
+                    e.preventDefault();
+                    $('.js-new-tag').trigger('click');
+
+                    canExec = false;
+                    setTimeout(() => canExec = true, 1000);
+                }
+            }
+            if (e.ctrlKey && e.key === 'ArrowLeft' && !$('#shift-left').hasClass('a-disabled')) {
+                e.preventDefault();
+                if (!canExec) return;
+                $('#shift-left').trigger('click');
+
+                canExec = false;
+                setTimeout(() => canExec = true, 10000);
+            }
+            if (e.ctrlKey && e.key === 'ArrowRight' && !$('#shift-right').hasClass('a-disabled')) {
+                e.preventDefault();
+                if (!canExec) return;
+                $('#shift-right').trigger('click');
+
+                canExec = false;
+                setTimeout(() => canExec = true, 10000);
+            }
+        }
+    });
+    $(document).on('keyup', function (e) {
+        if (!$('.jcrop-holder').length && e.key == 'Control' && $('#play').attr('data-playing') === 'false') {
+            myJcrop = $.Jcrop('#cropbox', {
+                boxWidth: $('#player_box').width(),
+                boxHeight: 400,
+                onChange: setSelectionData,
+                onSelect: selectData,
+                onRelease: onRelease,
+                addClass: 'custom',
+                keySupport: false,
+            });
+        }
+    });
+    document.getElementById('player_box').addEventListener('wheel', function (e) {
+        if (canExec) {
+            if (e.shiftKey) {
+                if (e.deltaY < 0) {
+                    e.preventDefault();
+                    if (!canExec) return;
+                    $("#btn-zoom-in").trigger('click')
+
+                    canExec = false;
+                    setTimeout(() => canExec = true, 10000);
+                } else if (e.deltaY > 0) {
+                    e.preventDefault();
+                    if (!canExec) return;
+                    $("#btn-zoom-out").trigger('click')
+
+                    canExec = false;
+                    setTimeout(() => canExec = true, 10000);
+                }
+                e.preventDefault();
+            }
+        }
+    }, {passive: false});
 })
 
 function img_jcrop() {
@@ -81,7 +173,9 @@ function img_jcrop() {
         boxHeight: 400,
         onChange: setSelectionData,
         onSelect: selectData,
+        onRelease: onRelease,
         addClass: 'custom',
+        keySupport: false,
     });
     $("#myCanvas > div.jcrop-holder.custom > div.jcrop-tracker").height('404px')
     $("#myCanvas > div.jcrop-holder.custom > div:nth-child(1) > div:nth-child(1) > img").height('400px')

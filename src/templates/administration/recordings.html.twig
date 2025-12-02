@@ -37,6 +37,10 @@
                 <i class="fas fa-eye"></i>
                 View
             </button>
+            <button id="assignments" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" data-target="#assignments" disabled>
+                <i class="fas fa-tasks"></i>
+                Assignments
+            </button>
             <button id="maads" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" data-target="#maads" disabled>
                 <i class="svg-sum"></i>
                 Acoustic indices
@@ -107,7 +111,7 @@
             <tbody class="form-control-sm js-recording-list"></tbody>
         </table>
     </div>
-    <div class="modal fade" id="modal-div" tabindex="-1" role="dialog">
+    <div class="modal fade" id="modal-delete" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -238,6 +242,13 @@
                                     <option value="{{ model.tf_model_id }}">{{ model.name }}</option>
                                 {% endfor %}
                             </select>
+                        </div>
+                        <hr>
+                        <div class="form-inline"><input id="is_merged" name="is_merged" class="form-control form-control-sm" type="checkbox"><label class="ml-1 col-form-label-sm" for="is_merged">Merge resulting conspecific tags</label></div>
+                        <div class="merged-box mt-2" style="display: none;">
+                            <div class="form-inline"><label class="ml-1 col-form-label-sm" for="max_gap">Duration between separate tags, in seconds (default: 0)</label></div>
+                            <div class="form-group form-inline"><input id="max_gap" name="max_gap" class="form-control form-control-sm" type="text"></div>
+                            <div class="form-inline"><input id="keep_merged" name="keep_merged" class="form-control form-control-sm" type="checkbox"><label class="ml-1 col-form-label-sm" for="keep_merged">Keep only merged and separate tags</label></div>
                         </div>
                     </div>
                 </div>
@@ -384,7 +395,13 @@
                         $(".custom-text").hide();
                     }
                 })
-
+                $('#is_merged').on('change', function () {
+                    if ($(this).is(':checked')) {
+                        $('.merged-box').show();
+                    } else {
+                        $('.merged-box').hide();
+                    }
+                });
                 $('#frequencies').change(function () {
                     if ($(this).val() == 'custom') {
                         $("#frequencies_custom").attr("hidden", false);
@@ -454,10 +471,27 @@
                         }
                     });
                 });
-
-                $("#modal-div").keydown(function (e) {
+                $('button[name="table-btn"][data-target="#assignments"]').click(function (e) {
+                    let count = 0
+                    let id = [];
+                    $('.js-checkbox:checked').each(function () {
+                        if ($(this).data('type') == 'audio data') {
+                            count = count + 1
+                            id.push($(this).data('id'));
+                        }
+                    });
+                    if (count == 0) {
+                        showAlert('Select at least one audio recording.');
+                        e.preventDefault();
+                        return
+                    }
+                    let data = {'id': id, 'type': 'recording', 'collection_id': {{ colId }}};
+                    requestModal("{{ baseUrl }}/admin/taskMgr/assign", data);
+                    e.preventDefault();
+                })
+                $("#modal-delete").keydown(function (e) {
                     if (e.keyCode == 13) {
-                        $("#modal-div").modal('hide');
+                        $("#modal-delete").modal('hide');
                         event.preventDefault();
                     }
                 });
@@ -569,11 +603,26 @@
                             'overlap': $("#overlap").val(),
                             'sf_thresh': $("#sf_thresh").val(),
                             'creator_type': $("#tf option:selected").text(),
+                            'max_gap': $("#max_gap").val() || 0,
+                            'is_merged': $("#is_merged").is(":checked") ? 1 : 0,
+                            'keep_merged': $("#keep_merged").is(":checked") ? 1 : 0
                         };
                     } else if ($('#tf').val() == 2) {
                         arr = {
                             'detection_threshold': $("#detection_threshold").val(),
                             'creator_type': $("#tf option:selected").text(),
+                            'max_gap': $("#max_gap").val() || 0,
+                            'is_merged': $("#is_merged").is(":checked") ? 1 : 0,
+                            'keep_merged': $("#keep_merged").is(":checked") ? 1 : 0
+                        };
+                    } else if ($('#tf').val() == 3) {
+                        arr = {
+                            'window_size': $("#window_size").val(),
+                            'stride_length': $("#stride_length").val(),
+                            'creator_type': $("#tf option:selected").text(),
+                            'max_gap': $("#max_gap").val() || 0,
+                            'is_merged': $("#is_merged").is(":checked") ? 1 : 0,
+                            'keep_merged': $("#keep_merged").is(":checked") ? 1 : 0
                         };
                     }
                     arr = JSON.stringify(arr)
@@ -626,7 +675,7 @@
                     }).done(function (data) {
                         $('#count').text(data)
                         $('#delete_id').val(id)
-                        $("#modal-div").modal('show');
+                        $("#modal-delete").modal('show');
                     })
                 })
                 $('#maad').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {

@@ -1,0 +1,177 @@
+{% extends 'administration/admin.html.twig' %}
+
+{% block admin_content %}
+    <div class="card mb-3" id="tasksList">
+        <div class="card-header border-light bg-white text-right">
+            <div class="form-inline">
+                <div class="col-12 form-inline justify-content-end">
+                    <label class="mr-2">Search:</label>
+                    <input class="form-control-sm" id="search">
+                </div>
+            </div>
+            <button id="viewing" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" data-target="#task" title='Opens the corresponding recording or tag for review. After opening a tag, subsequent tags can be accessed with "save and next tag" button.' disabled>
+                <i class="fas fa-play"></i>
+                Review
+            </button>
+            <button id="deletion" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#deletion" disabled>
+                <i class="fas fa-trash"></i>
+                Delete
+            </button>
+            <button id="tasksExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#tasksExport" aria-expanded="false" aria-controls="tasksExport">
+                <i class="fa fa-file-csv"></i>
+                Save all as CSV
+            </button>
+        </div>
+        <table id="tasksTable" style="display:none;white-space: nowrap;">
+            <thead class="table-borderless">
+            <tr style="font-size: .875rem;">
+                <th>
+                    <input type="checkbox" class="js-all-checkbox" name="check-all" id="check-all">
+                </th>
+                <th>#</th>
+                <th>Type</th>
+                <th>Recording</th>
+                <th>Recording ID</th>
+                <th>Tag ID</th>
+                <th>Assigner</th>
+                <th>Assignee</th>
+                <th>Status <i class="fa fa-info-circle" title='Value is "assigned" when the recording has a label or the tag has a review, and "assigned" otherwise.' data-toggle="tooltip"></i></th>
+                <th>Comment</th>
+                <th>Creation Date (UTC)</th>
+            </tr>
+            </thead>
+            <tbody class="form-control-sm js-index-log-list"></tbody>
+        </table>
+    </div>
+    <div class="modal fade" id="modal-div" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">Warning</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body ml-3">
+                    <div>
+                        <div class="form-group">
+                            <input id="delete_id" type="hidden">
+                            <label id="delete_info"></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="js-close-button" type="button" class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
+                    <button id="js-delete-button" type="button" class="btn btn-outline-danger">
+                        <i class="fas fa-trash-alt"></i>
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block header %}
+    {{ parent() }}
+    <script>
+        $(document).ready(function () {
+            $('#tasksTable').show()
+            let table = $('#tasksTable').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "ajax": {
+                    "url": '{{ baseUrl }}/admin/taskMgr/getListByPage',
+                    "type": 'POST',
+                    "error": function (xhr, error, thrown) {
+                        if (xhr.status == 400 || xhr.status == 404 || xhr.status == 500) {
+                            location.reload();
+                        }
+                    }
+                },
+                "dom": 'lrtip',
+                "stateSave": true,
+                "StateDuration": -1,
+                "order": [[1, 'asc']],
+                "columnDefs": [
+                    {
+                        "orderable": false,
+                        "targets": [0],
+                    },
+                    {
+                        "className": "dt-center",
+                        "targets": [0],
+                    }],
+                "bAutoWidth": false,
+                "scrollX": true,
+            });
+            if (table.state.loaded()) {
+                $('#search').val(table.state.loaded().search.search);
+            }
+            $('[data-toggle="tooltip"]').tooltip();
+            $('#search').on('input', () => {
+                table.search($('#search').val()).draw();
+            });
+        });
+        $(function () {
+            'use strict';
+            $(document).on('click', '#tasksExport', function () {
+                window.location.href = '{{ baseUrl }}/api/admin/taskMgr/export';
+            });
+
+            $('button[name="table-btn"][data-target="#task"]').click(function (e) {
+                $('.js-checkbox:checked').each(function () {
+                    if ($(this).data('status') != 'assigned') {
+                        showAlert('This task has been reviewed.')
+                        return false;
+                    }
+                    if ($(this).data('assignee') == '{{ user_id }}') {
+                        if ($(this).data('type') == 'recording') {
+                            window.open('{{ baseUrl }}/recording/show/' + $(this).data('recording'), '_blank');
+                        } else if ($(this).data('type') == 'tag') {
+                            window.open('{{ baseUrl }}/recording/show/' + $(this).data('recording') + '?type=task&open=' + $(this).data('tag') + '&t_min=' + $(this).data('tmin') + '&t_max=' + $(this).data('tmax') + '&f_min=' + $(this).data('fmin') + '&f_max=' + $(this).data('fmax'), '_blank');
+                        }
+                    } else {
+                        showAlert('Only the assignee can view the task.')
+                        return false;
+                    }
+                });
+                e.preventDefault();
+            })
+
+            $('button[name="table-btn"][data-target="#deletion"]').click(function (e) {
+                let canDelete = true;
+                $('.js-checkbox:checked').each(function () {
+                    if ($(this).data('assigner') != '{{ user_id }}') {
+                        showAlert('Only the assigner can delete the task.')
+                        canDelete = false;
+                        return false;
+                    }
+                })
+                if (!canDelete) {
+                    e.preventDefault();
+                    return false;
+                }
+                if ($('.js-checkbox:checked').length > 1) {
+                    $('#delete_info').html("Are you sure you want to delete these <b class='text-danger' >" + $('.js-checkbox:checked').length + "</b> entries?")
+                } else {
+                    $('#delete_info').html("Are you sure you want to delete this entry?")
+                }
+                $("#modal-div").modal('show');
+            })
+
+            $('#js-delete-button').click(function (e) {
+                let dataArray = [];
+                $('.js-checkbox:checked').each(function () {
+                    dataArray.push($(this).data('id'));
+                });
+                let data = {'id': dataArray.join(', ')};
+                postRequest('{{ baseUrl }}/api/admin/taskMgr/delete', data, false, false, function () {
+                    location.reload();
+                });
+            });
+        });
+    </script>
+{% endblock %}

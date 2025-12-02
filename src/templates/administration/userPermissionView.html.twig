@@ -35,12 +35,14 @@
                                 <td>{{ project.name }}</td>
                                 <td class="text-center">
                                     <input class="access-checkbox project-checkbox" value="{{ accessId }}" type="checkbox" name="access" data-project="{{ project.id }}" disabled>
+                                    <i class="fa fa-info-circle invisible" title="public" data-toggle="tooltip"></i>
                                 </td>
                                 <td class="text-center">
                                     <input class="manage-checkbox project-checkbox" value="{{ manageId }}" type="checkbox" name="manage" data-project="{{ project.id }}" disabled>
                                 </td>
                                 <td class="text-center">
                                     <input class="view-checkbox project-checkbox" value="{{ viewId }}" type="checkbox" name="view" data-project="{{ project.id }}" disabled>
+                                    <i class="fa fa-info-circle invisible" title="public" data-toggle="tooltip"></i>
                                 </td>
                                 <td class="text-center">
                                     <input class="review-checkbox project-checkbox" value="{{ reviewId }}" type="checkbox" name="review" data-project="{{ project.id }}" disabled>
@@ -58,24 +60,20 @@
                                         {{ collection.name }}
                                     </td>
                                     <td class="text-center">
-                                        {% if collection.public_access %}
-                                            <input class="js-access-checkbox" data-project="{{ project.id }}" name="access" type="checkbox" title="This collection is public" disabled checked>
-                                        {% else %}
-                                            <input class="js-access-checkbox" value="{{ accessId }}" type="checkbox" name="access" data-project="{{ project.id }}" data-collection-id="{{ collection.id }}"
-                                                   disabled {{ collection.permission == manageId ? "checked" }} {{ collection.permission == reviewId ? "checked" }} {{ collection.permission == viewId ? "checked" }} {{ collection.permission == accessId ? "checked" }}>
-                                        {% endif %}
+                                        <input class="js-access-checkbox" value="{{ accessId }}" type="checkbox" name="access" data-project="{{ project.id }}" data-collection-id="{{ collection.id }}"
+                                               disabled {{ collection.permission == manageId ? "checked" }} {{ collection.permission == reviewId ? "checked" }} {{ collection.permission == viewId ? "checked" }} {{ collection.permission == accessId ? "checked" }}>
+                                        <i class="fa fa-info-circle {{ collection.public_access?'':'invisible' }}" title="public" data-toggle="tooltip"></i>
+
                                     </td>
                                     <td class="text-center">
                                         <input class="js-manage-checkbox" value="{{ manageId }}" type="checkbox" name="manage" data-project="{{ project.id }}" data-collection-id="{{ collection.id }}"
                                                disabled {{ collection.permission == manageId ? "checked" }}>
                                     </td>
                                     <td class="text-center">
-                                        {% if collection.public_tags %}
-                                            <input class="js-view-checkbox" data-project="{{ project.id }}" name="view" type="checkbox" title="These collections' tags are public" disabled checked>
-                                        {% else %}
-                                            <input class="js-view-checkbox" value="{{ viewId }}" type="checkbox" name="view" data-project="{{ project.id }}" data-collection-id="{{ collection.id }}"
-                                                   disabled {{ collection.permission == manageId ? "checked" }} {{ collection.permission == reviewId ? "checked " }} {{ collection.permission == viewId ? "checked" }}>
-                                        {% endif %}
+                                        <input class="js-view-checkbox" value="{{ viewId }}" type="checkbox" name="view" data-project="{{ project.id }}" data-collection-id="{{ collection.id }}"
+                                               disabled {{ collection.permission == manageId ? "checked" }} {{ collection.permission == reviewId ? "checked " }} {{ collection.permission == viewId ? "checked" }}>
+                                        <i class="fa fa-info-circle {{ collection.public_tags?'':'invisible' }}" title="public" data-toggle="tooltip"></i>
+
                                     </td>
                                     <td class="text-center">
                                         <input class="js-review-checkbox" value="{{ reviewId }}" type="checkbox" name="review" data-project="{{ project.id }}" data-collection-id="{{ collection.id }}"

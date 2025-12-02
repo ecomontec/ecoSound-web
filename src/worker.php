@@ -58,6 +58,9 @@ $callback = function ($msg) use ($config) {
                     if ($d['creator_type'] == 'batdetect2') {
                         $back = (new \BioSounds\Controller\RecordingController())->batdetect2($d);
                     }
+                    if ($d['creator_type'] == 'insects-base-cnn10-96k-t') {
+                        $back = (new \BioSounds\Controller\RecordingController())->insectsbasecnn1096kt($d);
+                    }
                 }
                 if ($headers['list_type'] == 'upload') {
                     $back = (new FileService())->process($d);
