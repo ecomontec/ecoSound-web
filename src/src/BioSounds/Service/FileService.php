@@ -146,12 +146,25 @@ class FileService
             $file->setStatus(File::STATUS_IN_PROGRESS);
             $this->fileProvider->update($file);
 
-            if (!file_exists($file->getPath())) {
-                throw new FileNotFoundException($file->getPath());
+            // Ensure absolute path for file operations
+            $filePath = $file->getPath();
+            error_log('FileService::process - Original path from DB: ' . $filePath);
+            error_log('FileService::process - Current working directory: ' . getcwd());
+            error_log('FileService::process - ABSOLUTE_DIR constant: ' . ABSOLUTE_DIR);
+            
+            if (strpos($filePath, '/') !== 0) {
+                $filePath = ABSOLUTE_DIR . $filePath;
+            }
+            
+            error_log('FileService::process - Converted path: ' . $filePath);
+            error_log('FileService::process - File exists? ' . (file_exists($filePath) ? 'YES' : 'NO'));
+
+            if (!file_exists($filePath)) {
+                throw new FileNotFoundException($filePath);
             }
 
-            if (!is_file($file->getPath())) {
-                throw new FileInvalidException($file->getPath());
+            if (!is_file($filePath)) {
+                throw new FileInvalidException($filePath);
             }
             $fileExists = 0;
             $fileHash = $data['hash'];
@@ -159,13 +172,13 @@ class FileService
                 $fileExists = 1;
             }
             if (!$fileExists) {
-                if (empty($fileFormat = Utils::getFileFormat($file->getPath()))) {
+                if (empty($fileFormat = Utils::getFileFormat($filePath))) {
                     return;
                 }
 
-                $wavFilePath = $file->getPath();
+                $wavFilePath = $filePath;
                 if ($fileFormat !== 'wav') {
-                    $wavFilePath = Utils::generateWavFile($file->getPath());
+                    $wavFilePath = Utils::generateWavFile($filePath);
                 }
 
                 $sound = [
@@ -195,16 +208,16 @@ class FileService
                 $sound[Recording::ID] = (new RecordingProvider())->insert($sound);
                 $soundId = $sound[Recording::ID];
 
-                $path = ABSOLUTE_DIR . 'sounds/sounds/' . $file->getCollection() . '/' . $file->getDirectory();
+                $path = ABSOLUTE_DIR . SOUNDS_DIR . '/' . $file->getCollection() . '/' . $file->getDirectory();
                 if (!is_dir(ABSOLUTE_DIR)) {
                     throw new FileNotFoundException(ABSOLUTE_DIR);
                 }
 
                 if (
-                    !is_dir(ABSOLUTE_DIR . 'sounds/sounds/' . $file->getCollection()) &&
-                    !mkdir(ABSOLUTE_DIR . 'sounds/sounds/' . $file->getCollection(), 0755, true)
+                    !is_dir(ABSOLUTE_DIR . SOUNDS_DIR . '/' . $file->getCollection()) &&
+                    !mkdir(ABSOLUTE_DIR . SOUNDS_DIR . '/' . $file->getCollection(), 0755, true)
                 ) {
-                    throw new FolderCreationException(ABSOLUTE_DIR . 'sounds/sounds/' . $file->getCollection());
+                    throw new FolderCreationException(ABSOLUTE_DIR . SOUNDS_DIR . '/' . $file->getCollection());
                 }
 
                 if (!is_dir($path) && !mkdir($path, 0755, true)) {

@@ -174,8 +174,8 @@ class CollectionController extends BaseController
                 $colId = $recording[Recording::COL_ID];
                 $dirID = $recording[Recording::DIRECTORY];
 
-                $soundsDir = "sounds/sounds/$colId/$dirID/";
-                $imagesDir = "sounds/images/$colId/$dirID/";
+                $soundsDir = SOUNDS_DIR . "/$colId/$dirID/";
+                $imagesDir = IMAGES_DIR . "/$colId/$dirID/";
 
                 if (is_file($soundsDir . $fileName)) {
                     unlink($soundsDir . $fileName);

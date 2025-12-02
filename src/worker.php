@@ -12,6 +12,9 @@ $config = parse_ini_file('config/config.ini');
 
 define('ABSOLUTE_DIR', $config['ABSOLUTE_DIR']);
 define('TMP_DIR', $config['TMP_DIR']);
+define('SOUNDS_DIR', $config['SOUNDS_DIR']);
+define('IMAGES_DIR', $config['IMAGES_DIR']);
+define('PROJECTS_DIR', $config['PROJECTS_DIR']);
 define('DRIVER', $config['DRIVER']);
 define('HOST', $config['HOST']);
 define('DATABASE', $config['DATABASE']);

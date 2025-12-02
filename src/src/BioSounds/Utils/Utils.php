@@ -106,6 +106,11 @@ class Utils
      */
     public static function generateWavFile(string $filePath): ?string
     {
+        // Ensure absolute path for external commands
+        if (strpos($filePath, '/') !== 0) {
+            $filePath = ABSOLUTE_DIR . $filePath;
+        }
+        
         $pathInfo = pathinfo($filePath);
         $resultFilePath = $pathInfo['dirname'] . '/' . $pathInfo['filename'] . '.wav';
 
@@ -114,14 +119,14 @@ class Utils
         }
 
         try {
-            $process = new Process("sox $filePath $resultFilePath");
+            $process = new Process("sox '$filePath' '$resultFilePath'");
 //            if (self::getFileFormat($filePath) === 'flac') {
 //                $process = new Process("flac -dFf  $filePath -o $wavFilePath");
 //            }
             $process->mustRun();
             return $resultFilePath;
         } catch (ProcessFailedException $exception) {
-            throw new WavProcessingException('', $filePath);
+            throw new WavProcessingException($filePath, $exception->getMessage());
         }
     }
 
@@ -132,6 +137,11 @@ class Utils
      */
     public static function convertToOgg(string $filePath): ?string
     {
+        // Ensure absolute path for external commands
+        if (strpos($filePath, '/') !== 0) {
+            $filePath = ABSOLUTE_DIR . $filePath;
+        }
+        
         $pathInfo = pathinfo($filePath);
         $resultFilePath = $pathInfo['dirname'] . '/' . $pathInfo['filename'] . '.ogg';
 
@@ -141,7 +151,7 @@ class Utils
 
         try {
             //$process = new Process("oggenc $filePath -q 10 -o $resultFilePath");
-            $process = new Process("sox $filePath -C 10 $resultFilePath");
+            $process = new Process("sox '$filePath' -C 10 '$resultFilePath'");
 //            if (self::getFileFormat($filePath) === 'flac') {
 //                //$process = new Process("flac -Ff --best $filePath -o $resultFilePath");
 //                $process = new Process("oggenc $filePath -q 10 -o $resultFilePath");

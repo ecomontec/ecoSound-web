@@ -8,8 +8,8 @@ use BioSounds\Provider\RecordingProvider;
 
 class RecordingService
 {
-    const RECORDING_PATH = 'sounds/sounds/%s/%s/%s';
-    const IMAGE_PATH = 'sounds/images/%s/%s/%s';
+    const RECORDING_PATH = SOUNDS_DIR . '/%s/%s/%s';
+    const IMAGE_PATH = IMAGES_DIR . '/%s/%s/%s';
 
     private $imageService;
 

@@ -15,8 +15,8 @@ use Symfony\Component\Process\Process;
  */
 class ImageService
 {
-    const SOUNDS_PATH = ABSOLUTE_DIR . 'sounds/sounds/%s/%s/%s';
-    const IMAGES_PATH = ABSOLUTE_DIR . 'sounds/images/%s/%s';
+    const SOUNDS_PATH = ABSOLUTE_DIR . SOUNDS_DIR . '/%s/%s/%s';
+    const IMAGES_PATH = ABSOLUTE_DIR . IMAGES_DIR . '/%s/%s';
     const VIEWPORT_WIDTH = 150;
 
     private $fftSize;

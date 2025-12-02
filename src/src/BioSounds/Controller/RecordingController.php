@@ -36,8 +36,8 @@ class RecordingController extends BaseController
 {
     const SECTION_TITLE = 'Recording';
     const DEFAULT_TAG_COLOR = '#FFFFFF';
-    const SOUND_PATH = 'sounds/sounds/%s/%s/%s';
-    const IMAGE_SOUND_PATH = 'sounds/images/%s/%s/%s';
+    const SOUND_PATH = SOUNDS_DIR . '/%s/%s/%s';
+    const IMAGE_SOUND_PATH = IMAGES_DIR . '/%s/%s/%s';
 
     private $colId;
     private $recordingId;
@@ -635,7 +635,7 @@ class RecordingController extends BaseController
     public function maads($data, $id)
     {
         $str = 'python3 ' . ABSOLUTE_DIR . 'bin/getMaad.py' .
-            ' -f ' . ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . '/' . $data['directory'] . '/' . explode('.', $data['filename'], -1)[0] .
+            ' -f ' . ABSOLUTE_DIR . SOUNDS_DIR . '/' . $data['collection_id'] . '/' . $data['directory'] . '/' . explode('.', $data['filename'], -1)[0] .
             ' --ch ' . ($data['channel'] == 2 ? 'right' : 'left') .
             ' --mint ' . $data['min_time'] .
             ' --maxt ' . $data['max_time'] .
@@ -793,8 +793,8 @@ class RecordingController extends BaseController
         $j = 0;
         $timestamp = time();
         $str = 'python3 ' . ABSOLUTE_DIR . 'BirdNET-Analyzer/analyze.py' .
-            ' --i ' . ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['filename'] .
-            ' --o ' . ABSOLUTE_DIR . 'tmp/' . $timestamp . '/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv" .
+            ' --i ' . ABSOLUTE_DIR . SOUNDS_DIR . '/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['filename'] .
+            ' --o ' . ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv" .
             ' --rtype "csv"';
         if ((string)$data['lat'] != '') {
             $str = $str . ' --lat ' . $data['lat'];
@@ -907,14 +907,14 @@ class RecordingController extends BaseController
         foreach ($_POST as $key => $value) {
             $data[$key] = $value;
         }
-        $i = 0;
-        $j = 0;
+	$i = 0;
+	$j = 0;
         $timestamp = time();
         $soundPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . '/' . $timestamp . "/sounds";
         if (!file_exists($soundPath)) {
             mkdir($soundPath, 0777, true);
         }
-        copy(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav', $soundPath . '/' . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav');
+        copy(ABSOLUTE_DIR . SOUNDS_DIR . '/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav', $soundPath . '/' . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav');
         $resultPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . '/' . $timestamp;
         $str = 'batdetect2 detect ' . $soundPath . ' ' . $resultPath . ' ';
         if ($data['detection_threshold'] != 'undefined' && $data['detection_threshold'] != '') {

@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Initialize data directories (create ./data/mysql with proper permissions)
+bash "$(dirname "$0")/init-data-dirs.sh"
+
 docker-compose up -d
 docker-compose exec apache composer install
 docker-compose exec apache bash -c '

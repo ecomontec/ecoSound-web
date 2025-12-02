@@ -58,9 +58,9 @@ class ProjectController extends BaseController
             throw new ForbiddenException();
         }
 
-        if (!is_dir(ABSOLUTE_DIR . 'sounds/projects/')) {
-            mkdir(ABSOLUTE_DIR . 'sounds/projects/');
-            chmod(ABSOLUTE_DIR . 'sounds/projects/', 0777);
+        if (!is_dir(ABSOLUTE_DIR . PROJECTS_DIR . '/')) {
+            mkdir(ABSOLUTE_DIR . PROJECTS_DIR . '/');
+            chmod(ABSOLUTE_DIR . PROJECTS_DIR . '/', 0777);
         }
         $projectProvider = new ProjectProvider();
         $data = [];
@@ -79,7 +79,7 @@ class ProjectController extends BaseController
         if (isset($data['projectId'])) {
             if ($_FILES["picture_id_file"]) {
                 $data['picture_id'] = $data['projectId'] . '.' . explode('/', $_FILES["picture_id_file"]['type'])[1];
-                move_uploaded_file($_FILES["picture_id_file"]['tmp_name'], ABSOLUTE_DIR . 'sounds/projects/' . $data['picture_id']);
+                move_uploaded_file($_FILES["picture_id_file"]['tmp_name'], ABSOLUTE_DIR . PROJECTS_DIR . '/' . $data['picture_id']);
             } else {
                 unset($data['picture_id']);
             }
@@ -97,7 +97,7 @@ class ProjectController extends BaseController
                     $data['picture_id'] = $insert . '.' . explode('/', $_FILES["picture_id_file"]['type'])[1];
                     $data['projectId'] = $insert;
                     $projectProvider->update($data);
-                    move_uploaded_file($_FILES["picture_id_file"]['tmp_name'], ABSOLUTE_DIR . 'sounds/projects/' . $data['picture_id']);
+                    move_uploaded_file($_FILES["picture_id_file"]['tmp_name'], ABSOLUTE_DIR . PROJECTS_DIR . '/' . $data['picture_id']);
                 } else {
                     unset($data['picture_id']);
                 }

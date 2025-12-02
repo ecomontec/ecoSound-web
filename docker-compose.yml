@@ -1,15 +1,16 @@
 ---
-version: "3.7"
-
 x-volumes: &volumes
-  - ./src:/var/www/html:cached
+  - ./src:/var/www/html
+  - ./sounds:/var/www/html/sounds/sounds
+  - ./sound_images:/var/www/html/sounds/images
+  - ./project_images:/var/www/html/sounds/projects
   - biosounds-vendor:/var/www/html/vendor
 
 services:
   database:
     image: mysql
     volumes:
-      - biosounds-mysql:/var/lib/mysql
+      - ./mysql:/var/lib/mysql
     ports:
       - 13306:3306
     environment:
@@ -50,6 +51,4 @@ services:
 
 volumes:
     biosounds-vendor:
-    biosounds-mysql:
     biosounds-queue:
-    biosounds-apache:
