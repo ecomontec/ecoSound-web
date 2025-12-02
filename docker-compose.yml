@@ -1,6 +1,4 @@
 ---
-version: "3.7"
-
 x-volumes: &volumes
   - ./src:/var/www/html:cached
   - biosounds-vendor:/var/www/html/vendor
