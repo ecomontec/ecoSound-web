@@ -436,7 +436,10 @@ class RecordingProvider extends AbstractProvider
             'file_date',       // 21: Date
             'file_time'        // 22: Time
         ];
-        $sql .= " ORDER BY $a[$column] $dir";
+        // Validate column index - if out of bounds or empty string, default to 'r.recording_id'
+        $columnIndex = (int)$column;
+        $orderColumn = (isset($a[$columnIndex]) && $a[$columnIndex] !== '') ? $a[$columnIndex] : 'r.recording_id';
+        $sql .= " ORDER BY $orderColumn $dir";
         // Only add LIMIT if length is not -1 (DataTables "All" option sends -1)
         if ($length != '-1') {
             $sql .= " LIMIT :length OFFSET :start";
@@ -445,6 +448,10 @@ class RecordingProvider extends AbstractProvider
         $params = [
             ':collectionId' => $collectionId,
         ];
+        if ($length != '-1') {
+            $params[':start'] = (int)$start;
+            $params[':length'] = (int)$length;
+        }
         if ($search) {
             $params[':search'] = '%' . $search . '%';
         }
@@ -569,3 +576,4 @@ class RecordingProvider extends AbstractProvider
         return $arr;
     }
 }
+
