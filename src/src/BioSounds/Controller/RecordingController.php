@@ -863,11 +863,16 @@ class RecordingController extends BaseController
             }
             (new TagProvider())->insertArr($list);
             unlink(ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv");
+            return json_encode([
+                'errorCode' => 0,
+                'message' => "BirdNET v$maxValue found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. $i tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
+            ]);
+        } else {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => "BirdNET analysis failed with status $status. Output: " . implode("\n", $out),
+            ]);
         }
-        return json_encode([
-            'errorCode' => 0,
-            'message' => "BirdNET v$maxValue found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. $i tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
-        ]);
     }
 
     public function batdetect2($data = null)
@@ -951,6 +956,11 @@ class RecordingController extends BaseController
                     }
                 }
                 (new TagProvider())->insertArr($list);
+                Utils::deleteDirContents($resultPath);
+                return json_encode([
+                    'errorCode' => 0,
+                    'message' => "Batdetect2 $version found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. $i tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
+                ]);
             } else {
                 Utils::deleteDirContents($resultPath);
                 return json_encode([
@@ -958,12 +968,13 @@ class RecordingController extends BaseController
                     'message' => "Batdetect2 $version found 0 detections. 0 tags were inserted.",
                 ]);
             }
+        } else {
+            Utils::deleteDirContents($resultPath);
+            return json_encode([
+                'errorCode' => 1,
+                'message' => "Batdetect2 analysis failed with status $status. Output: " . implode("\n", $out),
+            ]);
         }
-        Utils::deleteDirContents($resultPath);
-        return json_encode([
-            'errorCode' => 0,
-            'message' => "Batdetect2 $version found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. $i tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
-        ]);
     }
 
     private function checkPermissions(): bool
@@ -997,3 +1008,4 @@ class RecordingController extends BaseController
     }
 
 }
+
