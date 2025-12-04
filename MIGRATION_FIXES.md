@@ -10,34 +10,6 @@ This document provides **tested and verified** migration instructions for moving
 - ✅ Manual tag creation working
 - ✅ Worker process operational
 
----
-
-## Issues in Current merged-terraform-audio Branch
-
-The current migration instructions have several critical issues:
-
-### Problem 1: Wrong Order - Git Pull First
-**Current (Step 1):** `git pull origin audio-variable-access-point`
-- **Issue:** Pulling FIRST overwrites your backup scripts and locations
-- **Fix:** Should pull AFTER stopping containers, not before
-
-### Problem 2: mysqldump --single-transaction Fails
-**Current (Step 2):**
-```bash
-docker-compose exec database mysqldump -ubiosounds -pbiosounds --single-transaction --quick biosounds > backup.sql
-```
-- **Error:** `Access denied; you need (at least one of) the RELOAD or FLUSH_TABLES privilege(s)`
-- **Cause:** `--single-transaction` requires FLUSH privileges the biosounds user doesn't have
-- **Fix:** Use `--no-tablespaces` instead:
-```bash
-docker-compose exec database mysqldump -ubiosounds -pbiosounds --quick --no-tablespaces biosounds > backup.sql
-```
-
-### Problem 3: Database Connection Timing
-**Issue:** Steps assume containers are running but don't verify
-- **Fix:** Add explicit `docker-compose up -d` before attempting database operations
-
----
 
 ## New & tested Migration Steps
 
@@ -120,6 +92,11 @@ bash install.sh
 # Use root user account for restore (has privileges that biosounds user lacks)
 cat backup.sql | docker-compose exec -T database mysql -uroot -proot biosounds
 
+# 9b. Add missing insect model to database (required for TerraForma-task1 integration)
+# This model was added in the TerraForma-task1 branch but is missing from databases migrated from master
+echo "=== ADDING INSECT MODEL TO DATABASE ==="
+docker-compose exec database mysql -ubiosounds -pbiosounds biosounds -e "INSERT INTO \`models\` (\`tf_model_id\`,\`name\`,\`tf_model_path\`,\`labels_path\`,\`source_URL\`,\`description\`,\`parameter\`) VALUES (3, 'insects-base-cnn10-96k-t', 'hf:AlexanderGbd/insects-base-cnn10-96k-t', 'hf:AlexanderGbd/insects-base-cnn10-96k-t', 'https://huggingface.co/AlexanderGbd/insects-base-cnn10-96k-t#baseline-model-for-audio-classification-of-orthopera-and-hemiptera', 'This baseline model, utilized in the ECOSoundSet paper, was trained to tag audio files with one or more of 86 species from the Orthoptera and Hemiptera insect orders.', 'window_size@Defaults to 4.0\$stride_length@Defaults to 4.0');"
+
 # 10. VERIFY restore was successful - CRITICAL!
 echo "=== RESTORED DATABASE ROW COUNTS (Compare to Step 2c!) ==="
 docker-compose exec database mysql -ubiosounds -pbiosounds biosounds -e "
@@ -182,24 +159,3 @@ docker-compose exec -T -u www-data apache nohup php worker.php > files_update.lo
 rm -rf src/sounds
 docker volume rm biosounds-mysql 2>/dev/null || true
 ```
-
----
-
-## Key Changes Summary
-
-| Issue | Old Command | Fixed Command |
-|-------|-------------|---------------|
-| Backup command | `--single-transaction --quick` | `--quick --no-tablespaces` |
-| Git pull timing | Step 1 (first) | Step 5 (after backup & stop) |
-| Container startup | `docker-compose up -d` (manual) | `bash run.sh` (uses standard script) |
-| Full installation | Manual commands for init/schema/BirdNET | `bash install.sh` (single script handles all) |
-| Database verify | Not mentioned | Explicit wait loop with `nc` check |
-| Worker restart | Manual restart apache + worker | Included in `install.sh` and `run.sh` |
-
-## Important Notes
-
-- **First time setup on new branch:** Use `bash install.sh` (Step 8) - handles containers, schema, BirdNET, and worker
-- **Subsequent restarts:** Use `bash run.sh` - brings up containers and worker without reinstalling
-- **Why install.sh is important:** It clones BirdNET-Analyzer (needed for AI model execution) and installs all Python dependencies
-- **The worker process:** Essential for processing file uploads and AI model jobs (BirdNET, batdetect2). Without it, jobs remain pending forever
-

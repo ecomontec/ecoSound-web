@@ -275,28 +275,32 @@
     });
     {% if next!=0 %}
     $('#btn-next').on('click', function (e) {
+        // Store the navigation parameters in the form before submission
         $("#x").val('{{ next.minTime }}');
         $("#w").val('{{ next.maxTime }}');
         $("#y").val('{{ next.minFrequency }}');
         $("#h").val('{{ next.maxFrequency }}');
         $("#open").val('{{ next.id }}');
-        $("#modalX").val($('#modal-div').offset().left)
-        $("#modalY").val($('#modal-div').offset().top)
-        $('#recordingForm').attr('action', "{{ baseUrl }}/recording/show/{{ next.recording }}")
+        $("#modalX").val($('#modal-div').offset().left);
+        $("#modalY").val($('#modal-div').offset().top);
+        // The type parameter is already in the form, just need to update the action
+        $('#recordingForm').attr('action', "{{ baseUrl }}/recording/show/{{ next.recording }}");
         $("#recordingForm").submit();
         e.preventDefault();
     })
     {% endif %}
     {% if previous!=0 %}
     $('#btn-previous').on('click', function (e) {
+        // Store the navigation parameters in the form before submission
         $("#x").val('{{ previous.minTime }}');
         $("#w").val('{{ previous.maxTime }}');
         $("#y").val('{{ previous.minFrequency }}');
         $("#h").val('{{ previous.maxFrequency }}');
         $("#open").val('{{ previous.id }}');
-        $("#modalX").val($('#modal-div').offset().left)
-        $("#modalY").val($('#modal-div').offset().top)
-        $('#recordingForm').attr('action', "{{ baseUrl }}/recording/show/{{ previous.recording }}")
+        $("#modalX").val($('#modal-div').offset().left);
+        $("#modalY").val($('#modal-div').offset().top);
+        // The type parameter is already in the form, just need to update the action
+        $('#recordingForm').attr('action', "{{ baseUrl }}/recording/show/{{ previous.recording }}");
         $("#recordingForm").submit();
         e.preventDefault();
     })

@@ -70,6 +70,9 @@ def merge_tags(tags, unknown_id, model, max_gap=0, keep_only_merged=True):
 
     for t in result:
         t.pop("_merged", None)
+        # Truncate comments to fit database column limit (VARCHAR(2000))
+        if t.get("comments") and len(t["comments"]) > 2000:
+            t["comments"] = t["comments"][:1997] + "..."
 
     return result
 

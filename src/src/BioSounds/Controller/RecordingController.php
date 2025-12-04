@@ -130,8 +130,8 @@ class RecordingController extends BaseController
                 'ffts' => [4096, 2048, 1024, 512, 256, 128,],
                 'fftsize' => $this->fftSize,
                 'open' => $_POST['open'] ?? $_GET['open'] ?? null,
-                'modalX' => $_POST['modalX'],
-                'modalY' => $_POST['modalY'],
+                'modalX' => $_POST['modalX'] ?? $_GET['modalX'] ?? null,
+                'modalY' => $_POST['modalY'] ?? $_GET['modalY'] ?? null,
                 'models' => (new RecordingProvider())->getModel(),
                 'animal_sound_types' => $arr,
                 'soundTypes' => (new SoundProvider())->getAll(),
@@ -231,6 +231,36 @@ class RecordingController extends BaseController
             $maxFrequency = $_GET['f_max'] > $maxFrequency ? $maxFrequency : $_GET['f_max'];
         }
 
+
+
+        // In task mode with an assigned tag, ensure the viewing window includes that tag
+        if (isset($_GET['type']) && $_GET['type'] === 'task' && isset($_GET['open'])) {
+            if (!isset($tagProvider)) {
+                $tagProvider = new TagProvider();
+            }
+            try {
+                $openTag = $tagProvider->get(intval($_GET['open']));
+                if ($openTag && $openTag->getMinTime() !== null && $openTag->getMaxTime() !== null &&
+                    $openTag->getMinFrequency() !== null && $openTag->getMaxFrequency() !== null) {
+                    // Expand viewing window to include the tag's bounds with validation
+                    $tagMinTime = floatval($openTag->getMinTime());
+                    $tagMaxTime = floatval($openTag->getMaxTime());
+                    $tagMinFreq = floatval($openTag->getMinFrequency());
+                    $tagMaxFreq = floatval($openTag->getMaxFrequency());
+                    
+                    // Only expand if values are sensible (positive, not inverted)
+                    if ($tagMinTime >= 0 && $tagMaxTime > $tagMinTime && $tagMinFreq > 0 && $tagMaxFreq > $tagMinFreq) {
+                        $minTime = min($minTime, $tagMinTime);
+                        $maxTime = max($maxTime, $tagMaxTime);
+                        $minFrequency = min($minFrequency, $tagMinFreq);
+                        $maxFrequency = max($maxFrequency, $tagMaxFreq);
+                    }
+                }
+            } catch (\Exception $e) {
+                // Tag not found or error - continue with default window
+            }
+        }
+
         // Spectrogram Image Width
         $spectrogramWidth = WINDOW_WIDTH - (SPECTROGRAM_LEFT + SPECTROGRAM_RIGHT);
         $this->recordingPresenter->setSpectrogramWidth($spectrogramWidth);
@@ -239,7 +269,7 @@ class RecordingController extends BaseController
             $recording_fft = $recording->getUserRecordingFft(Auth::getUserID(), $recordingData[Recording::ID]);
         }
         $selectedFileName = $fileName . '_' . $minFrequency . '-' . $maxFrequency . '_' . $minTime . '-'
-            . $maxTime . '_' . $this->fft . '_' . $this->recordingPresenter->getChannel();
+            . $maxTime . '_' . $this->fftSize . '_' . $this->recordingPresenter->getChannel();
 
         if (!file_exists($originalWavFilePath)) {
             Utils::generateWavFile($originalSoundFilePath);
@@ -409,6 +439,8 @@ class RecordingController extends BaseController
         $tagProvider = new TagProvider();
         $viewPermission = false;
         $reviewPermission = false;
+        $managePermission = false;
+        $isTaskMode = isset($_GET['type']) && $_GET['type'] === 'task';
 
         if (!Auth::isUserAdmin()) {
             $userPerm = new UserPermission();
@@ -428,7 +460,8 @@ class RecordingController extends BaseController
             $viewPermission = $permission->isViewPermission($perm);
             $managePermission = $permission->isManagePermission($perm);
         }
-        if (Auth::isUserAdmin() || $reviewPermission || $viewPermission || $managePermission) {
+        // In task mode, allow viewing all tags since user has been assigned to review this specific tag
+        if (Auth::isUserAdmin() || $reviewPermission || $viewPermission || $managePermission || $isTaskMode) {
             $tags = $tagProvider->getListByTime($this->recordingId);
             $public = 1;
         } else {
@@ -820,7 +853,7 @@ class RecordingController extends BaseController
         exec($str . " 2>&1", $out, $status);
         $result = [];
         if ($status == 0) {
-            $handle = fopen(ABSOLUTE_DIR . 'tmp/' . $timestamp . '/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv", "rb");
+            $handle = fopen(ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv", "rb");
             while (!feof($handle)) {
                 $d = fgetcsv($handle);
                 $result[] = $d;
@@ -877,7 +910,7 @@ class RecordingController extends BaseController
                 }
             }
             if ($data['is_merged']) {
-                $filePath = ABSOLUTE_DIR . 'tmp/' . $timestamp . '/' . $data['recording_id'] . '-' . $data['user_id'] . '.json';
+                $filePath = ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . '.json';
                 if (!is_dir(dirname($filePath))) {
                     mkdir(dirname($filePath), 0777, true);
                 }
@@ -887,7 +920,7 @@ class RecordingController extends BaseController
                 $list = json_decode($output, true);
             }
             (new TagProvider())->insertArr($list);
-            unlink(ABSOLUTE_DIR . 'tmp/' . $timestamp . '/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv");
+            unlink(ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv");
             return json_encode([
                 'errorCode' => 0,
                 'message' => "BirdNET v$maxValue found " . ((count($result) - 2) > 0 ? (count($result) - 2) : 0) . " detections. " . (is_array($list) ? count($list) : 0) . " tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
@@ -1050,6 +1083,12 @@ class RecordingController extends BaseController
                 $arr_specie_id = [];
                 $unmatched_species = [];
                 $list = [];
+                
+                // Get the recording duration for validation
+                $recordingProvider = new RecordingProvider();
+                $recordingData = $recordingProvider->get($data['recording_id']);
+                $recordingDuration = isset($recordingData[0]['duration']) ? floatval($recordingData[0]['duration']) : PHP_FLOAT_MAX;
+                $invalidTagsCount = 0;
 
                 foreach ($species as $specie) {
                     $arr_specie[] = $specie['binomial'];
@@ -1069,6 +1108,16 @@ class RecordingController extends BaseController
                                 $j = $j + 1;
                             }
                             list($start, $end) = explode('-', $d['offset']);
+                            $start = floatval($start);
+                            $end = floatval($end);
+                            
+                            // Validate time coordinates against recording duration
+                            if ($start < 0 || $end < 0 || $start >= $end || $end > $recordingDuration) {
+                                $invalidTagsCount++;
+                                error_log("Warning: insects-base-cnn generated tag with invalid time bounds for recording {$data['recording_id']}: start={$start}, end={$end}, recording_duration={$recordingDuration}");
+                                continue;
+                            }
+                            
                             $arr['sound_id'] = '6';
                             $arr['recording_id'] = $data['recording_id'];
                             $arr['user_id'] = $data['user_id'];
@@ -1098,9 +1147,10 @@ class RecordingController extends BaseController
                 }
                 (new TagProvider())->insertArr($list);
                 Utils::deleteDirContents($resultPath);
+                $warningMsg = $invalidTagsCount > 0 ? " WARNING: $invalidTagsCount tags were skipped due to invalid time coordinates exceeding recording duration." : '';
                 return json_encode([
                     'errorCode' => 0,
-                    'message' => "insects-base-cnn10-96k-t found $i detections. " . (is_array($list) ? count($list) : 0) . " tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)"),
+                    'message' => "insects-base-cnn10-96k-t found $i detections. " . (is_array($list) ? count($list) : 0) . " tags were inserted." . ($j == 0 ? '' : "($j tags with unmatched species: " . join(', ', array_unique($unmatched_species)) . " inserted into comments)") . $warningMsg,
                 ]);
             } else {
                 Utils::deleteDirContents($resultPath);
