@@ -58,7 +58,13 @@ class BaseClass
         !defined('USER') && define('USER', $this->config['USER']);
         !defined('PASSWORD') && define('PASSWORD', $this->config['PASSWORD']);
 
-        !defined('APP_URL') && define('APP_URL', $this->config['APP_URL']);
+        // APP_URL: Use config value if set, otherwise detect from current request
+        $appUrl = $this->config['APP_URL'];
+        if (empty($appUrl)) {
+            $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            $appUrl = $protocol . '://' . $_SERVER['HTTP_HOST'];
+        }
+        !defined('APP_URL') && define('APP_URL', $appUrl);
         !defined('HOST_URL') && define('HOST_URL', $this->config['HOST_URL']);
         !defined('IMAGES_URL') && define('IMAGES_URL', APP_URL . $this->config['IMAGES_URL']);
         !defined('PROJECT_IMAGES_URL') && define('PROJECT_IMAGES_URL', IMAGES_URL . $this->config['PROJECT_IMAGES_URL']);
