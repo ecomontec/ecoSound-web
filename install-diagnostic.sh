@@ -106,6 +106,9 @@ mkdir -p "$BASE_DIR/data/mysql"
 mkdir -p "$BASE_DIR/sounds"
 mkdir -p "$BASE_DIR/sound_images"
 mkdir -p "$BASE_DIR/project_images"
+mkdir -p "$BASE_DIR/src/cache"
+mkdir -p "$BASE_DIR/src/logs"
+mkdir -p "$BASE_DIR/src/tmp"
 log_success "Directories created"
 
 log_info "Setting directory permissions..."
@@ -113,10 +116,13 @@ chmod 755 "$BASE_DIR/data/mysql"
 chmod 755 "$BASE_DIR/sounds"
 chmod 755 "$BASE_DIR/sound_images"
 chmod 755 "$BASE_DIR/project_images"
+chmod 755 "$BASE_DIR/src/cache"
+chmod 755 "$BASE_DIR/src/logs"
+chmod 755 "$BASE_DIR/src/tmp"
 log_success "Permissions set to 755"
 
 log_info "Verifying directory permissions..."
-ls -ld "$BASE_DIR/data/mysql" "$BASE_DIR/sounds" "$BASE_DIR/sound_images" "$BASE_DIR/project_images"
+ls -ld "$BASE_DIR/data/mysql" "$BASE_DIR/sounds" "$BASE_DIR/sound_images" "$BASE_DIR/project_images" "$BASE_DIR/src/cache" "$BASE_DIR/src/logs" "$BASE_DIR/src/tmp"
 log_info ""
 
 # ============================================================================
@@ -189,7 +195,7 @@ log_success "Database is ready (${ELAPSED}s to startup)"
 log_info ""
 
 log_info "Testing database connection..."
-docker-compose exec -T database mysql -ubiosounds -pbiosounds biosounds -e "SELECT 1;" > /dev/null 2>&1
+docker-compose exec database mysql -ubiosounds -pbiosounds biosounds -e "SELECT 1;" > /dev/null 2>&1
 if [ $? -eq 0 ]; then
     log_success "Database connection successful"
 else
