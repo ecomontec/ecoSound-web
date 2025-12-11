@@ -207,7 +207,7 @@ log_info "Step 5: Initializing Database"
 log_info "=========================================="
 log_info ""
 
-INIT_FILES=("init.sql" "data.sql" "gadm.sql" "world_seas.sql")
+INIT_FILES=("01-init.sql" "02-data.sql" "03-gadm.sql" "04-world_seas.sql")
 
 for sql_file in "${INIT_FILES[@]}"; do
     if [ ! -f "$BASE_DIR/$sql_file" ]; then
