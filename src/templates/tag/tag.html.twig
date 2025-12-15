@@ -2,7 +2,13 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Tag {{ tag.id }} for recording {% if recordingName|length > 50 %} {{ recordingName|slice(0, 50) ~ '...' }} {% else %} {{ recordingName }} {% endif %} (ID {{ tag.recording }})</h5>
+                <h5 class="modal-title">Tag {{ tag.id }} for recording {% if recordingName|length > 50 %} {{ recordingName|slice(0, 50) ~ '...' }} {% else %} {{ recordingName }} {% endif %} (ID {{ tag.recording }})
+                    {% if hasTaskAssignment %}
+                        <span class="badge badge-info ml-2" title="This tag is assigned to you as a task">
+                            <i class="fas fa-tasks"></i> Task
+                        </span>
+                    {% endif %}
+                </h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times</span></button>
             </div>
             <div class="modal-body">
