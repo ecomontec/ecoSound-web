@@ -28,9 +28,23 @@ You need to install [docker](https://docs.docker.com/engine/install) and [docker
 
 Important: this setup is intended for developing and testing purposes **ONLY**. It is in no way ready for production. Please read the _Server Installation_ section.
 
+### System Requirements
+
+**Disk Space**: Ensure a minimum of 40 GB is available before installation, particularly on the partition holding Docker data (typically `/var`)
+
+This is due to Docker images containing machine learning libraries (TensorFlow 2.20.0 + PyTorch 2.4.1) and audio processing tools (~22GB for biosounds-apache image alone).
+
 ### Installation
 
 ```sh install.sh```
+
+### Running the Application
+
+```sh run.sh```
+
+This starts all services and launches the queue worker with automatic restart capability. **Run this script only once** (typically at server startup). The worker processes jobs sequentially from the queue. If the worker crashes, it will automatically restart within 5 seconds, ensuring continuous processing without manual intervention.
+
+**Note:** Do not run `run.sh` multiple times - this would create duplicate workers processing jobs in parallel.
 
 ### Upgrading from older versions
 
