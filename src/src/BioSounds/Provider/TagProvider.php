@@ -672,7 +672,7 @@ class TagProvider extends AbstractProvider
             $sql .= " AND CONCAT(IFNULL(t.tag_id,''), IFNULL(sound.soundscape_component,''), IFNULL(sound.sound_type,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(t.creator_type,''), IFNULL(t.confidence,''), IFNULL(t.min_time,''), IFNULL(t.max_time,''), IFNULL(t.min_freq,''), IFNULL(t.max_freq,''), IFNULL(s.binomial,''), IFNULL(t.sound_distance_m,''), IFNULL(t.individuals,''), IFNULL(st.name,''), IFNULL(t.comments,''), IFNULL(t.creation_date,'')) LIKE '%$search%' ";
         }
         $sql .= " GROUP BY t.tag_id";
-        $a = ['', 't.tag_id', 'sound.soundscape_component', 'sound.sound_type', 'r.name', 'u.name', 't.creator_type', 't.confidence', 't.min_time', 't.max_time', 't.min_freq', 't.max_freq', 's.binomial', 't.uncertain', 't.sound_distance_m', 't.distance_not_estimable', 't.individuals', 'st.name', 'reference_call', 't.comments', 't.creation_date'];
+        $a = ['', 't.tag_id', 'sound.soundscape_component', 'sound.sound_type', 'u.name', 't.creator_type', 't.confidence', 't.min_time', 't.max_time', 't.min_freq', 't.max_freq', 's.binomial', 's.taxon_order', 's.family', 's.genus', 't.uncertain', 't.sound_distance_m', 't.distance_not_estimable', 't.individuals', 'st.sound_type', 't.reference_call', 't.comments', 't.creation_date'];
         $sql .= " ORDER BY $a[$column] $dir";
         // Only add LIMIT if length is not -1 (DataTables "All" option sends -1)
         if ($length != '-1') {
