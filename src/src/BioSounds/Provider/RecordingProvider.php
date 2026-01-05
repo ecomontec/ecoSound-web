@@ -405,7 +405,7 @@ class RecordingProvider extends AbstractProvider
     {
         $sql = "SELECT r.*,u.`name` AS username,s.`name` AS site,re.model,m.`name` AS microphone,l.`name` AS license,DATE_FORMAT(r.file_date, '%Y-%m-%d') AS file_date, DATE_FORMAT(r.file_time, '%H:%i:%s') AS file_time FROM recording r LEFT JOIN user u ON u.user_id = r.user_id LEFT JOIN site s ON s.site_id = r.site_id LEFT JOIN recorder re ON r.recorder_id = re.recorder_id LEFT JOIN microphone m ON r.microphone_id = m.microphone_id LEFT JOIN license l ON r.license_id = l.license_id WHERE col_id = :collectionId";
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.data_type,''), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.model,''), IFNULL(r.recording_gain,''), IFNULL(m.name,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.duty_cycle_recording,''), IFNULL(r.duty_cycle_period,''), IFNULL(r.note,''),IFNULL(r.DOI,''), IFNULL(r.creation_date,'')) LIKE :search ";
+            $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.data_type,''), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.model,''), IFNULL(m.name,''), IFNULL(r.sampling_rate,''), IFNULL(r.duration,''), IFNULL(r.channel_num,''), IFNULL(r.bitdepth,''), IFNULL(r.recording_gain,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.duty_cycle_recording,''), IFNULL(r.duty_cycle_period,''), IFNULL(r.note,''),IFNULL(r.DOI,''), IFNULL(r.creation_date,'')) LIKE :search ";
         }
         $this->database->prepareQuery($sql);
         $params = [
@@ -425,9 +425,9 @@ class RecordingProvider extends AbstractProvider
         $dir = ($dir === 'asc' || $dir === 'desc') ? $dir : 'asc';
         $sql = "SELECT r.*,u.`name` AS username,s.`name` AS site,re.model,m.`name` AS microphone,l.`name` AS license,DATE_FORMAT(r.file_date, '%Y-%m-%d') AS file_date, DATE_FORMAT(r.file_time, '%H:%i:%s') AS file_time,CONCAT(r.col_id,'/',r.directory,'/',r.filename) AS path FROM recording r LEFT JOIN user u ON u.user_id = r.user_id LEFT JOIN site s ON s.site_id = r.site_id LEFT JOIN recorder re ON r.recorder_id = re.recorder_id LEFT JOIN microphone m ON r.microphone_id = m.microphone_id LEFT JOIN license l ON r.license_id = l.license_id LEFT JOIN file_upload f ON f.recording_id = r.recording_id WHERE col_id = :collectionId";
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.data_type,''), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.model,''), IFNULL(r.recording_gain,''), IFNULL(m.name,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.duty_cycle_recording,''), IFNULL(r.duty_cycle_period,''), IFNULL(r.note,''),IFNULL(r.DOI,''), IFNULL(r.creation_date,'')) LIKE :search ";
+            $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.data_type,''), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.model,''), IFNULL(m.name,''), IFNULL(r.sampling_rate,''), IFNULL(r.duration,''), IFNULL(r.channel_num,''), IFNULL(r.bitdepth,''), IFNULL(r.recording_gain,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.duty_cycle_recording,''), IFNULL(r.duty_cycle_period,''), IFNULL(r.note,''),IFNULL(r.DOI,''), IFNULL(r.creation_date,'')) LIKE :search ";
         }
-        $a = ['', 'r.recording_id', 'r.data_type', 'r.filename', 'r.name', 'u.name', 's.name', 're.model', 'r.recording_gain', 'm.name', 'l.name', 'r.type', 'r.medium', 'r.duty_cycle_recording', 'r.duty_cycle_period', 'r.note', 'r.DOI', 'file_date', 'file_time'];
+        $a = ['', 'r.recording_id', 'r.data_type', 'r.filename', 'r.name', 'u.name', 's.name', 're.model', 'm.name', 'r.sampling_rate', 'r.duration', 'r.channel_num', 'r.bitdepth', 'r.recording_gain', 'l.name', 'r.type', 'r.medium', 'r.duty_cycle_recording', 'r.duty_cycle_period', 'r.note', 'r.DOI', 'file_date', 'file_time'];
         $sql .= " ORDER BY $a[$column] $dir LIMIT :length OFFSET :start";
         $this->database->prepareQuery($sql);
         $params = [

@@ -83,7 +83,7 @@ class SiteProvider extends AbstractProvider
             $sql .= " AND c.collection_id = $collectionId ";
         }
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(s.site_id,''), IFNULL(s.name,''), IFNULL(s.longitude_WGS84_dd_dddd,''), IFNULL(s.latitude_WGS84_dd_dddd,''), IFNULL(s.topography_m,''), IFNULL(s.freshwater_depth_m,''), IFNULL(s.gadm0,''), IFNULL(s.gadm1,''), IFNULL(s.gadm2,''), IFNULL(e1.name,''), IFNULL(e2.name,''), IFNULL(e3.name,'')) LIKE '%$search%' ";
+            $sql .= " AND CONCAT(IFNULL(s.site_id,''), IFNULL(s.name,''), IFNULL(s.longitude_WGS84_dd_dddd,''), IFNULL(s.latitude_WGS84_dd_dddd,''), IFNULL(s.topography_m,''), IFNULL(s.freshwater_depth_m,''), IFNULL(s.gadm0,''), IFNULL(s.gadm1,''), IFNULL(s.gadm2,''), IFNULL(s.iho,''), IFNULL(e1.name,''), IFNULL(e2.name,''), IFNULL(e3.name,'')) LIKE '%$search%' ";
         }
         $sql .= " GROUP BY s.site_id ";
         $this->database->prepareQuery($sql);
@@ -106,10 +106,10 @@ class SiteProvider extends AbstractProvider
             $sql .= " AND c.collection_id = $collectionId ";
         }
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(s.site_id,''), IFNULL(s.name,''), IFNULL(s.longitude_WGS84_dd_dddd,''), IFNULL(s.latitude_WGS84_dd_dddd,''), IFNULL(s.topography_m,''), IFNULL(s.freshwater_depth_m,''), IFNULL(s.gadm0,''), IFNULL(s.gadm1,''), IFNULL(s.gadm2,''), IFNULL(e1.name,''), IFNULL(e2.name,''), IFNULL(e3.name,'')) LIKE '%$search%' ";
+            $sql .= " AND CONCAT(IFNULL(s.site_id,''), IFNULL(s.name,''), IFNULL(s.longitude_WGS84_dd_dddd,''), IFNULL(s.latitude_WGS84_dd_dddd,''), IFNULL(s.topography_m,''), IFNULL(s.freshwater_depth_m,''), IFNULL(s.gadm0,''), IFNULL(s.gadm1,''), IFNULL(s.gadm2,''), IFNULL(s.iho,''), IFNULL(e1.name,''), IFNULL(e2.name,''), IFNULL(e3.name,'')) LIKE '%$search%' ";
         }
         $sql .= " GROUP BY s.site_id ";
-        $a = ['', 's.site_id', 's.name', 's.longitude_WGS84_dd_dddd', 's.latitude_WGS84_dd_dddd', 's.topography_m', 's.freshwater_depth_m', 's.gadm0', 's.gadm1', 's.gadm2', 'e1.name', 'e2.name', 'e3.name'];
+        $a = ['', 's.site_id', 's.name', 's.longitude_WGS84_dd_dddd', 's.latitude_WGS84_dd_dddd', 's.topography_m', 's.freshwater_depth_m', 's.gadm0', 's.gadm1', 's.gadm2', 's.iho', 'e1.name', 'e2.name', 'e3.name'];
         $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
