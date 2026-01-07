@@ -136,21 +136,21 @@ class TagReviewController extends BaseController
         $Als[] = $colArr;
         $List = (new TagReviewProvider())->getReview($collection_id);
         foreach ($List as $Item) {
-            $valueToMove = $Item['username'] == null ? '' : $Item['username'];
-            unset($Item['username']);
-            array_splice($Item, 2, 0, $valueToMove);
-            $valueToMove = $Item['recording_id'] == null ? '' : $Item['recording_id'];
-            unset($Item['recording_id']);
-            array_splice($Item, 3, 0, $valueToMove);
-            $valueToMove = $Item['recording'] == null ? '' : $Item['recording'];
-            unset($Item['recording']);
-            array_splice($Item, 4, 0, $valueToMove);
-            $valueToMove = $Item['state'] == null ? '' : $Item['state'];
-            unset($Item['state']);
-            array_splice($Item, 6, 0, $valueToMove);
-            $valueToMove = $Item['specie'] == null ? '' : $Item['specie'];
-            unset($Item['specie']);
-            array_splice($Item, 8, 0, $valueToMove);
+            $username = $Item['username'] ?? '';
+            $recording_id = $Item['recording_id'] ?? '';
+            $recording = $Item['recording'] ?? '';
+            $state = $Item['state'] ?? '';
+            $specie = $Item['specie'] ?? '';
+
+            unset($Item['username'], $Item['recording_id'], $Item['recording'], $Item['state'], $Item['specie']);
+
+            $Item = array_values($Item);
+
+            array_splice($Item, 2, 0, $username);
+            array_splice($Item, 3, 0, $recording_id);
+            array_splice($Item, 4, 0, $recording);
+            array_splice($Item, 6, 0, $state);
+            array_splice($Item, 8, 0, $specie);
 
             $Als[] = $Item;
         }

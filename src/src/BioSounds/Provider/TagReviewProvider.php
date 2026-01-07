@@ -13,7 +13,7 @@ class TagReviewProvider extends AbstractProvider
 {
     const TABLE_NAME = "tag_review";
 
-    public function getReview(string $collectionId, string $recordingId): array
+    public function getReview(string $collectionId, string $recordingId = ''): array
     {
         $sql = "SELECT tr.*,r.recording_id,r.`name` AS recording,u.`name` AS username,trs.`name` as state,s.binomial as specie FROM tag_review tr 
                 LEFT JOIN tag t ON t.tag_id = tr.tag_id 
