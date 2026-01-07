@@ -13,54 +13,87 @@ class TaskProvider extends AbstractProvider
 
     public function getTask(): array
     {
-        $sql = "SELECT t.*,assigner.name AS assigner,assignee.name AS assignee,r.name as recording FROM task t  
-                LEFT JOIN user assigner ON assigner.user_id = t.assigner_id
-                LEFT JOIN user assignee ON assignee.user_id = t.assignee_id
-                LEFT JOIN tag ON tag.tag_id = t.tag_id AND t.type='tag'
-				LEFT JOIN recording r ON (r.recording_id = t.recording_id AND t.type='recording') OR (r.recording_id = tag.recording_id AND t.type='tag')
-                WHERE t.assigner_id = " . Auth::getUserLoggedID() . " OR t.assignee_id = " . Auth::getUserLoggedID();
+        $userId = Auth::getUserLoggedID();
+
+        $baseQuery = "SELECT t.*, 
+                             assigner.name AS assigner, 
+                             assignee.name AS assignee, 
+                             COALESCE(r_rec.name, r_tag.name) as recording 
+                      FROM task t  
+                      LEFT JOIN user assigner ON assigner.user_id = t.assigner_id
+                      LEFT JOIN user assignee ON assignee.user_id = t.assignee_id
+                      LEFT JOIN tag ON tag.tag_id = t.tag_id AND t.type='tag'
+                      LEFT JOIN recording r_rec ON r_rec.recording_id = t.recording_id AND t.type='recording'
+                      LEFT JOIN recording r_tag ON r_tag.recording_id = tag.recording_id AND t.type='tag'";
+
+        $sql = "($baseQuery WHERE t.assignee_id = $userId) 
+                UNION 
+                ($baseQuery WHERE t.assigner_id = $userId)";
+
         $this->database->prepareQuery($sql);
         return $this->database->executeSelect();
     }
 
+    public function getTotalCount(): int
+    {
+        $sql = "SELECT COUNT(1) AS count FROM task t WHERE t.assigner_id = " . Auth::getUserLoggedID() . " OR t.assignee_id = " . Auth::getUserLoggedID();
+        $this->database->prepareQuery($sql);
+        $result = $this->database->executeSelect();
+        return (int)($result[0]['count'] ?? 0);
+    }
+
     public function getFilterCount(string $search): int
     {
-        $sql = "SELECT t.* FROM task t 
+        if (empty($search)) {
+            return $this->getTotalCount();
+        }
+
+        $sql = "SELECT COUNT(1) AS count FROM task t 
                 LEFT JOIN user assigner ON assigner.user_id = t.assigner_id
                 LEFT JOIN user assignee ON assignee.user_id = t.assignee_id
                 LEFT JOIN tag ON tag.tag_id = t.tag_id AND t.type='tag'
-				LEFT JOIN recording r ON (r.recording_id = t.recording_id AND t.type='recording') OR (r.recording_id = tag.recording_id AND t.type='tag')
+                LEFT JOIN recording r_rec ON r_rec.recording_id = t.recording_id AND t.type='recording'
+                LEFT JOIN recording r_tag ON r_tag.recording_id = tag.recording_id AND t.type='tag'
                 WHERE (t.assigner_id = " . Auth::getUserLoggedID() . " OR t.assignee_id = " . Auth::getUserLoggedID() . ')';
         $params = [];
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(t.task_id,''), IFNULL(assigner.name,''), IFNULL(assignee.name,''), IFNULL(t.datetime,''), IFNULL(t.type,''), IFNULL(t.tag_id,''), IFNULL(t.recording_id,''), IFNULL(r.name,''), IFNULL(t.comment,''), IFNULL(t.status,'')) LIKE :search ";
+            $sql .= " AND CONCAT(IFNULL(t.task_id,''), IFNULL(assigner.name,''), IFNULL(assignee.name,''), IFNULL(t.datetime,''), IFNULL(t.type,''), IFNULL(t.tag_id,''), IFNULL(t.recording_id,''), IFNULL(r_rec.name,''), IFNULL(r_tag.name,''), IFNULL(t.comment,''), IFNULL(t.status,'')) LIKE :search ";
         }
         $this->database->prepareQuery($sql);
         if ($search) {
             $params[':search'] = '%' . $search . '%';
         }
-        $count = count($this->database->executeSelect($params));
-        return $count;
+        $result = $this->database->executeSelect($params);
+        return (int)($result[0]['count'] ?? 0);
     }
 
     public function getListByPage(string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
     {
         $arr = [];
         $dir = ($dir === 'asc' || $dir === 'desc') ? $dir : 'asc';
-        $sql = "SELECT t.*,assigner.name AS assigner,assignee.name AS assignee,r.name as recording,tag.min_time,tag.max_time,tag.min_freq,tag.max_freq,r.recording_id FROM task t  
+
+        $sql = "SELECT t.*, 
+                       assigner.name AS assigner, 
+                       assignee.name AS assignee, 
+                       COALESCE(r_rec.name, r_tag.name) as recording, 
+                       tag.min_time, tag.max_time, tag.min_freq, tag.max_freq, 
+                       COALESCE(r_rec.recording_id, r_tag.recording_id) as recording_id 
+                FROM task t  
                 LEFT JOIN user assigner ON assigner.user_id = t.assigner_id
                 LEFT JOIN user assignee ON assignee.user_id = t.assignee_id
                 LEFT JOIN tag ON tag.tag_id = t.tag_id AND t.type='tag'
-				LEFT JOIN recording r ON (r.recording_id = t.recording_id AND t.type='recording') OR (r.recording_id = tag.recording_id AND t.type='tag')
+                LEFT JOIN recording r_rec ON r_rec.recording_id = t.recording_id AND t.type='recording'
+                LEFT JOIN recording r_tag ON r_tag.recording_id = tag.recording_id AND t.type='tag'
                 WHERE (t.assigner_id = " . Auth::getUserLoggedID() . " OR t.assignee_id = " . Auth::getUserLoggedID() . ')';
         $params = [
             ':length' => $length,
             ':start' => $start,
         ];
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(t.task_id,''), IFNULL(assigner.name,''), IFNULL(assignee.name,''), IFNULL(t.datetime,''), IFNULL(t.type,''), IFNULL(t.recording_id,''), IFNULL(t.tag_id,''), IFNULL(r.name,''), IFNULL(t.comment,''), IFNULL(t.status,'')) LIKE :search ";
+            $sql .= " AND CONCAT(IFNULL(t.task_id,''), IFNULL(assigner.name,''), IFNULL(assignee.name,''), IFNULL(t.datetime,''), IFNULL(t.type,''), IFNULL(t.recording_id,''), IFNULL(t.tag_id,''), IFNULL(r_rec.name,''), IFNULL(r_tag.name,''), IFNULL(t.comment,''), IFNULL(t.status,'')) LIKE :search ";
         }
-        $a = ['', 't.task_id', 't.type', 'r.name', 't.recording_id', 't.tag_id', 'assigner.name', 'assignee.name', 't.status', 't.comment', 't.datetime'];
+
+        $a = ['', 't.task_id', 't.type', 'recording', 't.recording_id', 't.tag_id', 'assigner.name', 'assignee.name', 't.status', 't.comment', 't.datetime'];
         $sql .= " ORDER BY $a[$column] $dir LIMIT :length OFFSET :start ";
         $this->database->prepareQuery($sql);
         if ($search) {

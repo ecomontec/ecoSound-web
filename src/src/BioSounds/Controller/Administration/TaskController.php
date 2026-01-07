@@ -24,20 +24,21 @@ class TaskController extends BaseController
 
     public function getListByPage()
     {
-        $total = count((new TaskProvider())->getTask());
+        $taskProvider = new TaskProvider();
+        $total = $taskProvider->getTotalCount();
         $start = $_POST['start'];
         $length = $_POST['length'];
         $search = $_POST['search']['value'];
         $column = $_POST['order'][0]['column'];
         $dir = $_POST['order'][0]['dir'];
-        $data = (new TaskProvider())->getListByPage($start, $length, $search, $column, $dir);
+        $data = $taskProvider->getListByPage($start, $length, $search, $column, $dir);
         if (count($data) == 0) {
             $data = [];
         }
         $result = [
             'draw' => $_POST['draw'],
             'recordsTotal' => $total,
-            'recordsFiltered' => (new TaskProvider())->getFilterCount($search),
+            'recordsFiltered' => $taskProvider->getFilterCount($search),
             'data' => $data,
         ];
         return json_encode($result);
@@ -107,7 +108,8 @@ class TaskController extends BaseController
         header('Content-Type: application/octet-stream;charset=utf-8');
         header('Accept-Ranges:bytes');
         header('Content-Disposition: attachment; filename=' . $file_name);
-        $columns = (new taskProvider())->getColumns();
+        $taskProvider = new TaskProvider();
+        $columns = $taskProvider->getColumns();
         foreach ($columns as $column) {
             $colArr[] = $column['COLUMN_NAME'];
         }
@@ -116,7 +118,7 @@ class TaskController extends BaseController
         array_splice($colArr, 5, 0, 'assigner');
         array_splice($colArr, 7, 0, 'assignee');
         $Als[] = $colArr;
-        $List = (new taskProvider())->getTask();
+        $List = $taskProvider->getTask();
 
         foreach ($List as $Item) {
             $valueToMove = $Item['recording'] == null ? '' : $Item['recording'];
