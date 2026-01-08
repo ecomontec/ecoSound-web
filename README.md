@@ -54,7 +54,7 @@ If you're upgrading to this version and have existing data, you need to migrate 
 
 ```bash
 # 1. Pull the latest changes
-git pull origin audio-variable-access-point
+git pull origin merged-terraform-audio
 
 # 2. Back up database
 docker-compose exec database mysqldump -ubiosounds -pbiosounds --single-transaction --quick biosounds > backup.sql
@@ -66,7 +66,7 @@ tar -czf sounds_backup.tar.gz src/sounds/
 docker-compose down
 
 # 5. Switch to this branch (use -f to force overwrite Docker-created root-owned files)
-git checkout -f audio-variable-access-point
+git checkout -f merged-terraform-audio
 
 # 6. Initialize new data directories
 bash init-data-dirs.sh
