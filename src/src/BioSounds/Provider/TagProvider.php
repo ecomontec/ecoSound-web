@@ -487,7 +487,7 @@ class TagProvider extends AbstractProvider
             AND min_freq < :maxFrequency 
             AND max_freq > :minFrequency ";
         if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
-            $sql .= " AND (t.user_id = " . Auth::getUserID() . ' OR c.public_tags = 1) ';
+            $sql .= " AND (t.user_id = " . Auth::getUserID() . " OR c.public_tags = 1 OR t.tag_id IN (SELECT tag_id FROM task WHERE assignee_id = " . Auth::getUserID() . " AND type = 'tag')) ";
         }
         if ($recordingId) {
             $sql .= " AND r.recording_id = :recordingId";
@@ -519,7 +519,7 @@ class TagProvider extends AbstractProvider
             AND min_freq < :maxFrequency 
             AND max_freq > :minFrequency ";
         if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
-            $sql .= " AND (t.user_id = " . Auth::getUserID() . ' OR c.public_tags = 1) ';
+            $sql .= " AND (t.user_id = " . Auth::getUserID() . " OR c.public_tags = 1 OR t.tag_id IN (SELECT tag_id FROM task WHERE assignee_id = " . Auth::getUserID() . " AND type = 'tag')) ";
         }
         if ($recordingId) {
             $sql .= " AND r.recording_id = :recordingId";
@@ -665,7 +665,7 @@ class TagProvider extends AbstractProvider
             AND min_freq < :maxFrequency 
             AND max_freq > :minFrequency ";
         if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
-            $sql .= " AND (t.user_id = " . Auth::getUserID() . ' OR c.public_tags = 1) ';
+            $sql .= " AND (t.user_id = " . Auth::getUserID() . " OR c.public_tags = 1 OR t.tag_id IN (SELECT tag_id FROM task WHERE assignee_id = " . Auth::getUserID() . " AND type = 'tag')) ";
         }
         if ($recordingId) {
             $sql .= " AND r.recording_id = :recordingId";
