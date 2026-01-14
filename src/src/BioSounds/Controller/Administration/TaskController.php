@@ -6,6 +6,9 @@ use BioSounds\Controller\BaseController;
 use BioSounds\Entity\Task;
 use BioSounds\Entity\User;
 use BioSounds\Exception\ForbiddenException;
+use BioSounds\Provider\CollectionProvider;
+use BioSounds\Provider\ProjectProvider;
+use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\TaskProvider;
 use BioSounds\Utils\Auth;
 
@@ -14,31 +17,97 @@ class TaskController extends BaseController
 {
     const SECTION_TITLE = 'Tasks';
 
-    public function show()
+    public function show(int $pId = null, int $cId = null, int $rId = null)
     {
         if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
         }
-        return $this->twig->render('administration/tasks.html.twig');
+
+        if (isset($_GET['projectId'])) {
+            $projectId = $_GET['projectId'];
+        }
+        if (isset($_GET['colId'])) {
+            $colId = $_GET['colId'];
+        }
+        if (isset($_GET['recordingId'])) {
+            $rId = $_GET['recordingId'];
+        }
+        if (!empty($pId)) {
+            $projectId = $pId;
+        }
+        if (!empty($cId)) {
+            $colId = $cId;
+        }
+        if (!empty($rId)) {
+            $recordingId = $rId;
+        }
+
+        $projects = (new ProjectProvider())->getWithPermission(Auth::getUserID(), 0);
+        $collections = [];
+        $recordings = [];
+
+        if (empty($projects)) {
+            $projectId = null;
+            $colId = null;
+            $recordingId = null;
+        } else {
+            if (empty($projectId)) {
+                $projectId = $projects[0]->getId();
+            }
+            $collections = (new CollectionProvider())->getByProject($projectId, Auth::getUserID());
+
+            if (empty($colId) && $collections) {
+                $colId = $collections[0]->getId();
+            }
+
+            if ($colId) {
+                $recordings = (new RecordingProvider())->getRecording($colId);
+            }
+
+            if (empty($recordingId)) {
+                $recordingId = 0;
+            }
+        }
+
+        return $this->twig->render('administration/tasks.html.twig', [
+            'projectId' => $projectId,
+            'projects' => $projects,
+            'colId' => $colId,
+            'collections' => $collections,
+            'recordingId' => $recordingId,
+            'recordings' => $recordings,
+        ]);
     }
 
-    public function getListByPage()
+    public function getListByPage($collectionId = null, $recordingId = null)
     {
+        if ($collectionId == null) {
+            $collectionId = 0;
+        }
+        if ($recordingId == null) {
+            $recordingId = 0;
+        }
+
         $taskProvider = new TaskProvider();
-        $total = $taskProvider->getTotalCount();
-        $start = $_POST['start'];
-        $length = $_POST['length'];
-        $search = $_POST['search']['value'];
-        $column = $_POST['order'][0]['column'];
-        $dir = $_POST['order'][0]['dir'];
-        $data = $taskProvider->getListByPage($start, $length, $search, $column, $dir);
+
+        $start = $_POST['start'] ?? 0;
+        $length = $_POST['length'] ?? 10;
+        $search = $_POST['search']['value'] ?? '';
+        $column = $_POST['order'][0]['column'] ?? 0;
+        $dir = $_POST['order'][0]['dir'] ?? 'asc';
+
+        $totalInScope = $taskProvider->getFilterCount(null, $collectionId, $recordingId);
+
+        $data = $taskProvider->getListByPage($start, $length, $search, $column, $dir, $collectionId, $recordingId);
+
         if (count($data) == 0) {
             $data = [];
         }
+
         $result = [
-            'draw' => $_POST['draw'],
-            'recordsTotal' => $total,
-            'recordsFiltered' => $taskProvider->getFilterCount($search),
+            'draw' => $_POST['draw'] ?? 0,
+            'recordsTotal' => $totalInScope,
+            'recordsFiltered' => $taskProvider->getFilterCount($search, $collectionId, $recordingId),
             'data' => $data,
         ];
         return json_encode($result);

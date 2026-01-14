@@ -4,7 +4,6 @@ namespace BioSounds\Provider;
 
 use BioSounds\Entity\AbstractProvider;
 use BioSounds\Utils\Auth;
-use const http\Client\Curl\AUTH_ANY;
 
 
 class TaskProvider extends AbstractProvider
@@ -42,32 +41,37 @@ class TaskProvider extends AbstractProvider
         return (int)($result[0]['count'] ?? 0);
     }
 
-    public function getFilterCount(string $search): int
+    public function getFilterCount(?string $search, $collectionId = null, $recordingId = null): int
     {
-        if (empty($search)) {
-            return $this->getTotalCount();
-        }
-
         $sql = "SELECT COUNT(1) AS count FROM task t 
                 LEFT JOIN user assigner ON assigner.user_id = t.assigner_id
                 LEFT JOIN user assignee ON assignee.user_id = t.assignee_id
                 LEFT JOIN tag ON tag.tag_id = t.tag_id AND t.type='tag'
                 LEFT JOIN recording r_rec ON r_rec.recording_id = t.recording_id AND t.type='recording'
                 LEFT JOIN recording r_tag ON r_tag.recording_id = tag.recording_id AND t.type='tag'
+                LEFT JOIN collection c ON c.collection_id = COALESCE(r_rec.col_id, r_tag.col_id)
                 WHERE (t.assigner_id = " . Auth::getUserLoggedID() . " OR t.assignee_id = " . Auth::getUserLoggedID() . ')';
+
         $params = [];
+        if ($collectionId) {
+            $sql .= " AND c.collection_id = :collectionId ";
+            $params[':collectionId'] = $collectionId;
+        }
+        if ($recordingId) {
+            $sql .= " AND COALESCE(r_rec.recording_id, r_tag.recording_id) = :recordingId ";
+            $params[':recordingId'] = $recordingId;
+        }
+
         if ($search) {
             $sql .= " AND CONCAT(IFNULL(t.task_id,''), IFNULL(assigner.name,''), IFNULL(assignee.name,''), IFNULL(t.datetime,''), IFNULL(t.type,''), IFNULL(t.tag_id,''), IFNULL(t.recording_id,''), IFNULL(r_rec.name,''), IFNULL(r_tag.name,''), IFNULL(t.comment,''), IFNULL(t.status,'')) LIKE :search ";
-        }
-        $this->database->prepareQuery($sql);
-        if ($search) {
             $params[':search'] = '%' . $search . '%';
         }
+        $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect($params);
         return (int)($result[0]['count'] ?? 0);
     }
 
-    public function getListByPage(string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
+    public function getListByPage(string $start = '0', string $length = '8', ?string $search = null, string $column = '0', string $dir = 'asc', $collectionId = null, $recordingId = null): array
     {
         $arr = [];
         $dir = ($dir === 'asc' || $dir === 'desc') ? $dir : 'asc';
@@ -84,17 +88,33 @@ class TaskProvider extends AbstractProvider
                 LEFT JOIN tag ON tag.tag_id = t.tag_id AND t.type='tag'
                 LEFT JOIN recording r_rec ON r_rec.recording_id = t.recording_id AND t.type='recording'
                 LEFT JOIN recording r_tag ON r_tag.recording_id = tag.recording_id AND t.type='tag'
+                LEFT JOIN collection c ON c.collection_id = COALESCE(r_rec.col_id, r_tag.col_id)
                 WHERE (t.assigner_id = " . Auth::getUserLoggedID() . " OR t.assignee_id = " . Auth::getUserLoggedID() . ')';
+
         $params = [
             ':length' => $length,
             ':start' => $start,
         ];
-        if ($search) {
-            $sql .= " AND CONCAT(IFNULL(t.task_id,''), IFNULL(assigner.name,''), IFNULL(assignee.name,''), IFNULL(t.datetime,''), IFNULL(t.type,''), IFNULL(t.recording_id,''), IFNULL(t.tag_id,''), IFNULL(r_rec.name,''), IFNULL(r_tag.name,''), IFNULL(t.comment,''), IFNULL(t.status,'')) LIKE :search ";
+
+        if ($collectionId) {
+            $sql .= " AND c.collection_id = :collectionId ";
+            $params[':collectionId'] = $collectionId;
+        }
+        if ($recordingId) {
+            $sql .= " AND COALESCE(r_rec.recording_id, r_tag.recording_id) = :recordingId ";
+            $params[':recordingId'] = $recordingId;
         }
 
-        $a = ['', 't.task_id', 't.type', 'recording', 't.recording_id', 't.tag_id', 'assigner.name', 'assignee.name', 't.status', 't.comment', 't.datetime'];
-        $sql .= " ORDER BY $a[$column] $dir LIMIT :length OFFSET :start ";
+        if ($search) {
+            $sql .= " AND CONCAT(IFNULL(t.task_id,''), IFNULL(assigner.name,''), IFNULL(assignee.name,''), IFNULL(t.datetime,''), IFNULL(t.type,''), IFNULL(t.recording_id,''), IFNULL(t.tag_id,''), IFNULL(r_rec.name,''), IFNULL(r_tag.name,''), IFNULL(t.comment,''), IFNULL(t.status,'')) LIKE :search ";
+            $params[':search'] = '%' . $search . '%';
+        }
+
+        $a = ['t.task_id', 't.task_id', 't.type', 'recording', 't.recording_id', 't.tag_id', 'assigner.name', 'assignee.name', 't.status', 't.comment', 't.datetime'];
+
+        $sortColumn = $a[$column] ?? 't.datetime';
+
+        $sql .= " ORDER BY $sortColumn $dir LIMIT :length OFFSET :start ";
         $this->database->prepareQuery($sql);
         if ($search) {
             $params[':search'] = '%' . $search . '%';
@@ -118,10 +138,6 @@ class TaskProvider extends AbstractProvider
         return $arr;
     }
 
-    /**
-     * @param int $id
-     * @throws \Exception
-     */
     public function delete(string $id): void
     {
         $this->database->prepareQuery("DELETE FROM task WHERE task_id IN ($id)");
