@@ -166,17 +166,26 @@ class TaskController extends BaseController
         ]);
     }
 
-    public function export()
+    public function export($collectionId = null, $recordingId = null)
     {
         if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
         }
+
+        if ($collectionId == null) {
+            $collectionId = 0;
+        }
+        if ($recordingId == null) {
+            $recordingId = 0;
+        }
+
         $colArr = [];
         $file_name = "Tasks.csv";
         $fp = fopen('php://output', 'w');
         header('Content-Type: application/octet-stream;charset=utf-8');
         header('Accept-Ranges:bytes');
         header('Content-Disposition: attachment; filename=' . $file_name);
+
         $taskProvider = new TaskProvider();
         $columns = $taskProvider->getColumns();
         foreach ($columns as $column) {
@@ -187,7 +196,8 @@ class TaskController extends BaseController
         array_splice($colArr, 5, 0, 'assigner');
         array_splice($colArr, 7, 0, 'assignee');
         $Als[] = $colArr;
-        $List = $taskProvider->getTask();
+
+        $List = $taskProvider->getExportList($collectionId, $recordingId);
 
         foreach ($List as $Item) {
             $valueToMove = $Item['recording'] == null ? '' : $Item['recording'];

@@ -39,6 +39,10 @@
                     <input class="form-control-sm" id="search">
                 </div>
             </div>
+            <button id="review" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#review" disabled>
+                <i class="fas fa-eye"></i>
+                Review
+            </button>
             <button id="deletion" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#deletion" disabled>
                 <i class="fas fa-trash"></i>
                 Delete
@@ -152,6 +156,13 @@
                 $("#collectionForm").submit();
             });
 
+            $('button[name="table-btn"][data-target="#review"]').click(function (e) {
+                $('.js-checkbox:checked').each(function () {
+                    window.open('{{ baseUrl }}/recording/show/' + $(this).data('recording') + '?t_min=' + $(this).data('tmin') + '&t_max=' + $(this).data('tmax') + '&f_min=' + $(this).data('fmin') + '&f_max=' + $(this).data('fmax'), '_blank');
+                });
+                e.preventDefault();
+            })
+
             $('#js-delete-button').click(function (e) {
                 let id = [];
                 $('.js-checkbox:checked').each(function () {
@@ -173,7 +184,7 @@
             })
 
             $(document).on('click', '#tasksExport', function () {
-                window.location.href = '{{ baseUrl }}/api/admin/taskMgr/export';
+                window.location.href = '{{ baseUrl }}/api/admin/taskMgr/export/{{ colId|default(0) }}/{{ recordingId|default(0) }}';
             });
         });
     </script>

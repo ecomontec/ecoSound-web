@@ -33,6 +33,35 @@ class TaskProvider extends AbstractProvider
         return $this->database->executeSelect();
     }
 
+    public function getExportList($collectionId = null, $recordingId = null): array
+    {
+        $sql = "SELECT t.*, 
+                       assigner.name AS assigner, 
+                       assignee.name AS assignee, 
+                       COALESCE(r_rec.name, r_tag.name) as recording 
+                FROM task t  
+                LEFT JOIN user assigner ON assigner.user_id = t.assigner_id
+                LEFT JOIN user assignee ON assignee.user_id = t.assignee_id
+                LEFT JOIN tag ON tag.tag_id = t.tag_id AND t.type='tag'
+                LEFT JOIN recording r_rec ON r_rec.recording_id = t.recording_id AND t.type='recording'
+                LEFT JOIN recording r_tag ON r_tag.recording_id = tag.recording_id AND t.type='tag'
+                LEFT JOIN collection c ON c.collection_id = COALESCE(r_rec.col_id, r_tag.col_id)
+                WHERE (t.assigner_id = " . Auth::getUserLoggedID() . " OR t.assignee_id = " . Auth::getUserLoggedID() . ')';
+
+        $params = [];
+        if ($collectionId) {
+            $sql .= " AND c.collection_id = :collectionId ";
+            $params[':collectionId'] = $collectionId;
+        }
+        if ($recordingId) {
+            $sql .= " AND COALESCE(r_rec.recording_id, r_tag.recording_id) = :recordingId ";
+            $params[':recordingId'] = $recordingId;
+        }
+
+        $this->database->prepareQuery($sql);
+        return $this->database->executeSelect($params);
+    }
+
     public function getTotalCount(): int
     {
         $sql = "SELECT COUNT(1) AS count FROM task t WHERE t.assigner_id = " . Auth::getUserLoggedID() . " OR t.assignee_id = " . Auth::getUserLoggedID();
