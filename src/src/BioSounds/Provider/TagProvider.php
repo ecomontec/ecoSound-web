@@ -482,10 +482,10 @@ class TagProvider extends AbstractProvider
             LEFT JOIN user u ON u.user_id = t.user_id
             LEFT JOIN sound ON sound.sound_id = t.sound_id
             LEFT JOIN sound_type st ON st.sound_type_id = t.animal_sound_type WHERE c.collection_id = :collectionId 
-            AND min_time <= :maxTime 
-            AND max_time >= :minTime 
-            AND min_freq <= :maxFrequency 
-            AND max_freq >= :minFrequency ";
+            AND min_time < :maxTime 
+            AND max_time > :minTime 
+            AND min_freq < :maxFrequency 
+            AND max_freq > :minFrequency ";
         if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
             $sql .= " AND (t.user_id = " . Auth::getUserID() . ' OR c.public_tags = 1) ';
         }
@@ -514,10 +514,10 @@ class TagProvider extends AbstractProvider
             LEFT JOIN sound ON sound.sound_id = t.sound_id
             LEFT JOIN sound_type st ON st.sound_type_id = t.animal_sound_type 
             WHERE c.collection_id = :collectionId 
-            AND min_time <= :maxTime 
-            AND max_time >= :minTime 
-            AND min_freq <= :maxFrequency 
-            AND max_freq >= :minFrequency ";
+            AND min_time < :maxTime 
+            AND max_time > :minTime 
+            AND min_freq < :maxFrequency 
+            AND max_freq > :minFrequency ";
         if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
             $sql .= " AND (t.user_id = " . Auth::getUserID() . ' OR c.public_tags = 1) ';
         }
@@ -652,7 +652,7 @@ class TagProvider extends AbstractProvider
     public function getRecrdingViewListByPage(string $collectionId, string $recordingId, string $minTime, string $maxTime, string $minFrequency, string $maxFrequency, string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
     {
         $arr = [];
-        $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.family AS TaxonFamily,s.genus AS TaxonGenus,u.user_id FROM tag t 
+        $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.family AS TaxonFamily,s.genus AS TaxonGenus,s.class AS TaxonClass,u.user_id FROM tag t 
             INNER JOIN recording r ON r.recording_id = t.recording_id
             LEFT JOIN species s ON s.species_id = t.species_id
             LEFT JOIN collection c ON c.collection_id = r.col_id
@@ -660,10 +660,10 @@ class TagProvider extends AbstractProvider
             LEFT JOIN sound ON sound.sound_id = t.sound_id
             LEFT JOIN sound_type st ON st.sound_type_id = t.animal_sound_type 
             WHERE c.collection_id = :collectionId 
-            AND min_time <= :maxTime 
-            AND max_time >= :minTime 
-            AND min_freq <= :maxFrequency 
-            AND max_freq >= :minFrequency ";
+            AND min_time < :maxTime 
+            AND max_time > :minTime 
+            AND min_freq < :maxFrequency 
+            AND max_freq > :minFrequency ";
         if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
             $sql .= " AND (t.user_id = " . Auth::getUserID() . ' OR c.public_tags = 1) ';
         }
