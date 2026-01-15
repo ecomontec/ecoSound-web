@@ -1065,7 +1065,7 @@ class Recording
         $this->setChannelNum($values['channel_num']);
         $this->setSamplingRate($values['sampling_rate']);
         $this->setDuration($values['duration']);
-        $this->setDoi($values['doi']);
+        $this->setDoi($values['DOI']);
         $this->setSiteName($values['site_name']);
         $this->setLicense($values['license_id']);
         $this->setLicenseName($values['license_name']);

@@ -216,7 +216,13 @@ class RecordingProvider extends AbstractProvider
      */
     public function getSimple(int $id): Recording
     {
-        $query = 'SELECT * FROM recording WHERE ' . Recording::ID . ' = :id';
+        $query = 'SELECT r.*,u.name AS user_name,s.name AS site_name,re.model AS recorderName,m.name AS microphoneName,l.name AS license_name FROM recording r '
+            . ' LEFT JOIN user u ON u.user_id = r.user_id '
+            . ' LEFT JOIN site s ON s.site_id = r.site_id '
+            . ' LEFT JOIN recorder re ON re.recorder_id = r.recorder_id '
+            . ' LEFT JOIN microphone m ON m.microphone_id = r.microphone_id '
+            . ' LEFT JOIN license l ON l.license_id = r.license_id '
+            . ' WHERE r.recording_id = :id';
 
         $this->database->prepareQuery($query);
         if (empty($result = $this->database->executeSelect([':id' => $id]))) {
@@ -230,6 +236,20 @@ class RecordingProvider extends AbstractProvider
         $query = 'SELECT COUNT(*) AS count FROM recording';
         $this->database->prepareQuery($query);
         return $this->database->executeSelect()[0]['count'];
+    }
+
+    public function getHasTags($col_id)
+    {
+        $query = 'SELECT r.* FROM recording r JOIN tag t ON r.recording_id = t.recording_id WHERE r.col_id = :col_id GROUP BY r.recording_id';
+        $this->database->prepareQuery($query);
+        return $this->database->executeSelect([':col_id' => $col_id]);
+    }
+
+    public function getHasReviewTags($col_id)
+    {
+        $query = 'SELECT r.* FROM recording r JOIN tag_review tr ON r.recording_id = tr.recording_id WHERE tr.col_id = :col_id GROUP BY r.recording_id';
+        $this->database->prepareQuery($query);
+        return $this->database->executeSelect([':col_id' => $col_id]);
     }
 
     public function getCountByCollection(string $id, string $site = null)
@@ -385,7 +405,7 @@ class RecordingProvider extends AbstractProvider
     {
         $sql = "SELECT r.*,u.`name` AS username,s.`name` AS site,re.model,m.`name` AS microphone,l.`name` AS license,DATE_FORMAT(r.file_date, '%Y-%m-%d') AS file_date, DATE_FORMAT(r.file_time, '%H:%i:%s') AS file_time FROM recording r LEFT JOIN user u ON u.user_id = r.user_id LEFT JOIN site s ON s.site_id = r.site_id LEFT JOIN recorder re ON r.recorder_id = re.recorder_id LEFT JOIN microphone m ON r.microphone_id = m.microphone_id LEFT JOIN license l ON r.license_id = l.license_id WHERE col_id = :collectionId";
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.data_type,''), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.model,''), IFNULL(r.recording_gain,''), IFNULL(m.name,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.duty_cycle_recording,''), IFNULL(r.duty_cycle_period,''), IFNULL(r.note,''),IFNULL(r.DOI,''), IFNULL(r.creation_date,'')) LIKE :search ";
+            $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.data_type,''), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.model,''), IFNULL(m.name,''), IFNULL(r.sampling_rate,''), IFNULL(r.duration,''), IFNULL(r.channel_num,''), IFNULL(r.bitdepth,''), IFNULL(r.recording_gain,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.duty_cycle_recording,''), IFNULL(r.duty_cycle_period,''), IFNULL(r.note,''),IFNULL(r.DOI,''), IFNULL(r.creation_date,'')) LIKE :search ";
         }
         $this->database->prepareQuery($sql);
         $params = [
@@ -405,48 +425,15 @@ class RecordingProvider extends AbstractProvider
         $dir = ($dir === 'asc' || $dir === 'desc') ? $dir : 'asc';
         $sql = "SELECT r.*,u.`name` AS username,s.`name` AS site,re.model,m.`name` AS microphone,l.`name` AS license,DATE_FORMAT(r.file_date, '%Y-%m-%d') AS file_date, DATE_FORMAT(r.file_time, '%H:%i:%s') AS file_time,CONCAT(r.col_id,'/',r.directory,'/',r.filename) AS path FROM recording r LEFT JOIN user u ON u.user_id = r.user_id LEFT JOIN site s ON s.site_id = r.site_id LEFT JOIN recorder re ON r.recorder_id = re.recorder_id LEFT JOIN microphone m ON r.microphone_id = m.microphone_id LEFT JOIN license l ON r.license_id = l.license_id LEFT JOIN file_upload f ON f.recording_id = r.recording_id WHERE col_id = :collectionId";
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.data_type,''), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.model,''), IFNULL(r.recording_gain,''), IFNULL(m.name,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.duty_cycle_recording,''), IFNULL(r.duty_cycle_period,''), IFNULL(r.note,''),IFNULL(r.DOI,''), IFNULL(r.creation_date,'')) LIKE :search ";
+            $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.data_type,''), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.model,''), IFNULL(m.name,''), IFNULL(r.sampling_rate,''), IFNULL(r.duration,''), IFNULL(r.channel_num,''), IFNULL(r.bitdepth,''), IFNULL(r.recording_gain,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.duty_cycle_recording,''), IFNULL(r.duty_cycle_period,''), IFNULL(r.note,''),IFNULL(r.DOI,''), IFNULL(r.creation_date,'')) LIKE :search ";
         }
-        // Column mapping for server-side ordering. Index corresponds to DataTables column index.
-        // Keep an empty string at index 0 (checkbox column). The rest must follow the table header order
-        // defined in templates/administration/recordings.html.twig so sorting requests map to the
-        // correct database fields (e.g. sampling_rate must be at the sampling rate column index).
-        $a = [
-            '',                // 0: checkbox
-            'r.recording_id',  // 1: #
-            'r.data_type',     // 2: Data type
-            'r.filename',      // 3: Original Filename
-            'r.name',          // 4: Name
-            'u.name',          // 5: User
-            's.name',          // 6: Site
-            're.model',        // 7: Recorder
-            'm.name',          // 8: Microphone
-            'r.sampling_rate', // 9: Sampling Rate (Hz)
-            'r.duration',      // 10: Duration (s)
-            'r.channel_num',   // 11: Channels
-            'r.bitdepth',      // 12: Bit Depth
-            'r.recording_gain',// 13: Recording Gain
-            'l.name',          // 14: License
-            'r.type',          // 15: Recording Type
-            'r.medium',        // 16: Medium
-            'r.duty_cycle_recording', // 17: Duty Cycle Recording
-            'r.duty_cycle_period',    // 18: Duty Cycle Period
-            'r.note',          // 19: Note
-            'r.DOI',           // 20: DOI
-            'file_date',       // 21: Date
-            'file_time'        // 22: Time
-        ];
-        // Validate column index - if out of bounds or empty string, default to 'r.recording_id'
-        $columnIndex = (int)$column;
-        $orderColumn = (isset($a[$columnIndex]) && $a[$columnIndex] !== '') ? $a[$columnIndex] : 'r.recording_id';
-        $sql .= " ORDER BY $orderColumn $dir";
-        // Only add LIMIT if length is not -1 (DataTables "All" option sends -1)
-        if ($length != '-1') {
-            $sql .= " LIMIT :length OFFSET :start";
-        }
+        $a = ['', 'r.recording_id', 'r.data_type', 'r.filename', 'r.name', 'u.name', 's.name', 're.model', 'm.name', 'r.sampling_rate', 'r.duration', 'r.channel_num', 'r.bitdepth', 'r.recording_gain', 'l.name', 'r.type', 'r.medium', 'r.duty_cycle_recording', 'r.duty_cycle_period', 'r.note', 'r.DOI', 'file_date', 'file_time'];
+        $sql .= " ORDER BY $a[$column] $dir LIMIT :length OFFSET :start";
         $this->database->prepareQuery($sql);
         $params = [
             ':collectionId' => $collectionId,
+            ':start' => (int)$start,
+            ':length' => (int)$length,
         ];
         if ($length != '-1') {
             $params[':start'] = (int)$start;
@@ -463,7 +450,7 @@ class RecordingProvider extends AbstractProvider
         if (count($result)) {
             foreach ($result as $key => $value) {
                 if ($value['data_type'] == 'audio data') {
-                    $filePath = 'sounds/sounds/' . $value['path'];
+                    $filePath = SOUNDS_DIR . '/' . $value['path'];
                     $fileMeta = $getID3->analyze($filePath);
                 }
                 $str_user = '';
@@ -483,7 +470,7 @@ class RecordingProvider extends AbstractProvider
                     $str_license .= "<option value='$license[license_id]' " . ($license['license_id'] == $value['license_id'] ? 'selected' : '') . ">$license[name]</option>";
                 }
                 if ($value['data_type'] == 'audio data') {
-                    $arr[$key][] = "<input type='checkbox' class='js-checkbox' data-id='$value[recording_id]' data-type='$value[data_type]' name='cb[$value[recording_id]]' id='cb[$value[recording_id]]'><a id='download$value[recording_id]' href='" . APP_URL . "/sounds/sounds/$value[col_id]/$value[directory]/" . preg_replace('/\.[^.]+$/', '.wav', $value['filename']) . "' download hidden></a>";
+                    $arr[$key][] = "<input type='checkbox' class='js-checkbox' data-id='$value[recording_id]' data-type='$value[data_type]' name='cb[$value[recording_id]]' id='cb[$value[recording_id]]'><a id='download$value[recording_id]' href='" . APP_URL . "/" . SOUNDS_DIR . "/$value[col_id]/$value[directory]/" . preg_replace('/\.[^.]+$/', '.wav', $value['filename']) . "' download hidden></a>";
                 } else {
                     $arr[$key][] = "<input type='checkbox' class='js-checkbox' data-id='$value[recording_id]' data-type='$value[data_type]' name='cb[$value[recording_id]]' id='cb[$value[recording_id]]'>";
                 }

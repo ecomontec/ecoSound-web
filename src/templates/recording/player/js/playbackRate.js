@@ -42,7 +42,8 @@ if ($("#continuous-play").is(':checked') || isDirectStart) {
             console.log("Sample rate of buffer: " + buffer.sampleRate);
             playButton.prop('disabled', false);
             bufferPlay = buffer;
-            if (isContinuous || isDirectStart) {
+            let isCurrentlyContinuous = $("#continuous-play").is(':checked') || (typeof window.isContinuous !== 'undefined' && window.isContinuous);
+            if (isCurrentlyContinuous || isDirectStart) {
                 playButton.trigger('click');
                 isDirectStart = false;
             }
@@ -71,7 +72,15 @@ playButton.click(function () {
     } else {
         if (this.dataset.playing === 'false') {
             createSource();
-            source.start(0, currentTime);
+            if (currentTime >= bufferPlay.duration) {
+                currentTime = 0;
+                if (typeof window.resetCursor === 'function') {
+                    window.resetCursor();
+                }
+            }
+            let currentSelectionDuration = window.selectionDuration || selectionDuration;
+            let remainingDuration = Math.min(bufferPlay.duration - currentTime, currentSelectionDuration - currentTime);
+            source.start(0, currentTime, remainingDuration);
             startTime = context.currentTime;
             clock = setInterval(function () {
                 getCurrentTime();
@@ -113,7 +122,13 @@ $('#playerCursor').draggable({
     containment: 'parent',
     cursor: 'ew-resize',
     drag: function () {
-        seek = parseFloat(this.style.left) / specWidth * selectionDuration;
+        let currentSelectionDuration = window.selectionDuration || selectionDuration;
+        let currentSpecWidth = window.specWidth || specWidth;
+        seek = parseFloat(this.style.left) / currentSpecWidth * currentSelectionDuration;
+
+        if (bufferPlay && bufferPlay.duration && seek >= bufferPlay.duration) {
+            seek = bufferPlay.duration - 0.1;
+        }
         currentTime = seek;
 
         $("#time_sec_div").html(Math.round(minTime + seek));
@@ -149,7 +164,8 @@ function stop() {
     pause = false;
 
     //Distance estimation popup after playing
-    if (estimateDistID && estimateDistID > 0 && !isContinuous) {
+    let isCurrentlyContinuous = (typeof window.isContinuous !== 'undefined') ? window.isContinuous : (typeof isContinuous !== 'undefined' ? isContinuous : false);
+    if (estimateDistID && estimateDistID > 0 && !isCurrentlyContinuous) {
         requestModal(baseUrl + '/tag/showCallDistance/' + estimateDistID);
     }
 }
@@ -168,13 +184,43 @@ function createSource() {
                 stopTime: new Date().valueOf() / 1000,
             }
         )
-        if (isContinuous && !pause) {
-            continuousPlay();
+        let isCurrentlyContinuous = (typeof window.isContinuous !== 'undefined') ? window.isContinuous : isContinuous;
+        if (isCurrentlyContinuous && !pause) {
+            clearInterval(clock);
+            $('#playerCursor').draggable('enable');
+
+            let currentSpecWidth = window.specWidth || specWidth;
+            playerCursor.style.left = currentSpecWidth + 'px';
+
+            // 重置播放状态
+            pauseTime = 0;
+            startTime = 0;
+            currentTime = 0;
+            elapsedRateTime = 0;
+            seek = 0;
+            pause = false;
+            $('#play').attr('data-playing', 'false');
+            $('#play').html('<i class="fas fa-play"></i>');
+
+            // 调用连续播放
+            if (typeof window.continuousPlay === 'function') {
+                window.continuousPlay();
+            } else if (typeof continuousPlay === 'function') {
+                continuousPlay();
+            } else {
+                stop();
+            }
+        } else {
+            stop();
         }
-        stop();
     };
     source.connect(context.destination);
     source.playbackRate.value = playbackControl.value;
+
+    let isCurrentlyContinuous = (typeof window.isContinuous !== 'undefined') ? window.isContinuous : isContinuous;
+    if (isCurrentlyContinuous) {
+        $(document).trigger('audioPlaybackStarted');
+    }
 }
 
 function getCurrentTime() {
@@ -193,5 +239,45 @@ function resetCursor() {
 }
 
 function moveCursor(time) {
-    playerCursor.style.left = (time < 0 ? 0 : time / selectionDuration) * specWidth + 'px';
+    let currentSelectionDuration = window.selectionDuration || selectionDuration;
+    let currentSpecWidth = window.specWidth || specWidth;
+    playerCursor.style.left = (time < 0 ? 0 : time / currentSelectionDuration) * currentSpecWidth + 'px';
 }
+
+if (typeof window !== 'undefined') {
+    window.resetCursor = resetCursor;
+    window.moveCursor = moveCursor;
+}
+
+$(document).on('updateAudioBuffer', function (event, buffer) {
+    bufferPlay = buffer;
+    download = 1;
+});
+
+$('.player_img').on('click', function (e) {
+    if (e.ctrlKey && $('#play').attr('data-playing') === 'false') {
+        let offset = $(this).offset();
+        let clickX = e.pageX - offset.left;
+
+        let clickedTime = clickX / specWidth * selectionDuration;
+        if (clickedTime < 0) clickedTime = 0;
+        if (clickedTime > selectionDuration) clickedTime = selectionDuration;
+
+        currentTime = clickedTime;
+        pauseTime = currentTime;
+        elapsedRateTime = 0;
+        seek = 0;
+
+        moveCursor(currentTime);
+
+        $("#time_sec_div").html(Math.round(minTime + currentTime));
+    }
+});
+
+$(document).on('keydown', function (e) {
+    if (e.code === 'Space') {
+        if ($(e.target).is('input, textarea')) return;
+        e.preventDefault();
+        $('#play').trigger('click');
+    }
+});

@@ -9,6 +9,17 @@
 			</div>
 			<div class="modal-body">
 				<h6><strong>Name:</strong> {{ recording.name }}</h6>
+				<h6><strong>User:</strong> {{ recording.username }}</h6>
+				<h6><strong>Site:</strong> {{ recording.siteName }}</h6>
+				<h6><strong>Recorder:</strong> {{ recording.recorderName }}</h6>
+				<h6><strong>Microphone:</strong> {{ recording.microphoneName }}</h6>
+				<h6><strong>License:</strong> {{ recording.licenseName }}</h6>
+				<h6><strong>Type:</strong> {{ recording.type }}</h6>
+				<h6><strong>Medium:</strong> {{ recording.medium }}</h6>
+				<h6><strong>Note:</strong> {{ recording.note }}</h6>
+				<h6><strong>DOI:</strong> {{ recording.doi }}</h6>
+				<h6><strong>Recording Gain:</strong> {{ recording.recordingGain }}</h6>
+				<h6><strong>Datetime:</strong> {{ recording.fileDate }} {{ recording.fileTime }}</h6>
 				<h6><strong>Size:</strong> {{ recording.fileSize }} bytes</h6>
 				<h6><strong>Channels:</strong> {{ recording.channelNum }}</h6>
 				<h6><strong>Duration:</strong> {{ recording.duration }} sec</h6>

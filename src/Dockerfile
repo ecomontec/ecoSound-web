@@ -12,7 +12,7 @@ RUN chmod -R 777 /var/www
 RUN chmod a+rx /usr/local/bin/composer
 
 RUN apt-get update
-RUN apt-get install -y git zip unzip netcat
+RUN apt-get install -y git zip unzip netcat-openbsd
 RUN docker-php-ext-install pdo_mysql bcmath sockets
 RUN composer install --no-plugins --no-scripts --optimize-autoloader --no-dev --no-progress
 RUN apt-get install -y python && curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py && python get-pip.py && pip install numpy

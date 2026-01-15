@@ -1,0 +1,182 @@
+<?php
+
+namespace BioSounds\Provider;
+
+use BioSounds\Entity\AbstractProvider;
+use BioSounds\Utils\Auth;
+
+
+class TaskProvider extends AbstractProvider
+{
+    const TABLE_NAME = 'task';
+
+    public function getTask(): array
+    {
+        $userId = Auth::getUserLoggedID();
+
+        $baseQuery = "SELECT t.*, 
+                             assigner.name AS assigner, 
+                             assignee.name AS assignee, 
+                             COALESCE(r_rec.name, r_tag.name) as recording 
+                      FROM task t  
+                      LEFT JOIN user assigner ON assigner.user_id = t.assigner_id
+                      LEFT JOIN user assignee ON assignee.user_id = t.assignee_id
+                      LEFT JOIN tag ON tag.tag_id = t.tag_id AND t.type='tag'
+                      LEFT JOIN recording r_rec ON r_rec.recording_id = t.recording_id AND t.type='recording'
+                      LEFT JOIN recording r_tag ON r_tag.recording_id = tag.recording_id AND t.type='tag'";
+
+        $sql = "($baseQuery WHERE t.assignee_id = $userId) 
+                UNION 
+                ($baseQuery WHERE t.assigner_id = $userId)";
+
+        $this->database->prepareQuery($sql);
+        return $this->database->executeSelect();
+    }
+
+    public function getExportList($collectionId = null, $recordingId = null): array
+    {
+        $sql = "SELECT t.*, 
+                       assigner.name AS assigner, 
+                       assignee.name AS assignee, 
+                       COALESCE(r_rec.name, r_tag.name) as recording 
+                FROM task t  
+                LEFT JOIN user assigner ON assigner.user_id = t.assigner_id
+                LEFT JOIN user assignee ON assignee.user_id = t.assignee_id
+                LEFT JOIN tag ON tag.tag_id = t.tag_id AND t.type='tag'
+                LEFT JOIN recording r_rec ON r_rec.recording_id = t.recording_id AND t.type='recording'
+                LEFT JOIN recording r_tag ON r_tag.recording_id = tag.recording_id AND t.type='tag'
+                LEFT JOIN collection c ON c.collection_id = COALESCE(r_rec.col_id, r_tag.col_id)
+                WHERE (t.assigner_id = " . Auth::getUserLoggedID() . " OR t.assignee_id = " . Auth::getUserLoggedID() . ')';
+
+        $params = [];
+        if ($collectionId) {
+            $sql .= " AND c.collection_id = :collectionId ";
+            $params[':collectionId'] = $collectionId;
+        }
+        if ($recordingId) {
+            $sql .= " AND COALESCE(r_rec.recording_id, r_tag.recording_id) = :recordingId ";
+            $params[':recordingId'] = $recordingId;
+        }
+
+        $this->database->prepareQuery($sql);
+        return $this->database->executeSelect($params);
+    }
+
+    public function getTotalCount(): int
+    {
+        $sql = "SELECT COUNT(1) AS count FROM task t WHERE t.assigner_id = " . Auth::getUserLoggedID() . " OR t.assignee_id = " . Auth::getUserLoggedID();
+        $this->database->prepareQuery($sql);
+        $result = $this->database->executeSelect();
+        return (int)($result[0]['count'] ?? 0);
+    }
+
+    public function getFilterCount(?string $search, $collectionId = null, $recordingId = null): int
+    {
+        $sql = "SELECT COUNT(1) AS count FROM task t 
+                LEFT JOIN user assigner ON assigner.user_id = t.assigner_id
+                LEFT JOIN user assignee ON assignee.user_id = t.assignee_id
+                LEFT JOIN tag ON tag.tag_id = t.tag_id AND t.type='tag'
+                LEFT JOIN recording r_rec ON r_rec.recording_id = t.recording_id AND t.type='recording'
+                LEFT JOIN recording r_tag ON r_tag.recording_id = tag.recording_id AND t.type='tag'
+                LEFT JOIN collection c ON c.collection_id = COALESCE(r_rec.col_id, r_tag.col_id)
+                WHERE (t.assigner_id = " . Auth::getUserLoggedID() . " OR t.assignee_id = " . Auth::getUserLoggedID() . ')';
+
+        $params = [];
+        if ($collectionId) {
+            $sql .= " AND c.collection_id = :collectionId ";
+            $params[':collectionId'] = $collectionId;
+        }
+        if ($recordingId) {
+            $sql .= " AND COALESCE(r_rec.recording_id, r_tag.recording_id) = :recordingId ";
+            $params[':recordingId'] = $recordingId;
+        }
+
+        if ($search) {
+            $sql .= " AND CONCAT(IFNULL(t.task_id,''), IFNULL(assigner.name,''), IFNULL(assignee.name,''), IFNULL(t.datetime,''), IFNULL(t.type,''), IFNULL(t.tag_id,''), IFNULL(t.recording_id,''), IFNULL(r_rec.name,''), IFNULL(r_tag.name,''), IFNULL(t.comment,''), IFNULL(t.status,'')) LIKE :search ";
+            $params[':search'] = '%' . $search . '%';
+        }
+        $this->database->prepareQuery($sql);
+        $result = $this->database->executeSelect($params);
+        return (int)($result[0]['count'] ?? 0);
+    }
+
+    public function getListByPage(string $start = '0', string $length = '8', ?string $search = null, string $column = '0', string $dir = 'asc', $collectionId = null, $recordingId = null): array
+    {
+        $arr = [];
+        $dir = ($dir === 'asc' || $dir === 'desc') ? $dir : 'asc';
+
+        $sql = "SELECT t.*, 
+                       assigner.name AS assigner, 
+                       assignee.name AS assignee, 
+                       COALESCE(r_rec.name, r_tag.name) as recording, 
+                       tag.min_time, tag.max_time, tag.min_freq, tag.max_freq, 
+                       COALESCE(r_rec.recording_id, r_tag.recording_id) as recording_id 
+                FROM task t  
+                LEFT JOIN user assigner ON assigner.user_id = t.assigner_id
+                LEFT JOIN user assignee ON assignee.user_id = t.assignee_id
+                LEFT JOIN tag ON tag.tag_id = t.tag_id AND t.type='tag'
+                LEFT JOIN recording r_rec ON r_rec.recording_id = t.recording_id AND t.type='recording'
+                LEFT JOIN recording r_tag ON r_tag.recording_id = tag.recording_id AND t.type='tag'
+                LEFT JOIN collection c ON c.collection_id = COALESCE(r_rec.col_id, r_tag.col_id)
+                WHERE (t.assigner_id = " . Auth::getUserLoggedID() . " OR t.assignee_id = " . Auth::getUserLoggedID() . ')';
+
+        $params = [
+            ':length' => $length,
+            ':start' => $start,
+        ];
+
+        if ($collectionId) {
+            $sql .= " AND c.collection_id = :collectionId ";
+            $params[':collectionId'] = $collectionId;
+        }
+        if ($recordingId) {
+            $sql .= " AND COALESCE(r_rec.recording_id, r_tag.recording_id) = :recordingId ";
+            $params[':recordingId'] = $recordingId;
+        }
+
+        if ($search) {
+            $sql .= " AND CONCAT(IFNULL(t.task_id,''), IFNULL(assigner.name,''), IFNULL(assignee.name,''), IFNULL(t.datetime,''), IFNULL(t.type,''), IFNULL(t.recording_id,''), IFNULL(t.tag_id,''), IFNULL(r_rec.name,''), IFNULL(r_tag.name,''), IFNULL(t.comment,''), IFNULL(t.status,'')) LIKE :search ";
+            $params[':search'] = '%' . $search . '%';
+        }
+
+        $a = ['t.task_id', 't.task_id', 't.type', 'recording', 't.recording_id', 't.tag_id', 'assigner.name', 'assignee.name', 't.status', 't.comment', 't.datetime'];
+
+        $sortColumn = $a[$column] ?? 't.datetime';
+
+        $sql .= " ORDER BY $sortColumn $dir LIMIT :length OFFSET :start ";
+        $this->database->prepareQuery($sql);
+        if ($search) {
+            $params[':search'] = '%' . $search . '%';
+        }
+        $result = $this->database->executeSelect($params);
+        if (count($result)) {
+            foreach ($result as $key => $value) {
+                $arr[$key][] = "<input type='checkbox' class='js-checkbox' data-id='$value[task_id]' data-tag='$value[tag_id]' data-recording='$value[recording_id]' data-type='$value[type]' data-assigner='$value[assigner_id]' data-assignee='$value[assignee_id]' data-status='$value[status]' name='cb[$value[task_id]]' id='cb[$value[task_id]]' data-tmin='$value[min_time]' data-tmax='$value[max_time]' data-fmin='$value[min_freq]' data-fmax='$value[max_freq]'>";
+                $arr[$key][] = $value['task_id'];
+                $arr[$key][] = $value['type'];
+                $arr[$key][] = $value['recording'];
+                $arr[$key][] = $value['recording_id'];
+                $arr[$key][] = $value['tag_id'];
+                $arr[$key][] = $value['assigner'];
+                $arr[$key][] = $value['assignee'];
+                $arr[$key][] = "<div class='" . ($value['status'] == 'assigned' ? 'text-danger' : 'text-success') . "'>$value[status]</div>";
+                $arr[$key][] = $value['comment'];
+                $arr[$key][] = $value['datetime'];
+            }
+        }
+        return $arr;
+    }
+
+    public function delete(string $id): void
+    {
+        $this->database->prepareQuery("DELETE FROM task WHERE task_id IN ($id)");
+        $this->database->executeDelete();
+    }
+
+    public function status($assigned_id, $assignee_id, $type, $state = 'reviewed')
+    {
+        $sql = $type == 'recording' ? 'recording_id' : 'tag_id';
+        $this->database->prepareQuery("UPDATE task SET status = :state WHERE $sql = :assigned_id AND assignee_id = :assignee_id AND `type` = :type");
+        $this->database->executeUpdate([':state' => $state, ':assigned_id' => $assigned_id, ':assignee_id' => $assignee_id, ':type' => $type]);
+    }
+}

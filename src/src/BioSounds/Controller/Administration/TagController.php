@@ -9,6 +9,7 @@ use BioSounds\Entity\Tag;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\ProjectProvider;
+use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\SoundProvider;
 use BioSounds\Provider\SoundTypeProvider;
 use BioSounds\Provider\TagProvider;
@@ -23,7 +24,7 @@ class TagController extends BaseController
      * @return string
      * @throws \Exception
      */
-    public function show(int $pId = null, int $cId = null)
+    public function show(int $pId = null, int $cId = null, int $rId = null)
     {
         if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
@@ -34,17 +35,24 @@ class TagController extends BaseController
         if (isset($_GET['colId'])) {
             $colId = $_GET['colId'];
         }
+        if (isset($_GET['recordingId'])) {
+            $rId = $_GET['recordingId'];
+        }
         if (!empty($pId)) {
             $projectId = $pId;
         }
         if (!empty($cId)) {
             $colId = $cId;
         }
+        if (!empty($rId)) {
+            $recordingId = $rId;
+        }
 
         $projects = (new ProjectProvider())->getWithPermission(Auth::getUserID(), 0);
         if (empty($projects)) {
             $projectId = null;
             $colId = null;
+            $recordingId = null;
         } else {
             if (empty($projectId)) {
                 $projectId = $projects[0]->getId();
@@ -53,43 +61,50 @@ class TagController extends BaseController
             if (empty($colId) && $collections) {
                 $colId = $collections[0]->getId();
             }
+            $recordings = (new RecordingProvider())->getHasTags($colId);
+            if (empty($recordingId)) {
+                $recordingId = 0;
+            }
         }
         $arr = [];
         $animal_sound_types = (new SoundTypeProvider())->getAllList();
         foreach ($animal_sound_types as $animal_sound_type) {
             $arr[$animal_sound_type->getTaxonClass() . $animal_sound_type->getTaxonOrder()][$animal_sound_type->getSoundTypeId()] = [$animal_sound_type->getSoundTypeId(), $animal_sound_type->getName()];
         }
-
         return $this->twig->render('administration/tags.html.twig', [
             'projectId' => $projectId,
             'projects' => $projects,
             'colId' => $colId,
             'collections' => $collections,
+            'recordingId' => $recordingId,
+            'recordings' => $recordings,
             'animal_sound_types' => $arr,
             'soundTypes' => (new SoundProvider())->getAll(),
-            'soundscape_components' => (new SoundProvider())->get(),
         ]);
     }
 
-    public function getListByPage($collectionId)
+    public function getListByPage($collectionId, $recordingId)
     {
         if ($collectionId == null) {
             $collectionId = 0;
         }
-        $total = count((new TagProvider())->getTag($collectionId));
+        if ($recordingId == null) {
+            $recordingId = 0;
+        }
+        $total = count((new TagProvider())->getTag($collectionId, $recordingId));
         $start = $_POST['start'];
         $length = $_POST['length'];
         $search = $_POST['search']['value'];
         $column = $_POST['order'][0]['column'];
         $dir = $_POST['order'][0]['dir'];
-        $data = (new TagProvider())->getListByPage($collectionId, $start, $length, $search, $column, $dir);
+        $data = (new TagProvider())->getListByPage($collectionId, $recordingId, $start, $length, $search, $column, $dir);
         if (count($data) == 0) {
             $data = [];
         }
         $result = [
             'draw' => $_POST['draw'],
             'recordsTotal' => $total,
-            'recordsFiltered' => (new TagProvider())->getFilterCount($collectionId, $search),
+            'recordsFiltered' => (new TagProvider())->getFilterCount($collectionId, $recordingId, $search),
             'data' => $data,
         ];
         return json_encode($result);
@@ -98,7 +113,7 @@ class TagController extends BaseController
     /**
      * @throws \Exception
      */
-    public function export($collection_id)
+    public function export($collection_id, $recording_id)
     {
         if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
@@ -122,7 +137,7 @@ class TagController extends BaseController
         array_splice($colArr, 21, 0, 'animal sound type');
 
         $Als[] = $colArr;
-        $List = (new TagProvider())->getTag($collection_id);
+        $List = (new TagProvider())->getTag($collection_id, $recording_id);
         foreach ($List as $Item) {
             unset($Item['TaxonOrder']);
             unset($Item['TaxonClass']);

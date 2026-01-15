@@ -236,6 +236,16 @@ div .inline {
     margin-left: 0;
 }
 
+.player-line::before {
+    position: absolute;
+    content: "";
+    top: 0;
+    bottom: 0;
+    left: -8px;
+    right: -8px;
+    cursor: ew-resize;
+}
+
 .timescale {
     width: 950px;
 }
@@ -406,10 +416,6 @@ div .active a {
 
 .project-logo > img:not(:last-child) {
     margin-right: 3em;
-}
-
-.recording-navigation {
-    margin-top: 1.2em;
 }
 
 #modal-div .modal-dialog {
@@ -1532,7 +1538,7 @@ li {
     scrollbar-width: none;
 }
 
-.js-open-aa-modal .png-ruler  {
+.js-open-aa-modal .png-ruler {
     width: 18px;
     content: url("../webfonts/ruler.png");
 }
@@ -1643,3 +1649,6 @@ li {
     font-size: 16px;
 }
 
+.fixed-top {
+    z-index: 99999;
+}

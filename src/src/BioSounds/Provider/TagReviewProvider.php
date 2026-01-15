@@ -13,7 +13,7 @@ class TagReviewProvider extends AbstractProvider
 {
     const TABLE_NAME = "tag_review";
 
-    public function getReview(string $collectionId): array
+    public function getReview(string $collectionId, string $recordingId = ''): array
     {
         $sql = "SELECT tr.*,r.recording_id,r.`name` AS recording,u.`name` AS username,trs.`name` as state,s.binomial as specie FROM tag_review tr 
                 LEFT JOIN tag t ON t.tag_id = tr.tag_id 
@@ -24,11 +24,14 @@ class TagReviewProvider extends AbstractProvider
         if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
             $sql .= " AND tr.user_id = " . Auth::getUserID();
         }
+        if ($recordingId) {
+            $sql .= " AND r.recording_id = $recordingId";
+        }
         $this->database->prepareQuery($sql);
         return $this->database->executeSelect();
     }
 
-    public function getFilterCount(string $collectionId, string $search): int
+    public function getFilterCount(string $collectionId, string $recordingId, string $search): int
     {
         $sql = "SELECT tr.*,r.`name` AS recording,u.`name` AS username,trs.`name` as state,s.binomial as specie FROM tag_review tr 
                 LEFT JOIN tag t ON t.tag_id = tr.tag_id 
@@ -39,8 +42,11 @@ class TagReviewProvider extends AbstractProvider
         if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
             $sql .= " AND tr.user_id = " . Auth::getUserID();
         }
+        if ($recordingId) {
+            $sql .= " AND r.recording_id = $recordingId";
+        }
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(tr.tag_id,''), IFNULL(r.`name`,''), IFNULL(u.`name`,''), IFNULL(trs.`name`,''), IFNULL(s.binomial,''), IFNULL(tr.note,'')) LIKE '%$search%' ";
+            $sql .= " AND CONCAT(IFNULL(tr.tag_id,''), IFNULL(r.`name`,''), IFNULL(u.`name`,''), IFNULL(trs.`name`,''), IFNULL(s.binomial,''), IFNULL(tr.note,''), IFNULL(tr.creation_date,'')) LIKE '%$search%' ";
         }
         $this->database->prepareQuery($sql);
         $count = count($this->database->executeSelect());
@@ -54,7 +60,7 @@ class TagReviewProvider extends AbstractProvider
         return $this->database->executeSelect();
     }
 
-    public function getListByPage(string $collectionId, string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
+    public function getListByPage(string $collectionId, string $recordingId, string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
     {
         $arr = [];
         $sql = "SELECT tr.*,t.species_id AS tag_species,t.min_time,t.max_time,t.min_freq,t.max_freq,r.`name` AS recording,r.recording_id,u.`name` AS username,trs.`name` as state,s.binomial as specie FROM tag_review tr 
@@ -66,15 +72,14 @@ class TagReviewProvider extends AbstractProvider
         if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
             $sql .= " AND tr.user_id = " . Auth::getUserID();
         }
+        if ($recordingId) {
+            $sql .= " AND r.recording_id = $recordingId";
+        }
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(tr.tag_id,''), IFNULL(r.`name`,''), IFNULL(u.`name`,''), IFNULL(trs.`name`,''), IFNULL(s.binomial,''), IFNULL(tr.note,'')) LIKE '%$search%' ";
+            $sql .= " AND CONCAT(IFNULL(tr.tag_id,''), IFNULL(r.`name`,''), IFNULL(u.`name`,''), IFNULL(trs.`name`,''), IFNULL(s.binomial,''), IFNULL(tr.note,''), IFNULL(tr.creation_date,'')) LIKE '%$search%' ";
         }
-        $a = ['', 't.tag_id', 'r.`name`', 'u.`name`', 'trs.`name`', 's.binomial', 'tr.note'];
-        $sql .= " ORDER BY $a[$column] $dir";
-        // Only add LIMIT if length is not -1 (DataTables "All" option sends -1)
-        if ($length != '-1') {
-            $sql .= " LIMIT $length OFFSET $start";
-        }
+        $a = ['', 't.tag_id', 'r.`name`', 'u.`name`', 'trs.`name`', 's.binomial', 'tr.note', 'tr.creation_date'];
+        $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
         $status = $this->getStatus();
