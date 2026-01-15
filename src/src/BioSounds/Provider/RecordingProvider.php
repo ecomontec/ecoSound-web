@@ -435,6 +435,10 @@ class RecordingProvider extends AbstractProvider
             ':start' => (int)$start,
             ':length' => (int)$length,
         ];
+        if ($length != '-1') {
+            $params[':start'] = (int)$start;
+            $params[':length'] = (int)$length;
+        }
         if ($search) {
             $params[':search'] = '%' . $search . '%';
         }
@@ -559,3 +563,4 @@ class RecordingProvider extends AbstractProvider
         return $arr;
     }
 }
+
