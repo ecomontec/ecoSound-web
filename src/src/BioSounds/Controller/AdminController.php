@@ -265,8 +265,8 @@ class AdminController extends BaseController
      * @param int|null $id
      * @return mixed
      */
-    public function taskMgr(string $action, int $id = null)
+    public function taskMgr(string $action, int $id = null, string $str = '0')
     {
-        return (new TaskController($this->twig))->$action($id);
+        return (new TaskController($this->twig))->$action($id, $str);
     }
 }

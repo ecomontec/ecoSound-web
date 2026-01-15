@@ -4,7 +4,37 @@
     <div class="card mb-3" id="tasksList">
         <div class="card-header border-light bg-white text-right">
             <div class="form-inline">
-                <div class="col-12 form-inline justify-content-end">
+                <form id="collectionForm" class="form-inline col-8" action="{{ baseUrl }}/admin/tasks">
+                    <label for="projectId">Project</label>
+                    <select id="projectId" name="projectId" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
+                        {% for project in projects %}
+                            <option value="{{ project.id }}" {{ project.id == projectId ? 'selected' }} {{ project.collection is null ?"disabled" }}>
+                                {{ project.name }}{{ project.collection is null ?" (No Data)" }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <label for="colId" class="ml-3">Collection</label>
+                    <select id="colId" name="colId" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
+                        {% for collection in collections %}
+                            <option value="{{ collection.id }}" {{ collection.id == colId ? 'selected' }}>
+                                {{ collection.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <label for="recordingId" class="ml-3">Recording</label>
+                    <select id="recordingId" name="recordingId" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
+                        <option></option>
+                        {% for recording in recordings %}
+                            <option value="{{ recording.recording_id }}" {{ recording.recording_id == recordingId ? 'selected' }}>
+                                {{ recording.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </form>
+
+                <div class="col-4 form-inline justify-content-end">
                     <label class="mr-2">Search:</label>
                     <input class="form-control-sm" id="search">
                 </div>
@@ -83,7 +113,7 @@
                 "processing": true,
                 "serverSide": true,
                 "ajax": {
-                    "url": '{{ baseUrl }}/admin/taskMgr/getListByPage',
+                    "url": '{{ baseUrl }}/admin/taskMgr/getListByPage/{{ colId|default(0) }}/{{ recordingId|default(0) }}',
                     "type": 'POST',
                     "error": function (xhr, error, thrown) {
                         if (xhr.status == 400 || xhr.status == 404 || xhr.status == 500) {
@@ -92,7 +122,6 @@
                     }
                 },
                 "dom": 'lrtip',
-                "stateSave": true,
                 "StateDuration": -1,
                 "order": [[1, 'asc']],
                 "columnDefs": [
@@ -118,9 +147,20 @@
         $(function () {
             'use strict';
             $(document).on('click', '#tasksExport', function () {
-                window.location.href = '{{ baseUrl }}/api/admin/taskMgr/export';
+                window.location.href = '{{ baseUrl }}/api/admin/taskMgr/export/{{ colId|default(0) }}/{{ recordingId|default(0) }}';
             });
-
+            $('#projectId').change(function () {
+                $('#colId').val("")
+                $('#recordingId').val("")
+                $("#collectionForm").submit();
+            });
+            $('#colId').change(function () {
+                $('#recordingId').val("")
+                $("#collectionForm").submit();
+            });
+            $('#recordingId').change(function () {
+                $("#collectionForm").submit();
+            });
             $('button[name="table-btn"][data-target="#task"]').click(function (e) {
                 $('.js-checkbox:checked').each(function () {
                     if ($(this).data('status') != 'assigned') {

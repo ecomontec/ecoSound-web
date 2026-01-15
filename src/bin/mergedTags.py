@@ -29,10 +29,8 @@ def merge_tags(tags, unknown_id, model, max_gap=0, keep_only_merged=True):
         confs = [float(t["confidence"]) for t in buffer]
         base["confidence"] = round(mean(confs), 4)
         comments = [t["comments"] for t in buffer]
-        base["comments"] = (
-                f"{comments[0]}, merged {len(buffer)} {model} tags with confidence scores: "
-                + ", ".join(str(round(c, 4)) for c in confs)
-        )
+        merge_info = f"merged {len(buffer)} {model} tags with confidence scores: " + ", ".join(str(round(c, 4)) for c in confs)
+        base["comments"] = f"{comments[0]}, {merge_info}" if comments[0] else merge_info
         base["_merged"] = True
         return base
 

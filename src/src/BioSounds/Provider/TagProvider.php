@@ -367,7 +367,7 @@ class TagProvider extends AbstractProvider
 
     public function getFilterCount(string $collectionId, string $recordingId, string $search): int
     {
-        $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass FROM tag t 
+        $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.family AS TaxonFamily,s.genus AS TaxonGenus,s.class AS TaxonClass FROM tag t 
             INNER JOIN recording r ON r.recording_id = t.recording_id
             LEFT JOIN species s ON s.species_id = t.species_id
             LEFT JOIN collection c ON c.collection_id = r.col_id
@@ -382,7 +382,7 @@ class TagProvider extends AbstractProvider
             $sql .= " AND r.recording_id = $recordingId";
         }
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(t.tag_id,''), IFNULL(sound.soundscape_component,''), IFNULL(sound.sound_type,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(t.creator_type,''), IFNULL(t.confidence,''), IFNULL(t.min_time,''), IFNULL(t.max_time,''), IFNULL(t.min_freq,''), IFNULL(t.max_freq,''), IFNULL(s.binomial,''), IFNULL(t.sound_distance_m,''), IFNULL(t.individuals,''), IFNULL(st.name,''), IFNULL(t.comments,''), IFNULL(t.creation_date,'')) LIKE '%$search%' ";
+            $sql .= " AND CONCAT(IFNULL(t.tag_id,''), IFNULL(sound.soundscape_component,''), IFNULL(sound.sound_type,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(t.creator_type,''), IFNULL(t.confidence,''), IFNULL(t.min_time,''), IFNULL(t.max_time,''), IFNULL(t.min_freq,''), IFNULL(t.max_freq,''), IFNULL(s.binomial,''), IFNULL(s.taxon_order,''), IFNULL(s.family,''), IFNULL(s.genus,''), IFNULL(t.sound_distance_m,''), IFNULL(t.individuals,''), IFNULL(st.name,''), IFNULL(t.comments,''), IFNULL(t.creation_date,'')) LIKE '%$search%' ";
         }
         $sql .= " GROUP BY t.tag_id";
         $this->database->prepareQuery($sql);
@@ -393,7 +393,7 @@ class TagProvider extends AbstractProvider
     public function getListByPage(string $collectionId, string $recordingId, string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
     {
         $arr = [];
-        $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass FROM tag t 
+        $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.family AS TaxonFamily,s.genus AS TaxonGenus,s.class AS TaxonClass FROM tag t 
             INNER JOIN recording r ON r.recording_id = t.recording_id
             LEFT JOIN species s ON s.species_id = t.species_id
             LEFT JOIN collection c ON c.collection_id = r.col_id
@@ -408,15 +408,11 @@ class TagProvider extends AbstractProvider
             $sql .= " AND r.recording_id = $recordingId";
         }
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(t.tag_id,''), IFNULL(sound.soundscape_component,''), IFNULL(sound.sound_type,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(t.creator_type,''), IFNULL(t.confidence,''), IFNULL(t.min_time,''), IFNULL(t.max_time,''), IFNULL(t.min_freq,''), IFNULL(t.max_freq,''), IFNULL(s.binomial,''), IFNULL(t.sound_distance_m,''), IFNULL(t.individuals,''), IFNULL(st.name,''), IFNULL(t.comments,''), IFNULL(t.creation_date,'')) LIKE '%$search%' ";
+            $sql .= " AND CONCAT(IFNULL(t.tag_id,''), IFNULL(sound.soundscape_component,''), IFNULL(sound.sound_type,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(t.creator_type,''), IFNULL(t.confidence,''), IFNULL(t.min_time,''), IFNULL(t.max_time,''), IFNULL(t.min_freq,''), IFNULL(t.max_freq,''), IFNULL(s.binomial,''), IFNULL(s.taxon_order,''), IFNULL(s.family,''), IFNULL(s.genus,''), IFNULL(t.sound_distance_m,''), IFNULL(t.individuals,''), IFNULL(st.name,''), IFNULL(t.comments,''), IFNULL(t.creation_date,'')) LIKE '%$search%' ";
         }
         $sql .= " GROUP BY t.tag_id";
-        $a = ['', 't.tag_id', 'sound.soundscape_component', 'sound.sound_type', 'r.name', 'u.name', 't.creator_type', 't.confidence', 't.min_time', 't.max_time', 't.min_freq', 't.max_freq', 's.binomial', 't.uncertain', 't.sound_distance_m', 't.distance_not_estimable', 't.individuals', 'st.name', 'reference_call', 't.comments', 't.creation_date'];
-        $sql .= " ORDER BY $a[$column] $dir";
-        // Only add LIMIT if length is not -1 (DataTables "All" option sends -1)
-        if ($length != '-1') {
-            $sql .= " LIMIT $length OFFSET $start";
-        }
+        $a = ['', 't.tag_id', 'sound.soundscape_component', 'sound.sound_type', 'r.name', 'u.name', 't.creator_type', 't.confidence', 't.min_time', 't.max_time', 't.min_freq', 't.max_freq', 's.binomial', 's.taxon_order', 's.family', 's.genus', 't.uncertain', 't.sound_distance_m', 't.distance_not_estimable', 't.individuals', 'st.name', 'reference_call', 't.comments', 't.creation_date'];
+        $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
         $soundscape_components = (new SoundProvider())->get();
@@ -452,6 +448,9 @@ class TagProvider extends AbstractProvider
                 $arr[$key][] = "<input type='number' class='form-control form-control-sm' style='width:75px;' name='min_freq' maxlength='100' value='$value[min_freq]'>";
                 $arr[$key][] = "<input type='number' class='form-control form-control-sm' style='width:75px;' name='max_freq' maxlength='100' value='$value[max_freq]'>";
                 $arr[$key][] = "<input class='soundscape_component_$value[tag_id] form-control form-control-sm js-species-autocomplete' type='text' id='speciesName_$value[tag_id]' style='width:150px;' data-type='edit' size='30' value='$value[speciesName]'" . ($value['soundscape_component'] != 'biophony' ? 'hidden' : '') . "><div class='invalid-feedback'>Please select a species from the list.</div>";
+                $arr[$key][] = "<div id='order$value[tag_id]'>$value[TaxonOrder]</div>";
+                $arr[$key][] = "<div id='family$value[tag_id]'>$value[TaxonFamily]</div>";
+                $arr[$key][] = "<div id='genus$value[tag_id]'>$value[TaxonGenus]</div>";
                 $arr[$key][] = "<input class='soundscape_component_$value[tag_id]' name='uncertain' type='checkbox' " . ($value['uncertain'] ? 'checked' : '') . ($value['soundscape_component'] != 'biophony' ? 'hidden' : '') . ">";
                 $arr[$key][] = "<input class='soundscape_component_$value[tag_id] form-control form-control-sm' name='sound_distance_m' type='number' id='sound_distance_m$value[tag_id]' style='width:75px;' maxlength='100' value='$value[sound_distance_m]' " . ($value['distance_not_estimable'] ? 'readonly' : '') . ($value['soundscape_component'] != 'biophony' ? 'hidden' : '') . ">";
                 $arr[$key][] = "<input class='soundscape_component_$value[tag_id]' name='distance_not_estimable' type='checkbox' id='distance_not_estimable_$value[tag_id]' " . ($value['distance_not_estimable'] ? 'checked' : '') . ($value['soundscape_component'] != 'biophony' ? 'hidden' : '') . ">";
@@ -483,12 +482,12 @@ class TagProvider extends AbstractProvider
             LEFT JOIN user u ON u.user_id = t.user_id
             LEFT JOIN sound ON sound.sound_id = t.sound_id
             LEFT JOIN sound_type st ON st.sound_type_id = t.animal_sound_type WHERE c.collection_id = :collectionId 
-            AND min_time <= :maxTime 
-            AND max_time >= :minTime 
-            AND min_freq <= :maxFrequency 
-            AND max_freq >= :minFrequency ";
+            AND min_time < :maxTime 
+            AND max_time > :minTime 
+            AND min_freq < :maxFrequency 
+            AND max_freq > :minFrequency ";
         if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
-            $sql .= " AND (t.user_id = " . Auth::getUserID() . ' OR c.public_tags = 1) ';
+            $sql .= " AND (t.user_id = " . Auth::getUserID() . " OR c.public_tags = 1 OR t.tag_id IN (SELECT tag_id FROM task WHERE assignee_id = " . Auth::getUserID() . " AND type = 'tag')) ";
         }
         if ($recordingId) {
             $sql .= " AND r.recording_id = :recordingId";
@@ -507,7 +506,7 @@ class TagProvider extends AbstractProvider
 
     public function getViewFilterCount(string $collectionId, string $recordingId, string $minTime, string $maxTime, string $minFrequency, string $maxFrequency, string $search): int
     {
-        $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass FROM tag t 
+        $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.family AS TaxonFamily,s.genus AS TaxonGenus,s.class AS TaxonClass FROM tag t 
             INNER JOIN recording r ON r.recording_id = t.recording_id
             LEFT JOIN species s ON s.species_id = t.species_id
             LEFT JOIN collection c ON c.collection_id = r.col_id
@@ -515,18 +514,18 @@ class TagProvider extends AbstractProvider
             LEFT JOIN sound ON sound.sound_id = t.sound_id
             LEFT JOIN sound_type st ON st.sound_type_id = t.animal_sound_type 
             WHERE c.collection_id = :collectionId 
-            AND min_time <= :maxTime 
-            AND max_time >= :minTime 
-            AND min_freq <= :maxFrequency 
-            AND max_freq >= :minFrequency ";
+            AND min_time < :maxTime 
+            AND max_time > :minTime 
+            AND min_freq < :maxFrequency 
+            AND max_freq > :minFrequency ";
         if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
-            $sql .= " AND (t.user_id = " . Auth::getUserID() . ' OR c.public_tags = 1) ';
+            $sql .= " AND (t.user_id = " . Auth::getUserID() . " OR c.public_tags = 1 OR t.tag_id IN (SELECT tag_id FROM task WHERE assignee_id = " . Auth::getUserID() . " AND type = 'tag')) ";
         }
         if ($recordingId) {
             $sql .= " AND r.recording_id = :recordingId";
         }
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(t.tag_id,''), IFNULL(sound.soundscape_component,''), IFNULL(sound.sound_type,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(t.creator_type,''), IFNULL(t.confidence,''), IFNULL(t.min_time,''), IFNULL(t.max_time,''), IFNULL(t.min_freq,''), IFNULL(t.max_freq,''), IFNULL(s.binomial,''), IFNULL(t.sound_distance_m,''), IFNULL(t.individuals,''), IFNULL(st.name,''), IFNULL(t.comments,''), IFNULL(t.creation_date,'')) LIKE '%$search%' ";
+            $sql .= " AND CONCAT(IFNULL(t.tag_id,''), IFNULL(sound.soundscape_component,''), IFNULL(sound.sound_type,''), IFNULL(u.name,''), IFNULL(t.creator_type,''), IFNULL(t.confidence,''), IFNULL(t.min_time,''), IFNULL(t.max_time,''), IFNULL(t.min_freq,''), IFNULL(t.max_freq,''), IFNULL(s.binomial,''), IFNULL(s.taxon_order,''), IFNULL(s.family,''), IFNULL(s.genus,''), IFNULL(t.sound_distance_m,''), IFNULL(t.individuals,''), IFNULL(st.name,''), IFNULL(t.comments,''), IFNULL(t.creation_date,'')) LIKE '%$search%' ";
         }
         $sql .= " GROUP BY t.tag_id";
         $this->database->prepareQuery($sql);
@@ -544,7 +543,7 @@ class TagProvider extends AbstractProvider
     public function getViewListByPage(string $collectionId, string $recordingId, string $minTime, string $maxTime, string $minFrequency, string $maxFrequency, string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
     {
         $arr = [];
-        $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.class AS TaxonClass,u.user_id FROM tag t 
+        $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.family AS TaxonFamily,s.genus AS TaxonGenus,s.class AS TaxonClass,u.user_id FROM tag t 
             INNER JOIN recording r ON r.recording_id = t.recording_id
             LEFT JOIN species s ON s.species_id = t.species_id
             LEFT JOIN collection c ON c.collection_id = r.col_id
@@ -563,10 +562,10 @@ class TagProvider extends AbstractProvider
             $sql .= " AND r.recording_id = :recordingId";
         }
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(t.tag_id,''), IFNULL(sound.soundscape_component,''), IFNULL(sound.sound_type,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(t.creator_type,''), IFNULL(t.confidence,''), IFNULL(t.min_time,''), IFNULL(t.max_time,''), IFNULL(t.min_freq,''), IFNULL(t.max_freq,''), IFNULL(s.binomial,''), IFNULL(t.sound_distance_m,''), IFNULL(t.individuals,''), IFNULL(st.name,''), IFNULL(t.comments,''), IFNULL(t.creation_date,'')) LIKE '%$search%' ";
+            $sql .= " AND CONCAT(IFNULL(t.tag_id,''), IFNULL(sound.soundscape_component,''), IFNULL(sound.sound_type,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(t.creator_type,''), IFNULL(t.confidence,''), IFNULL(t.min_time,''), IFNULL(t.max_time,''), IFNULL(t.min_freq,''), IFNULL(t.max_freq,''), IFNULL(s.binomial,''), IFNULL(s.taxon_order,''), IFNULL(s.family,''), IFNULL(s.genus,''), IFNULL(t.sound_distance_m,''), IFNULL(t.individuals,''), IFNULL(st.name,''), IFNULL(t.comments,''), IFNULL(t.creation_date,'')) LIKE '%$search%' ";
         }
         $sql .= " GROUP BY t.tag_id";
-        $a = ['', 't.tag_id', 'sound.soundscape_component', 'sound.sound_type', 'r.name', 'u.name', 't.creator_type', 't.confidence', 't.min_time', 't.max_time', 't.min_freq', 't.max_freq', 's.binomial', 't.uncertain', 't.sound_distance_m', 't.distance_not_estimable', 't.individuals', 'st.name', 'reference_call', 't.comments', 't.creation_date'];
+        $a = ['', 't.tag_id', 'sound.soundscape_component', 'sound.sound_type', 'r.name', 'u.name', 't.creator_type', 't.confidence', 't.min_time', 't.max_time', 't.min_freq', 't.max_freq', 's.binomial', 's.taxon_order', 's.family', 's.genus', 't.uncertain', 't.sound_distance_m', 't.distance_not_estimable', 't.individuals', 'st.name', 'reference_call', 't.comments', 't.creation_date'];
         $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect([
@@ -633,6 +632,9 @@ class TagProvider extends AbstractProvider
                     $arr[$key][] = "<input type='number' class='form-control form-control-sm' style='width:75px;' name='min_freq' maxlength='100' value='$value[min_freq]'>";
                     $arr[$key][] = "<input type='number' class='form-control form-control-sm' style='width:75px;' name='max_freq' maxlength='100' value='$value[max_freq]'>";
                     $arr[$key][] = "<input class='soundscape_component_$value[tag_id] form-control form-control-sm js-species-autocomplete' type='text' id='speciesName_$value[tag_id]' style='width:150px;' data-type='edit' size='30' value='$value[speciesName]'" . ($value['soundscape_component'] != 'biophony' ? 'hidden' : '') . "><div class='invalid-feedback'>Please select a species from the list.</div>";
+                    $arr[$key][] = "<div id='order$value[tag_id]'>$value[TaxonOrder]</div>";
+                    $arr[$key][] = "<div id='family$value[tag_id]'>$value[TaxonFamily]</div>";
+                    $arr[$key][] = "<div id='genus$value[tag_id]'>$value[TaxonGenus]</div>";
                     $arr[$key][] = "<input class='soundscape_component_$value[tag_id]' name='uncertain' type='checkbox' " . ($value['uncertain'] ? 'checked' : '') . ($value['soundscape_component'] != 'biophony' ? 'hidden' : '') . ">";
                     $arr[$key][] = "<input class='soundscape_component_$value[tag_id] form-control form-control-sm' name='sound_distance_m' type='number' id='sound_distance_m$value[tag_id]' style='width:75px;' maxlength='100' value='$value[sound_distance_m]' " . ($value['distance_not_estimable'] ? 'readonly' : '') . ($value['soundscape_component'] != 'biophony' ? 'hidden' : '') . ">";
                     $arr[$key][] = "<input class='soundscape_component_$value[tag_id]' name='distance_not_estimable' type='checkbox' id='distance_not_estimable_$value[tag_id]' " . ($value['distance_not_estimable'] ? 'checked' : '') . ($value['soundscape_component'] != 'biophony' ? 'hidden' : '') . ">";
@@ -650,7 +652,7 @@ class TagProvider extends AbstractProvider
     public function getRecrdingViewListByPage(string $collectionId, string $recordingId, string $minTime, string $maxTime, string $minFrequency, string $maxFrequency, string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
     {
         $arr = [];
-        $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.family AS TaxonFamily,s.genus AS TaxonGenus,u.user_id FROM tag t 
+        $sql = "SELECT t.*,sound.soundscape_component,sound.sound_type,s.binomial AS speciesName,r.`name` AS recordingName,u.`name` AS userName,st.`name` AS typeName,s.taxon_order AS TaxonOrder,s.family AS TaxonFamily,s.genus AS TaxonGenus,s.class AS TaxonClass,u.user_id FROM tag t 
             INNER JOIN recording r ON r.recording_id = t.recording_id
             LEFT JOIN species s ON s.species_id = t.species_id
             LEFT JOIN collection c ON c.collection_id = r.col_id
@@ -658,26 +660,24 @@ class TagProvider extends AbstractProvider
             LEFT JOIN sound ON sound.sound_id = t.sound_id
             LEFT JOIN sound_type st ON st.sound_type_id = t.animal_sound_type 
             WHERE c.collection_id = :collectionId 
-            AND min_time <= :maxTime 
-            AND max_time >= :minTime 
-            AND min_freq <= :maxFrequency 
-            AND max_freq >= :minFrequency ";
+            AND min_time < :maxTime 
+            AND max_time > :minTime 
+            AND min_freq < :maxFrequency 
+            AND max_freq > :minFrequency ";
         if (!(new User())->isManage($_SESSION['user_id'], $collectionId)) {
-            $sql .= " AND (t.user_id = " . Auth::getUserID() . ' OR c.public_tags = 1) ';
+            $sql .= " AND (t.user_id = " . Auth::getUserID() . " OR c.public_tags = 1 OR t.tag_id IN (SELECT tag_id FROM task WHERE assignee_id = " . Auth::getUserID() . " AND type = 'tag')) ";
         }
         if ($recordingId) {
             $sql .= " AND r.recording_id = :recordingId";
         }
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(t.tag_id,''), IFNULL(sound.soundscape_component,''), IFNULL(sound.sound_type,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(t.creator_type,''), IFNULL(t.confidence,''), IFNULL(t.min_time,''), IFNULL(t.max_time,''), IFNULL(t.min_freq,''), IFNULL(t.max_freq,''), IFNULL(s.binomial,''), IFNULL(t.sound_distance_m,''), IFNULL(t.individuals,''), IFNULL(st.name,''), IFNULL(t.comments,''), IFNULL(t.creation_date,'')) LIKE '%$search%' ";
+            $sql .= " AND CONCAT(IFNULL(t.tag_id,''), IFNULL(sound.soundscape_component,''), IFNULL(sound.sound_type,''), IFNULL(u.name,''), IFNULL(t.creator_type,''), IFNULL(t.confidence,''), IFNULL(t.min_time,''), IFNULL(t.max_time,''), IFNULL(t.min_freq,''), IFNULL(t.max_freq,''), IFNULL(s.binomial,''), IFNULL(s.taxon_order,''), IFNULL(s.family,''), IFNULL(s.genus,''), IFNULL(t.sound_distance_m,''), IFNULL(t.individuals,''), IFNULL(st.name,''), IFNULL(t.comments,''), IFNULL(t.creation_date,'')) LIKE '%$search%' ";
         }
         $sql .= " GROUP BY t.tag_id";
-        $a = ['', 't.tag_id', 'sound.soundscape_component', 'sound.sound_type', 'u.name', 't.creator_type', 't.confidence', 't.min_time', 't.max_time', 't.min_freq', 't.max_freq', 's.binomial', 's.taxon_order', 's.family', 's.genus', 't.uncertain', 't.sound_distance_m', 't.distance_not_estimable', 't.individuals', 'st.sound_type', 't.reference_call', 't.comments', 't.creation_date'];
-        $sql .= " ORDER BY $a[$column] $dir";
-        // Only add LIMIT if length is not -1 (DataTables "All" option sends -1)
-        if ($length != '-1') {
-            $sql .= " LIMIT $length OFFSET $start";
-        }
+        // Fixed: Removed r.name from column 4 as it is not in the frontend table.
+        // Columns matched: 0:Check, 1:ID, 2:Component, 3:Type, 4:User, 5:Creator, 6:Conf, 7:Start, 8:End, 9:MinF, 10:MaxF, 11:Species, 12:Order, 13:Family, 14:Genus ...
+        $a = ['', 't.tag_id', 'sound.soundscape_component', 'sound.sound_type', 'u.name', 't.creator_type', 't.confidence', 't.min_time', 't.max_time', 't.min_freq', 't.max_freq', 's.binomial', 's.taxon_order', 's.family', 's.genus', 't.uncertain', 't.sound_distance_m', 't.distance_not_estimable', 't.individuals', 'st.name', 'reference_call', 't.comments', 't.creation_date'];
+        $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect([
             ':collectionId' => $collectionId,
