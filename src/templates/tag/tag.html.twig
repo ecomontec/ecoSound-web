@@ -2,7 +2,13 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Tag {{ tag.id }} for recording {% if recordingName|length > 50 %} {{ recordingName|slice(0, 50) ~ '...' }} {% else %} {{ recordingName }} {% endif %} (ID {{ tag.recording }})</h5>
+                <h5 class="modal-title">Tag {{ tag.id }} for recording {% if recordingName|length > 50 %} {{ recordingName|slice(0, 50) ~ '...' }} {% else %} {{ recordingName }} {% endif %} (ID {{ tag.recording }})
+                    {% if hasTaskAssignment %}
+                        <span class="badge badge-info ml-2" title="This tag is assigned to you as a task">
+                            <i class="fas fa-tasks"></i> Task
+                        </span>
+                    {% endif %}
+                </h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times</span></button>
             </div>
             <div class="modal-body">
@@ -55,20 +61,27 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="col-form-label-sm" for="min_time">Time </label>
-                                <div class="form-inline">
-                                    <input id="min_time" class="form-control form-control-sm mr-2 ml-1" name="min_time" type="text" maxlength="100" value="{{ tag.minTime }}"> -
-                                    <input id="max_time" class="form-control form-control-sm ml-2 mr-2" name="max_time" type="text" maxlength="100" value="{{ tag.maxTime }}">
-                                    <label class="col-form-label-sm" for="max_time">sec</label>
-                                </div>
-                            </div>
+                                <button class="btn btn-link btn-sm p-0" type="button" id="timeFreqToggle" aria-expanded="true" aria-controls="timeFreqCollapse">
+                                    <i class="fas fa-chevron-down"></i> Time & Frequency
+                                </button>
+                                <div id="timeFreqCollapse" style="display: block;">
+                                    <div class="form-group mt-2">
+                                        <label class="col-form-label-sm" for="min_time">Time </label>
+                                        <div class="form-inline">
+                                            <input id="min_time" class="form-control form-control-sm mr-2 ml-1" name="min_time" type="text" maxlength="100" value="{{ tag.minTime }}"> -
+                                            <input id="max_time" class="form-control form-control-sm ml-2 mr-2" name="max_time" type="text" maxlength="100" value="{{ tag.maxTime }}">
+                                            <label class="col-form-label-sm" for="max_time">sec</label>
+                                        </div>
+                                    </div>
 
-                            <div class="form-group">
-                                <label class="col-form-label-sm" for="min_freq">Frequency </label>
-                                <div class="form-inline">
-                                    <input id="min_freq" class="form-control form-control-sm mr-2 ml-1" name="min_freq" type="text" maxlength="100" value="{{ tag.minFrequency }}"> -
-                                    <input id="max_freq" class="form-control form-control-sm ml-2 mr-2" name="max_freq" type="text" maxlength="100" value="{{ tag.maxFrequency }}">
-                                    <label class="col-form-label-sm" for="max_freq">Hz</label>
+                                    <div class="form-group">
+                                        <label class="col-form-label-sm" for="min_freq">Frequency </label>
+                                        <div class="form-inline">
+                                            <input id="min_freq" class="form-control form-control-sm mr-2 ml-1" name="min_freq" type="text" maxlength="100" value="{{ tag.minFrequency }}"> -
+                                            <input id="max_freq" class="form-control form-control-sm ml-2 mr-2" name="max_freq" type="text" maxlength="100" value="{{ tag.maxFrequency }}">
+                                            <label class="col-form-label-sm" for="max_freq">Hz</label>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -267,6 +280,56 @@
             $('#callDistance').val($('#old_call_distance').val())
         }
     });
+    
+    // Function to restore collapse state
+    function restoreTimeFreqCollapseState() {
+        var timeFreqCollapseState = $.cookie('timeFreqCollapsed');
+        var isCollapsed = timeFreqCollapseState === 'true';
+        var $collapse = $('#timeFreqCollapse');
+        var $toggle = $('#timeFreqToggle');
+        
+        if (isCollapsed) {
+            $collapse.hide();
+            $toggle.attr('aria-expanded', 'false');
+            $toggle.find('i').removeClass('fa-chevron-down').addClass('fa-chevron-right');
+        } else {
+            $collapse.show();
+            $toggle.attr('aria-expanded', 'true');
+            $toggle.find('i').removeClass('fa-chevron-right').addClass('fa-chevron-down');
+        }
+    }
+    
+    // Restore state on initial load
+    restoreTimeFreqCollapseState();
+    
+    // Restore state when modal is shown (for next/previous tag navigation)
+    $("#modal-div").on('shown.bs.modal', function () {
+        restoreTimeFreqCollapseState();
+    });
+    
+    // Handle toggle click
+    $('#timeFreqToggle').on('click', function (e) {
+        e.preventDefault();
+        var $collapse = $('#timeFreqCollapse');
+        var $toggle = $(this);
+        var isCurrentlyShown = $collapse.is(':visible');
+        
+        if (isCurrentlyShown) {
+            $collapse.hide();
+            $toggle.attr('aria-expanded', 'false');
+            $toggle.find('i').removeClass('fa-chevron-down').addClass('fa-chevron-right');
+            if ($.cookie('cookieConsent') == 'accepted') {
+                $.cookie('timeFreqCollapsed', 'true', {path: '/', expires: 180, samesite: 'None'});
+            }
+        } else {
+            $collapse.show();
+            $toggle.attr('aria-expanded', 'true');
+            $toggle.find('i').removeClass('fa-chevron-right').addClass('fa-chevron-down');
+            if ($.cookie('cookieConsent') == 'accepted') {
+                $.cookie('timeFreqCollapsed', 'false', {path: '/', expires: 180, samesite: 'None'});
+            }
+        }
+    });
     $("#modal-div").draggable({
         handle: ".modal-header",
         drag: function () {
@@ -275,28 +338,32 @@
     });
     {% if next!=0 %}
     $('#btn-next').on('click', function (e) {
+        // Store the navigation parameters in the form before submission
         $("#x").val('{{ next.minTime }}');
         $("#w").val('{{ next.maxTime }}');
         $("#y").val('{{ next.minFrequency }}');
         $("#h").val('{{ next.maxFrequency }}');
         $("#open").val('{{ next.id }}');
-        $("#modalX").val($('#modal-div').offset().left)
-        $("#modalY").val($('#modal-div').offset().top)
-        $('#recordingForm').attr('action', "{{ baseUrl }}/recording/show/{{ next.recording }}")
+        $("#modalX").val($('#modal-div').offset().left);
+        $("#modalY").val($('#modal-div').offset().top);
+        // The type parameter is already in the form, just need to update the action
+        $('#recordingForm').attr('action', "{{ baseUrl }}/recording/show/{{ next.recording }}");
         $("#recordingForm").submit();
         e.preventDefault();
     })
     {% endif %}
     {% if previous!=0 %}
     $('#btn-previous').on('click', function (e) {
+        // Store the navigation parameters in the form before submission
         $("#x").val('{{ previous.minTime }}');
         $("#w").val('{{ previous.maxTime }}');
         $("#y").val('{{ previous.minFrequency }}');
         $("#h").val('{{ previous.maxFrequency }}');
         $("#open").val('{{ previous.id }}');
-        $("#modalX").val($('#modal-div').offset().left)
-        $("#modalY").val($('#modal-div').offset().top)
-        $('#recordingForm').attr('action', "{{ baseUrl }}/recording/show/{{ previous.recording }}")
+        $("#modalX").val($('#modal-div').offset().left);
+        $("#modalY").val($('#modal-div').offset().top);
+        // The type parameter is already in the form, just need to update the action
+        $('#recordingForm').attr('action', "{{ baseUrl }}/recording/show/{{ previous.recording }}");
         $("#recordingForm").submit();
         e.preventDefault();
     })
