@@ -90,42 +90,29 @@
             </div>
         </div>
         <hr>
-        <div class="row mb-5" style="display: flex; flex-wrap: nowrap;">
+        <div class="row" style="display: flex; flex-wrap: nowrap;">
             {# Column 1: Navigation + Player + Table #}
             <div class="col" style="flex: 1 1 auto; min-width: 0;">
                 {# Inner Row 1: Navigation buttons + Spectrogram player #}
                 <div class="row">
                     <div class="col-auto text-center recording-navigation" style="min-width: 150px; max-width: 180px;">
-                        {# Navigation buttons in grid: show/hide + tag on top, arrows below, filter + zoom #}
-                        <div class="d-grid mb-2" style="display: grid !important; grid-template-columns: 1fr 1fr; gap: 4px;">
-                            <a class="btn btn-outline-secondary btn-sm js-toggle-tags" href="#" title="Toggle tags" data-show={{ player.isShowTags }}>
-                                {% if player.isShowTags %}
-                                    <i class='fas fa-eye-slash'></i>
-                                {% else %}
-                                    <i class="fas fa-eye"></i>
-                                {% endif %}
-                            </a>
-                            {% if isUserLogged %}
-                                <a class="btn btn-outline-secondary btn-sm js-new-tag" href="{{ baseUrl }}/api/tag/create" title="Enter for new tag">
-                                    <i class="fas fa-tag"></i>
+                        {# Navigation buttons in grid: arrows grouped, filter button #}
+                        <div class="d-grid mb-2" style="display: grid !important; grid-template-columns: 1fr; gap: 4px;">
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a class="btn btn-outline-success btn-sm" href="#" id="shift-left" title="Ctrl-<- for shifting window left">
+                                    <i class="fas fa-arrow-left"></i>
                                 </a>
-                            {% else %}
-                                <span></span>
-                            {% endif %}
-                            <a class="btn btn-outline-secondary btn-sm" href="#" id="shift-left" title="Ctrl-<- for shifting window left">
-                                <i class="fas fa-arrow-left"></i>
-                            </a>
-                            <a class="btn btn-outline-secondary btn-sm" href="#" id="shift-right" title="Ctrl--> for shifting window right">
-                                <i class="fas fa-arrow-right"></i>
-                            </a>
-                            <label for="filter" class="btn btn-outline-secondary btn-sm mb-0" title="Filter">
-                                <input type="checkbox" id="filter" name="filter" style="display: none;">
-                                <i class="fas fa-filter"></i>
-                            </label>
+                                <a class="btn btn-outline-success btn-sm" href="#" id="shift-right" title="Ctrl--> for shifting window right">
+                                    <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+                            <button class="btn btn-outline-success btn-sm" id="filter-toggle" title="Filter">
+                                <i class="fas fa-filter"></i> <span id="filter-status">OFF</span>
+                            </button>
                         </div>
                         {# Zoom dropdown - separate from grid #}
                         <div class="dropdown mb-2">
-                            <button class="btn btn-outline-secondary btn-sm btn-block dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <button class="btn btn-outline-success btn-sm btn-block dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fa-solid fa-magnifying-glass"></i> Zoom
                             </button>
                             <div class="dropdown-menu" style="min-width: 200px;">
@@ -232,15 +219,27 @@
             {# Column 2: Tag sidebar - flexible width with constraints #}
             {% if isUserLogged %}
             <div id="tag-sidebar" style="flex: 0 0 25%; min-width: 300px; max-width: 400px; padding-left: 15px;">
-                <div id="tag-sidebar-content" class="border rounded p-2 bg-white" style="position: sticky; top: 20px; max-height: calc(100vh - 100px); overflow-y: auto; overflow-x: hidden;">
-                    <div class="text-center py-5">
+                <div id="tag-sidebar-content" class="border rounded p-2 bg-white" style="position: sticky; top: 0px; max-height: calc(100vh - 80px); overflow-y: auto; overflow-x: hidden; margin-top: 0;">
+                    <div id="sidebar-default-state" class="text-center">
                         <h5 class="text-muted mb-3">Tag Editor</h5>
-                        <p class="text-muted">
+                        <div class="d-flex justify-content-center mb-4" style="gap: 0.5rem;">
+                            <a class="btn {{ player.isShowTags ? 'btn-outline-secondary' : 'btn-outline-success' }} btn-sm js-toggle-tags" href="#" title="Toggle tags" data-show={{ player.isShowTags }}>
+                                {% if player.isShowTags %}
+                                    <i class='fas fa-eye-slash'></i> Hide Tags
+                                {% else %}
+                                    <i class="fas fa-eye"></i> Show Tags
+                                {% endif %}
+                            </a>
+                            <a class="btn btn-outline-success btn-sm js-new-tag" href="{{ baseUrl }}/api/tag/create" title="Enter for new tag">
+                                <i class="fas fa-plus"></i> New Tag
+                            </a>
+                        </div>
+                        <p class="text-muted mb-2">
                             <i class="fas fa-tag fa-2x mb-3 d-block"></i>
                             No tag selected
                         </p>
                         <small class="text-muted">
-                            Click on a tag or create a new one to edit
+                            Click on a tag to edit it
                         </small>
                     </div>
                 </div>
@@ -309,6 +308,10 @@
         #tag-sidebar-content .tag-sidebar-footer .btn-group {
             margin-right: 0.25rem;
         }
+        /* Tag sidebar wrapper - prevent margin that causes border slip */
+        #tag-sidebar-content .tag-sidebar-wrapper {
+            margin-top: 0 !important;
+        }
         /* Sound type dropdown in sidebar - use regular select styling */
         #tag-sidebar-content #sound_id {
             width: 100% !important;
@@ -323,8 +326,8 @@
             font-size: 0.8rem;
         }
         #tag-sidebar-content #review-panel-sidebar .btn-sm {
-            padding: 0.15rem 0.35rem;
-            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
         }
         #tag-sidebar-content #review-panel-sidebar .review-table {
             max-height: 100px;
@@ -332,6 +335,14 @@
         }
         #tag-sidebar-content #review-panel-sidebar .table {
             margin-bottom: 0;
+        }
+        #tag-sidebar-content #review-panel-sidebar .delete-review-btn {
+            opacity: 0.6;
+            transition: opacity 0.2s;
+            line-height: 1;
+        }
+        #tag-sidebar-content #review-panel-sidebar .delete-review-btn:hover {
+            opacity: 1;
         }
         #tag-sidebar-content #state {
             font-weight: bold;
@@ -523,22 +534,33 @@
             });
             $('#tagsTable tbody').on('change', 'select[name=soundscape_component]', function () {
                 let id = $(this).attr('id').split('_')[2]
-                let index = 0
                 if ($("#soundscape_component_" + id).find("option:selected").text() == 'biophony') {
                     $(".soundscape_component_" + id).removeAttr("hidden");
                 } else {
                     $(".soundscape_component_" + id).attr("hidden", true);
                 }
                 $('#sound_id' + id).empty()
+                const selectedComponent = $("#soundscape_component_" + id).find("option:selected").text();
+                let index = 0;
                 for (var key in soundTypes) {
-                    if (soundTypes[key]['soundscape_component'] == $("#soundscape_component_" + id).find("option:selected").text()) {
-                        if (index == 0) {
-                            $('#sound_id' + id).append("<option value='" + soundTypes[key]['sound_id'] + "' selected>" + soundTypes[key]['sound_type'] + "</option>");
-                        } else {
-                            $('#sound_id' + id).append("<option value='" + soundTypes[key]['sound_id'] + "'>" + soundTypes[key]['sound_type'] + "</option>");
+                    // Check both property name variations (snake_case and camelCase)
+                    const componentValue = soundTypes[key]['soundscape_component'] || soundTypes[key]['soundscapeComponent'];
+                    if (componentValue == selectedComponent) {
+                        const soundIdValue = soundTypes[key]['sound_id'] || soundTypes[key]['soundId'];
+                        const soundTypeName = soundTypes[key]['sound_type'] || soundTypes[key]['soundType'];
+                        
+                        // Skip entries with empty sound type names
+                        if (!soundTypeName || soundTypeName.trim() === '') {
+                            continue;
                         }
+                        
+                        if (index == 0) {
+                            $('#sound_id' + id).append("<option value='" + soundIdValue + "' selected>" + soundTypeName + "</option>");
+                        } else {
+                            $('#sound_id' + id).append("<option value='" + soundIdValue + "'>" + soundTypeName + "</option>");
+                        }
+                        index++;
                     }
-                    index++
                 }
             });
             $(".js-tag-list").on('change', 'input, select, textarea', function () {
@@ -606,6 +628,24 @@
                 let tagId = $(this).find('[name="tag_id"]').val();
                 if (tagId) {
                     $('#' + tagId).removeClass('tag-hover');
+                }
+            });
+
+            // Make table rows clickable to open tag editor
+            $('#tagsTable tbody').on('click', 'tr', function (e) {
+                // Don't trigger if clicking on checkbox, button, or input
+                if ($(e.target).is('input, button, select, a') || $(e.target).closest('input, button, select, a').length) {
+                    return;
+                }
+                
+                let tagId = $(this).find('[name="tag_id"]').val();
+                if (tagId) {
+                    // Highlight the tag on the spectrogram
+                    $('.tag-controls').removeClass('tag-selected');
+                    $('#' + tagId).addClass('tag-selected');
+                    
+                    // Open tag editor (will use sidebar if available, modal otherwise)
+                    requestModal(baseUrl + '/api/tag/edit/' + tagId, new FormData($('#recordingForm')[0]), false);
                 }
             });
 

@@ -1,10 +1,4 @@
 let enableZoom = function () {
-    let filterElement = $("label[for='filter']");
-    let filterCheckbox = $("input[name='filter']");
-
-    if (!filterCheckbox.prop("checked")) {
-        filterElement.trigger("click");
-    }
     $('#zoom-submit').prop("disabled", false);
 }
 
@@ -79,7 +73,7 @@ $(function () {
             window.jcropApi.destroy()
         }
         if (canExec) {
-            if (e.code === 'Enter' && !$('#modal-div').hasClass('show')) {
+            if (e.code === 'Enter' && !$('#modal-div').hasClass('show') && !$('.tag-sidebar-wrapper').length) {
                 const coords = myJcrop.tellSelect() || {};
                 if (coords.w > 0 && coords.h > 0) {
                     e.preventDefault();

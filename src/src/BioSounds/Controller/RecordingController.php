@@ -109,6 +109,11 @@ class RecordingController extends BaseController
                     filter_var($_POST['continuous_play'], FILTER_VALIDATE_BOOLEAN)
                 );
             }
+            if (isset($_POST['filter'])) {
+                $this->recordingPresenter->setFilter(
+                    filter_var($_POST['filter'], FILTER_VALIDATE_BOOLEAN)
+                );
+            }
             if (isset($_POST['estimateDistID'])) {
                 $this->recordingPresenter->setEstimateDistID(filter_var($_POST['estimateDistID'], FILTER_VALIDATE_INT));
             }

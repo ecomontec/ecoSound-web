@@ -33,7 +33,7 @@ if (estimateDistID && estimateDistID > 0) {
     isDirectStart = true;
 }
 
-if ($("#continuous-play").is(':checked') || isDirectStart) {
+if ($("input[name='continuous_play']").val() === '1' || isDirectStart) {
     playButton.prop('disabled', true);
     request.open('GET', soundFilePath, true);
     request.responseType = 'arraybuffer';
@@ -42,7 +42,7 @@ if ($("#continuous-play").is(':checked') || isDirectStart) {
             console.log("Sample rate of buffer: " + buffer.sampleRate);
             playButton.prop('disabled', false);
             bufferPlay = buffer;
-            let isCurrentlyContinuous = $("#continuous-play").is(':checked') || (typeof window.isContinuous !== 'undefined' && window.isContinuous);
+            let isCurrentlyContinuous = $("input[name='continuous_play']").val() === '1' || (typeof window.isContinuous !== 'undefined' && window.isContinuous);
             if (isCurrentlyContinuous || isDirectStart) {
                 playButton.trigger('click');
                 isDirectStart = false;

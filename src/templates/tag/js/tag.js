@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const viewFreqRange = maxFrequency - minFrequency;
         const viewTotalTime = maxTime - minTime;
 
-        let closeModalTagForm = false;
         let readyToClose = true;
         let tagForm = $('#tagForm');
         let reviewForm = $('#reviewForm');
@@ -37,27 +36,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (reviewForm.length) {
                     reviewForm.submit();
                 }
-                let buttonText = $('#saveButton').text();
-                if (buttonText.includes('Close')) {
-                    $('#modal-div').modal('hide');
-                    showAlert("Saved successfully.")
-                } else if (buttonText.includes('Next')) {
-                    $('#btn-next').click()
-                    if ($('#btn-next').hasClass('btn-secondary')) {
-                        showAlert("Saved successfully, this is the last tag.")
-                    } else {
-                        showAlert("Saved successfully.")
-                    }
-                } else if (buttonText.includes('Previous')) {
-                    $('#btn-previous').click()
-                    if ($('#btn-previous').hasClass('btn-secondary')) {
-                        showAlert("Saved successfully, this is the first tag.")
-                    } else {
-                        showAlert("Saved successfully.")
-                    }
-                } else {
-                    showAlert("Saved successfully.")
-                }
+                // Just show success message, don't close or navigate
+                showAlert("Saved successfully.")
                 return;
             }
 
@@ -77,34 +57,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         createTag(tagId);
                     }
                     updateTag(tagId);
-                    if (closeModalTagForm === true) {
-                        showAlert("Saved successfully.")
-                    }
 
                     if (reviewForm.length) {
                         reviewForm.submit();
                     }
-                    let buttonText = $('#saveButton').text();
-                    if (buttonText.includes('Close')) {
-                        $('#modal-div').modal('hide');
-                        showAlert("Saved successfully.")
-                    } else if (buttonText.includes('Next')) {
-                        $('#btn-next').click()
-                        if ($('#btn-next').hasClass('btn-secondary')) {
-                            showAlert("Saved successfully, this is the last tag.")
-                        } else {
-                            showAlert("Saved successfully.")
-                        }
-                    } else if (buttonText.includes('Previous')) {
-                        $('#btn-previous').click()
-                        if ($('#btn-previous').hasClass('btn-secondary')) {
-                            showAlert("Saved successfully, this is the first tag.")
-                        } else {
-                            showAlert("Saved successfully.")
-                        }
-                    } else {
-                        showAlert("Saved successfully.")
-                    }
+                    
+                    // Just show success message, don't close or navigate
+                    showAlert("Saved successfully.")
                 });
             }
             this.classList.add('was-validated');
@@ -127,13 +86,9 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         $('#saveButton').click(function () {
-            closeModalTagForm = !reviewForm.length;
-
             tagForm.submit();
 
-            if ($("#edit").length == 0 || $("#edit").val() == 0) {
-                $('#modal-div').modal('hide');
-            }
+            // Reload the tags table to reflect changes
             $('#tagsTable').DataTable().ajax.reload(null, false);
             $('.tagsForm').removeAttr("hidden");
         });
@@ -235,17 +190,18 @@ document.addEventListener('DOMContentLoaded', function () {
             let soundscape_component = $('#soundscape_component').val();
             let tagName = speciesName ? speciesName : soundType ? soundType : soundscape_component
 
-            let newTag = "<div class='tag-controls tag-dashed' id='" + tagId + "' style='z-index:800; border-color: white; left: ";
+            // Create tag box matching the structure in tagBoxes.html.twig
+            let newTag = "<div class='tag-controls tag-dashed' id='" + tagId + "' data-tag-id='" + tagId + "' data-edit-url='" + baseUrl + "/api/tag/edit/" + tagId + "' style='z-index:800; border-color: white; left: ";
             newTag += left + "px; top: " + top + "px; height: " + height + "px; width: " + width + "px;'></div>";
-            newTag += "<div class='card js-panel-tag'><div class='card-header'><small>" + tagId + " | " + tagName + "</small></div>";
-            newTag += "<div class='card-body mx-auto'><div class='btn-group' role='group'>";
-            newTag += "<a href='" + baseUrl + "/tag/edit/" + tagId + "' class='btn btn-outline-primary btn-sm js-tag' title='Edit tag'>";
-            newTag += "<i class='fas fa-edit' aria-hidden='true'></i></a>";
-            newTag += "<a href='#' onclick='return false;' class='btn btn-outline-primary btn-sm zoom-tag' title='Zoom tag'><i class='fas fa-search' aria-hidden='true'></i></a>";
-            if (soundscape_component == "biophony") {
-                newTag += "<a href='#' onclick='return false;' id='est_" + tagId + "' type='button' class='btn btn-outline-primary btn-sm estimate-distance' title='Estimate call distance'><i class='fas fa-bullhorn' aria-hidden='true'></i></a>";
-            }
-            newTag += "</div></div></div>";
+            
+            // Create popup card matching the regular tag structure
+            newTag += "<div class='card js-panel-tag' style='display:none;'>";
+            newTag += "<div class='card-header py-1 px-2'><small>" + tagId + " | " + tagName + "</small></div>";
+            newTag += "<div class='card-body p-2 mx-auto'>";
+            newTag += "<a href='#' onclick='return false;' class='btn btn-outline-primary btn-sm zoom-tag' title='Zoom tag (+Alt: open in new tab)'>";
+            newTag += "<i class='fas fa-search' aria-hidden='true'></i> Zoom</a>";
+            newTag += "<div class='text-muted small mt-1 text-center'>Click tag to edit</div>";
+            newTag += "</div></div>";
 
             $('#myCanvas').append(newTag);
         };

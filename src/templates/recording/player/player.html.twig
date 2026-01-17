@@ -17,12 +17,13 @@
                     </button>
                     <div class="dropdown-menu" id="dropdown-menu-play" style="min-width: 180px">
                         <button id="continue-playback" class="btn btn-link {{ player.isContinuousPlay ? 'active':'' }}" title="Continue playback beyond current frame">
-                            <i class="continue-playback"></i> Continue playback
+                            <i class="continue-playback"></i> Continuous
                         </button>
                         <div class="dropdown-divider"></div>
                         <div class="playback-slider-container">
+                            <label for="playback-rate" style="font-size: 0.8rem; margin-bottom: 4px;">Playback Speed</label>
                             <input id="playback-rate" class="custom-range js-playback-rate-control" type="range" min="0.05" max="1" step="0.01" value="1" style="width: 100%;">
-                            <label for="playback-rate">Speed: <span class="playback-rate-value">1.0</span>x</label>
+                            <label for="playback-rate" style="text-align: center;"><span class="playback-rate-value">1.0</span>x</label>
                         </div>
                     </div>
                 </div>
@@ -43,6 +44,8 @@
                     <input type="hidden" name="channel_num" value="{{ player.recording.channel_num }}">
                     <input type='hidden' name='showTags' value="{{ player.showTags }}">
                     <input type='hidden' name='estimateDistID' value="{{ player.estimateDistID }}">
+                    <input type="hidden" name="filter" id="filter-hidden" value="{{ player.isFilter ? '1' : '0' }}">
+                    <input type="hidden" name="continuous_play" value="{{ player.isContinuousPlay ? '1' : '0' }}">
                     <input type="hidden" name="collection_id" value="{{ player.recording.col_id }}" class="param-tm" id="collection_id">
                     <input type="hidden" name="recording_id" value="{{ player.recording.recording_id }}">
                     <input type="hidden" name="recording_name" value="{{ player.recording.name }}">

@@ -98,6 +98,19 @@
             
             // Initialize form handlers for sidebar
             initializeSidebarTagForm();
+            
+            // Update tag border style based on whether there are reviews
+            const tagId = $sidebar.find('#reviewForm input[name="tag_id"]').val() || 
+                          $sidebar.find('#tag-panel-sidebar input[name="tag_id"]').val() ||
+                          $sidebar.find('input[name="tag_id"]').val();
+            if (tagId) {
+                const hasReviews = $sidebar.find('.review-table tbody tr').length > 0;
+                if (hasReviews) {
+                    $('#' + tagId).removeClass('tag-dashed');
+                } else {
+                    $('#' + tagId).addClass('tag-dashed');
+                }
+            }
         });
     };
     
@@ -135,48 +148,186 @@
             $sidebar.find('.type-btn').removeAttr('disabled');
         });
         
-        // Handle review buttons - Accept
+        // Helper function to save review immediately
+        function saveReviewImmediately(statusId, statusName) {
+            const reviewForm = $sidebar.find('#reviewForm');
+            const tagId = reviewForm.find('input[name="tag_id"]').val();
+            const speciesId = reviewForm.find('.js-species-id[data-type=review]').val();
+            const note = reviewForm.find('#comments').val();
+            const userId = reviewForm.data('user-id');
+            const userName = reviewForm.data('user-name') || 'You';
+            
+            // Build form data
+            const formData = new FormData();
+            formData.append('tag_id', tagId);
+            formData.append('tag_review_status_id', statusId);
+            formData.append('note', note || '');
+            if (speciesId) {
+                formData.append('species_id', speciesId);
+            }
+            
+            // Save the review
+            postRequest(baseUrl + '/api/tagReview/save', formData, false, false, function(response) {
+                // Add new row to the reviews table
+                const $reviewTable = $sidebar.find('.review-table tbody');
+                const today = new Date();
+                const dateStr = today.getDate().toString().padStart(2, '0') + '/' + 
+                               (today.getMonth() + 1).toString().padStart(2, '0') + '/' + 
+                               today.getFullYear();
+                
+                // Get species name if available
+                const speciesName = $sidebar.find('#reviewSpeciesName').val() || '';
+                
+                // Check if user already has a review (shouldn't add duplicate)
+                const existingRow = $reviewTable.find('tr[data-reviewer-id="' + userId + '"]');
+                if (existingRow.length) {
+                    // Update existing row
+                    existingRow.find('td:eq(1)').text(statusName);
+                    existingRow.find('td:eq(2)').text(speciesName);
+                    existingRow.find('td:eq(3)').text(dateStr);
+                } else {
+                    // Add new row - use tag_id and user_id for delete identification
+                    const newRow = $('<tr>')
+                        .attr('data-tag-id', tagId)
+                        .attr('data-reviewer-id', userId)
+                        .append('<td class="py-1">' + userName + '</td>')
+                        .append('<td class="py-1">' + statusName + '</td>')
+                        .append('<td class="py-1">' + speciesName + '</td>')
+                        .append('<td class="py-1">' + dateStr + '</td>')
+                        .append('<td class="py-1"><button type="button" class="btn btn-link btn-sm p-0 text-danger delete-review-btn" data-tag-id="' + tagId + '" data-user-id="' + userId + '" title="Delete review"><i class="fas fa-times"></i></button></td>');
+                    $reviewTable.append(newRow);
+                }
+                
+                // Remove dashed style from the tag (indicates reviewed)
+                $('#' + tagId).removeClass('tag-dashed');
+                
+                // Hide the review buttons (user has already reviewed)
+                $sidebar.find('#reviewForm .row').first().hide();
+                $sidebar.find('#review_animal_group').hide();
+                $sidebar.find('#reviewForm .form-group:has(#comments)').hide();
+                
+                showAlert("Review saved successfully.");
+            });
+        }
+        
+        // Handle review buttons - Accept (immediate save)
         $sidebar.find('#review-accept-btn').off('click').on('click', function(e) {
             e.preventDefault();
             $sidebar.find('#reviewSpeciesName').prop('disabled', true);
             $sidebar.find('.js-species-id[data-type=review]').val('');
             $sidebar.find('#review_status').val(1);
             $sidebar.find('#state').html('Accepted');
+            
+            // Save immediately
+            saveReviewImmediately(1, 'Accepted');
         });
         
-        // Handle review buttons - Revise/Correct
+        // Handle review buttons - Revise/Correct (waits for species selection)
         $sidebar.find('#review-correct-btn').off('click').on('click', function(e) {
             e.preventDefault();
             $sidebar.find('#reviewSpeciesName')
-                .prop('disabled', function(i, v) { return !v; })
-                .prop('required', function(i, v) { return !v; });
+                .prop('disabled', false)
+                .prop('required', true)
+                .focus();
             $sidebar.find('#review_status').val(2);
             $sidebar.find('#state').html('Corrected');
+            
+            // Show message to select species
+            showAlert("Please select a species, then the review will be saved automatically.", "info");
         });
         
-        // Handle review buttons - Reject
+        // Handle species selection for Revise - auto-save when species is selected
+        // We need to intercept after the autocomplete sets the species ID
+        $sidebar.find('.js-species-id[data-type=review]').off('change.reviewSave').on('change.reviewSave', function() {
+            // Check if we're in Revise mode and have a species selected
+            if ($sidebar.find('#review_status').val() == '2' && $(this).val()) {
+                saveReviewImmediately(2, 'Corrected');
+            }
+        });
+        
+        // Also watch for species ID being set programmatically (autocomplete doesn't trigger change)
+        // Use a MutationObserver or poll after autocomplete select
+        const originalAutocompleteSelect = $.ui.autocomplete.prototype._trigger;
+        $sidebar.find('#reviewSpeciesName').on('autocompleteselect', function(event, ui) {
+            // Check if we're in Revise mode
+            if ($sidebar.find('#review_status').val() == '2') {
+                // Wait for the species ID to be set by the autocomplete handler
+                setTimeout(function() {
+                    const speciesId = $sidebar.find('.js-species-id[data-type=review]').val();
+                    if (speciesId) {
+                        saveReviewImmediately(2, 'Corrected');
+                    }
+                }, 200);
+            }
+        });
+        
+        // Handle review buttons - Reject (immediate save)
         $sidebar.find('#review-delete-btn').off('click').on('click', function(e) {
             e.preventDefault();
             $sidebar.find('#reviewSpeciesName').prop('disabled', true);
             $sidebar.find('.js-species-id[data-type=review]').val('');
             $sidebar.find('#review_status').val(3);
             $sidebar.find('#state').html('Rejected');
+            
+            // Save immediately
+            saveReviewImmediately(3, 'Rejected');
         });
         
-        // Handle review buttons - Uncertain
+        // Handle review buttons - Uncertain (immediate save)
         $sidebar.find('#review-uncertain-btn').off('click').on('click', function(e) {
             e.preventDefault();
             $sidebar.find('#reviewSpeciesName').prop('disabled', true);
             $sidebar.find('.js-species-id[data-type=review]').val('');
             $sidebar.find('#review_status').val(4);
             $sidebar.find('#state').html('Uncertain');
+            
+            // Save immediately
+            saveReviewImmediately(4, 'Uncertain');
         });
         
-        // Handle Google Images link
-        $sidebar.find('#googleImages').off('click').on('click', function(e) {
+        // Handle delete review button
+        $sidebar.find('.review-table').off('click.deleteReview').on('click.deleteReview', '.delete-review-btn', function(e) {
             e.preventDefault();
-            const species = $sidebar.find('#speciesName[data-type=edit]').val();
-            window.open('http://www.google.com/images?q=' + species, '_blank');
+            e.stopPropagation();
+            
+            const $btn = $(this);
+            const $row = $btn.closest('tr');
+            // Use attr() for consistent reading of HTML attributes (data() caches and can be inconsistent)
+            const reviewTagId = $btn.attr('data-tag-id') || $row.attr('data-tag-id');
+            const reviewUserId = $btn.attr('data-user-id') || $row.attr('data-reviewer-id');
+            
+            if (!reviewTagId || !reviewUserId) {
+                // New review without proper IDs - just remove the row
+                $row.remove();
+                return;
+            }
+            
+            if (confirm('Are you sure you want to delete this review?')) {
+                // Format: tag_id-user_id (as expected by the delete endpoint)
+                postRequest(baseUrl + '/api/tagReview/delete', { id: reviewTagId + '-' + reviewUserId }, false, false, function() {
+                    showAlert("Review deleted successfully.");
+                    
+                    // Get the tag ID from the form (for border style update)
+                    const tagId = $sidebar.find('#reviewForm input[name="tag_id"]').val() || 
+                                  $sidebar.find('#tag-panel-sidebar input[name="tag_id"]').val();
+                    
+                    // Count remaining reviews (excluding the row we're about to remove)
+                    const remainingReviews = $sidebar.find('.review-table tbody tr').length - 1;
+                    
+                    // If no reviews left, add dashed style back to the tag
+                    if (remainingReviews === 0 && tagId) {
+                        $('#' + tagId).addClass('tag-dashed');
+                    }
+                    
+                    // Reload the sidebar to get fresh state from server
+                    // This ensures review buttons appear correctly (they may not have been rendered initially)
+                    if (tagId) {
+                        loadTagInSidebar(baseUrl + '/api/tag/edit/' + tagId);
+                    } else {
+                        $row.remove();
+                    }
+                });
+            }
         });
         
         // Handle Xeno-canto link
@@ -222,7 +373,8 @@
         
         // Populate sound types based on current soundscape component on load
         function populateSoundTypes() {
-            const selectedComponent = $sidebar.find('#soundscape_component option:selected').text();
+            const $soundscapeComponent = $sidebar.find('#soundscape_component');
+            const selectedComponent = $soundscapeComponent.find('option:selected').text();
             const $soundId = $sidebar.find('#sound_id');
             // Get current value - check for selected option first
             const currentSoundId = $soundId.find('option:selected').val() || $soundId.val();
@@ -234,9 +386,19 @@
             if (typesData) {
                 $soundId.empty();
                 for (var key in typesData) {
-                    if (typesData[key]['soundscape_component'] == selectedComponent) {
-                        const isSelected = typesData[key]['sound_id'] == currentSoundId ? 'selected' : '';
-                        $soundId.append("<option value='" + typesData[key]['sound_id'] + "' " + isSelected + ">" + typesData[key]['sound_type'] + "</option>");
+                    // Check both soundscape_component and soundscapeComponent properties
+                    const componentValue = typesData[key]['soundscape_component'] || typesData[key]['soundscapeComponent'];
+                    if (componentValue == selectedComponent) {
+                        const soundIdValue = typesData[key]['sound_id'] || typesData[key]['soundId'];
+                        const soundTypeName = typesData[key]['sound_type'] || typesData[key]['soundType'];
+                        
+                        // Skip entries with empty sound type names
+                        if (!soundTypeName || soundTypeName.trim() === '') {
+                            continue;
+                        }
+                        
+                        const isSelected = soundIdValue == currentSoundId ? 'selected' : '';
+                        $soundId.append("<option value='" + soundIdValue + "' " + isSelected + ">" + soundTypeName + "</option>");
                     }
                 }
             }
@@ -245,18 +407,67 @@
         // Populate on initial load
         populateSoundTypes();
         
-        // Handle soundscape component changes - populate sound types
-        $sidebar.find('#soundscape_component').off('change').on('change', function() {
-            if ($(this).find("option:selected").text() == 'biophony') {
+        // Handle soundscape component changes directly in sidebar
+        $sidebar.find('#soundscape_component').off('change.sidebar').on('change.sidebar', function() {
+            const selectedComponent = $(this).find('option:selected').text();
+            
+            // Show/hide biophony fields
+            if (selectedComponent == 'biophony') {
                 $sidebar.find(".biophony").show();
-                $sidebar.find("#reference").addClass('pt-5');
+                $sidebar.find("#reference").addClass('pt-4');
             } else {
                 $sidebar.find(".biophony").hide();
-                $sidebar.find("#reference").removeClass('pt-5');
+                $sidebar.find("#reference").removeClass('pt-4');
             }
             
-            // Update sound type dropdown
-            populateSoundTypes();
+            // Use sidebarSoundTypes which we extracted from the response
+            const typesData = window.sidebarSoundTypes;
+            if (!typesData) {
+                console.error('No sidebar sound types data available');
+                return;
+            }
+            
+            // Populate sound types dropdown
+            const $soundId = $sidebar.find('#sound_id');
+            $soundId.empty();
+            
+            for (var key in typesData) {
+                const componentValue = typesData[key]['soundscape_component'] || typesData[key]['soundscapeComponent'];
+                const soundIdValue = typesData[key]['sound_id'] || typesData[key]['soundId'];
+                const soundTypeName = typesData[key]['sound_type'] || typesData[key]['soundType'];
+                
+                // Skip entries with empty sound type names
+                if (!soundTypeName || soundTypeName.trim() === '') {
+                    continue;
+                }
+                
+                if (componentValue == selectedComponent) {
+                    $soundId.append("<option value='" + soundIdValue + "'>" + soundTypeName + "</option>");
+                }
+            }
+            
+            // Force the select to be visible and refresh any bootstrap-select
+            $soundId.show();
+            if ($soundId.hasClass('selectpicker') || $soundId.data('selectpicker')) {
+                try {
+                    $soundId.selectpicker('refresh');
+                } catch(e) {
+                    try {
+                        $soundId.selectpicker('destroy');
+                    } catch(e2) {}
+                }
+            }
+            
+            // Remove any bootstrap-select wrapper (it doesn't sync with option changes)
+            const $bsWrapper = $soundId.closest('.bootstrap-select');
+            if ($bsWrapper.length) {
+                $soundId.insertBefore($bsWrapper);
+                $bsWrapper.remove();
+                $soundId.removeClass('selectpicker').addClass('form-control form-control-sm').show();
+            }
+            
+            // Enable save button
+            $sidebar.find('#saveButton').removeAttr('disabled');
         });
         
         // Handle distance not estimable checkbox
@@ -292,8 +503,8 @@
             $('#y').val(1);
             $('#h').val(fileFreqMax);
             
-            $("input[name=filter]").prop('checked', false);
-            $("input[name=continuous_play]").prop('checked', false);
+            $("input[name=filter]").val('0');
+            $("input[name=continuous_play]").val('0');
             $("input[name=estimateDistID]").val(tagId);
             
             // Submit the form to trigger distance estimation
@@ -308,17 +519,8 @@
                 if (reviewForm.length) {
                     reviewForm.submit();
                 }
-                const buttonText = $sidebar.find('#saveButton').text();
-                if (buttonText.includes('Close')) {
-                    closeTagSidebar();
-                    showAlert("Saved successfully.");
-                } else if (buttonText.includes('Next')) {
-                    $sidebar.find('#btn-next').click();
-                } else if (buttonText.includes('Previous')) {
-                    $sidebar.find('#btn-previous').click();
-                } else {
-                    showAlert("Saved successfully.");
-                }
+                // Just show success message, don't close sidebar
+                showAlert("Saved successfully.");
                 return;
             }
             
@@ -354,26 +556,11 @@
                     window.table.ajax.reload(null, false);
                 }
                 
-                // Handle review form if present
-                if (reviewForm.length) {
-                    reviewForm.submit();
-                }
+                // Note: Review form is now handled separately with immediate saving
+                // so we don't submit it here
                 
-                const buttonText = $sidebar.find('#saveButton').text();
-                if (buttonText.includes('Close')) {
-                    closeTagSidebar();
-                    showAlert("Saved successfully.");
-                } else if (buttonText.includes('Next')) {
-                    showAlert("Saved successfully.");
-                    $sidebar.find('#btn-next').click();
-                } else if (buttonText.includes('Previous')) {
-                    showAlert("Saved successfully.");
-                    $sidebar.find('#btn-previous').click();
-                } else {
-                    showAlert("Saved successfully.");
-                    // Just close the sidebar, don't reload
-                    closeTagSidebar();
-                }
+                // Just show success message, don't close sidebar
+                showAlert("Saved successfully.");
             });
         });
         
@@ -383,34 +570,11 @@
             tagForm.submit();
         });
         
-        // Handle review form submission
+        // Handle review form submission (legacy - reviews are now saved immediately)
         reviewForm.off('submit').on('submit', function(e) {
             e.preventDefault();
-            
-            const reviewStatus = $sidebar.find('#review_status');
-            const reviewSpeciesId = $sidebar.find('.js-species-id[data-type=review]');
-            
-            // Validation
-            if (this.checkValidity() === false || 
-                (parseInt(reviewStatus.val()) === 2 && !reviewSpeciesId.val())) {
-                e.stopPropagation();
-                return;
-            }
-            
-            // Only submit if there's a review status set
-            if (reviewStatus.val()) {
-                postRequest(baseUrl + '/api/tagReview/save', new FormData($(this)[0]), false, false, function() {
-                    // Remove dashed style from the tag (indicates reviewed)
-                    const tagId = $sidebar.find("input[name='tag_id']").val();
-                    $('#' + tagId).removeClass('tag-dashed');
-                    
-                    // Hide the review buttons and show confirmation
-                    $sidebar.find('#reviewForm .row').hide();
-                    $sidebar.find('#reviewForm .form-group').hide();
-                    
-                    showAlert("Review saved successfully.");
-                });
-            }
+            // Reviews are now saved immediately when buttons are clicked
+            // This handler is kept for compatibility but doesn't do anything
         });
         
         // Handle delete button
@@ -450,15 +614,38 @@
         // Remove highlight from any selected tags
         $('.tag-controls').removeClass('tag-selected');
         
+        // Determine current tag visibility state from the toggle button or tag visibility
+        var isShowTags = $('.tag-controls').first().is(':visible') ? 1 : '';
+        
+        // Build the appropriate icon/text and button class for toggle button
+        var toggleIcon, toggleClass;
+        if (isShowTags) {
+            // Tags are visible, button should show "Hide Tags" - use grey (inactive)
+            toggleIcon = '<i class="fas fa-eye-slash"></i> Hide Tags';
+            toggleClass = 'btn-outline-secondary';
+        } else {
+            // Tags are hidden, button should show "Show Tags" - use green (active)
+            toggleIcon = '<i class="fas fa-eye"></i> Show Tags';
+            toggleClass = 'btn-outline-success';
+        }
+        
         const placeholderHTML = `
-            <div class="text-center py-5">
+            <div id="sidebar-default-state" class="text-center">
                 <h5 class="text-muted mb-3">Tag Editor</h5>
-                <p class="text-muted">
+                <div class="d-flex justify-content-center mb-4" style="gap: 0.5rem;">
+                    <a class="btn ${toggleClass} btn-sm js-toggle-tags" href="#" title="Toggle tags" data-show="${isShowTags}">
+                        ${toggleIcon}
+                    </a>
+                    <a class="btn btn-outline-success btn-sm js-new-tag" href="${baseUrl}/api/tag/create" title="Enter for new tag">
+                        <i class="fas fa-plus"></i> New Tag
+                    </a>
+                </div>
+                <p class="text-muted mb-2">
                     <i class="fas fa-tag fa-2x mb-3 d-block"></i>
                     No tag selected
                 </p>
                 <small class="text-muted">
-                    Click on a tag or create a new one to edit
+                    Click on a tag to edit it
                 </small>
             </div>
         `;
@@ -495,25 +682,31 @@
         const coords = calculateTagCoordinates();
         const $sidebar = $('#tag-sidebar-content');
         
-        // Create the tag box
+        // Get tag name from form
+        const speciesName = $sidebar.find('#speciesName').val();
+        const soundType = $sidebar.find('#sound_id option:selected').text();
+        const soundscapeComponent = $sidebar.find('#soundscape_component').val();
+        const tagName = speciesName || soundType || soundscapeComponent || 'Unknown';
+        
+        // Create the tag box with proper attributes
         const tagBox = $('<div>')
             .addClass('tag-controls tag-dashed')
             .attr('id', tagId)
+            .attr('data-tag-id', tagId)
+            .attr('data-edit-url', baseUrl + '/api/tag/edit/' + tagId)
             .css({
                 'z-index': 800,
                 'border-color': 'white',
                 'left': coords.left + 'px',
                 'top': coords.top + 'px',
                 'width': coords.width + 'px',
-                'height': coords.height + 'px',
-                'position': 'absolute'
+                'height': coords.height + 'px'
             });
         
         $('#myCanvas').append(tagBox);
         
-        // Create the tag panel (edit buttons)
-        const species = $sidebar.find('#speciesName').val() || 'Unknown';
-        createTagPanel(tagId, species);
+        // Create the tag panel (popup)
+        createTagPanel(tagId, tagName);
     }
     
     // Helper function to update existing tag visual
@@ -531,27 +724,18 @@
         }
     }
     
-    // Helper function to create tag panel (edit buttons)
-    function createTagPanel(tagId, species) {
-        const recordingId = $('input[name="recording_id"]').val();
-        const $sidebar = $('#tag-sidebar-content');
-        const minTime = $sidebar.find('#min_time').val();
-        const maxTime = $sidebar.find('#max_time').val();
-        const minFreq = $sidebar.find('#min_freq').val();
-        const maxFreq = $sidebar.find('#max_freq').val();
-        
+    // Helper function to create tag panel (popup that appears on hover)
+    function createTagPanel(tagId, tagName) {
         const panelHTML = `
-            <div class="js-panel-tag" data-tag-id="${tagId}" style="display: none; position: absolute;">
-                <div class="btn-group-vertical btn-group-sm" role="group">
-                    <button type="button" class="btn btn-secondary btn-sm" disabled>
-                        <small>${species}</small>
-                    </button>
-                    <a href="${baseUrl}/tag/show/${tagId}" class="btn btn-primary btn-sm js-tag">
-                        <i class="fas fa-edit"></i>
+            <div class="card js-panel-tag" style="display:none;">
+                <div class="card-header py-1 px-2">
+                    <small>${tagId} | ${tagName}</small>
+                </div>
+                <div class="card-body p-2 mx-auto">
+                    <a href='#' onclick='return false;' class='btn btn-outline-primary btn-sm zoom-tag' title='Zoom tag (+Alt: open in new tab)'>
+                        <i class='fas fa-search' aria-hidden='true'></i> Zoom
                     </a>
-                    <a href="#" class="btn btn-info btn-sm zoom-tag">
-                        <i class="fas fa-search-plus"></i>
-                    </a>
+                    <div class="text-muted small mt-1 text-center">Click tag to edit</div>
                 </div>
             </div>
         `;

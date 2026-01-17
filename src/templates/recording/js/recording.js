@@ -50,8 +50,8 @@ $(function () {
         $("#y").val(1);
         $("#h").val(fileFreqMax);
         $("#type").val('');
-        $("input[name=filter]").prop("checked", false);
-        $("input[name=continuous_play]").prop("checked", false);
+        // Note: filter state is NOT reset here - it persists as per user setting
+        $("input[name=continuous_play]").val('0');
         $("input[name=estimateDistID]").val("");
         $("#recordingForm").submit();
         e.preventDefault();
@@ -63,7 +63,7 @@ $(function () {
             $.cookie('zoom_info', encodeURIComponent(JSON.stringify(arr)), {path: '/', expires: 180, samesite: 'None'});
         }
         $(this).prop("disabled", true);
-        $("input[name=continuous_play]").prop("checked", false);
+        $("input[name=continuous_play]").val('0');
 
         if (typeof window.audioBufferQueue !== 'undefined') {
             window.audioBufferQueue.length = 0;
@@ -96,7 +96,7 @@ $(function () {
             $("#w").val(Math.min(parseFloat(centerX + newW / 2), fileDuration));
             $("#y").val(Math.max(parseInt(centerY - newH / 2), 1));
             $("#h").val(Math.min(parseInt(centerY + newH / 2), fileFreqMax));
-            $("input[name=continuous_play]").prop("checked", false);
+            $("input[name=continuous_play]").val('0');
             $("#recordingForm").submit();
         } else if ($(this).attr('id') == 'btn-zoom-out') {
             if ($("#zoom_out_input").val() == '' || $("#zoom_out_input").val() <= 0 || $("#zoom_out_input").val() > 200) {
@@ -121,7 +121,7 @@ $(function () {
             $("#w").val(Math.min(parseFloat(centerX + newW / 2), fileDuration));
             $("#y").val(Math.max(parseInt(centerY - newH / 2), 1));
             $("#h").val(Math.min(parseInt(centerY + newH / 2), fileFreqMax));
-            $("input[name=continuous_play]").prop("checked", false);
+            $("input[name=continuous_play]").val('0');
             $("#recordingForm").submit();
         } else if ($(this).attr('id') == 'zoom-pix') {
             if ($("#zoom_input").val() == '' || $("#zoom_input").val() < 0) {
@@ -137,8 +137,8 @@ $(function () {
             $("#w").val(currentTime + minTime + ($('#player_box').width() / $("#zoom_input").val()));
             $("#y").val(1);
             $("#h").val(fileFreqMax);
-            $("input[name=filter]").prop("checked", false);
-            $("input[name=continuous_play]").prop("checked", false);
+            $("input[name=filter]").val('0');
+            $("input[name=continuous_play]").val('0');
             $("#recordingForm").submit();
         }
         e.preventDefault();
@@ -156,22 +156,71 @@ $(function () {
         e.preventDefault();
     });
 
-    $('.js-toggle-tags').click(function (e) {
+    // Use event delegation for toggle-tags so it works with dynamically added buttons in sidebar
+    $(document).on('click', '.js-toggle-tags', function (e) {
         let show = this.dataset.show;
         this.dataset.show = show ? '' : 1;
         document.getElementsByName('showTags')[0].value = !show;
 
+        // Toggle both tag boxes on spectrogram and tags table
         $('.tag-controls').toggle();
+        $('.tagsForm').toggle();
 
         if (show) {
-            $(this).find('i').removeClass('fa-eye-slash').addClass('fa-eye');
+            // Tags are now hidden, button shows "Show Tags" - use green (active state)
+            $(this).html('<i class="fas fa-eye"></i> Show Tags');
+            $(this).removeClass('btn-outline-secondary').addClass('btn-outline-success');
         } else {
-            $(this).find('i').removeClass('fa-eye').addClass('fa-eye-slash');
+            // Tags are now visible, button shows "Hide Tags" - use grey (inactive state)
+            $(this).html('<i class="fas fa-eye-slash"></i> Hide Tags');
+            $(this).removeClass('btn-outline-success').addClass('btn-outline-secondary');
         }
+        
+        // Also update any other toggle buttons on the page to keep them in sync
+        $('.js-toggle-tags').not(this).each(function() {
+            this.dataset.show = show ? '' : 1;
+            if (show) {
+                $(this).html('<i class="fas fa-eye"></i> Show Tags');
+                $(this).removeClass('btn-outline-secondary').addClass('btn-outline-success');
+            } else {
+                $(this).html('<i class="fas fa-eye-slash"></i> Hide Tags');
+                $(this).removeClass('btn-outline-success').addClass('btn-outline-secondary');
+            }
+        });
+        
         e.preventDefault();
     });
 
-    $('.js-new-tag').click(function (e) {
+    // Handle filter toggle button
+    $(document).on('click', '#filter-toggle', function(e) {
+        e.preventDefault();
+        const $hiddenInput = $('#filter-hidden');
+        const $statusText = $('#filter-status');
+        const currentValue = $hiddenInput.val();
+        
+        // Toggle between '1' (ON) and '0' (OFF)
+        if (currentValue === '1') {
+            $hiddenInput.val('0');
+            $statusText.text('OFF');
+        } else {
+            $hiddenInput.val('1');
+            $statusText.text('ON');
+        }
+    });
+
+    // Initialize filter button state on page load
+    $(document).ready(function() {
+        const $hiddenInput = $('#filter-hidden');
+        const $statusText = $('#filter-status');
+        if ($hiddenInput.val() === '1') {
+            $statusText.text('ON');
+        } else {
+            $statusText.text('OFF');
+        }
+    });
+
+    // Use event delegation for new-tag so it works with dynamically added buttons in sidebar
+    $(document).on('click', '.js-new-tag', function (e) {
         e.preventDefault();
 
         if ($('#zoom-submit').hasClass('a-disabled')) {

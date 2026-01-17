@@ -153,8 +153,8 @@ $('.canvas')
         $('#y').val(1);
         $('#h').val(fileFreqMax);
 
-        $("input[name=filter]").prop('checked', false);
-        $("input[name=continuous_play]").prop('checked', false);
+        $("input[name=filter]").val('0');
+        $("input[name=continuous_play]").val('0');
         $("input[name=estimateDistID]").val(this.id.substring(this.id.indexOf('_') + 1, this.id.length)); //Set Tag ID
         $("#recordingForm").submit();
         e.preventDefault();

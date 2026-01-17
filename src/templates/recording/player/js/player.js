@@ -1,8 +1,8 @@
 let continuousPlaySelector = $("input[name='continuous_play']");
 
-window.isContinuous = continuousPlaySelector.prop('checked');
+window.isContinuous = continuousPlaySelector.val() === '1';
 isContinuous = window.isContinuous;
-isContinuous = continuousPlaySelector.prop('checked');
+isContinuous = continuousPlaySelector.val() === '1';
 isDirectStart = false;
 estimateDistID = $("input[name=estimateDistID]").val();
 selectionDuration = maxTime - minTime;
@@ -19,8 +19,8 @@ if (estimateDistID && estimateDistID > 0) {
 }
 
 continuousPlaySelector.change(function () {
-    isContinuous = this.checked;
-    window.isContinuous = this.checked;
+    isContinuous = $(this).val() === '1';
+    window.isContinuous = $(this).val() === '1';
     if (!isContinuous) {
         window.audioBufferQueue.length = 0;
     }
@@ -227,7 +227,7 @@ continuousPlay = function () {
 let setContinuousPlay = function (value) {
     isContinuous = value;
     window.isContinuous = value;
-    continuousPlaySelector.prop('checked', value);
+    continuousPlaySelector.val(value ? '1' : '0');
     if (value) {
         $("label[for='continuous-play']").addClass('active');
         $('#continue-playback').addClass('active');

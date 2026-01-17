@@ -19,6 +19,11 @@ class RecordingPresenter
     private $continuousPlay = false;
 
     /**
+     * @var bool
+     */
+    private $filter = false;
+
+    /**
      * @var array
      */
     private $recording = [];
@@ -129,6 +134,24 @@ class RecordingPresenter
     public function setContinuousPlay(bool $continuousPlay): RecordingPresenter
     {
         $this->continuousPlay = $continuousPlay;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isFilter(): bool
+    {
+        return $this->filter;
+    }
+
+    /**
+     * @param bool $filter
+     * @return RecordingPresenter
+     */
+    public function setFilter(bool $filter): RecordingPresenter
+    {
+        $this->filter = $filter;
         return $this;
     }
 

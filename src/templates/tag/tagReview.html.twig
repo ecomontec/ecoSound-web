@@ -1,9 +1,8 @@
-<form id="reviewForm" data-disabled="{{ disableReviewForm }}">
+<form id="reviewForm" data-disabled="{{ disableReviewForm }}" data-user-id="{{ userLoggedId }}" data-user-name="{{ username }}">
     {% if isReviewGranted %}
         <div class="row">
-            <div class="col-md-2"><h6 id="state"></h6></div>
-            <div class="col-md-10">
-                <div class="form-group form-inline float-right">
+            <div class="col-12">
+                <div class="form-group form-inline float-right mb-2">
                     <button type="button" class="btn btn-outline-primary btn-sm mr-2" id="review-accept-btn">Accept</button>
                     <button type="button" class="btn btn-outline-warning btn-sm mr-2" id="review-correct-btn">Revise</button>
                     <button type="button" class="btn btn-outline-danger btn-sm mr-2" id="review-delete-btn">Reject</button>
@@ -14,6 +13,7 @@
         <input class="js-species-id" data-type="review" name="species_id" type="hidden">
         <input name="tag_id" type="hidden" value="{{ tagId }}">
         <input id="review_status" name="tag_review_status_id" type="hidden" value="">
+        <input id="state" type="hidden">
 
         <div class="form-group" id="review_animal_group">
             <label for="reviewSpeciesName" class="col-form-label-sm">New Review Species</label>
@@ -37,17 +37,32 @@
                 <th scope="col" class="py-1">Status</th>
                 <th scope="col" class="py-1">Species</th>
                 <th scope="col" class="py-1">Date</th>
+                {% if isUserLogged %}
+                    <th scope="col" class="py-1" style="width: 30px;"></th>
+                {% endif %}
             </tr>
             </thead>
             <tbody>
             {% for review in reviews %}
-                <tr>
+                <tr data-tag-id="{{ review.tag_id }}" data-reviewer-id="{{ review.reviewer_id }}">
                     {% if isUserLogged %}
                         <td class="py-1">{{ review.reviewer }}</td>
                     {% endif %}
                     <td class="py-1">{{ review.status }}</td>
                     <td class="py-1">{{ review.binomial }}</td>
                     <td class="py-1">{{ review.creation_date|date("d/m/Y") }}</td>
+                    {% if isUserLogged and (review.reviewer_id == userLoggedId or isAdmin) %}
+                        <td class="py-1">
+                            <button type="button" class="btn btn-link btn-sm p-0 text-danger delete-review-btn" 
+                                    data-tag-id="{{ review.tag_id }}" 
+                                    data-user-id="{{ review.user_id }}"
+                                    title="Delete review">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </td>
+                    {% elseif isUserLogged %}
+                        <td class="py-1"></td>
+                    {% endif %}
                 </tr>
             {% endfor %}
             </tbody>
