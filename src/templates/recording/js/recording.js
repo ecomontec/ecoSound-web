@@ -72,7 +72,7 @@ $(function () {
         $("#recordingForm").submit();
     });
 
-    $(".zoom-btn").click(function (e) {
+    $(".zoom-option, #btn-zoom-in, #btn-zoom-out, #zoom-pix").click(function (e) {
         if ($(this).attr('id') == 'btn-zoom-in') {
             if ($("#zoom_in_input").val() == '' || $("#zoom_in_input").val() <= 0 || $("#zoom_in_input").val() >= 100) {
                 showAlert("Please enter a positive number smaller than 100 for zooming in")
@@ -123,7 +123,7 @@ $(function () {
             $("#h").val(Math.min(parseInt(centerY + newH / 2), fileFreqMax));
             $("input[name=continuous_play]").prop("checked", false);
             $("#recordingForm").submit();
-        } else {
+        } else if ($(this).attr('id') == 'zoom-pix') {
             if ($("#zoom_input").val() == '' || $("#zoom_input").val() < 0) {
                 showAlert('Please enter a positive integer')
                 e.preventDefault();
@@ -185,44 +185,11 @@ $(function () {
         $('.loading-grey').toggle();
     });
 
+    // Restore zoom input values from cookie
     if ($.cookie('zoom_info')) {
         const zoom_info = JSON.parse(decodeURIComponent($.cookie('zoom_info')));
-        if (zoom_info[0] == 1) {
-            $('#zoom-btn').html('<i class="fa-solid fa-magnifying-glass-plus"></i>');
-            $('#zoom-btn').attr('title', 'Zoom in by ' + $('#zoom_in_input').val() + '%')
-            $("#zoom-btn").removeClass("a-disabled");
-        } else if (zoom_info[0] == 2) {
-            $('#zoom-btn').html('<i class="fa-solid fa-magnifying-glass-minus"></i>');
-            $('#zoom-btn').attr('title', 'Zoom out by ' + $('#zoom_out_input').val() + '%')
-            $("#zoom-btn").removeClass("a-disabled");
-        } else if (zoom_info[0] == 3) {
-            $('#zoom-btn').html('<i class="fa-solid fa-magnifying-glass"></i>');
-            $('#zoom-btn').attr('title', 'Zoom into selection')
-        } else if (zoom_info[0] == 4) {
-            $('#zoom-btn').html('<i class="fa-solid fa-magnifying-glass-arrow-right"></i>');
-            $('#zoom-btn').attr('title', 'Zoom into ' + $('#zoom_input').val() + 'px/s')
-            $("#zoom-btn").removeClass("a-disabled");
-        }
         $('#zoom_in_input').val(zoom_info[1])
         $('#zoom_out_input').val(zoom_info[2])
         $('#zoom_input').val(zoom_info[3])
     }
-
-    $('#zoom-btn').click(function (e) {
-        if ($.cookie('zoom_info')) {
-            const zoom_info = JSON.parse(decodeURIComponent($.cookie('zoom_info')));
-            if (zoom_info[0] == 1) {
-                $("#btn-zoom-in").trigger('click')
-            } else if (zoom_info[0] == 2) {
-                $("#btn-zoom-out").trigger('click')
-            } else if (zoom_info[0] == 3) {
-                $("#zoom-submit").trigger('click')
-            } else if (zoom_info[0] == 4) {
-                $("#zoom-pix").trigger('click')
-            }
-        } else {
-            $("#zoom-submit").trigger('click')
-        }
-        e.preventDefault();
-    })
 });

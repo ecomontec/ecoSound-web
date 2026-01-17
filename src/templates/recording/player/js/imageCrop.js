@@ -46,44 +46,28 @@ selectData = function (coordinates) {
     enableZoom();
     setSelectionData(coordinates);
     $("#zoom-submit").removeClass("a-disabled");
-    if ($.cookie('zoom_info')) {
-        const zoom_info = JSON.parse(decodeURIComponent($.cookie('zoom_info')));
-        if (zoom_info[0] == 3) {
-            $("#zoom-btn").removeClass("a-disabled");
-        }
-    } else {
-        $("#zoom-btn").removeClass("a-disabled");
-    }
 }
 
 onRelease = function () {
     $("#zoom-submit").addClass("a-disabled");
-    if ($.cookie('zoom_info')) {
-        const zoom_info = JSON.parse(decodeURIComponent($.cookie('zoom_info')));
-        if (zoom_info[0] == 3) {
-            $("#zoom-btn").addClass("a-disabled");
-        }
-    } else {
-        $("#zoom-btn").addClass("a-disabled");
-    }
 }
 
 
 $(function () {
     $('.loading-grey').show();
     $("#thumbnail").width($(".recording-navigation").width()).height('69px')
-    var myJcrop = img_jcrop()
+    window.jcropApi = img_jcrop()
     var resizeTimer = null;
-    myJcrop.destroy()
-    myJcrop = img_jcrop()
+    window.jcropApi.destroy()
+    window.jcropApi = img_jcrop()
     $('.loading-grey').hide();
     $(window).resize(function () {
         $('.loading-grey').show();
         $("#thumbnail").width($(".recording-navigation").width()).height('69px')
         if (resizeTimer) clearTimeout(resizeTimer);
         resizeTimer = setTimeout(function () {
-            myJcrop.destroy()
-            myJcrop = img_jcrop()
+            window.jcropApi.destroy()
+            window.jcropApi = img_jcrop()
             playerCursor.style.left = (currentTime < 0 ? 0 : currentTime / selectionDuration) * specWidth + 'px';
             $('.loading-grey').hide();
         }, 200);
@@ -92,7 +76,7 @@ $(function () {
     let canExec = true;
     $(document).on('keydown', function (e) {
         if ($('.jcrop-holder') && e.key == 'Control' && $('#play').attr('data-playing') === 'false') {
-            myJcrop.destroy()
+            window.jcropApi.destroy()
         }
         if (canExec) {
             if (e.code === 'Enter' && !$('#modal-div').hasClass('show')) {
@@ -125,7 +109,7 @@ $(function () {
     });
     $(document).on('keyup', function (e) {
         if (!$('.jcrop-holder').length && e.key == 'Control' && $('#play').attr('data-playing') === 'false') {
-            myJcrop = $.Jcrop('#cropbox', {
+            window.jcropApi = $.Jcrop('#cropbox', {
                 boxWidth: $('#player_box').width(),
                 boxHeight: 400,
                 onChange: setSelectionData,

@@ -27,27 +27,27 @@
             <textarea id="comments" name="note" class="form-control form-control-sm" placeholder="Insert your comments" maxlength="200" rows="2"></textarea>
         </div>
     {% endif %}
-    <div class="review-table">
-        <table class="table table-sm">
+    <div class="review-table" style="max-height: 100px; overflow-y: auto;">
+        <table class="table table-sm table-borderless mb-0" style="font-size: 0.75rem;">
             <thead>
             <tr>
                 {% if isUserLogged %}
-                    <th scope="col" class="col-form-label-sm">Reviewer</th>
+                    <th scope="col" class="py-1">Reviewer</th>
                 {% endif %}
-                <th scope="col" class="col-form-label-sm">Status</th>
-                <th scope="col" class="col-form-label-sm">Species</th>
-                <th scope="col" class="col-form-label-sm">Date</th>
+                <th scope="col" class="py-1">Status</th>
+                <th scope="col" class="py-1">Species</th>
+                <th scope="col" class="py-1">Date</th>
             </tr>
             </thead>
             <tbody>
             {% for review in reviews %}
                 <tr>
                     {% if isUserLogged %}
-                        <td class="form-control-sm">{{ review.reviewer }}</td>
+                        <td class="py-1">{{ review.reviewer }}</td>
                     {% endif %}
-                    <td class="form-control-sm">{{ review.status }}</td>
-                    <td class="form-control-sm">{{ review.binomial }}</td>
-                    <td class="form-control-sm">{{ review.creation_date|date("d/m/Y") }}</td>
+                    <td class="py-1">{{ review.status }}</td>
+                    <td class="py-1">{{ review.binomial }}</td>
+                    <td class="py-1">{{ review.creation_date|date("d/m/Y") }}</td>
                 </tr>
             {% endfor %}
             </tbody>

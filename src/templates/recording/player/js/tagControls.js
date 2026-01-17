@@ -1,44 +1,111 @@
 $('.canvas')
-    .on('mouseleave', '.tag-controls', function () {
-        $(".js-panel-tag").hide();
-        $(this).css("background-color", '');
+    .on('mouseleave', '.tag-controls', function (e) {
+        // Remove hover highlight (but keep selected highlight if selected)
+        $(this).removeClass('tag-hover');
+        
+        // Don't hide popup if mouse is moving to the popup
+        let $popup = $(this).next('.js-panel-tag');
+        let popupRect = $popup.length ? $popup[0].getBoundingClientRect() : null;
+        if (popupRect && e.clientX >= popupRect.left && e.clientX <= popupRect.right &&
+            e.clientY >= popupRect.top && e.clientY <= popupRect.bottom) {
+            return;
+        }
+        // Small delay to allow moving to popup
+        let $tag = $(this);
+        setTimeout(function() {
+            if (!$popup.is(':hover') && !$tag.is(':hover')) {
+                $popup.fadeOut('fast');
+            }
+        }, 100);
+    })
+    .on('mouseenter', '.tag-controls', function (e) {
+        // Add hover highlight (yellow border)
+        $(this).addClass('tag-hover');
+        
+        // Show popup on hover
+        let $popup = $(this).next('.js-panel-tag');
+        let tagRect = this.getBoundingClientRect();
+        let canvasRect = $(this).parent()[0].getBoundingClientRect();
+        
+        // Position popup near the tag
+        $popup.css({
+            "top": (tagRect.top - canvasRect.top + tagRect.height + 5) + "px",
+            "left": (tagRect.left - canvasRect.left) + "px",
+            "position": "absolute",
+            "z-index": 1000
+        });
+        
+        $(".js-panel-tag").not($popup).hide();
+        $popup.fadeIn(200);
     })
     .on('click', '.tag-controls', function (e) {
+        // Click on tag opens the editor in sidebar
         e.preventDefault();
-        $(this).css("background-color", "rgba(255,255,255, 0.15)");
-
-        let controls = $(this).next();
-        $(this).next()
-            .css("top", e.pageY - $(this).parent().offset().top)
-            .css("left", e.pageX - $(this).parent().offset().left);
-
-        if (!$(this).next().is(':visible')) {
-            $(this).next().fadeIn(400);
+        e.stopPropagation();
+        
+        let $tag = $(this);
+        let editUrl = $tag.data('edit-url');
+        
+        // Remove highlight from previously selected tags
+        $('.tag-controls').removeClass('tag-selected');
+        
+        // Highlight this tag
+        $tag.addClass('tag-selected');
+        
+        // Note: We intentionally do NOT call selectData() here anymore
+        // because it conflicts with Jcrop selections. The time/frequency
+        // coordinates are available in the tag editor form instead.
+        
+        // Hide the popup
+        $(this).next('.js-panel-tag').hide();
+        
+        // Load tag in sidebar (or modal if sidebar not available)
+        if (editUrl) {
+            if (typeof loadTagInSidebar === 'function' && $('#tag-sidebar').length) {
+                loadTagInSidebar(editUrl, {'recording_name': document.getElementsByName('recording_name')[0].value});
+            } else {
+                requestModal(editUrl, {'recording_name': document.getElementsByName('recording_name')[0].value});
+            }
         }
     })
     .on('mouseenter', '.js-panel-tag', function () {
-        $(this).prev().css("background-color", "rgba(255,255,255, 0.15)");
-        $(this).show().not(this).hide();
+        $(this).show();
     })
     .on('mouseleave', '.js-panel-tag', function () {
-        $(this).prev().css("background-color", '');
-        $(this).fadeOut("fast");
+        let $popup = $(this);
+        let $tag = $(this).prev('.tag-controls');
+        setTimeout(function() {
+            if (!$popup.is(':hover') && !$tag.is(':hover')) {
+                $popup.fadeOut('fast');
+            }
+        }, 100);
     })
     .on('click', '.zoom-tag', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Find the tag element - traverse up to card, then get previous sibling
+        let $card = $(this).closest('.js-panel-tag');
+        let tagElement = $card.prev('.tag-controls')[0];
+        
+        if (!tagElement) return;
+        
         let canvasPosition = $('#myCanvas')[0].getBoundingClientRect();
-        let tagElement = $(this).parent().parent().parent().prev()[0].getBoundingClientRect();
-        let left = tagElement.left - canvasPosition.left;
-        let top = tagElement.top - canvasPosition.top;
+        let tagRect = tagElement.getBoundingClientRect();
+        let left = tagRect.left - canvasPosition.left;
+        let top = tagRect.top - canvasPosition.top;
         let x = $('#x').val();
         let w = $('#w').val();
         let y = $('#y').val();
         let h = $('#h').val();
+        
         selectData({
             x: left,
-            x2: left + tagElement.width,
+            x2: left + tagRect.width,
             y: top,
-            y2: top + tagElement.height,
+            y2: top + tagRect.height,
         });
+        
         if (e.altKey) {
             var tempform = document.createElement('form');
             tempform.action = window.location.href;
@@ -62,7 +129,6 @@ $('.canvas')
         } else {
             $('#recordingForm').submit();
         }
-        e.preventDefault();
     })
     .on('click', '.js-tag', function (e) {
         $('.js-panel-tag').hide();
@@ -93,3 +159,15 @@ $('.canvas')
         $("#recordingForm").submit();
         e.preventDefault();
     });
+
+// Click on canvas (not on a tag) deselects any selected tag
+$('#myCanvas').on('click', function(e) {
+    // Only if click is directly on canvas or jcrop elements, not on tag-controls
+    if (!$(e.target).closest('.tag-controls').length && !$(e.target).closest('.js-panel-tag').length) {
+        $('.tag-controls').removeClass('tag-selected');
+        // Close sidebar if open
+        if (typeof closeTagSidebar === 'function') {
+            closeTagSidebar();
+        }
+    }
+});

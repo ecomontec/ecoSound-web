@@ -1,6 +1,6 @@
 <div class="row">
     <div class="loading-grey"></div>
-    <div id="player_box" class="col-9">
+    <div id="player_box" class="col-12">
         <div id="myCanvas" class="canvas">
             {% include 'recording/player/tagBoxes.html.twig' with {'tags': player.tags, 'show_tags': player.isShowTags} %}
             <div id="playerCursor" class="player-line" title="Drag or Ctrl+mouse click to place cursor"></div>
@@ -15,10 +15,15 @@
                     <button id="dropdown" class="btn btn-link text-dark" style="padding: 0" data-playing="false" role="switch" aria-checked="false" data-toggle="dropdown">
                         <i class="fa-solid fa-caret-down" style="font-size: 12px"></i>
                     </button>
-                    <div class="dropdown-menu" id="dropdown-menu-play" style="min-width: 30px">
+                    <div class="dropdown-menu" id="dropdown-menu-play" style="min-width: 180px">
                         <button id="continue-playback" class="btn btn-link {{ player.isContinuousPlay ? 'active':'' }}" title="Continue playback beyond current frame">
-                            <i class="continue-playback"></i>
+                            <i class="continue-playback"></i> Continue playback
                         </button>
+                        <div class="dropdown-divider"></div>
+                        <div class="playback-slider-container">
+                            <input id="playback-rate" class="custom-range js-playback-rate-control" type="range" min="0.05" max="1" step="0.01" value="1" style="width: 100%;">
+                            <label for="playback-rate">Speed: <span class="playback-rate-value">1.0</span>x</label>
+                        </div>
                     </div>
                 </div>
                 <div>
@@ -68,60 +73,11 @@
                             <i class="fas fa-clipboard"></i>
                         </a>
                     </div>
-                    <div class="btn-group btn-group-toggle dark-buttons" data-toggle="buttons">
-                        <label for="continuous-play" id="btn-playback" class="btn btn-link {{ player.isContinuousPlay ? 'active':'' }}" title="Continuous playback" hidden>
-                            <input type="checkbox" id="continuous-play" name="continuous_play" autocomplete="off" {{ player.isContinuousPlay ? 'checked':'' }}>
-                            <i class="fas fa-redo-alt"></i>
-                        </label>
-                        <label for="filter" class="btn btn-link" title="Filter">
-                            <input type="checkbox" id="filter" name="filter">
-                            <i class="fas fa-filter"></i>
-                        </label>
-                    </div>
                 </form>
             </div>
         </div>
     </div>
     {% if isUserLogged %}
-        <div class="col-3 z-1000">
-            <div>
-                <label class="col-form-label">
-                    <strong>My Label:</strong>
-                </label>
-            </div>
-            <div class="mb-2">
-                <form id="reclabelform" novalidate>
-                    <input type="hidden" name="recording_id" value="{{ player.recording.recording_id }}"/>
-                    <input type="hidden" name="user_id" value="{{ user_id }}"/>
-                    <select id="reclabel" name="label_id" required>
-                        {% for lbl in labels %}
-                            <option value="{{ lbl.id }}" {{ lbl.id == myLabel.id ? 'selected' }}>{{ lbl.name }}</option>
-                        {% endfor %}
-                    </select>
-                    <a href="{{ baseUrl }}/recording/addLabel" class="js-open-modal" title="add custom label">
-                        <i class="fas fa-plus pr-1"></i>
-                    </a>
-                </form>
-            </div>
-            <div>
-                <a href="#" class="js-open-maad-modal">
-                    <i class="svg-sum mt-3"></i>
-                    <strong>Acoustic indices</strong>
-                </a>
-            </div>
-            <div>
-                <a href="#" class="js-open-tf-modal">
-                    <i class="svg-model mt-3"></i>
-                    <strong>AI models</strong>
-                </a>
-            </div>
-            <div>
-                <a href="#" class="js-open-aa-modal">
-                    <i class="png-ruler mt-3"></i>
-                    <strong>Acoustic analysis</strong>
-                </a>
-            </div>
-        </div>
         <div class="modal fade" id="modal-maad" tabindex="-1" role="dialog">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">

@@ -60,41 +60,42 @@
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <button class="btn btn-link btn-sm p-0" type="button" id="timeFreqToggle" aria-expanded="true" aria-controls="timeFreqCollapse">
-                                    <i class="fas fa-chevron-down"></i> Time & Frequency
-                                </button>
-                                <div id="timeFreqCollapse" style="display: block;">
-                                    <div class="form-group mt-2">
-                                        <label class="col-form-label-sm" for="min_time">Time </label>
-                                        <div class="form-inline">
-                                            <input id="min_time" class="form-control form-control-sm mr-2 ml-1" name="min_time" type="text" maxlength="100" value="{{ tag.minTime }}"> -
-                                            <input id="max_time" class="form-control form-control-sm ml-2 mr-2" name="max_time" type="text" maxlength="100" value="{{ tag.maxTime }}">
-                                            <label class="col-form-label-sm" for="max_time">sec</label>
-                                        </div>
+                            <div class="form-row align-items-center">
+                                <div class="form-group col-6 mb-1">
+                                    <label class="col-form-label-sm" for="min_time">Time (sec)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input id="min_time" class="form-control form-control-sm" name="min_time" type="text" maxlength="100" value="{{ tag.minTime }}" style="max-width: 70px;">
+                                        <div class="input-group-prepend input-group-append"><span class="input-group-text">-</span></div>
+                                        <input id="max_time" class="form-control form-control-sm" name="max_time" type="text" maxlength="100" value="{{ tag.maxTime }}" style="max-width: 70px;">
                                     </div>
-
-                                    <div class="form-group">
-                                        <label class="col-form-label-sm" for="min_freq">Frequency </label>
-                                        <div class="form-inline">
-                                            <input id="min_freq" class="form-control form-control-sm mr-2 ml-1" name="min_freq" type="text" maxlength="100" value="{{ tag.minFrequency }}"> -
-                                            <input id="max_freq" class="form-control form-control-sm ml-2 mr-2" name="max_freq" type="text" maxlength="100" value="{{ tag.maxFrequency }}">
-                                            <label class="col-form-label-sm" for="max_freq">Hz</label>
-                                        </div>
+                                </div>
+                                <div class="form-group col-6 mb-1">
+                                    <label class="col-form-label-sm" for="min_freq">Freq (Hz)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input id="min_freq" class="form-control form-control-sm" name="min_freq" type="text" maxlength="100" value="{{ tag.minFrequency }}" style="max-width: 70px;">
+                                        <div class="input-group-prepend input-group-append"><span class="input-group-text">-</span></div>
+                                        <input id="max_freq" class="form-control form-control-sm" name="max_freq" type="text" maxlength="100" value="{{ tag.maxFrequency }}" style="max-width: 70px;">
                                     </div>
                                 </div>
                             </div>
 
                             <div class="form-row align-items-center mt-2 biophony" id="distance_group">
-                                <div class="form-group col-auto">
+                                <div class="form-group col-auto mb-1">
                                     <label class="col-form-label-sm" for="callDistance">Sound Distance </label>
-                                    <input id="callDistance" class="form-control form-control-sm" name="sound_distance_m" type="number" value="{{ tag.callDistance }}" readonly>
+                                    <div class="input-group input-group-sm">
+                                        <input id="callDistance" class="form-control form-control-sm" name="sound_distance_m" type="number" value="{{ tag.callDistance }}" readonly>
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-outline-primary btn-sm estimate-distance-btn" id="est_{{ tag.id }}" title="Estimate call distance">
+                                                <i class="fas fa-bullhorn"></i>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="form-group col-auto">
+                                <div class="form-group col-auto mb-1">
                                     <div class="form-check form-control-sm pt-4" id="dist_check">
                                         <input class="form-check-input" id='distanceNotEstimable' name="distance_not_estimable" type="checkbox" value="1" {{ tag.distanceNotEstimable ? "checked" }}>
                                         <label class="form-check-label" for="distanceNotEstimable">
-                                            Distance not estimable
+                                            Not estimable
                                         </label>
                                     </div>
                                 </div>
@@ -130,51 +131,59 @@
                                 <textarea id="comments" name="comments" class="form-control form-control-sm" placeholder="Insert your comments" maxlength="200" rows="3">{{ tag.comments }}</textarea>
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group mb-1">
                                 {% if edit %}
-                                    <div class="col-form-label-sm">Creator Type: {{ tag.creatorType }}{% if tag.confidence %}, Confidence: {{ tag.confidence }} {% endif %}</div>
+                                    <div class="text-muted" style="font-size: 0.7rem;">Creator: {{ tag.creatorType }}{% if tag.confidence %}, Confidence: {{ tag.confidence }}{% endif %}</div>
                                 {% endif %}
                                 {% if isUserLogged %}
                                     {% if reviewPanel !='' %}
-                                        <div class="col-form-label-sm inline">Created by {{ tag.userName }} on {{ tag.creationDate }} (UTC)</div>
+                                        <div class="text-muted" style="font-size: 0.7rem;">By {{ tag.userName }}, {{ tag.creationDate }} (UTC)</div>
                                     {% else %}
-                                        <label class="col-form-label-sm" for="user_full_name">Creation User: </label>
-                                        <span id="user_full_name"><small>{{ tag.userName }}</small></span>
+                                        <div class="text-muted" style="font-size: 0.7rem;">By {{ tag.userName }}</div>
                                     {% endif %}
                                 {% endif %}
-                                <a href="#" id="exportTagUrl" class="btn btn-link inline" title="Export URL to clipboard">
-                                    <i class="fa fa-share-alt"></i>
-                                </a>
+                                <input type="hidden" id="exportTagUrlData" value="{{ tag.id }}">
                             </div>
                         </form>
                     </div>
+                    {% if reviewPanel !='' %}
                     <div id="review-panel">
+                        <h6 class="text-muted mb-2" style="font-size: 0.8rem;"><i class="fas fa-clipboard-check mr-1"></i>Reviews</h6>
                         {{ reviewPanel | raw }}
                     </div>
+                    {% endif %}
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer" style="flex-wrap: wrap; gap: 0.25rem;">
                 {% if edit %}
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-outline-primary" {{ displaySaveButton }} id="saveButton" disabled>
-                            <i class="fas fa-save" aria-hidden="true"></i> Save & Close
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-primary btn-sm" {{ displaySaveButton }} id="saveButton" disabled>
+                            <i class="fas fa-save" aria-hidden="true"></i> Save
                         </button>
-                        <a class="btn btn-outline-primary dropdown-toggle type-btn" data-toggle="dropdown" {{ displaySaveButton }} aria-haspopup="true" aria-expanded="false">
-                            <i class="la la-angle-down"></i>
-                        </a>
-                        <div class="dropdown-menu">
+                        <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle dropdown-toggle-split type-btn" data-toggle="dropdown" {{ displaySaveButton }} aria-haspopup="true" aria-expanded="false">
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right">
                             <a class="dropdown-item save-type" href="#">Save & Close</a>
-                            <a class="dropdown-item save-type" href="#">Save & Next Tag</a>
-                            <a class="dropdown-item save-type" href="#">Save & Previous Tag</a>
+                            <a class="dropdown-item save-type" href="#">Save & Next</a>
+                            <a class="dropdown-item save-type" href="#">Save & Previous</a>
                             <a class="dropdown-item save-type" href="#">Save Only</a>
                         </div>
                     </div>
-                    <a class='btn {{ previous==0?'btn-secondary':'btn-outline-primary' }}' id="btn-previous">
-                        <i class="fas fa-arrow-left" aria-hidden="true"></i> Previous
+                    <button type="button" class="btn btn-outline-danger btn-sm" {{ displayDeleteButton }} id="deleteButton" data-tag-id="{{ tag.id }}">
+                        <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                    </button>
+                    <a href="#" id="exportTagUrl" class="btn btn-outline-secondary btn-sm" title="Share tag URL">
+                        <i class="fa fa-share-alt"></i>
                     </a>
-                    <a class='btn {{ next==0?'btn-secondary':'btn-outline-primary' }}' id="btn-next">
-                        <i class="fas fa-arrow-right" aria-hidden="true"></i> Next
-                    </a>
+                    <div class="btn-group btn-group-sm ml-auto">
+                        <a class='btn btn-sm {{ previous==0?'btn-secondary':'btn-outline-primary' }}' id="btn-previous" title="Previous tag">
+                            <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                        </a>
+                        <a class='btn btn-sm {{ next==0?'btn-secondary':'btn-outline-primary' }}' id="btn-next" title="Next tag">
+                            <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                        </a>
+                    </div>
                     <script>
                         var sound_id = $.cookie('save_button');
                         $('.save-type').click(function () {
@@ -185,13 +194,13 @@
                         })
                     </script>
                 {% else %}
-                    <button type="button" class="btn btn-outline-primary" {{ displaySaveButton }} id="saveButton">
+                    <button type="button" class="btn btn-outline-primary btn-sm" {{ displaySaveButton }} id="saveButton">
                         <i class="fas fa-save" aria-hidden="true"></i> Save
                     </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm" {{ displayDeleteButton }} id="deleteButton" data-tag-id="{{ tag.id }}">
+                        <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                    </button>
                 {% endif %}
-                <button type="button" class="btn btn-outline-danger" {{ displayDeleteButton }} id="deleteButton" data-tag-id="{{ tag.id }}">
-                    <i class="fas fa-trash-alt" aria-hidden="true"></i> Delete
-                </button>
             </div>
         </div>
     </div>
@@ -214,7 +223,8 @@
         $("#sound_id").find("option[value=" + sound_id + "]").prop("selected", true);
         {% endif %}
         $('#sound_id').selectpicker('refresh');
-        $(".btn").css("text-align", "left");
+        // Only affect buttons within the tag form, not all buttons on page
+        $("#modal-div .btn, #tag-sidebar-content .btn").css("text-align", "left");
         $('#tag-panel').on('input', 'input, select', function () {
             $('#saveButton').removeAttr('disabled');
             $('.type-btn').removeAttr('disabled');
