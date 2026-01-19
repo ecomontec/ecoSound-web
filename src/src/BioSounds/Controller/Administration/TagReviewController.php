@@ -30,6 +30,14 @@ class TagReviewController extends BaseController
         if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
         }
+        
+        // Initialize variables
+        $projectId = null;
+        $colId = null;
+        $recordingId = null;
+        $collections = [];
+        $recordings = [];
+        
         if (isset($_GET['projectId'])) {
             $projectId = $_GET['projectId'];
         }
@@ -59,10 +67,12 @@ class TagReviewController extends BaseController
                 $projectId = $projects[0]->getId();
             }
             $collections = (new CollectionProvider())->getByProject($projectId, Auth::getUserID());
-            if (empty($colId) && $collections) {
+            if (empty($colId) && !empty($collections)) {
                 $colId = $collections[0]->getId();
             }
-            $recordings = (new RecordingProvider())->getHasTags($colId);
+            if (!empty($colId)) {
+                $recordings = (new RecordingProvider())->getHasTags($colId);
+            }
             if (empty($recordingId)) {
                 $recordingId = 0;
             }
@@ -86,10 +96,30 @@ class TagReviewController extends BaseController
 
     public function getListByPage($collectionId, $recordingId)
     {
-        if ($collectionId == null) {
-            $collectionId = 0;
+        // Debug logging
+        error_log("TagReview getListByPage called with collectionId: " . var_export($collectionId, true) . ", recordingId: " . var_export($recordingId, true));
+        
+        // Ensure we have valid parameters (0 is valid for recordingId = show all)
+        // Convert to int for proper comparison
+        $collectionId = intval($collectionId);
+        $recordingId = intval($recordingId);
+        
+        if ($collectionId <= 0) {
+            // No valid collection selected - return empty result
+            error_log("TagReview: Invalid collection ID: " . $collectionId);
+            $result = [
+                'draw' => isset($_POST['draw']) ? $_POST['draw'] : 1,
+                'recordsTotal' => 0,
+                'recordsFiltered' => 0,
+                'data' => [],
+            ];
+            return json_encode($result);
         }
-        $total = count((new TagReviewProvider())->getReview($collectionId, $recordingId));
+        
+        // recordingId can be 0 (meaning show all recordings in collection)
+        $reviews = (new TagReviewProvider())->getReview($collectionId, $recordingId);
+        error_log("TagReview: Found " . count($reviews) . " total reviews for collection " . $collectionId);
+        $total = count($reviews);
         $start = $_POST['start'];
         $length = $_POST['length'];
         $search = $_POST['search']['value'];

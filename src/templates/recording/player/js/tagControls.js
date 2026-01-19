@@ -61,10 +61,16 @@ $('.canvas')
         
         // Load tag in sidebar (or modal if sidebar not available)
         if (editUrl) {
+            // Get data from the recording form (includes all hidden inputs like type)
+            const formData = new FormData($('#recordingForm')[0]);
+            
+            // The form already has the type input, so it will be included automatically
+            // We just need the form data for the request
+            
             if (typeof loadTagInSidebar === 'function' && $('#tag-sidebar').length) {
-                loadTagInSidebar(editUrl, {'recording_name': document.getElementsByName('recording_name')[0].value});
+                loadTagInSidebar(editUrl, formData);
             } else {
-                requestModal(editUrl, {'recording_name': document.getElementsByName('recording_name')[0].value});
+                requestModal(editUrl, formData);
             }
         }
     })
