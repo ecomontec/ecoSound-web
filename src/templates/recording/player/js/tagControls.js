@@ -96,6 +96,9 @@ $('.canvas')
         
         if (!tagElement) return;
         
+        // Get tag ID
+        const tagId = tagElement.getAttribute('id');
+        
         let canvasPosition = $('#myCanvas')[0].getBoundingClientRect();
         let tagRect = tagElement.getBoundingClientRect();
         let left = tagRect.left - canvasPosition.left;

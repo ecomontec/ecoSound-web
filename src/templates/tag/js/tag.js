@@ -198,9 +198,7 @@ document.addEventListener('DOMContentLoaded', function () {
             newTag += "<div class='card js-panel-tag' style='display:none;'>";
             newTag += "<div class='card-header py-1 px-2'><small>" + tagId + " | " + tagName + "</small></div>";
             newTag += "<div class='card-body p-2 mx-auto'>";
-            newTag += "<a href='#' onclick='return false;' class='btn btn-outline-primary btn-sm zoom-tag' title='Zoom tag (+Alt: open in new tab)'>";
-            newTag += "<i class='fas fa-search' aria-hidden='true'></i> Zoom</a>";
-            newTag += "<div class='text-muted small mt-1 text-center'>Click tag to edit</div>";
+            newTag += "<div class='text-muted small text-center'>Click tag to edit</div>";
             newTag += "</div></div>";
 
             $('#myCanvas').append(newTag);

@@ -11,10 +11,6 @@
 
     // Store navigation data for the current tag
     window.currentTagNavigation = null;
-    // Restore zoom state from session storage, default: no zoom when navigating (zoom is enabled in review/task mode)
-    window.zoomOnNavigate = sessionStorage.getItem('zoomOnNavigate') === 'true' || false;
-    // Track if this is the initial tag load (from dashboard/URL) vs. user navigation
-    window.isInitialTagLoad = true;
 
     // Function to load tag into sidebar
     window.loadTagInSidebar = function(href, data = [], isUserNavigation = false) {
@@ -28,13 +24,6 @@
             if (response.navigation) {
                 window.currentTagNavigation = response.navigation;
                 console.log('Navigation data received:', response.navigation); // Debug
-                // Only auto-enable zoom on initial load from dashboard, not during user navigation
-                if (!isUserNavigation && window.isInitialTagLoad && (response.navigation.isTask || response.navigation.hasTaskAssignment)) {
-                    window.zoomOnNavigate = true;
-                    sessionStorage.setItem('zoomOnNavigate', 'true');
-                }
-                // Mark that we've completed the initial load
-                window.isInitialTagLoad = false;
             } else {
                 console.log('No navigation data in response'); // Debug
                 window.currentTagNavigation = null;
@@ -64,88 +53,63 @@
             // Add title with navigation controls
             if ($modalTitle.length && currentTagId) {
                 const nav = window.currentTagNavigation;
-                const isReviewMode = nav && (nav.isTask || nav.hasTaskAssignment);
+                const isReviewMode = nav && nav.isTask;
                 
                 sidebarHTML += '<div class="d-flex align-items-center mb-2 pb-2 border-bottom">';
                 
                 // Tag label
-                sidebarHTML += '<span class="mr-2"><strong>Tag</strong></span>';
+                sidebarHTML += '<span class="mr-2"><strong>Tag ' + currentTagId + '</strong></span>';
                 
-                // Previous button
-                const hasPrevious = nav && nav.previous;
-                sidebarHTML += '<button class="btn btn-sm ' + (hasPrevious ? 'btn-outline-primary' : 'btn-secondary') + ' mr-1" ';
-                sidebarHTML += 'id="sidebar-nav-prev" title="Previous tag"' + (!hasPrevious ? ' disabled' : '') + '>';
-                sidebarHTML += '<i class="fas fa-arrow-left"></i></button>';
-                
-                // Tag dropdown (narrower, without "Tag" prefix)
-                sidebarHTML += '<select class="form-control form-control-sm mx-1" id="sidebar-tag-dropdown" style="width: 80px;">';
-                
-                // Collect all visible tags from the DOM with their positions
+                // Find previous and next visible tags
                 const visibleTags = [];
                 $('.tag-controls:visible').each(function() {
                     const tagId = $(this).attr('id');
                     if (tagId && !isNaN(tagId)) {
-                        // Get left position (start time) for sorting
                         const leftPos = parseFloat($(this).css('left')) || 0;
-                        visibleTags.push({
-                            id: parseInt(tagId),
-                            left: leftPos
-                        });
+                        visibleTags.push({ id: parseInt(tagId), left: leftPos });
                     }
                 });
+                visibleTags.sort((a, b) => a.left - b.left);
                 
-                // Always include previous and next tags from navigation ONLY if zoom is ON
-                // When zoom is OFF, only show visible tags to maintain consistency
-                const tagsToShow = new Map(); // Use Map to avoid duplicates
-                visibleTags.forEach(tag => tagsToShow.set(tag.id, tag));
+                const currentIndex = visibleTags.findIndex(t => t.id == currentTagId);
+                const hasPrevVisible = currentIndex > 0;
+                const hasNextVisible = currentIndex >= 0 && currentIndex < visibleTags.length - 1;
                 
-                // Only add adjacent tags to dropdown if zoom navigation is enabled
-                if (window.zoomOnNavigate) {
-                    // Add previous tag if available
-                    if (nav && nav.previous) {
-                        if (!tagsToShow.has(nav.previous.id)) {
-                            // Estimate position for sorting (before current)
-                            const currentLeft = tagsToShow.get(parseInt(currentTagId))?.left || 0;
-                            tagsToShow.set(nav.previous.id, { id: nav.previous.id, left: currentLeft - 100 });
-                        }
-                    }
-                    
-                    // Add next tag if available
-                    if (nav && nav.next) {
-                        if (!tagsToShow.has(nav.next.id)) {
-                            // Estimate position for sorting (after current)
-                            const currentLeft = tagsToShow.get(parseInt(currentTagId))?.left || 0;
-                            tagsToShow.set(nav.next.id, { id: nav.next.id, left: currentLeft + 100 });
-                        }
-                    }
-                }
+                // Navigation from sequence (for review mode)
+                const hasPrevSequence = nav && nav.previous;
+                const hasNextSequence = nav && nav.next;
                 
-                // Convert Map to array and sort by position
-                const allTags = Array.from(tagsToShow.values()).sort((a, b) => a.left - b.left);
+                // Shift to adjacent visible tag buttons (no zoom)
+                sidebarHTML += '<button class="btn btn-sm ' + (hasPrevVisible ? 'btn-outline-secondary' : 'btn-secondary') + ' mr-1" ';
+                sidebarHTML += 'id="sidebar-shift-prev" title="Previous visible tag (no zoom)"' + (!hasPrevVisible ? ' disabled' : '') + '>';
+                sidebarHTML += '<i class="fas fa-arrow-left"></i></button>';
                 
-                // Populate dropdown (without "Tag" prefix or checkmark)
-                if (allTags.length > 0) {
-                    allTags.forEach(function(tag) {
-                        const isSelected = tag.id == currentTagId ? ' selected' : '';
-                        sidebarHTML += '<option value="' + tag.id + '"' + isSelected + '>' + tag.id + '</option>';
-                    });
-                } else {
-                    // Fallback if no tags found at all
-                    sidebarHTML += '<option value="' + currentTagId + '" selected>' + currentTagId + '</option>';
-                }
-                
-                sidebarHTML += '</select>';
-                
-                // Next button
-                const hasNext = nav && nav.next;
-                sidebarHTML += '<button class="btn btn-sm ' + (hasNext ? 'btn-outline-primary' : 'btn-secondary') + ' ml-1" ';
-                sidebarHTML += 'id="sidebar-nav-next" title="Next tag"' + (!hasNext ? ' disabled' : '') + '>';
+                sidebarHTML += '<button class="btn btn-sm ' + (hasNextVisible ? 'btn-outline-secondary' : 'btn-secondary') + ' mr-2" ';
+                sidebarHTML += 'id="sidebar-shift-next" title="Next visible tag (no zoom)"' + (!hasNextVisible ? ' disabled' : '') + '>';
                 sidebarHTML += '<i class="fas fa-arrow-right"></i></button>';
                 
-                // Zoom toggle button (after right arrow)
-                sidebarHTML += '<button class="btn btn-sm ' + (window.zoomOnNavigate ? 'btn-outline-primary' : 'btn-outline-secondary') + ' ml-2" ';
-                sidebarHTML += 'id="sidebar-zoom-toggle" title="' + (window.zoomOnNavigate ? 'Tag zoom ON: arrow buttons will zoom to adjacent tag' : 'Tag zoom OFF: shuttle to adjacent tag if present in current view') + '">';
-                sidebarHTML += '<i class="fas ' + (window.zoomOnNavigate ? 'fa-search' : 'fa-arrows-alt') + '"></i></button>';
+                // Zoom to adjacent tag buttons (left button on left, right button on right)
+                sidebarHTML += '<button class="btn btn-sm ' + (hasPrevSequence ? 'btn-outline-primary' : 'btn-secondary') + ' mr-1" ';
+                sidebarHTML += 'id="sidebar-zoom-prev" title="Zoom to previous tag"' + (!hasPrevSequence ? ' disabled' : '') + '>';
+                sidebarHTML += '<i class="fas fa-arrow-left"></i> <i class="fas fa-search"></i></button>';
+                
+                sidebarHTML += '<button class="btn btn-sm ' + (hasNextSequence ? 'btn-outline-primary' : 'btn-secondary') + ' mr-2" ';
+                sidebarHTML += 'id="sidebar-zoom-next" title="Zoom to next tag"' + (!hasNextSequence ? ' disabled' : '') + '>';
+                sidebarHTML += '<i class="fas fa-search"></i> <i class="fas fa-arrow-right"></i></button>';
+                
+                // Padding multiplier for zoom
+                const savedPadding = sessionStorage.getItem('tagZoomPadding') || '0';
+                sidebarHTML += '<div class="d-flex align-items-center mr-2" style="font-size: 0.85rem;">';
+                sidebarHTML += '<label class="mb-0 mr-1" for="zoom-padding" title="Add context around tag when zooming (multiplier of tag duration)">Pad:</label>';
+                sidebarHTML += '<input type="number" id="zoom-padding" class="form-control form-control-sm" ';
+                sidebarHTML += 'style="width: 45px; height: 31px; padding: 0.25rem 0.3rem;" min="0" max="10" step="0.5" value="' + savedPadding + '" title="Padding multiplier (0-10x tag duration)">';
+                sidebarHTML += '<span class="ml-1">×</span>';
+                sidebarHTML += '</div>';
+                
+                // Review mode badge (only shown when in task/review mode)
+                if (isReviewMode) {
+                    sidebarHTML += '<span class="badge badge-success ml-2">Review Mode</span>';
+                }
                 
                 sidebarHTML += '</div>';
             } else if ($modalTitle.length) {
@@ -251,9 +215,6 @@
             
             // Initialize navigation controls
             initializeSidebarNavigation();
-            
-            // Rebuild navigation dropdown to ensure correct button states based on zoom and visibility
-            rebuildNavigationDropdown();
             
             // Update tag border style based on whether there are reviews
             const tagId = $sidebar.find('#reviewForm input[name="tag_id"]').val() || 
@@ -866,10 +827,7 @@
                     <small>${tagId} | ${tagName}</small>
                 </div>
                 <div class="card-body p-2 mx-auto">
-                    <a href='#' onclick='return false;' class='btn btn-outline-primary btn-sm zoom-tag' title='Zoom tag (+Alt: open in new tab)'>
-                        <i class='fas fa-search' aria-hidden='true'></i> Zoom
-                    </a>
-                    <div class="text-muted small mt-1 text-center">Click tag to edit</div>
+                    <div class="text-muted small text-center">Click tag to edit</div>
                 </div>
             </div>
         `;
@@ -877,252 +835,178 @@
         $('#' + tagId).after(panelHTML);
     }
     
-    // Function to rebuild navigation dropdown based on zoom state
-    function rebuildNavigationDropdown() {
-        const $sidebar = $('#tag-sidebar-content');
-        const $dropdown = $sidebar.find('#sidebar-tag-dropdown');
-        
-        if (!$dropdown.length) return;
-        
-        const currentTagId = $dropdown.val();
-        const nav = window.currentTagNavigation;
-        
-        // Collect tags that are actually visible on-screen (not just CSS visible)
-        const visibleTags = [];
-        const spectrumWidth = typeof specWidth !== 'undefined' ? specWidth : $('#myCanvas').width() || 1000;
-        
-        $('.tag-controls:visible').each(function() {
-            const tagId = $(this).attr('id');
-            if (tagId && !isNaN(tagId)) {
-                const leftPos = parseFloat($(this).css('left')) || 0;
-                const tagWidth = parseFloat($(this).css('width')) || 0;
-                
-                // Only include tags that are actually within the spectrogram view
-                // Tag is on-screen if any part of it is visible (with small margin for edges)
-                if (leftPos + tagWidth > -10 && leftPos < spectrumWidth + 10) {
-                    visibleTags.push({ id: parseInt(tagId), left: leftPos });
-                }
-            }
-        });
-        
-        // Build tags to show based on zoom state
-        const tagsToShow = new Map();
-        visibleTags.forEach(tag => tagsToShow.set(tag.id, tag));
-        
-        // Only add adjacent tags if zoom is ON
-        if (window.zoomOnNavigate) {
-            if (nav && nav.previous && !tagsToShow.has(nav.previous.id)) {
-                const currentLeft = tagsToShow.get(parseInt(currentTagId))?.left || 0;
-                tagsToShow.set(nav.previous.id, { id: nav.previous.id, left: currentLeft - 100 });
-            }
-            if (nav && nav.next && !tagsToShow.has(nav.next.id)) {
-                const currentLeft = tagsToShow.get(parseInt(currentTagId))?.left || 0;
-                tagsToShow.set(nav.next.id, { id: nav.next.id, left: currentLeft + 100 });
-            }
-        }
-        
-        // Sort and rebuild dropdown
-        const allTags = Array.from(tagsToShow.values()).sort((a, b) => a.left - b.left);
-        $dropdown.empty();
-        
-        if (allTags.length > 0) {
-            allTags.forEach(function(tag) {
-                const isSelected = tag.id == currentTagId ? ' selected' : '';
-                $dropdown.append('<option value="' + tag.id + '"' + isSelected + '>' + tag.id + '</option>');
-            });
-        } else {
-            $dropdown.append('<option value="' + currentTagId + '" selected>' + currentTagId + '</option>');
-        }
-        
-        // Update navigation buttons
-        const hasPrevious = nav && nav.previous && (window.zoomOnNavigate || tagsToShow.has(nav.previous.id));
-        const hasNext = nav && nav.next && (window.zoomOnNavigate || tagsToShow.has(nav.next.id));
-        
-        $sidebar.find('#sidebar-nav-prev')
-            .prop('disabled', !hasPrevious)
-            .toggleClass('btn-outline-primary', hasPrevious)
-            .toggleClass('btn-secondary', !hasPrevious);
-        
-        $sidebar.find('#sidebar-nav-next')
-            .prop('disabled', !hasNext)
-            .toggleClass('btn-outline-primary', hasNext)
-            .toggleClass('btn-secondary', !hasNext);
-    }
-    
     // Initialize sidebar navigation controls
     function initializeSidebarNavigation() {
         const $sidebar = $('#tag-sidebar-content');
         
-        // Zoom toggle handler
-        $sidebar.find('#sidebar-zoom-toggle').off('click').on('click', function() {
-            window.zoomOnNavigate = !window.zoomOnNavigate;
-            
-            // Save state to session storage
-            sessionStorage.setItem('zoomOnNavigate', window.zoomOnNavigate.toString());
-            
-            // Update button appearance (use btn-outline-primary when active, btn-outline-secondary when inactive)
-            if (window.zoomOnNavigate) {
-                $(this).removeClass('btn-outline-secondary').addClass('btn-outline-primary');
-            } else {
-                $(this).removeClass('btn-outline-primary').addClass('btn-outline-secondary');
-            }
-            const icon = $(this).find('i');
-            // Switch between magnifying glass (zoom) and pan arrows (no zoom)
-            icon.toggleClass('fa-search fa-arrows-alt');
-            
-            // Update title with clear explanation
-            $(this).attr('title', window.zoomOnNavigate ? 'Tag zoom ON: arrow buttons will zoom to adjacent tag' : 'Tag zoom OFF: shuttle to adjacent tag if present in current view');
-            
-            // Rebuild dropdown to reflect new zoom state
-            rebuildNavigationDropdown();
+        // Handle padding multiplier changes - persist to sessionStorage
+        $sidebar.find('#zoom-padding').off('change').on('change', function() {
+            let value = parseFloat($(this).val()) || 0;
+            // Validate range
+            if (value < 0) value = 0;
+            if (value > 10) value = 10;
+            $(this).val(value);
+            sessionStorage.setItem('tagZoomPadding', value.toString());
         });
         
-        // Previous button handler
-        $sidebar.find('#sidebar-nav-prev').off('click').on('click', function() {
+        // Shift to previous visible tag (no zoom)
+        $sidebar.find('#sidebar-shift-prev').off('click').on('click', function() {
+            if ($(this).prop('disabled')) return;
+            
+            // Find previous visible tag
+            const visibleTags = [];
+            $('.tag-controls:visible').each(function() {
+                const tagId = $(this).attr('id');
+                if (tagId && !isNaN(tagId)) {
+                    const leftPos = parseFloat($(this).css('left')) || 0;
+                    visibleTags.push({ id: parseInt(tagId), left: leftPos });
+                }
+            });
+            visibleTags.sort((a, b) => a.left - b.left);
+            
+            const currentTagId = parseInt($sidebar.find('input[name="tag_id"]').val());
+            const currentIndex = visibleTags.findIndex(t => t.id === currentTagId);
+            
+            if (currentIndex > 0) {
+                const prevTag = visibleTags[currentIndex - 1];
+                navigateToTag(prevTag, false); // false = no zoom
+            }
+        });
+        
+        // Shift to next visible tag (no zoom)
+        $sidebar.find('#sidebar-shift-next').off('click').on('click', function() {
+            if ($(this).prop('disabled')) return;
+            
+            // Find next visible tag
+            const visibleTags = [];
+            $('.tag-controls:visible').each(function() {
+                const tagId = $(this).attr('id');
+                if (tagId && !isNaN(tagId)) {
+                    const leftPos = parseFloat($(this).css('left')) || 0;
+                    visibleTags.push({ id: parseInt(tagId), left: leftPos });
+                }
+            });
+            visibleTags.sort((a, b) => a.left - b.left);
+            
+            const currentTagId = parseInt($sidebar.find('input[name="tag_id"]').val());
+            const currentIndex = visibleTags.findIndex(t => t.id === currentTagId);
+            
+            if (currentIndex >= 0 && currentIndex < visibleTags.length - 1) {
+                const nextTag = visibleTags[currentIndex + 1];
+                navigateToTag(nextTag, false); // false = no zoom
+            }
+        });
+        
+        // Zoom to previous tag
+        $sidebar.find('#sidebar-zoom-prev').off('click').on('click', function() {
             if ($(this).prop('disabled') || !window.currentTagNavigation || !window.currentTagNavigation.previous) {
                 return;
             }
-            navigateToTag(window.currentTagNavigation.previous, true); // true = user navigation
+            navigateToTag(window.currentTagNavigation.previous, true); // true = zoom
         });
         
-        // Next button handler
-        $sidebar.find('#sidebar-nav-next').off('click').on('click', function() {
+        // Zoom to next tag
+        $sidebar.find('#sidebar-zoom-next').off('click').on('click', function() {
             if ($(this).prop('disabled') || !window.currentTagNavigation || !window.currentTagNavigation.next) {
                 return;
             }
-            navigateToTag(window.currentTagNavigation.next, true); // true = user navigation
-        });
-        
-        // Dropdown change handler
-        $sidebar.find('#sidebar-tag-dropdown').off('change').on('change', function() {
-            const selectedTagId = $(this).val();
-            const currentTagId = $(this).find('option:selected').siblings('[selected]').val();
-            
-            // Don't navigate if same tag is selected
-            if (selectedTagId == currentTagId) {
-                return;
-            }
-            
-            const nav = window.currentTagNavigation;
-            
-            // If zoom is ON, always fetch tag data to ensure we have accurate coordinates
-            if (window.zoomOnNavigate) {
-                // Fetch tag data first to get coordinates
-                const baseUrl = window.baseUrl || '';
-                const href = baseUrl + '/api/tag/edit/' + selectedTagId;
-                const recordingName = document.getElementsByName('recording_name')[0]?.value;
-                const postData = recordingName ? {'recording_name': recordingName} : {};
-                
-                // Add type parameter if in review/task mode
-                if (nav && nav.isTask) {
-                    postData.type = 'task';
-                }
-                
-                // Fetch tag data to get coordinates
-                postRequest(href, postData, false, false, function(response) {
-                    // Extract coordinates from the response HTML
-                    const $tempModal = $('<div>').html(response.data);
-                    const minTime = parseFloat($tempModal.find('#min_time').val());
-                    const maxTime = parseFloat($tempModal.find('#max_time').val());
-                    const minFreq = parseFloat($tempModal.find('#min_freq').val());
-                    const maxFreq = parseFloat($tempModal.find('#max_freq').val());
-                    
-                    // Create full tag data object
-                    const fetchedTagData = {
-                        id: selectedTagId,
-                        minTime: minTime,
-                        maxTime: maxTime,
-                        minFrequency: minFreq,
-                        maxFrequency: maxFreq
-                    };
-                    
-                    // Now navigate with full data
-                    navigateToTag(fetchedTagData);
-                });
-            } else {
-                // Without zoom: just load tag in sidebar
-                const baseUrl = window.baseUrl || '';
-                const href = baseUrl + '/api/tag/edit/' + selectedTagId;
-                const recordingName = document.getElementsByName('recording_name')[0]?.value;
-                const postData = recordingName ? {'recording_name': recordingName} : {};
-                
-                // Add type parameter if in review/task mode
-                if (nav && nav.isTask) {
-                    postData.type = 'task';
-                }
-                
-                loadTagInSidebar(href, postData, true); // true = user navigation from dropdown
-            }
+            navigateToTag(window.currentTagNavigation.next, true); // true = zoom
         });
     }
     
     // Navigate to a tag (with or without zoom)
-    function navigateToTag(tagData, isUserNavigation = false) {
+    function navigateToTag(tagData, shouldZoom) {
         if (!tagData) return;
         
-        console.log('navigateToTag called with:', tagData, 'zoom:', window.zoomOnNavigate); // Debug
+        console.log('navigateToTag called with:', tagData, 'zoom:', shouldZoom); // Debug
         
         // Update yellow border (tag selection highlight)
         $('.tag-controls').removeClass('tag-selected');
         $('#' + tagData.id).addClass('tag-selected');
         
-        if (window.zoomOnNavigate) {
-            // Navigate WITH zoom: update form values and submit (like modal behavior)
-            console.log('Setting zoom coordinates:', tagData.minTime, tagData.maxTime, tagData.minFrequency, tagData.maxFrequency); // Debug
-            $("#x").val(tagData.minTime);
-            $("#w").val(tagData.maxTime);
-            $("#y").val(tagData.minFrequency);
-            $("#h").val(tagData.maxFrequency);
-            $("#open").val(tagData.id);
+        const baseUrl = window.baseUrl || '';
+        const currentRecording = window.recording_id || $('#recordingForm input[name="recording_id"]').val();
+        
+        if (shouldZoom) {
+            // Navigate WITH zoom: fetch tag data if needed, then zoom
+            const fetchAndZoom = function(fetchedData) {
+                console.log('Zooming to tag:', fetchedData); // Debug
+                
+                // Apply padding multiplier if set
+                let minTime = fetchedData.minTime;
+                let maxTime = fetchedData.maxTime;
+                const paddingMultiplier = parseFloat($('#zoom-padding').val()) || 0;
+                
+                if (paddingMultiplier > 0) {
+                    const tagDuration = maxTime - minTime;
+                    const padding = tagDuration * paddingMultiplier;
+                    minTime = Math.max(0, minTime - padding);
+                    // Don't exceed recording duration if available
+                    const recordingDuration = parseFloat($('input[name="fileDuration"]').val());
+                    if (recordingDuration) {
+                        maxTime = Math.min(recordingDuration, maxTime + padding);
+                    } else {
+                        maxTime = maxTime + padding;
+                    }
+                }
+                
+                $("#x").val(minTime);
+                $("#w").val(maxTime);
+                $("#y").val(fetchedData.minFrequency);
+                $("#h").val(fetchedData.maxFrequency);
+                $("#open").val(fetchedData.id);
+                
+                // Set action URL
+                let actionUrl = baseUrl + '/recording/show/';
+                if (fetchedData.recording && fetchedData.recording != currentRecording) {
+                    actionUrl += fetchedData.recording;
+                } else {
+                    actionUrl += currentRecording;
+                }
+                
+                // Add URL parameters
+                const urlParams = new URLSearchParams();
+                urlParams.set('openTagId', fetchedData.id);
+                if (window.currentTagNavigation && window.currentTagNavigation.isTask) {
+                    urlParams.set('type', 'task');
+                }
+                actionUrl += '?' + urlParams.toString();
+                
+                $('#recordingForm').attr('action', actionUrl);
+                $("#recordingForm").submit();
+            };
             
-            console.log('Form values set, open=' + $("#open").val() + ', submitting...'); // Debug
-            
-            // Add openTagId to the form action URL to ensure it persists after page reload
-            const baseUrl = window.baseUrl || '';
-            const currentRecording = window.recording_id || $('#recordingForm input[name="recording_id"]').val();
-            let actionUrl = baseUrl + '/recording/show/' + currentRecording;
-            
-            // If different recording, use that recording ID
-            if (tagData.recording && tagData.recording != currentRecording) {
-                actionUrl = baseUrl + '/recording/show/' + tagData.recording;
+            // If we have coordinates, use them; otherwise fetch
+            if (tagData.minTime !== undefined && tagData.maxTime !== undefined) {
+                fetchAndZoom(tagData);
+            } else {
+                // Fetch tag data to get coordinates
+                const href = baseUrl + '/api/tag/edit/' + tagData.id;
+                const recordingName = document.getElementsByName('recording_name')[0]?.value;
+                const postData = recordingName ? {'recording_name': recordingName} : {};
+                if (window.currentTagNavigation && window.currentTagNavigation.isTask) {
+                    postData.type = 'task';
+                }
+                
+                postRequest(href, postData, false, false, function(response) {
+                    const $tempModal = $('<div>').html(response.data);
+                    fetchAndZoom({
+                        id: tagData.id,
+                        minTime: parseFloat($tempModal.find('#min_time').val()),
+                        maxTime: parseFloat($tempModal.find('#max_time').val()),
+                        minFrequency: parseFloat($tempModal.find('#min_freq').val()),
+                        maxFrequency: parseFloat($tempModal.find('#max_freq').val()),
+                        recording: tagData.recording
+                    });
+                });
             }
-            
-            // Append openTagId parameter to URL, and preserve type=task if in review mode
-            const urlParams = new URLSearchParams();
-            urlParams.set('openTagId', tagData.id);
-            
-            // Preserve type=task parameter if in task/review mode
-            if (window.currentTagNavigation && window.currentTagNavigation.isTask) {
-                urlParams.set('type', 'task');
-            }
-            
-            actionUrl += '?' + urlParams.toString();
-            
-            $('#recordingForm').attr('action', actionUrl);
-            console.log('Form action set to:', actionUrl); // Debug
-            
-            // Submit the form to reload with new tag zoomed
-            $("#recordingForm").submit();
         } else {
             // Navigate WITHOUT zoom: just load tag in sidebar
-            const baseUrl = window.baseUrl || '';
             const href = baseUrl + '/api/tag/edit/' + tagData.id;
             
             // Check if different recording
-            const currentRecording = window.recording_id || $('#recordingForm input[name="recording_id"]').val();
             if (tagData.recording && tagData.recording != currentRecording) {
-                // Different recording: need to reload page with new recording but keep current view
-                // Save current view coordinates
-                const currentX = $("#x").val();
-                const currentW = $("#w").val();
-                const currentY = $("#y").val();
-                const currentH = $("#h").val();
-                
-                // Navigate to new recording with the new tag and preserve view
-                $("#x").val(currentX);
-                $("#w").val(currentW);
-                $("#y").val(currentY);
-                $("#h").val(currentH);
+                // Different recording: reload page but keep current view
                 $("#open").val(tagData.id);
                 $('#recordingForm').attr('action', baseUrl + '/recording/show/' + tagData.recording);
                 $("#recordingForm").submit();
@@ -1130,13 +1014,10 @@
                 // Same recording: just load tag in sidebar without changing view
                 const recordingName = document.getElementsByName('recording_name')[0]?.value;
                 const postData = recordingName ? {'recording_name': recordingName} : {};
-                
-                // Add type parameter if in review/task mode
                 if (window.currentTagNavigation && window.currentTagNavigation.isTask) {
                     postData.type = 'task';
                 }
-                
-                loadTagInSidebar(href, postData, isUserNavigation); // Pass through navigation flag
+                loadTagInSidebar(href, postData, true);
             }
         }
     }
@@ -1148,18 +1029,18 @@
     
     // Override the tag-related handlers to use sidebar when appropriate
     $(document).ready(function() {
-        // Store original handlers
+        // Store original handler for non-tag modals (like call distance estimation)
         const originalRequestModal = window.requestModal;
         
-        // Override requestModal to check for sidebar mode
+        // Override requestModal to always use sidebar for tag edit/create
         window.requestModal = function(href, data = [], showLoading = false, backdrop = true) {
-            // Use sidebar for tag edit/create requests, but NOT for call distance estimation
-            const isTagEditOrCreate = (href.includes('/api/tag/edit/') || href.includes('/api/tag/create'));
-            if (isSidebarMode() && isTagEditOrCreate) {
-                // Use sidebar for tag edit/create requests
+            const isTagRequest = (href.includes('/api/tag/edit/') || href.includes('/api/tag/create'));
+            
+            if (isTagRequest) {
+                // Always use sidebar for tag requests (no modal fallback)
                 loadTagInSidebar(href, data);
             } else {
-                // Use original modal for everything else (including call distance estimation)
+                // Use original modal for everything else (like call distance estimation)
                 originalRequestModal(href, data, showLoading, backdrop);
             }
         };

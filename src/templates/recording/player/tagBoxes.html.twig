@@ -5,10 +5,7 @@
             <small>{{ tag.id }} | {{ tag.title?tag.title:tag.soundType?tag.soundType:tag.soundscapeComponent }}</small>
         </div>
         <div class="card-body p-2 mx-auto">
-            <a href='#' onclick='return false;' class='btn btn-outline-primary btn-sm zoom-tag' title='Zoom tag (+Alt: open in new tab)'>
-                <i class='fas fa-search' aria-hidden='true'></i> Zoom
-            </a>
-            <div class="text-muted small mt-1 text-center">Click tag to edit</div>
+            <div class="text-muted small text-center">Click tag to edit</div>
         </div>
     </div>
 {% endfor %}
