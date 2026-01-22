@@ -62,7 +62,6 @@
                 <th>#</th>
                 <th>Soundscape Component</th>
                 <th>Sound Type</th>
-                <th>Recording</th>
                 <th>User</th>
                 <th>Creator Type</th>
                 <th>Confidence</th>
@@ -71,7 +70,7 @@
                 <th>Min Freq</th>
                 <th>Max Freq</th>
                 <th>Species</th>
-                <th>Taxon Order</th>
+                <th>Order</th>
                 <th>Family</th>
                 <th>Genus</th>
                 <th>Uncertain</th>
@@ -146,7 +145,7 @@
                     },
                     {
                         "className": "dt-center",
-                        "targets": [0, 16, 18, 21],
+                        "targets": [0, 2, 17, 19, 22],
                     },
                 ],
                 "bAutoWidth": false,
@@ -191,7 +190,6 @@
                     if (soundTypes[key]['soundscape_component'] == $("#soundscape_component_" + id).find("option:selected").text()) {
                         if (index == 0) {
                             $('#sound_id' + id).append("<option value='" + soundTypes[key]['sound_id'] + "' selected>" + soundTypes[key]['sound_type'] + "</option>");
-
                         } else {
                             $('#sound_id' + id).append("<option value='" + soundTypes[key]['sound_id'] + "'>" + soundTypes[key]['sound_type'] + "</option>");
                         }
@@ -265,6 +263,63 @@
                 }
                 $("#modal-delete").modal('show');
             })
+
+            // --- Updated Button Enable/Disable Logic ---
+            $(document).on('change', '.js-checkbox, .js-all-checkbox', function () {
+                let checkedCount = $('.js-checkbox:checked').length;
+                let hasReadOnly = false;
+
+                // Check if any selected item is read-only
+                $('.js-checkbox:checked').each(function() {
+                    if ($(this).data('readonly')) {
+                        hasReadOnly = true;
+                    }
+                });
+
+                // Edit button logic: Enable if exactly one item is checked
+                if (checkedCount === 1) {
+                    $('#editTag').removeAttr('disabled');
+                } else {
+                    $('#editTag').attr('disabled', true);
+                }
+
+                // View, Assignments, Export: Enable if at least one item is checked
+                if (checkedCount > 0) {
+                    $('#viewing').removeAttr('disabled');
+                    $('#assignments').removeAttr('disabled');
+                    $('#tagsExport').removeAttr('disabled');
+                } else {
+                    $('#viewing').attr('disabled', true);
+                    $('#assignments').attr('disabled', true);
+                    $('#tagsExport').attr('disabled', true);
+                }
+
+                // Delete logic: Enable only if items are checked AND none are read-only
+                if (checkedCount > 0 && !hasReadOnly) {
+                    $('#deletion').removeAttr('disabled');
+                } else {
+                    $('#deletion').attr('disabled', true);
+                }
+            });
+
+            // Edit Button Click
+            $('#editTag').click(function (e) {
+                e.preventDefault();
+                let id = [];
+                $('.js-checkbox:checked').each(function () {
+                    id.push($(this).data('id'));
+                });
+                if (id.length === 1) {
+                    requestModal('{{ baseUrl }}/api/tag/edit/' + id[0], new FormData(), false);
+                }
+            });
+
+            // Task Icon Click
+            $(document).on('click', '.js-edit-task', function (e) {
+                e.preventDefault();
+                let id = $(this).data('id');
+                requestModal('{{ baseUrl }}/api/tag/edit/' + id, new FormData(), false);
+            });
         });
     </script>
 {% endblock %}
