@@ -59,7 +59,7 @@ git pull origin merged-terraform-audio
 # 2. Back up database
 docker-compose exec database mysqldump -ubiosounds -pbiosounds --single-transaction --quick biosounds > backup.sql
 
-# 3. Back up media files
+# 3. Back up media files (adapt path if files are stored elsewhere)
 tar -czf sounds_backup.tar.gz src/sounds/
 
 # 4. Stop containers
