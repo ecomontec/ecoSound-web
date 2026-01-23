@@ -341,9 +341,12 @@ class CollectionProvider extends AbstractProvider
             ':project_id' => $projectId,
             ':user_id' => Auth::getUserID(),
             ':user_id1' => Auth::getUserID(),
-            ':length' => $length,
-            ':start' => $start,
         ];
+        // Only add pagination params if not showing all
+        if ($length != '-1') {
+            $params[':length'] = $length;
+            $params[':start'] = $start;
+        }
         if ($search) {
             $params[':search'] = '%' . $search . '%';
         }

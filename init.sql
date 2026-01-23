@@ -60,7 +60,7 @@ CREATE TABLE `models`
     `name`          varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
     `tf_model_path` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
     `labels_path`   varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-    `source_URL`    varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `source_URL`    varchar(500) COLLATE utf8_unicode_ci DEFAULT NULL,
     `description`   text CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL,
     `parameter`     text CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL
 ) ENGINE = InnoDB
@@ -398,7 +398,7 @@ CREATE TABLE `tag`
     `individuals`            int(2)     NOT NULL,
     `animal_sound_type`      varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL,
     `reference_call`         tinyint(1) NOT NULL,
-    `comments`               text COLLATE utf8_unicode_ci         DEFAULT NULL,
+    `comments`               varchar(2000) COLLATE utf8_unicode_ci DEFAULT NULL,
     `creation_date`          timestamp  NOT NULL                  DEFAULT current_timestamp()
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8

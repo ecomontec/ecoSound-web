@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Run BioSounds
+# Run ecoSound-web
 
 docker-compose up -d
 docker-compose exec apache chown -R www-data:www-data cache tmp sounds bin
@@ -10,6 +10,11 @@ while ! (nc -z queue 5672); do
   sleep 2;
 done;'
 
-echo "Queue worker started."
+echo "Starting queue worker with auto-restart..."
 
-docker-compose exec -T -u www-data apache nohup php worker.php > files_update.log 2>&1 &
+# Start worker in auto-restart loop (survives crashes)
+docker-compose exec apache chmod +x /var/www/html/start-worker.sh
+docker-compose exec -T -u www-data apache setsid /var/www/html/start-worker.sh < /dev/null &
+sleep 2
+
+echo "Worker started. Jobs will be processed sequentially from the queue."
