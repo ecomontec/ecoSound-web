@@ -76,6 +76,15 @@ class SpeciesController extends BaseController
             $species->update($data, $speciesId);
         } else {
             unset($data['itemID']);
+            // Generate next species_id
+            $allSpecies = $species->getAll();
+            $maxId = 0;
+            foreach ($allSpecies as $sp) {
+                if (isset($sp['species_id']) && $sp['species_id'] > $maxId) {
+                    $maxId = $sp['species_id'];
+                }
+            }
+            $data['species_id'] = $maxId + 1;
             $species->insert($data);
         }
 
