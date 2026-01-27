@@ -75,7 +75,6 @@ class SpeciesController extends BaseController
             unset($data['itemID']);
             $species->update($data, $speciesId);
         } else {
-            unset($data['itemID']);
             // Generate next species_id
             $allSpecies = $species->getAll();
             $maxId = 0;
