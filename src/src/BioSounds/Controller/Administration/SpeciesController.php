@@ -51,8 +51,17 @@ class SpeciesController extends BaseController
         }
 
         $species = new Species();
+        // Debug: log raw $_POST and php://input
+        file_put_contents('/tmp/species_post_debug.log', "_POST:\n" . print_r($_POST, true) . "\nphp://input:\n" . file_get_contents('php://input') . "\n\n", FILE_APPEND);
+
         $data = [];
-        foreach ($_POST as $key => $value) {
+        $postData = $_POST;
+        // If $_POST is empty, try to parse php://input (for non-standard POSTs)
+        if (empty($postData)) {
+            $rawInput = file_get_contents('php://input');
+            parse_str($rawInput, $postData);
+        }
+        foreach ($postData as $key => $value) {
             if ($key === 'itemID') continue;
             // Sanitize numeric fields
             if (in_array($key, ['species_id', 'level'])) {
