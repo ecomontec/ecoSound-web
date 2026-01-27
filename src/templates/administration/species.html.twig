@@ -19,7 +19,8 @@
         </button>
     </div>
     <div class="card-body">
-        <table class="table table-sm table-hover">
+        <div style="overflow-x:auto; width:100%">
+        <table id="speciesTable" class="table table-sm table-hover" style="width:100%">
             <thead class="table-borderless">
                 <tr>
                     <th scope="col">#</th>
@@ -74,6 +75,7 @@
                 {% endfor %}
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 
@@ -97,6 +99,15 @@
     <script>
         $(function(){
             'use strict';
+
+            // Initialize DataTable with scrollX and lengthMenu
+            $('#speciesTable').DataTable({
+                "scrollX": true,
+                "lengthMenu": [ [10, 25, 50, 100], [10, 25, 50, 100] ],
+                "pageLength": 10,
+                "ordering": false,
+                "autoWidth": false
+            });
 
             /* Save species list */
             $('.js-species-list').on('change', 'input, select, textarea', function() {
