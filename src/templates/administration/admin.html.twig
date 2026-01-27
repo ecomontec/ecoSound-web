@@ -61,6 +61,13 @@
                                 <i class="fa fa-sites pr-1"></i>
                                 Sites</a>
                         </li>
+                        {% if is_admin %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ baseUrl }}/admin/species">
+                                    <i class="fas fa-dove pr-1"></i>
+                                    Species</a>
+                            </li>
+                        {% endif %}
                     {% else %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ baseUrl }}/admin/selfService">

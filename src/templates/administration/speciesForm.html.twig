@@ -1,0 +1,54 @@
+<div class="collapse mb-5" id="speciesFormSection">
+    <div class="card">
+        <div class="card-body">
+            <button id="closeForm" class="close" type="button" data-toggle="collapse" data-target="#speciesFormSection" aria-expanded="false" aria-controls="speciesFormSection">
+                <span>&times;</span>
+            </button>
+            <form id="speciesForm" novalidate>
+                <div class="form-group">
+                    <label for="binomial" class="col-form-label-sm">Binomial Name *</label>
+                    <input id="binomial" type="text" name="binomial_text" class="form-control form-control-sm" maxlength="100" required>
+                    <div class="invalid-feedback">
+                        Please provide a binomial name.
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="common_name" class="col-form-label-sm">Common Name *</label>
+                    <input id="common_name" type="text" name="common_name_text" class="form-control form-control-sm" maxlength="200" required>
+                    <div class="invalid-feedback">
+                        Please provide a common name.
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="genus" class="col-form-label-sm">Genus</label>
+                    <input id="genus" type="text" name="genus_text" class="form-control form-control-sm" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label for="family" class="col-form-label-sm">Family</label>
+                    <input id="family" type="text" name="family_text" class="form-control form-control-sm" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label for="taxon_order" class="col-form-label-sm">Order</label>
+                    <input id="taxon_order" type="text" name="taxon_order_text" class="form-control form-control-sm" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label for="class" class="col-form-label-sm">Class</label>
+                    <input id="class" type="text" name="class_text" class="form-control form-control-sm" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label for="level" class="col-form-label-sm">Level</label>
+                    <input id="level" type="number" name="level_number" class="form-control form-control-sm" min="0" max="100" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="source" class="col-form-label-sm">Source</label>
+                    <input id="source" type="text" name="source_text" class="form-control form-control-sm" maxlength="50" value="manual">
+                </div>
+                <div class="form-group text-right">
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="fas fa-save"></i> Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

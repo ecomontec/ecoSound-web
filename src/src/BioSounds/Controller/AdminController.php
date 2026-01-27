@@ -7,6 +7,7 @@ use BioSounds\Controller\Administration\QueueController;
 use BioSounds\Controller\Administration\SiteCollectionController;
 use BioSounds\Controller\Administration\TaskController;
 use BioSounds\Controller\Administration\UserController;
+use BioSounds\Controller\Administration\SpeciesController;
 use BioSounds\Utils\Auth;
 use BioSounds\Controller\Administration\CollectionController as CollectionController;
 use BioSounds\Controller\Administration\SettingController as SettingController;
@@ -268,5 +269,25 @@ class AdminController extends BaseController
     public function taskMgr(string $action, int $id = null)
     {
         return (new TaskController($this->twig))->$action($id);
+    }
+
+    /**
+     * @param int $page
+     * @return false|string
+     * @throws \Exception
+     */
+    public function species(int $page = 1)
+    {
+        return (new SpeciesController($this->twig))->show($page);
+    }
+
+    /**
+     * @param string $action
+     * @param int|null $id
+     * @return mixed
+     */
+    public function speciesMgr(string $action, int $id = null)
+    {
+        return (new SpeciesController($this->twig))->$action($id);
     }
 }

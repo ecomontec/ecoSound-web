@@ -1,0 +1,145 @@
+{% extends 'administration/admin.html.twig' %}
+
+{% block admin_content %}
+
+{% include 'administration/speciesForm.html.twig' %}
+
+<div class="card mb-3" id="speciesList">
+    <div class="card-header border-light bg-white text-right">
+        <button
+            id="speciesFormButton"
+            class="btn btn-outline-primary btn-sm mt-2"
+            type="button"
+            data-toggle="collapse"
+            data-target="#speciesFormSection"
+            aria-expanded="false"
+            aria-controls="speciesFormSection"
+        >
+            <i class="fas fa-plus"></i> Add Species
+        </button>
+    </div>
+    <div class="card-body">
+        <table class="table table-sm table-hover">
+            <thead class="table-borderless">
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Binomial</th>
+                    <th scope="col">Common Name</th>
+                    <th scope="col">Genus</th>
+                    <th scope="col">Family</th>
+                    <th scope="col">Order</th>
+                    <th scope="col">Class</th>
+                    <th scope="col">Level</th>
+                    <th scope="col">Source</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody class="form-control-sm js-species-list">
+                {% for sp in species %}
+                    <tr>
+                        <th scope='row'>
+                            <input type="hidden" name="itemID" value="{{ sp.species_id }}">
+                            {{ sp.species_id }}
+                        </th>
+                        <td>
+                            <input type='text' name="binomial_text" value="{{ sp.binomial }}" maxlength="100" required>
+                        </td>
+                        <td>
+                            <input type='text' name="common_name_text" value="{{ sp.common_name }}" maxlength="200" required>
+                        </td>
+                        <td>
+                            <input type='text' name="genus_text" value="{{ sp.genus }}" maxlength="100">
+                        </td>
+                        <td>
+                            <input type='text' name="family_text" value="{{ sp.family }}" maxlength="100">
+                        </td>
+                        <td>
+                            <input type='text' name="taxon_order_text" value="{{ sp.taxon_order }}" maxlength="100">
+                        </td>
+                        <td>
+                            <input type='text' name="class_text" value="{{ sp.class }}" maxlength="100">
+                        </td>
+                        <td>
+                            <input type='number' name="level_number" value="{{ sp.level }}" min="0" max="100">
+                        </td>
+                        <td>
+                            <input type='text' name="source_text" value="{{ sp.source }}" maxlength="50">
+                        </td>
+                        <td>
+                            <a class="js-delete-species" href="#" data-id="{{ sp.species_id }}" title="Delete species">
+                                <span class="fas fa-trash"></span>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<nav aria-label="pagination">
+    <ul class="pagination justify-content-center mt-3">
+        {% for page in range(1, pages) %}
+            <li class="page-item {{ currentPage == page ? 'active' }}">
+                <a class="page-link" href="{{ baseUrl }}/admin/species/{{ page }}">
+                    {{ page }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+</nav>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ parent() }}
+
+    <script>
+        $(function(){
+            'use strict';
+
+            /* Save species list */
+            $('.js-species-list').on('change', 'input, select, textarea', function() {
+                saveFormList($(this), 'api/admin/speciesMgr/save');
+            });
+
+            $("#speciesFormSection").on('shown.bs.collapse', function () {
+                $("#speciesList").hide();
+            }).on('hidden.bs.collapse', function () {
+                $("#speciesList").show();
+            });
+
+            $('#speciesForm').submit(function(e) {
+                e.preventDefault();
+
+                if (this.checkValidity() === false) {
+                    e.stopPropagation();
+                } else {
+                    postRequest('{{ baseUrl }}/api/admin/speciesMgr/save', $(this).serialize(), false, false, function() {
+                        location.reload();
+                    });
+                }
+                this.classList.add('was-validated');
+            });
+
+            /* Delete species */
+            $(document).on('click', '.js-delete-species', function(e){
+                e.preventDefault();
+                
+                if (confirm('Are you sure you want to delete this species? This action cannot be undone.')) {
+                    let speciesId = $(this).data('id');
+                    
+                    deleteRequest(
+                        '{{ baseUrl }}/api/admin/speciesMgr/delete',
+                        {id: speciesId},
+                        true,
+                        false,
+                        function() {
+                            location.reload();
+                        }
+                    );
+                }
+            });
+        });
+    </script>
+{% endblock %}
