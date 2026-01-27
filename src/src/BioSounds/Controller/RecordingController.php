@@ -1071,6 +1071,12 @@ class RecordingController extends BaseController
 
         $str .= ' -w ' . $windowSize . ' -s ' . $strideSize . ' ' . escapeshellarg($soundPath) . ' ' . escapeshellarg($resultPath);
         exec($str . " 2>&1", $out, $status);
+        
+        // Log command and output for debugging
+        error_log("insects-base-cnn10-96k-t command: " . $str);
+        error_log("insects-base-cnn10-96k-t exit status: " . $status);
+        error_log("insects-base-cnn10-96k-t output: " . implode("\n", $out));
+        
         if ($status == 0) {
             if (file_exists($resultPath . "/results.csv")) {
                 $json = [];
@@ -1165,9 +1171,10 @@ class RecordingController extends BaseController
                 ]);
             }
         }
+        Utils::deleteDirContents($resultPath);
         return json_encode([
             'errorCode' => 1,
-            'message' => "insects-base-cnn10-96k-t execution error.",
+            'message' => "insects-base-cnn10-96k-t execution error. Exit code: " . $status . ". Output: " . (count($out) > 0 ? implode(" | ", $out) : "No output"),
         ]);
     }
 
