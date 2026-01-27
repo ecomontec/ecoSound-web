@@ -43,28 +43,28 @@
                             {{ sp.species_id }}
                         </th>
                         <td>
-                            <input type='text' name="binomial_text" value="{{ sp.binomial }}" maxlength="100" required>
+                            <input type='text' name="binomial" value="{{ sp.binomial }}" maxlength="100" required>
                         </td>
                         <td>
-                            <input type='text' name="common_name_text" value="{{ sp.common_name }}" maxlength="200" required>
+                            <input type='text' name="common_name" value="{{ sp.common_name }}" maxlength="200" required>
                         </td>
                         <td>
-                            <input type='text' name="genus_text" value="{{ sp.genus }}" maxlength="100">
+                            <input type='text' name="genus" value="{{ sp.genus }}" maxlength="100">
                         </td>
                         <td>
-                            <input type='text' name="family_text" value="{{ sp.family }}" maxlength="100">
+                            <input type='text' name="family" value="{{ sp.family }}" maxlength="100">
                         </td>
                         <td>
-                            <input type='text' name="taxon_order_text" value="{{ sp.taxon_order }}" maxlength="100">
+                            <input type='text' name="taxon_order" value="{{ sp.taxon_order }}" maxlength="100">
                         </td>
                         <td>
-                            <input type='text' name="class_text" value="{{ sp.class }}" maxlength="100">
+                            <input type='text' name="class" value="{{ sp.class }}" maxlength="100">
                         </td>
                         <td>
-                            <input type='number' name="level_number" value="{{ sp.level }}" min="0" max="100">
+                            <input type='number' name="level" value="{{ sp.level }}" min="0" max="100">
                         </td>
                         <td>
-                            <input type='text' name="source_text" value="{{ sp.source }}" maxlength="50">
+                            <input type='text' name="source" value="{{ sp.source }}" maxlength="50">
                         </td>
                         <td>
                             <a class="js-delete-species" href="#" data-id="{{ sp.species_id }}" title="Delete species">
