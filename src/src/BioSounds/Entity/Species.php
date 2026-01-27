@@ -62,6 +62,8 @@ class Species extends BaseProvider
         }
 
         $query = 'INSERT INTO ' . self::TABLE_NAME . ' (' . implode(', ', $fields) . ') VALUES (' . implode(', ', $placeholders) . ')';
+        // Debug log
+        file_put_contents('/tmp/species_insert_debug.log', "DATA:\n" . print_r($data, true) . "\nQUERY:\n" . $query . "\nVALUES:\n" . print_r($values, true) . "\n\n", FILE_APPEND);
         $this->database->prepareQuery($query);
         return $this->database->executeInsert($values);
     }
