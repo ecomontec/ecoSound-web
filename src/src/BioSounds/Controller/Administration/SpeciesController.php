@@ -52,21 +52,13 @@ class SpeciesController extends BaseController
 
         $species = new Species();
         $data = [];
-
         foreach ($_POST as $key => $value) {
-            if (strrpos($key, '_')) {
-                $type = substr($key, strrpos($key, '_') + 1, strlen($key));
-                $key = substr($key, 0, strrpos($key, '_'));
-
-                switch ($type) {
-                    case 'number':
-                        $data[$key] = filter_var($value, FILTER_SANITIZE_NUMBER_INT);
-                        break;
-                    case 'text':
-                    default:
-                        $data[$key] = htmlentities(strip_tags(filter_var($value, FILTER_SANITIZE_STRING)), ENT_QUOTES);
-                        break;
-                }
+            if ($key === 'itemID') continue;
+            // Sanitize numeric fields
+            if (in_array($key, ['species_id', 'level'])) {
+                $data[$key] = filter_var($value, FILTER_SANITIZE_NUMBER_INT);
+            } else {
+                $data[$key] = htmlentities(strip_tags(filter_var($value, FILTER_SANITIZE_STRING)), ENT_QUOTES);
             }
         }
 
