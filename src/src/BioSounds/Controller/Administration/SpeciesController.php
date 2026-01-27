@@ -84,6 +84,7 @@ class SpeciesController extends BaseController
                 }
             }
             $data['species_id'] = $maxId + 1;
+            file_put_contents('/tmp/species_debug.log', print_r($data, true), FILE_APPEND);
             $species->insert($data);
         }
 
