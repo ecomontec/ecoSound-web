@@ -137,16 +137,20 @@
                                 <strong>name</strong> (required, max 100 characters) - Site name<br>
                                 <strong>longitude_WGS84_dd_dddd</strong> (optional, decimal degrees) - Longitude coordinate<br>
                                 <strong>latitude_WGS84_dd_dddd</strong> (optional, decimal degrees) - Latitude coordinate<br>
-                                <strong>topography_m</strong> (optional, meters) - Elevation/topography<br>
-                                <strong>freshwater_depth_m</strong> (optional, meters) - Freshwater depth<br>
-                                <strong>gadm0</strong> (optional, max 100 characters) - Country/region level 0<br>
-                                <strong>gadm1</strong> (optional, max 100 characters) - Administrative region level 1<br>
-                                <strong>gadm2</strong> (optional, max 100 characters) - Administrative region level 2<br>
-                                <strong>iho</strong> (optional, max 100 characters) - IHO sea area<br>
-                                <strong>realm_id</strong> (optional, integer) - Realm identifier<br>
-                                <strong>biome_id</strong> (optional, integer) - Biome identifier<br>
-                                <strong>functional_type_id</strong> (optional, integer) - Functional type identifier<br><br>
-                                <em>Note: Either coordinates (longitude AND latitude) OR gadm0 must be provided for each site.</em><br><br>
+                                <strong>topography_m</strong> (optional, meters, range: -15000 to 10000) - Elevation/depth (negative for underwater sites)<br>
+                                <strong>freshwater_depth_m</strong> (optional, meters, up to 2000) - Freshwater depth<br>
+                                <strong>gadm0</strong> (optional, max 100 characters) - Country/region level 0 according to <a href="https://gadm.org/" target="_blank" class="text-info">GADM</a><br>
+                                <strong>gadm1</strong> (optional, max 100 characters) - Administrative region level 1 according to <a href="https://gadm.org/" target="_blank" class="text-info">GADM</a><br>
+                                <strong>gadm2</strong> (optional, max 100 characters) - Administrative region level 2 according to <a href="https://gadm.org/" target="_blank" class="text-info">GADM</a><br>
+                                <strong>iho</strong> (optional, max 100 characters) - IHO sea area according to <a href="https://marineregions.org/downloads.php" target="_blank" class="text-info">Marine Regions</a><br>
+                                <strong>realm_id</strong> (optional, integer) - Realm identifier (1=Terrestrial, 2=Subterranean, 3=Freshwater, 4=Marine)<br>
+                                <strong>biome_id</strong> (optional, integer) - Biome identifier (see realm for available biomes)<br>
+                                <strong>functional_type_id</strong> (optional, integer) - Functional type identifier (see biome for available types)<br><br>
+                                <em>Note: Either coordinates (longitude AND latitude) OR gadm0 must be provided for each site.</em><br>
+                                <em>Realm ID is required before providing biome or functional group IDs (hierarchical).</em><br><br>
+                                <strong>Common Realm/Biome/Functional Type combinations:</strong><br>
+                                • Terrestrial tropical forest: realm_id=1, biome_id=11<br>
+                                • Marine pelagic ocean: realm_id=4, biome_id=25, functional_type_id=114<br><br>
                                 You can download a <a class="text-info" id="sitesCSVTemplate" style="cursor:pointer">template CSV file</a> to fill in your data.</label>
                         </div>
                     </div>
@@ -676,8 +680,8 @@
                 /* Download CSV Template */
                 $('#sitesCSVTemplate').click(function () {
                     const csvContent = "name,longitude_WGS84_dd_dddd,latitude_WGS84_dd_dddd,topography_m,freshwater_depth_m,gadm0,gadm1,gadm2,iho,realm_id,biome_id,functional_type_id\n" +
-                        "Example Site 1,12.4964,41.9028,50.5,,Italy,Lazio,Roma,,,1,5\n" +
-                        "Example Site 2,-0.1278,51.5074,,,United Kingdom,England,London,,,2,6\n";
+                        "Tropical Forest Site,12.4964,41.9028,50.5,,Italy,Lazio,Roma,,1,12,\n" +
+                        "Mariana Trench,142.5917,11.3493,-10911,,,,North Pacific Ocean,4,25,114\n";
                     const blob = new Blob([csvContent], { type: 'text/csv' });
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
