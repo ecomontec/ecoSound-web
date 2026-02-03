@@ -234,11 +234,11 @@ class SpeciesController extends BaseController
                 ]);
             }
             
-            if (!is_numeric($rowData['level']) || $rowData['level'] < 0 || $rowData['level'] > 100) {
+            if (!is_numeric($rowData['level']) || ($rowData['level'] != 0 && $rowData['level'] != 1)) {
                 fclose($handle);
                 return json_encode([
                     'error_code' => 1,
-                    'message' => "Row {$rowNum}: level must be a number between 0 and 100.",
+                    'message' => "Row {$rowNum}: level must be 0 or 1 (1 if species level, 0 otherwise).",
                 ]);
             }
             
@@ -306,5 +306,46 @@ class SpeciesController extends BaseController
             'error_code' => 0,
             'message' => "Successfully uploaded {$inserted} species.",
         ]);
+    }
+
+    /**
+     * Export all species to CSV
+     * @return void
+     * @throws \Exception
+     */
+    public function export()
+    {
+        if (!Auth::isUserAdmin()) {
+            throw new ForbiddenException();
+        }
+
+        $species = new Species();
+        $allSpecies = $species->getAll();
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename=species_export.csv');
+        
+        $fp = fopen('php://output', 'w');
+        
+        // Write headers
+        fputcsv($fp, ['species_id', 'binomial', 'common_name', 'genus', 'family', 'taxon_order', 'class', 'level', 'source']);
+        
+        // Write data
+        foreach ($allSpecies as $sp) {
+            fputcsv($fp, [
+                $sp['species_id'] ?? '',
+                $sp['binomial'] ?? '',
+                $sp['common_name'] ?? '',
+                $sp['genus'] ?? '',
+                $sp['family'] ?? '',
+                $sp['taxon_order'] ?? '',
+                $sp['class'] ?? '',
+                $sp['level'] ?? '',
+                $sp['source'] ?? ''
+            ]);
+        }
+        
+        fclose($fp);
+        exit();
     }
 }

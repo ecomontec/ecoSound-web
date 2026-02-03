@@ -38,6 +38,10 @@
                 <a class="dropdown-item" type="button" id="speciesInstructions"><i class="fa-solid fa-circle-info"></i> CSV Instructions</a>
             </div>
         </span>
+        <button id="speciesExport" class="btn btn-outline-primary btn-sm mt-2">
+            <i class="fa fa-file-csv"></i>
+            Save all as CSV
+        </button>
     </div>
     <table id="speciesTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
@@ -96,6 +100,36 @@
         </table>
 </div>
 
+<div class="modal fade" id="modal-delete" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Warning</h5>
+                <button class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body ml-3">
+                <div>
+                    <div class="form-group">
+                        <label>Are you sure you want to delete <b class="text-danger"><span id="delete_count"></span> species</b>: <b class="text-danger" id="delete_name"></b>? This action cannot be undone.</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                    Close
+                </button>
+                <button id="js-delete-button" class="btn btn-outline-danger">
+                    <i class="fas fa-trash-alt"></i>
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="modal-species-instructions" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -115,7 +149,7 @@
                             <strong>family</strong> (optional, max 100 characters) - Family name<br>
                             <strong>taxon_order</strong> (optional, max 100 characters) - Taxonomic order<br>
                             <strong>class</strong> (optional, max 100 characters) - Taxonomic class<br>
-                            <strong>level</strong> (required, integer 0-100) - Classification confidence level<br>
+                            <strong>level</strong> (required, 0 or 1) - 1 if the taxon is defined at the species level, 0 otherwise<br>
                             <strong>source</strong> (required, max 50 characters) - Data source identifier<br><br>
                             You can download a <a class="text-info" id="speciesCSVTemplate" style="cursor:pointer">template CSV file</a> to fill in your data.</label>
                     </div>
@@ -199,17 +233,33 @@
 
             /* Delete species */
             $('#deletion').click(function (e) {
-                if (confirm('Are you sure you want to delete the selected species? This action cannot be undone.')) {
-                    let id = [];
-                    $('.js-checkbox:checked').each(function () {
-                        id.push($(this).data('id'));
-                    });
-                    let data = {'id': id};
-                    postRequest('{{ baseUrl }}/api/admin/speciesMgr/delete', data, true, false, function () {
-                        table.state.clear();
-                        location.reload();
-                    });
+                let name = [];
+                $('.js-checkbox:checked').each(function () {
+                    name.push($(this).parent().parent().find('input[name="binomial"]').val());
+                });
+                if (name.length === 0) {
+                    return;
                 }
+                $('#delete_name').html(name.join(', '));
+                $('#delete_count').html(name.length);
+                $("#modal-delete").modal('show');
+            });
+
+            $('#js-delete-button').click(function (e) {
+                let id = [];
+                $('.js-checkbox:checked').each(function () {
+                    id.push($(this).data('id'));
+                });
+                let data = {'id': id};
+                postRequest('{{ baseUrl }}/api/admin/speciesMgr/delete', data, true, false, function () {
+                    table.state.clear();
+                    location.reload();
+                });
+            });
+
+            /* Export species */
+            $('#speciesExport').click(function () {
+                window.location.href = '{{ baseUrl }}/api/admin/speciesMgr/export';
             });
 
             /* CSV Upload */
@@ -237,7 +287,7 @@
             /* Download CSV Template */
             $('#speciesCSVTemplate').click(function () {
                 const csvContent = "binomial,common_name,genus,family,taxon_order,class,level,source\n" +
-                    "Passer domesticus,House Sparrow,Passer,Passeridae,Passeriformes,Aves,100,example\n";
+                    "Passer domesticus,House Sparrow,Passer,Passeridae,Passeriformes,Aves,1,example\n";
                 const blob = new Blob([csvContent], { type: 'text/csv' });
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');

@@ -343,6 +343,42 @@ class SiteController extends BaseController
                 ]);
             }
             
+            // Validate topography range if provided
+            if (!empty($rowData['topography_m'])) {
+                if (!is_numeric($rowData['topography_m'])) {
+                    fclose($handle);
+                    return json_encode([
+                        'error_code' => 1,
+                        'message' => "Row {$rowNum}: topography_m must be a number.",
+                    ]);
+                }
+                if ($rowData['topography_m'] < -15000 || $rowData['topography_m'] > 10000) {
+                    fclose($handle);
+                    return json_encode([
+                        'error_code' => 1,
+                        'message' => "Row {$rowNum}: topography_m must be between -15000 and 10000 meters.",
+                    ]);
+                }
+            }
+            
+            // Validate freshwater depth range if provided
+            if (!empty($rowData['freshwater_depth_m'])) {
+                if (!is_numeric($rowData['freshwater_depth_m'])) {
+                    fclose($handle);
+                    return json_encode([
+                        'error_code' => 1,
+                        'message' => "Row {$rowNum}: freshwater_depth_m must be a number.",
+                    ]);
+                }
+                if ($rowData['freshwater_depth_m'] < 0 || $rowData['freshwater_depth_m'] > 2000) {
+                    fclose($handle);
+                    return json_encode([
+                        'error_code' => 1,
+                        'message' => "Row {$rowNum}: freshwater_depth_m must be between 0 and 2000 meters.",
+                    ]);
+                }
+            }
+            
             $data[] = $rowData;
             $rowNum++;
         }
@@ -355,7 +391,7 @@ class SiteController extends BaseController
             ]);
         }
 
-        $siteProvider = new SiteProvider();
+        $site = new Site();
         $inserted = 0;
         
         foreach ($data as $siteData) {
@@ -399,7 +435,7 @@ class SiteController extends BaseController
                 $insertData['functional_type_id'] = (int)$siteData['functional_type_id'];
             }
             
-            $siteId = $siteProvider->insert($insertData);
+            $siteId = $site->insert($insertData);
             
             if ($collectionId && $siteId) {
                 $siteCollection = new SiteCollection();
