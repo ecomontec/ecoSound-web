@@ -242,6 +242,10 @@ $(function () {
                 $('#y').val(currentMinFreq);
                 $('#h').val(currentMaxFreq);
                 
+                // Reset other form values
+                $("input[name=continuous_play]").val('0');
+                $("input[name=estimateDistID]").val("");
+                
                 // Clear audio buffer queue if it exists
                 if (typeof window.audioBufferQueue !== 'undefined') {
                     window.audioBufferQueue.length = 0;
