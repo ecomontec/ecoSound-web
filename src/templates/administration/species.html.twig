@@ -6,6 +6,13 @@
 
 <div class="card mb-3" id="speciesList">
     <div class="card-header border-light bg-white text-right">
+        <div class="form-inline">
+            <div class="col-8"></div>
+            <div class="col-4 form-inline justify-content-end">
+                <label class="mr-2">Search:</label>
+                <input class="form-control-sm" id="search">
+            </div>
+        </div>
         <button
             id="deletion"
             name="table-btn"
@@ -111,6 +118,7 @@
 
             // Initialize DataTable with scrollX and lengthMenu
             var table = $('#speciesTable').DataTable({
+                "dom": 'lrtip',
                 "scrollX": true,
                 "lengthMenu": [ [10, 25, 50, 100], [10, 25, 50, 100] ],
                 "pageLength": 10,
@@ -122,6 +130,14 @@
                         "targets": [0]
                     }
                 ]
+            });
+            
+            // Custom search handler
+            if (table.state.loaded()) {
+                $('#search').val(table.state.loaded().search.search);
+            }
+            $('#search').on('input', () => {
+                table.search($('#search').val()).draw();
             });
             
             // Clear all checkboxes on page load
