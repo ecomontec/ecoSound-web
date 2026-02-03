@@ -152,6 +152,7 @@
                     });
                     let data = {'id': id};
                     deleteRequest('{{ baseUrl }}/api/admin/speciesMgr/delete', data, true, false, function () {
+                        table.state.clear();
                         location.reload();
                     });
                 }
