@@ -435,15 +435,21 @@
         // Handle share/export tag URL button
         $sidebar.find('#exportTagUrl').off('click').on('click', function(e) {
             e.preventDefault();
+            console.log('Export tag URL clicked'); // Debug
             const tagId = $sidebar.find("input[name='tag_id']").val() || $sidebar.find('#exportTagUrlData').val();
+            console.log('Tag ID:', tagId); // Debug
             if (tagId) {
                 const url = window.location.origin + baseUrl + '/recording/show/' + $('input[name="recording_id"]').val() + '?tagId=' + tagId;
+                console.log('Generated URL:', url); // Debug
                 navigator.clipboard.writeText(url).then(function() {
                     showAlert('Tag URL copied to clipboard!');
-                }).catch(function() {
+                }).catch(function(err) {
+                    console.error('Clipboard error:', err); // Debug
                     // Fallback for older browsers
                     prompt('Copy this URL:', url);
                 });
+            } else {
+                console.log('No tag ID found'); // Debug
             }
         });
         
