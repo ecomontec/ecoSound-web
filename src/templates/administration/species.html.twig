@@ -13,6 +13,9 @@
                 <input class="form-control-sm" id="search">
             </div>
         </div>
+        <form id="speciesCSVForm" method="POST" class="collapse">
+            <input type="file" name="speciesCSVFile" id="speciesCSVFile" accept="text/csv" style="display: none">
+        </form>
         <button
             id="deletion"
             name="table-btn"
@@ -24,17 +27,17 @@
             <i class="fas fa-trash"></i>
             Delete
         </button>
-        <button
-            id="speciesFormButton"
-            class="btn btn-outline-primary btn-sm mt-2"
-            type="button"
-            data-toggle="collapse"
-            data-target="#speciesFormSection"
-            aria-expanded="false"
-            aria-controls="speciesFormSection"
-        >
-            <i class="fas fa-plus"></i> Add
-        </button>
+        <span class="dropdown">
+            <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" id="addSpecies" data-toggle="dropdown" aria-expanded="false">
+                <span class="fas fa-plus"></span>
+                Add
+            </button>
+            <div class="dropdown-menu" aria-labelledby="addSpecies">
+                <a class="dropdown-item" type="button" id="speciesFormButton" data-toggle="collapse" data-target="#speciesFormSection" aria-expanded="false" aria-controls="speciesFormSection"><i class="fas fa-plus"></i> Add Species</a>
+                <a class="dropdown-item" type="button" id="speciesCSVButton"><i class="fa-solid fa-file-arrow-up"></i> Upload Species CSV</a>
+                <a class="dropdown-item" type="button" id="speciesInstructions"><i class="fa-solid fa-circle-info"></i> CSV Instructions</a>
+            </div>
+        </span>
     </div>
     <table id="speciesTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
@@ -91,6 +94,41 @@
                 {% endfor %}
             </tbody>
         </table>
+</div>
+
+<div class="modal fade" id="modal-species-instructions" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">CSV Upload Instructions</h5>
+                <button class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body ml-3">
+                <div>
+                    <div class="form-group">
+                        <label>Species data can be uploaded with a CSV containing the following columns:<br><br>
+                            <strong>binomial</strong> (required, max 100 characters) - Scientific name in format "Genus species"<br>
+                            <strong>common_name</strong> (required, max 200 characters) - Common name of the species<br>
+                            <strong>genus</strong> (optional, max 100 characters) - Genus name<br>
+                            <strong>family</strong> (optional, max 100 characters) - Family name<br>
+                            <strong>taxon_order</strong> (optional, max 100 characters) - Taxonomic order<br>
+                            <strong>class</strong> (optional, max 100 characters) - Taxonomic class<br>
+                            <strong>level</strong> (required, integer 0-100) - Classification confidence level<br>
+                            <strong>source</strong> (required, max 50 characters) - Data source identifier<br><br>
+                            You can download a <a class="text-info" id="speciesCSVTemplate" style="cursor:pointer">template CSV file</a> to fill in your data.</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 {% endblock %}
@@ -172,6 +210,43 @@
                         location.reload();
                     });
                 }
+            });
+
+            /* CSV Upload */
+            $('#speciesCSVButton').click(function () {
+                $('#speciesCSVFile').click();
+            });
+
+            $('#speciesCSVFile').change(function () {
+                if (this.files.length > 0) {
+                    let formData = new FormData($('#speciesCSVForm')[0]);
+                    postRequest('{{ baseUrl }}/api/admin/speciesMgr/uploadCSV', formData, false, false, function (response) {
+                        alert(response.message);
+                        if (response.error_code === 0) {
+                            location.reload();
+                        }
+                    });
+                }
+            });
+
+            /* CSV Instructions */
+            $('#speciesInstructions').click(function () {
+                $('#modal-species-instructions').modal('show');
+            });
+
+            /* Download CSV Template */
+            $('#speciesCSVTemplate').click(function () {
+                const csvContent = "binomial,common_name,genus,family,taxon_order,class,level,source\n" +
+                    "Passer domesticus,House Sparrow,Passer,Passeridae,Passeriformes,Aves,100,example\n";
+                const blob = new Blob([csvContent], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.setAttribute('hidden', '');
+                a.setAttribute('href', url);
+                a.setAttribute('download', 'species_template.csv');
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
             });
         });
     </script>

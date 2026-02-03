@@ -147,4 +147,164 @@ class SpeciesController extends BaseController
             'data' => $speciesData,
         ]);
     }
+
+    /**
+     * Upload species from CSV file
+     * @return string
+     * @throws \Exception
+     */
+    public function uploadCSV()
+    {
+        if (!Auth::isUserAdmin()) {
+            throw new ForbiddenException();
+        }
+
+        if (!isset($_FILES['speciesCSVFile']) || $_FILES['speciesCSVFile']['error'] != UPLOAD_ERR_OK) {
+            return json_encode([
+                'error_code' => 1,
+                'message' => 'No file uploaded or upload error occurred.',
+            ]);
+        }
+
+        $handle = fopen($_FILES['speciesCSVFile']['tmp_name'], "rb");
+        if (!$handle) {
+            return json_encode([
+                'error_code' => 1,
+                'message' => 'Unable to open uploaded file.',
+            ]);
+        }
+
+        $data = [];
+        $rowNum = 1;
+        $headers = null;
+        
+        while (!feof($handle)) {
+            $row = fgetcsv($handle);
+            
+            // Skip empty rows
+            if (!$row || empty(array_filter($row))) {
+                $rowNum++;
+                continue;
+            }
+
+            // First row is headers
+            if ($headers === null) {
+                $headers = array_map('trim', $row);
+                
+                // Validate required columns
+                $requiredColumns = ['binomial', 'common_name', 'level', 'source'];
+                foreach ($requiredColumns as $required) {
+                    if (!in_array($required, $headers)) {
+                        fclose($handle);
+                        return json_encode([
+                            'error_code' => 1,
+                            'message' => "Missing required column: {$required}",
+                        ]);
+                    }
+                }
+                $rowNum++;
+                continue;
+            }
+
+            // Map row data to headers
+            $rowData = array_combine($headers, $row);
+            
+            // Validate required fields
+            if (empty($rowData['binomial'])) {
+                fclose($handle);
+                return json_encode([
+                    'error_code' => 1,
+                    'message' => "Row {$rowNum}: binomial is required.",
+                ]);
+            }
+            
+            if (empty($rowData['common_name'])) {
+                fclose($handle);
+                return json_encode([
+                    'error_code' => 1,
+                    'message' => "Row {$rowNum}: common_name is required.",
+                ]);
+            }
+            
+            if (!isset($rowData['level']) || $rowData['level'] === '') {
+                fclose($handle);
+                return json_encode([
+                    'error_code' => 1,
+                    'message' => "Row {$rowNum}: level is required.",
+                ]);
+            }
+            
+            if (!is_numeric($rowData['level']) || $rowData['level'] < 0 || $rowData['level'] > 100) {
+                fclose($handle);
+                return json_encode([
+                    'error_code' => 1,
+                    'message' => "Row {$rowNum}: level must be a number between 0 and 100.",
+                ]);
+            }
+            
+            if (empty($rowData['source'])) {
+                fclose($handle);
+                return json_encode([
+                    'error_code' => 1,
+                    'message' => "Row {$rowNum}: source is required.",
+                ]);
+            }
+            
+            $data[] = $rowData;
+            $rowNum++;
+        }
+        fclose($handle);
+
+        if (empty($data)) {
+            return json_encode([
+                'error_code' => 1,
+                'message' => 'No valid data rows found in CSV file.',
+            ]);
+        }
+
+        // Get max species_id
+        $species = new Species();
+        $allSpecies = $species->getAll();
+        $maxId = 0;
+        foreach ($allSpecies as $sp) {
+            if (isset($sp['species_id']) && $sp['species_id'] > $maxId) {
+                $maxId = $sp['species_id'];
+            }
+        }
+
+        // Insert species
+        $inserted = 0;
+        foreach ($data as $speciesData) {
+            $maxId++;
+            $insertData = [
+                'species_id' => $maxId,
+                'binomial' => htmlentities(strip_tags($speciesData['binomial']), ENT_QUOTES),
+                'common_name' => htmlentities(strip_tags($speciesData['common_name']), ENT_QUOTES),
+                'level' => (int)$speciesData['level'],
+                'source' => htmlentities(strip_tags($speciesData['source']), ENT_QUOTES),
+            ];
+            
+            // Optional fields
+            if (!empty($speciesData['genus'])) {
+                $insertData['genus'] = htmlentities(strip_tags($speciesData['genus']), ENT_QUOTES);
+            }
+            if (!empty($speciesData['family'])) {
+                $insertData['family'] = htmlentities(strip_tags($speciesData['family']), ENT_QUOTES);
+            }
+            if (!empty($speciesData['taxon_order'])) {
+                $insertData['taxon_order'] = htmlentities(strip_tags($speciesData['taxon_order']), ENT_QUOTES);
+            }
+            if (!empty($speciesData['class'])) {
+                $insertData['class'] = htmlentities(strip_tags($speciesData['class']), ENT_QUOTES);
+            }
+            
+            $species->insert($insertData);
+            $inserted++;
+        }
+
+        return json_encode([
+            'error_code' => 0,
+            'message' => "Successfully uploaded {$inserted} species.",
+        ]);
+    }
 }
