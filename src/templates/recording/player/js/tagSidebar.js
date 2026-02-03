@@ -283,6 +283,7 @@
             postRequest(baseUrl + '/api/tagReview/save', formData, false, false, function(response) {
                 // Add new row to the reviews table
                 const $reviewTable = $sidebar.find('.review-table tbody');
+                const $reviewTableElement = $sidebar.find('.review-table table');
                 const today = new Date();
                 const dateStr = today.getDate().toString().padStart(2, '0') + '/' + 
                                (today.getMonth() + 1).toString().padStart(2, '0') + '/' + 
@@ -296,6 +297,20 @@
                 const isAdmin = reviewForm.data('is-admin') === '1' || reviewForm.data('is-admin') === 1;
                 const isUserLogged = reviewForm.data('is-user-logged') === '1' || reviewForm.data('is-user-logged') === 1;
                 const canDelete = isUserLogged && (isAdmin || true); // User created this review, so can always delete their own
+                
+                // Add table header if it doesn't exist (first review being added)
+                if ($reviewTableElement.find('thead').length === 0) {
+                    const headerHtml = `<thead>
+                        <tr>
+                            ${isUserLogged ? '<th scope="col" class="py-1">Reviewer</th>' : ''}
+                            <th scope="col" class="py-1">Status</th>
+                            <th scope="col" class="py-1">Species</th>
+                            <th scope="col" class="py-1">Date</th>
+                            ${isUserLogged ? '<th scope="col" class="py-1" style="width: 30px;"></th>' : ''}
+                        </tr>
+                    </thead>`;
+                    $reviewTableElement.prepend(headerHtml);
+                }
                 
                 // Check if user already has a review (shouldn't add duplicate)
                 // Check both data-reviewer-id (server-rendered) and data-user-id (client-created)
