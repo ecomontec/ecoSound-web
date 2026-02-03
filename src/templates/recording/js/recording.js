@@ -223,7 +223,30 @@ $(function () {
             $statusText.text('OFF');
             $button.removeClass('btn-success').addClass('btn-outline-success');
         }
+        
+        // Disable shift buttons if at boundaries
+        updateShiftButtonStates();
     });
+    
+    // Function to update shift button states based on current position
+    function updateShiftButtonStates() {
+        const $shiftLeft = $('#shift-left');
+        const $shiftRight = $('#shift-right');
+        
+        // Check if we're at the start (can't shift left)
+        if (minTime <= 0) {
+            $shiftLeft.addClass('a-disabled');
+        } else {
+            $shiftLeft.removeClass('a-disabled');
+        }
+        
+        // Check if we're at the end (can't shift right)
+        if (maxTime >= fileDuration) {
+            $shiftRight.addClass('a-disabled');
+        } else {
+            $shiftRight.removeClass('a-disabled');
+        }
+    }
 
     // Use event delegation for new-tag so it works with dynamically added buttons in sidebar
     $(document).on('click', '.js-new-tag', function (e) {

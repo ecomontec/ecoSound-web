@@ -79,8 +79,10 @@
                 const hasPrevSequence = nav && nav.previous;
                 const hasNextSequence = nav && nav.next;
                 
-                // Shift to adjacent visible tag buttons (no zoom) - grouped together
+                // All navigation arrows grouped together (shift + zoom)
                 sidebarHTML += '<div class="btn-group btn-group-sm mr-2" role="group">';
+                
+                // Shift to adjacent visible tag buttons (no zoom)
                 sidebarHTML += '<button class="btn btn-sm ' + (hasPrevVisible ? 'btn-outline-success' : 'btn-secondary') + '" ';
                 sidebarHTML += 'id="sidebar-shift-prev" title="Previous visible tag (no zoom)"' + (!hasPrevVisible ? ' disabled' : '') + '>';
                 sidebarHTML += '<i class="fas fa-arrow-left"></i></button>';
@@ -88,16 +90,21 @@
                 sidebarHTML += '<button class="btn btn-sm ' + (hasNextVisible ? 'btn-outline-success' : 'btn-secondary') + '" ';
                 sidebarHTML += 'id="sidebar-shift-next" title="Next visible tag (no zoom)"' + (!hasNextVisible ? ' disabled' : '') + '>';
                 sidebarHTML += '<i class="fas fa-arrow-right"></i></button>';
-                sidebarHTML += '</div>';
                 
-                // Zoom to adjacent tag buttons (left button on left, right button on right)
-                sidebarHTML += '<button class="btn btn-sm ' + (hasPrevSequence ? 'btn-outline-success' : 'btn-secondary') + ' mr-1" ';
+                // Zoom to adjacent tag buttons
+                sidebarHTML += '<button class="btn btn-sm ' + (hasPrevSequence ? 'btn-outline-success' : 'btn-secondary') + '" ';
                 sidebarHTML += 'id="sidebar-zoom-prev" title="Zoom to previous tag"' + (!hasPrevSequence ? ' disabled' : '') + '>';
                 sidebarHTML += '<i class="fas fa-arrow-left"></i> <i class="fas fa-search"></i></button>';
                 
-                sidebarHTML += '<button class="btn btn-sm ' + (hasNextSequence ? 'btn-outline-success' : 'btn-secondary') + ' mr-2" ';
+                sidebarHTML += '<button class="btn btn-sm ' + (hasNextSequence ? 'btn-outline-success' : 'btn-secondary') + '" ';
+                sidebarHTML += 'id="sidebar-zoom-prev" title="Zoom to previous tag"' + (!hasPrevSequence ? ' disabled' : '') + '>';
+                sidebarHTML += '<i class="fas fa-arrow-left"></i> <i class="fas fa-search"></i></button>';
+                
+                sidebarHTML += '<button class="btn btn-sm ' + (hasNextSequence ? 'btn-outline-success' : 'btn-secondary') + '" ';
                 sidebarHTML += 'id="sidebar-zoom-next" title="Zoom to next tag"' + (!hasNextSequence ? ' disabled' : '') + '>';
                 sidebarHTML += '<i class="fas fa-search"></i> <i class="fas fa-arrow-right"></i></button>';
+                
+                sidebarHTML += '</div>'; // Close btn-group for all navigation arrows
                 
                 // Padding multiplier for zoom
                 const savedPadding = sessionStorage.getItem('tagZoomPadding') || '0';
