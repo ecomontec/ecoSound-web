@@ -3,6 +3,13 @@ $(function () {
     let shiftRate = 0.95;
 
     $("#shift-left").click(function (e) {
+        e.preventDefault();
+        
+        // Don't execute if button is disabled
+        if ($(this).hasClass('a-disabled')) {
+            return false;
+        }
+        
         let shiftLeftMin = Math.round(minTime - (selectionDuration * shiftRate));
 
         if (shiftLeftMin < 0) {
@@ -24,6 +31,13 @@ $(function () {
     });
 
     $("#shift-right").click(function (e) {
+        e.preventDefault();
+        
+        // Don't execute if button is disabled
+        if ($(this).hasClass('a-disabled')) {
+            return false;
+        }
+        
         let shiftRightMax = Math.round(maxTime + (selectionDuration * shiftRate));
 
         if (shiftRightMax > fileDuration) {
