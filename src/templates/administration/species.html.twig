@@ -6,6 +6,10 @@
 
 <div class="card mb-3" id="speciesList">
     <div class="card-header border-light bg-white text-right">
+        <div class="form-inline justify-content-end mb-2">
+            <label class="mr-2">Search:</label>
+            <input class="form-control-sm" id="search">
+        </div>
         <button
             id="deletion"
             name="table-btn"
@@ -114,10 +118,30 @@
                 "scrollX": true,
                 "lengthMenu": [ [10, 25, 50, 100], [10, 25, 50, 100] ],
                 "pageLength": 10,
-                "ordering": false,
-                "bAutoWidth": false
+                "ordering": true,
+                "bAutoWidth": false,
+                "columnDefs": [
+                    {
+                        "orderable": false,
+                        "targets": [0]
+                    }
+                ]
             });
             table.draw();
+            
+            // Restore search value from state
+            if (table.state.loaded()) {
+                $('#search').val(table.state.loaded().search.search);
+            }
+            
+            // Search handler
+            $('#search').on('input', () => {
+                table.search($('#search').val()).draw();
+            });
+            
+            // Clear all checkboxes on page load
+            $('.js-checkbox').prop('checked', false);
+            $('.js-all-checkbox').prop('checked', false);
 
             /* Save species list */
             $('.js-species-list').on('change', 'input, select, textarea', function() {
