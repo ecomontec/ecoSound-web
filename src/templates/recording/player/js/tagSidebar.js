@@ -439,15 +439,23 @@
             const tagId = $sidebar.find("input[name='tag_id']").val() || $sidebar.find('#exportTagUrlData').val();
             console.log('Tag ID:', tagId); // Debug
             if (tagId) {
-                const url = window.location.origin + baseUrl + '/recording/show/' + $('input[name="recording_id"]').val() + '?tagId=' + tagId;
+                const url = baseUrl + '/recording/show/' + $('input[name="recording_id"]').val() + '?tagId=' + tagId;
                 console.log('Generated URL:', url); // Debug
-                navigator.clipboard.writeText(url).then(function() {
-                    showAlert('Tag URL copied to clipboard!');
-                }).catch(function(err) {
-                    console.error('Clipboard error:', err); // Debug
-                    // Fallback for older browsers
+                
+                // Try to use clipboard API if available (HTTPS only)
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(url).then(function() {
+                        showAlert('Tag URL copied to clipboard!');
+                    }).catch(function(err) {
+                        console.error('Clipboard error:', err); // Debug
+                        // Fallback for clipboard errors
+                        prompt('Copy this URL:', url);
+                    });
+                } else {
+                    // Fallback for HTTP or older browsers
+                    console.log('Clipboard API not available, using prompt fallback'); // Debug
                     prompt('Copy this URL:', url);
-                });
+                }
             } else {
                 console.log('No tag ID found'); // Debug
             }
