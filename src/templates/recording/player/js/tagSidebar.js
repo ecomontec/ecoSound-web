@@ -79,14 +79,16 @@
                 const hasPrevSequence = nav && nav.previous;
                 const hasNextSequence = nav && nav.next;
                 
-                // Shift to adjacent visible tag buttons (no zoom)
-                sidebarHTML += '<button class="btn btn-sm ' + (hasPrevVisible ? 'btn-outline-success' : 'btn-secondary') + ' mr-1" ';
+                // Shift to adjacent visible tag buttons (no zoom) - grouped together
+                sidebarHTML += '<div class="btn-group btn-group-sm mr-2" role="group">';
+                sidebarHTML += '<button class="btn btn-sm ' + (hasPrevVisible ? 'btn-outline-success' : 'btn-secondary') + '" ';
                 sidebarHTML += 'id="sidebar-shift-prev" title="Previous visible tag (no zoom)"' + (!hasPrevVisible ? ' disabled' : '') + '>';
                 sidebarHTML += '<i class="fas fa-arrow-left"></i></button>';
                 
-                sidebarHTML += '<button class="btn btn-sm ' + (hasNextVisible ? 'btn-outline-success' : 'btn-secondary') + ' mr-2" ';
+                sidebarHTML += '<button class="btn btn-sm ' + (hasNextVisible ? 'btn-outline-success' : 'btn-secondary') + '" ';
                 sidebarHTML += 'id="sidebar-shift-next" title="Next visible tag (no zoom)"' + (!hasNextVisible ? ' disabled' : '') + '>';
                 sidebarHTML += '<i class="fas fa-arrow-right"></i></button>';
+                sidebarHTML += '</div>';
                 
                 // Zoom to adjacent tag buttons (left button on left, right button on right)
                 sidebarHTML += '<button class="btn btn-sm ' + (hasPrevSequence ? 'btn-outline-success' : 'btn-secondary') + ' mr-1" ';
