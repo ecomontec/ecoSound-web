@@ -54,6 +54,7 @@ if ($("input[name='continuous_play']").val() === '1' || isDirectStart) {
 }
 
 playButton.click(function () {
+    console.log("Play button clicked. download=" + download + ", soundFilePath=" + soundFilePath);
     if (download === 0) {
         playButton.prop('disabled', true);
         request.open('GET', soundFilePath, true);
