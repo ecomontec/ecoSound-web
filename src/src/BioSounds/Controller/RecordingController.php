@@ -320,14 +320,24 @@ class RecordingController extends BaseController
                     );
                 }
             } else {
-                //  				if (is_file($originalMp3FilePath)) {
-                //					copy($originalMp3FilePath, $soundFileView);
-                //				}
-                if ($this->recordingPresenter->getChannel() == 1 && is_file($imageFilePath)) {
-                    copy($imageFilePath, $spectrogramImagePath);
+                // No time selection, but may still need frequency filtering
+                if ($filter) {
+                    Utils::filterFrequenciesSound(
+                        $originalSoundFilePath,
+                        $zoomedFilePath,
+                        $minFrequency,
+                        ($maxFrequency == $samplingRate / 2) ? $maxFrequency - 1 : $maxFrequency
+                    );
+                } else {
+                    //  				if (is_file($originalMp3FilePath)) {
+                    //					copy($originalMp3FilePath, $soundFileView);
+                    //				}
+                    if ($this->recordingPresenter->getChannel() == 1 && is_file($imageFilePath)) {
+                        copy($imageFilePath, $spectrogramImagePath);
+                    }
+                    // copy($originalWavFilePath, $wavFilePath);
+                    copy($originalSoundFilePath, $zoomedFilePath);
                 }
-                // copy($originalWavFilePath, $wavFilePath);
-                copy($originalSoundFilePath, $zoomedFilePath);
             }
 
             /* Generation MP3 File */
