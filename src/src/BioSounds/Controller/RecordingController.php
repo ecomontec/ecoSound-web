@@ -1065,7 +1065,12 @@ class RecordingController extends BaseController
         }
         copy(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav', $soundPath . '/' . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav');
         $resultPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . '/' . $timestamp;
-        $str = "autrainer inference " . escapeshellarg("hf:AlexanderGbd/insects-base-cnn10-96k-t") . " -sr 96000";
+        
+        // Try to use cached model first, fallback to HuggingFace if cache doesn't exist
+        $cachedModelPath = "/var/www/.cache/torch/hub/autrainer/AlexanderGbd--insects-base-cnn10-96k-t--main";
+        $modelSpec = file_exists($cachedModelPath) ? escapeshellarg($cachedModelPath) : escapeshellarg("hf:AlexanderGbd/insects-base-cnn10-96k-t");
+        
+        $str = "HF_HUB_OFFLINE=1 autrainer inference " . $modelSpec . " -sr 96000";
         $windowSize = (!empty($data['window_size']) && $data['window_size'] != 'undefined') ? escapeshellarg($data['window_size']) : escapeshellarg("4.0");
         $strideSize = (!empty($data['stride_length']) && $data['stride_length'] != 'undefined') ? escapeshellarg($data['stride_length']) : escapeshellarg("4.0");
 
@@ -1172,9 +1177,19 @@ class RecordingController extends BaseController
             }
         }
         Utils::deleteDirContents($resultPath);
+        
+        // Provide helpful error message if it's a Hugging Face connection issue
+        $errorOutput = count($out) > 0 ? implode(" | ", $out) : "No output";
+        $helpMessage = "";
+        if (strpos($errorOutput, 'Invalid hugging face repo id') !== false || 
+            strpos($errorOutput, 'Connection') !== false || 
+            strpos($errorOutput, 'huggingface') !== false) {
+            $helpMessage = " This may be due to network restrictions preventing access to huggingface.co. See README Troubleshooting section for manual model installation.";
+        }
+        
         return json_encode([
             'errorCode' => 1,
-            'message' => "insects-base-cnn10-96k-t execution error. Exit code: " . $status . ". Output: " . (count($out) > 0 ? implode(" | ", $out) : "No output"),
+            'message' => "insects-base-cnn10-96k-t execution error. Exit code: " . $status . ". Output: " . $errorOutput . $helpMessage,
         ]);
     }
 
