@@ -126,7 +126,7 @@
                 if (this.checkValidity() === false) {
                     e.stopPropagation();
                 } else {
-                    postRequest('{{ baseUrl }}/api/admin/speciesMgr/save', $(this).serialize(), false, false, function() {
+                    postRequest('{{ baseUrl }}/api/admin/speciesMgr/save', new FormData(this), false, false, function() {
                         location.reload();
                     });
                 }
