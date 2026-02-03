@@ -437,12 +437,13 @@ class SiteController extends BaseController
             
             $siteId = $site->insert($insertData);
             
-            if ($collectionId && $siteId) {
+            if ($siteId) {
                 $siteCollection = new SiteCollection();
-                $siteCollection->insert([
-                    'site_id' => $siteId,
-                    'collection_id' => $collectionId,
-                ]);
+                if ($collectionId) {
+                    $siteCollection->insert($siteId, $collectionId);
+                } else {
+                    $siteCollection->insertByProject($projectId, $siteId);
+                }
             }
             
             $inserted++;
@@ -452,5 +453,41 @@ class SiteController extends BaseController
             'error_code' => 0,
             'message' => "Successfully uploaded {$inserted} sites.",
         ]);
+    }
+
+    /**
+     * Export IUCN realm/biome/functional type data to CSV
+     * @return void
+     * @throws \Exception
+     */
+    public function exportIucn()
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
+        }
+
+        $iucnGet = new IucnGet();
+        $allIucnData = $iucnGet->getAllIucnGets();
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename=iucn_realm_biome_functional_types.csv');
+        
+        $fp = fopen('php://output', 'w');
+        
+        // Write headers
+        fputcsv($fp, ['iucn_get_id', 'name', 'parent_id', 'level_type']);
+        
+        // Write data
+        foreach ($allIucnData as $row) {
+            fputcsv($fp, [
+                $row['iucn_get_id'] ?? '',
+                $row['name'] ?? '',
+                $row['pid'] ?? '',
+                ($row['pid'] == 0 ? 'Realm' : ($row['pid'] < 100 ? 'Biome' : 'Functional Type'))
+            ]);
+        }
+        
+        fclose($fp);
+        exit();
     }
 }
