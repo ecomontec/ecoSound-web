@@ -7,6 +7,17 @@
 <div class="card mb-3" id="speciesList">
     <div class="card-header border-light bg-white text-right">
         <button
+            id="deletion"
+            name="table-btn"
+            class="btn btn-outline-secondary btn-sm mt-2"
+            type="button"
+            data-target="#deletion"
+            disabled
+        >
+            <i class="fas fa-trash"></i>
+            Delete
+        </button>
+        <button
             id="speciesFormButton"
             class="btn btn-outline-primary btn-sm mt-2"
             type="button"
@@ -19,10 +30,12 @@
         </button>
     </div>
     <div class="card-body">
-        <div style="overflow-x:auto; width:100%">
-        <table id="speciesTable" class="table table-sm table-hover" style="width:100%">
+        <table id="speciesTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
-                <tr>
+                <tr style="font-size: .875rem;">
+                    <th>
+                        <input type="checkbox" class="js-all-checkbox" name="check-all" id="check-all">
+                    </th>
                     <th scope="col">#</th>
                     <th scope="col">Binomial</th>
                     <th scope="col">Common Name</th>
@@ -32,50 +45,46 @@
                     <th scope="col">Class</th>
                     <th scope="col">Level</th>
                     <th scope="col">Source</th>
-                    <th scope="col"></th>
                 </tr>
             </thead>
             <tbody class="form-control-sm js-species-list">
                 {% for sp in species %}
                     <tr>
+                        <td>
+                            <input type="checkbox" class="js-checkbox" data-id="{{ sp.species_id }}">
+                        </td>
                         <th scope='row'>
                             <input type="hidden" name="itemID" value="{{ sp.species_id }}">
                             {{ sp.species_id }}
                         </th>
                         <td>
-                            <input type='text' name="binomial" value="{{ sp.binomial }}" maxlength="100" required>
+                            <input type='text' class="form-control form-control-sm" name="binomial" value="{{ sp.binomial }}" maxlength="100" required>
                         </td>
                         <td>
-                            <input type='text' name="common_name" value="{{ sp.common_name }}" maxlength="200" required>
+                            <input type='text' class="form-control form-control-sm" name="common_name" value="{{ sp.common_name }}" maxlength="200" required>
                         </td>
                         <td>
-                            <input type='text' name="genus" value="{{ sp.genus }}" maxlength="100">
+                            <input type='text' class="form-control form-control-sm" name="genus" value="{{ sp.genus }}" maxlength="100">
                         </td>
                         <td>
-                            <input type='text' name="family" value="{{ sp.family }}" maxlength="100">
+                            <input type='text' class="form-control form-control-sm" name="family" value="{{ sp.family }}" maxlength="100">
                         </td>
                         <td>
-                            <input type='text' name="taxon_order" value="{{ sp.taxon_order }}" maxlength="100">
+                            <input type='text' class="form-control form-control-sm" name="taxon_order" value="{{ sp.taxon_order }}" maxlength="100">
                         </td>
                         <td>
-                            <input type='text' name="class" value="{{ sp.class }}" maxlength="100">
+                            <input type='text' class="form-control form-control-sm" name="class" value="{{ sp.class }}" maxlength="100">
                         </td>
                         <td>
-                            <input type='number' name="level" value="{{ sp.level }}" min="0" max="100">
+                            <input type='number' class="form-control form-control-sm" name="level" value="{{ sp.level }}" min="0" max="100">
                         </td>
                         <td>
-                            <input type='text' name="source" value="{{ sp.source }}" maxlength="50">
-                        </td>
-                        <td>
-                            <a class="js-delete-species" href="#" data-id="{{ sp.species_id }}" title="Delete species">
-                                <span class="fas fa-trash"></span>
-                            </a>
+                            <input type='text' class="form-control form-control-sm" name="source" value="{{ sp.source }}" maxlength="50">
                         </td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
-        </div>
     </div>
 </div>
 
@@ -101,13 +110,14 @@
             'use strict';
 
             // Initialize DataTable with scrollX and lengthMenu
-            $('#speciesTable').DataTable({
+            var table = $('#speciesTable').DataTable({
                 "scrollX": true,
                 "lengthMenu": [ [10, 25, 50, 100], [10, 25, 50, 100] ],
                 "pageLength": 10,
                 "ordering": false,
-                "autoWidth": false
+                "bAutoWidth": false
             });
+            table.draw();
 
             /* Save species list */
             $('.js-species-list').on('change', 'input, select, textarea', function() {
@@ -134,21 +144,16 @@
             });
 
             /* Delete species */
-            $(document).on('click', '.js-delete-species', function(e){
-                e.preventDefault();
-                
-                if (confirm('Are you sure you want to delete this species? This action cannot be undone.')) {
-                    let speciesId = $(this).data('id');
-                    
-                    deleteRequest(
-                        '{{ baseUrl }}/api/admin/speciesMgr/delete',
-                        {id: speciesId},
-                        true,
-                        false,
-                        function() {
-                            location.reload();
-                        }
-                    );
+            $('#deletion').click(function (e) {
+                if (confirm('Are you sure you want to delete the selected species? This action cannot be undone.')) {
+                    let id = [];
+                    $('.js-checkbox:checked').each(function () {
+                        id.push($(this).data('id'));
+                    });
+                    let data = {'id': id};
+                    deleteRequest('{{ baseUrl }}/api/admin/speciesMgr/delete', data, true, false, function () {
+                        location.reload();
+                    });
                 }
             });
         });

@@ -111,10 +111,16 @@ class SpeciesController extends BaseController
             throw new ForbiddenException();
         }
 
-        $speciesId = filter_var($_POST['id'], FILTER_SANITIZE_NUMBER_INT);
+        $ids = $_POST['id'];
+        if (!is_array($ids)) {
+            $ids = [$ids];
+        }
         
         $species = new Species();
-        $species->delete($speciesId);
+        foreach ($ids as $id) {
+            $speciesId = (int) filter_var($id, FILTER_SANITIZE_NUMBER_INT);
+            $species->delete($speciesId);
+        }
 
         return json_encode([
             'errorCode' => 0,
