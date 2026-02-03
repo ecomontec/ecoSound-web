@@ -257,25 +257,32 @@
             reviewForm.find(':input').not('#reviewSpeciesName').not('.delete-review-btn').prop('disabled', reviewForm.data('disabled'));
         }
         
-        // Delay event handler attachment to avoid triggering on form population
-        // This ensures the save button stays disabled until user makes actual changes
+        // Use a flag to track if form is fully initialized
+        // This prevents change events during initialization from enabling the save button
+        let formInitialized = false;
+        
+        // Enable save button when form inputs change (only if form is initialized)
+        $sidebar.find('#tag-panel-sidebar').off('input change').on('input change', 'input, select, textarea', function () {
+            if (!formInitialized) return;
+            const $saveBtn = $sidebar.find('#saveButton');
+            $saveBtn.prop('disabled', false);
+            $saveBtn.removeClass('btn-secondary').addClass('btn-outline-success');
+            $sidebar.find('.type-btn').removeAttr('disabled');
+        });
+        
+        // Also handle selectpicker changes (only if form is initialized)
+        $sidebar.find('#sound_id').off('changed.bs.select').on('changed.bs.select', function () {
+            if (!formInitialized) return;
+            const $saveBtn = $sidebar.find('#saveButton');
+            $saveBtn.prop('disabled', false);
+            $saveBtn.removeClass('btn-secondary').addClass('btn-outline-success');
+            $sidebar.find('.type-btn').removeAttr('disabled');
+        });
+        
+        // Mark form as initialized after a delay to allow all async initialization to complete
         setTimeout(function() {
-            // Enable save button when form inputs change
-            $sidebar.find('#tag-panel-sidebar').off('input change').on('input change', 'input, select, textarea', function () {
-                const $saveBtn = $sidebar.find('#saveButton');
-                $saveBtn.prop('disabled', false);
-                $saveBtn.removeClass('btn-secondary').addClass('btn-outline-success');
-                $sidebar.find('.type-btn').removeAttr('disabled');
-            });
-            
-            // Also handle selectpicker changes
-            $sidebar.find('#sound_id').off('changed.bs.select').on('changed.bs.select', function () {
-                const $saveBtn = $sidebar.find('#saveButton');
-                $saveBtn.prop('disabled', false);
-                $saveBtn.removeClass('btn-secondary').addClass('btn-outline-success');
-                $sidebar.find('.type-btn').removeAttr('disabled');
-            });
-        }, 0);
+            formInitialized = true;
+        }, 100);
         
         // Handle review form button clicks - enable save button
         $sidebar.find('#reviewForm').off('click.enableSave').on('click.enableSave', 'button', function () {
