@@ -466,8 +466,9 @@ class SiteController extends BaseController
             throw new ForbiddenException();
         }
 
-        $iucnGet = new IucnGet();
-        $allIucnData = $iucnGet->getAllIucnGets();
+        // Get IUCN data ordered by ID
+        $this->database->prepareQuery("SELECT * FROM iucn_get ORDER BY iucn_get_id");
+        $allIucnData = $this->database->executeSelect();
 
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename=iucn_realm_biome_functional_types.csv');
