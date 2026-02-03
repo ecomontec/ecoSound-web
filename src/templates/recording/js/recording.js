@@ -215,13 +215,33 @@ $(function () {
         
         // Toggle between '1' (ON) and '0' (OFF)
         if (currentValue === '1') {
+            // Turning filter OFF - just toggle the state
             $hiddenInput.val('0');
             $statusText.text('OFF');
             $button.removeClass('btn-success').addClass('btn-outline-success');
         } else {
+            // Turning filter ON - toggle state and apply immediately if not showing full range
             $hiddenInput.val('1');
             $statusText.text('ON');
             $button.removeClass('btn-outline-success').addClass('btn-success');
+            
+            // Check if current view is already showing the full frequency range
+            const isFullFrequencyRange = (minFrequency <= 1 && maxFrequency >= fileFreqMax);
+            
+            // Only reload if we're not already showing the full frequency range
+            if (!isFullFrequencyRange) {
+                // Set frequency bounds to current view for filtering
+                $('#y').val(minFrequency);
+                $('#h').val(maxFrequency);
+                
+                // Clear audio buffer queue if it exists
+                if (typeof window.audioBufferQueue !== 'undefined') {
+                    window.audioBufferQueue.length = 0;
+                }
+                
+                // Submit the form to apply filter immediately
+                $("#recordingForm").submit();
+            }
         }
     });
 
