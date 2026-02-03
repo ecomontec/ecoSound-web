@@ -225,14 +225,18 @@ $(function () {
             $statusText.text('ON');
             $button.removeClass('btn-outline-success').addClass('btn-success');
             
+            // Get current frequency view from hidden inputs
+            const currentMinFreq = parseInt($('input[name="minFreqView"]').val());
+            const currentMaxFreq = parseInt($('input[name="maxFreqView"]').val());
+            
             // Check if current view is already showing the full frequency range
-            const isFullFrequencyRange = (minFrequency <= 1 && maxFrequency >= fileFreqMax);
+            const isFullFrequencyRange = (currentMinFreq <= 1 && currentMaxFreq >= fileFreqMax);
             
             // Only reload if we're not already showing the full frequency range
             if (!isFullFrequencyRange) {
                 // Set frequency bounds to current view for filtering
-                $('#y').val(minFrequency);
-                $('#h').val(maxFrequency);
+                $('#y').val(currentMinFreq);
+                $('#h').val(currentMaxFreq);
                 
                 // Clear audio buffer queue if it exists
                 if (typeof window.audioBufferQueue !== 'undefined') {
