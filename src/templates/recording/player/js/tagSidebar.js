@@ -257,21 +257,25 @@
             reviewForm.find(':input').not('#reviewSpeciesName').not('.delete-review-btn').prop('disabled', reviewForm.data('disabled'));
         }
         
-        // Enable save button when form inputs change
-        $sidebar.find('#tag-panel-sidebar').off('input change').on('input change', 'input, select, textarea', function () {
-            const $saveBtn = $sidebar.find('#saveButton');
-            $saveBtn.prop('disabled', false);
-            $saveBtn.removeClass('btn-secondary').addClass('btn-outline-success');
-            $sidebar.find('.type-btn').removeAttr('disabled');
-        });
-        
-        // Also handle selectpicker changes
-        $sidebar.find('#sound_id').off('changed.bs.select').on('changed.bs.select', function () {
-            const $saveBtn = $sidebar.find('#saveButton');
-            $saveBtn.prop('disabled', false);
-            $saveBtn.removeClass('btn-secondary').addClass('btn-outline-success');
-            $sidebar.find('.type-btn').removeAttr('disabled');
-        });
+        // Delay event handler attachment to avoid triggering on form population
+        // This ensures the save button stays disabled until user makes actual changes
+        setTimeout(function() {
+            // Enable save button when form inputs change
+            $sidebar.find('#tag-panel-sidebar').off('input change').on('input change', 'input, select, textarea', function () {
+                const $saveBtn = $sidebar.find('#saveButton');
+                $saveBtn.prop('disabled', false);
+                $saveBtn.removeClass('btn-secondary').addClass('btn-outline-success');
+                $sidebar.find('.type-btn').removeAttr('disabled');
+            });
+            
+            // Also handle selectpicker changes
+            $sidebar.find('#sound_id').off('changed.bs.select').on('changed.bs.select', function () {
+                const $saveBtn = $sidebar.find('#saveButton');
+                $saveBtn.prop('disabled', false);
+                $saveBtn.removeClass('btn-secondary').addClass('btn-outline-success');
+                $sidebar.find('.type-btn').removeAttr('disabled');
+            });
+        }, 0);
         
         // Handle review form button clicks - enable save button
         $sidebar.find('#reviewForm').off('click.enableSave').on('click.enableSave', 'button', function () {
