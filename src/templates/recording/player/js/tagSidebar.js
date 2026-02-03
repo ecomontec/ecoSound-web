@@ -257,32 +257,43 @@
             reviewForm.find(':input').not('#reviewSpeciesName').not('.delete-review-btn').prop('disabled', reviewForm.data('disabled'));
         }
         
-        // Use a flag to track if form is fully initialized
-        // This prevents change events during initialization from enabling the save button
-        let formInitialized = false;
+        // Store initial form state to detect actual changes
+        // This prevents programmatic value setting during initialization from enabling the save button
+        let initialFormState = null;
         
-        // Enable save button when form inputs change (only if form is initialized)
-        $sidebar.find('#tag-panel-sidebar').off('input change').on('input change', 'input, select, textarea', function () {
-            if (!formInitialized) return;
-            const $saveBtn = $sidebar.find('#saveButton');
-            $saveBtn.prop('disabled', false);
-            $saveBtn.removeClass('btn-secondary').addClass('btn-outline-success');
-            $sidebar.find('.type-btn').removeAttr('disabled');
-        });
-        
-        // Also handle selectpicker changes (only if form is initialized)
-        $sidebar.find('#sound_id').off('changed.bs.select').on('changed.bs.select', function () {
-            if (!formInitialized) return;
-            const $saveBtn = $sidebar.find('#saveButton');
-            $saveBtn.prop('disabled', false);
-            $saveBtn.removeClass('btn-secondary').addClass('btn-outline-success');
-            $sidebar.find('.type-btn').removeAttr('disabled');
-        });
-        
-        // Mark form as initialized after a delay to allow all async initialization to complete
+        // Capture initial form state after a delay to allow form population
         setTimeout(function() {
-            formInitialized = true;
-        }, 100);
+            initialFormState = tagForm.serialize();
+            console.log('Initial form state captured'); // Debug
+        }, 200);
+        
+        // Enable save button when form inputs change (only if values actually changed from initial state)
+        $sidebar.find('#tag-panel-sidebar').off('input change').on('input change', 'input, select, textarea', function () {
+            if (!initialFormState) return; // Not initialized yet
+            
+            const currentState = tagForm.serialize();
+            if (currentState !== initialFormState) {
+                const $saveBtn = $sidebar.find('#saveButton');
+                $saveBtn.prop('disabled', false);
+                $saveBtn.removeClass('btn-secondary').addClass('btn-outline-success');
+                $sidebar.find('.type-btn').removeAttr('disabled');
+                console.log('Form changed - save button enabled'); // Debug
+            }
+        });
+        
+        // Also handle selectpicker changes (only if values actually changed from initial state)
+        $sidebar.find('#sound_id').off('changed.bs.select').on('changed.bs.select', function () {
+            if (!initialFormState) return; // Not initialized yet
+            
+            const currentState = tagForm.serialize();
+            if (currentState !== initialFormState) {
+                const $saveBtn = $sidebar.find('#saveButton');
+                $saveBtn.prop('disabled', false);
+                $saveBtn.removeClass('btn-secondary').addClass('btn-outline-success');
+                $sidebar.find('.type-btn').removeAttr('disabled');
+                console.log('Sound type changed - save button enabled'); // Debug
+            }
+        });
         
         // Handle review form button clicks - enable save button
         $sidebar.find('#reviewForm').off('click.enableSave').on('click.enableSave', 'button', function () {
