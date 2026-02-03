@@ -274,7 +274,8 @@ class RecordingController extends BaseController
             $recording_fft = $recording->getUserRecordingFft(Auth::getUserID(), $recordingData[Recording::ID]);
         }
         $selectedFileName = $fileName . '_' . $minFrequency . '-' . $maxFrequency . '_' . $minTime . '-'
-            . $maxTime . '_' . $this->fftSize . '_' . $this->recordingPresenter->getChannel();
+            . $maxTime . '_' . $this->fftSize . '_' . $this->recordingPresenter->getChannel() 
+            . ($filter ? '_filtered' : '');
 
         if (!file_exists($originalWavFilePath)) {
             Utils::generateWavFile($originalSoundFilePath);
