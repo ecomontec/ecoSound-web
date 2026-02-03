@@ -55,6 +55,7 @@ class SpeciesController extends BaseController
         file_put_contents('/tmp/species_post_debug.log', "_POST:\n" . print_r($_POST, true) . "\nphp://input:\n" . file_get_contents('php://input') . "\n\n", FILE_APPEND);
 
         $data = [];
+        $itemID = null;
         $postData = $_POST;
         // If $_POST is empty, try to parse php://input (for non-standard POSTs)
         if (empty($postData)) {
@@ -62,19 +63,24 @@ class SpeciesController extends BaseController
             parse_str($rawInput, $postData);
         }
         foreach ($postData as $key => $value) {
-            if ($key === 'itemID') continue;
+            // Strip _type suffix (e.g., binomial_text -> binomial, itemID_hidden -> itemID)
+            $fieldName = preg_replace('/_(?:text|number|hidden|select-one|date|time|checkbox|email|tel)$/', '', $key);
+            
+            if ($fieldName === 'itemID') {
+                $itemID = filter_var($value, FILTER_SANITIZE_NUMBER_INT);
+                continue;
+            }
+            
             // Sanitize numeric fields
-            if (in_array($key, ['species_id', 'level'])) {
-                $data[$key] = filter_var($value, FILTER_SANITIZE_NUMBER_INT);
+            if (in_array($fieldName, ['species_id', 'level'])) {
+                $data[$fieldName] = filter_var($value, FILTER_SANITIZE_NUMBER_INT);
             } else {
-                $data[$key] = htmlentities(strip_tags(filter_var($value, FILTER_SANITIZE_STRING)), ENT_QUOTES);
+                $data[$fieldName] = htmlentities(strip_tags(filter_var($value, FILTER_SANITIZE_STRING)), ENT_QUOTES);
             }
         }
 
-        if (!empty($data['itemID'])) {
-            $speciesId = $data['itemID'];
-            unset($data['itemID']);
-            $species->update($data, $speciesId);
+        if (!empty($itemID)) {
+            $species->update($data, $itemID);
         } else {
             // Generate next species_id
             $allSpecies = $species->getAll();
