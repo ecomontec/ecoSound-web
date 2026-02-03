@@ -234,6 +234,10 @@ $(function () {
             
             // Only reload if we're not already showing the full frequency range
             if (!isFullFrequencyRange) {
+                // Set time bounds to current view (preserve current time window)
+                $('#x').val($('input[name="minTimeView"]').val());
+                $('#w').val($('input[name="maxTimeView"]').val());
+                
                 // Set frequency bounds to current view for filtering
                 $('#y').val(currentMinFreq);
                 $('#h').val(currentMaxFreq);
