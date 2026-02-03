@@ -10,6 +10,7 @@ $(function () {
             return false;
         }
         
+        const selectionDuration = maxTime - minTime;
         let shiftLeftMin = Math.round(minTime - (selectionDuration * shiftRate));
 
         if (shiftLeftMin < 0) {
@@ -38,6 +39,7 @@ $(function () {
             return false;
         }
         
+        const selectionDuration = maxTime - minTime;
         let shiftRightMax = Math.round(maxTime + (selectionDuration * shiftRate));
 
         if (shiftRightMax > fileDuration) {
