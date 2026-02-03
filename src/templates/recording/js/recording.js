@@ -196,15 +196,18 @@ $(function () {
         e.preventDefault();
         const $hiddenInput = $('#filter-hidden');
         const $statusText = $('#filter-status');
+        const $button = $(this);
         const currentValue = $hiddenInput.val();
         
         // Toggle between '1' (ON) and '0' (OFF)
         if (currentValue === '1') {
             $hiddenInput.val('0');
             $statusText.text('OFF');
+            $button.removeClass('btn-success').addClass('btn-outline-success');
         } else {
             $hiddenInput.val('1');
             $statusText.text('ON');
+            $button.removeClass('btn-outline-success').addClass('btn-success');
         }
     });
 
@@ -212,10 +215,13 @@ $(function () {
     $(document).ready(function() {
         const $hiddenInput = $('#filter-hidden');
         const $statusText = $('#filter-status');
+        const $button = $('#filter-toggle');
         if ($hiddenInput.val() === '1') {
             $statusText.text('ON');
+            $button.removeClass('btn-outline-success').addClass('btn-success');
         } else {
             $statusText.text('OFF');
+            $button.removeClass('btn-success').addClass('btn-outline-success');
         }
     });
 

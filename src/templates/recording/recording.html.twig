@@ -96,7 +96,7 @@
                 {# Inner Row 1: Navigation buttons + Spectrogram player #}
                 <div class="row">
                     <div class="col-auto text-center recording-navigation" style="min-width: 150px; max-width: 180px;">
-                        {# Navigation buttons in grid: arrows grouped, filter button #}
+                        {# Navigation buttons in grid: arrows grouped, then filter button below #}
                         <div class="d-grid mb-2" style="display: grid !important; grid-template-columns: 1fr; gap: 4px;">
                             <div class="btn-group btn-group-sm" role="group">
                                 <a class="btn btn-outline-success btn-sm" href="#" id="shift-left" title="Ctrl-<- for shifting window left">
@@ -106,7 +106,7 @@
                                     <i class="fas fa-arrow-right"></i>
                                 </a>
                             </div>
-                            <button class="btn btn-outline-success btn-sm" id="filter-toggle" title="Filter">
+                            <button class="btn btn-outline-success btn-sm" id="filter-toggle" title="When the frequency filter is on, frequencies above and below your current spectrogram will be removed so that you hear only what you see.">
                                 <i class="fas fa-filter"></i> <span id="filter-status">OFF</span>
                             </button>
                         </div>
@@ -373,9 +373,12 @@
         }
         /* Disabled navigation buttons */
         .recording-navigation .btn.a-disabled {
-            opacity: 0.5;
+            opacity: 1;
             cursor: not-allowed;
             pointer-events: auto;
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: white;
         }
         .recording-navigation .btn:not(.a-disabled) {
             cursor: pointer;
