@@ -243,6 +243,11 @@
         const tagForm = $sidebar.find('#tagForm');
         const reviewForm = $sidebar.find('#reviewForm');
         
+        // Initially disable save button (will enable on form changes)
+        const $saveBtn = $sidebar.find('#saveButton');
+        $saveBtn.prop('disabled', true);
+        $saveBtn.removeClass('btn-outline-primary').addClass('btn-secondary');
+        
         if (tagForm.length) {
             tagForm.find(':input').prop('disabled', tagForm.data('disabled'));
         }
@@ -254,19 +259,25 @@
         
         // Enable save button when form inputs change
         $sidebar.find('#tag-panel-sidebar').off('input change').on('input change', 'input, select, textarea', function () {
-            $sidebar.find('#saveButton').removeAttr('disabled');
+            const $saveBtn = $sidebar.find('#saveButton');
+            $saveBtn.prop('disabled', false);
+            $saveBtn.removeClass('btn-secondary').addClass('btn-outline-success');
             $sidebar.find('.type-btn').removeAttr('disabled');
         });
         
         // Also handle selectpicker changes
         $sidebar.find('#sound_id').off('changed.bs.select').on('changed.bs.select', function () {
-            $sidebar.find('#saveButton').removeAttr('disabled');
+            const $saveBtn = $sidebar.find('#saveButton');
+            $saveBtn.prop('disabled', false);
+            $saveBtn.removeClass('btn-secondary').addClass('btn-outline-success');
             $sidebar.find('.type-btn').removeAttr('disabled');
         });
         
         // Handle review form button clicks - enable save button
         $sidebar.find('#reviewForm').off('click.enableSave').on('click.enableSave', 'button', function () {
-            $sidebar.find('#saveButton').removeAttr('disabled');
+            const $saveBtn = $sidebar.find('#saveButton');
+            $saveBtn.prop('disabled', false);
+            $saveBtn.removeClass('btn-secondary').addClass('btn-outline-success');
             $sidebar.find('.type-btn').removeAttr('disabled');
         });
         
@@ -576,7 +587,9 @@
             }
             
             // Enable save button
-            $sidebar.find('#saveButton').removeAttr('disabled');
+            const $saveBtn = $sidebar.find('#saveButton');
+            $saveBtn.prop('disabled', false);
+            $saveBtn.removeClass('btn-secondary').addClass('btn-outline-success');
         });
         
         // Handle distance not estimable checkbox
@@ -667,6 +680,11 @@
                 
                 // Note: Review form is now handled separately with immediate saving
                 // so we don't submit it here
+                
+                // Reset save button to disabled/gray state after successful save
+                const $saveBtn = $sidebar.find('#saveButton');
+                $saveBtn.prop('disabled', true);
+                $saveBtn.removeClass('btn-outline-success').addClass('btn-secondary');
                 
                 // Just show success message, don't close sidebar
                 showAlert("Saved successfully.");
