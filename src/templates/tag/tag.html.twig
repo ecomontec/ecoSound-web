@@ -85,7 +85,7 @@
                                 <div class="form-group col-auto mb-1">
                                     <label class="col-form-label-sm" for="callDistance">Sound Distance </label>
                                     <div class="input-group input-group-sm">
-                                        <input id="callDistance" class="form-control form-control-sm" name="sound_distance_m" type="number" value="{{ tag.callDistance }}" readonly>
+                                        <input id="callDistance" class="form-control form-control-sm" name="sound_distance_m" type="number" value="{{ tag.callDistance }}" readonly style="max-width: 80px;">
                                         <div class="input-group-append">
                                             <button type="button" class="btn btn-outline-primary btn-sm estimate-distance-btn" id="est_{{ tag.id }}" title="Estimate call distance">
                                                 <i class="fas fa-bullhorn"></i>
@@ -121,7 +121,7 @@
                                     </select>
                                 </div>
                                 <div class="form-group col-4">
-                                    <div class="form-check form-control-sm pt-4" id="reference">
+                                    <div class="form-check form-control-sm" id="reference" style="padding-top: 2rem;">
                                         <input class="form-check-input" id="referenceCall" name="reference_call" type="checkbox" value="1" {{ tag.referenceCall ? "checked" }}>
                                         <label class="form-check-label" for="referenceCall">Reference</label>
                                     </div>
@@ -130,7 +130,7 @@
 
                             <div class="form-group">
                                 <label for="comments" class="sr-only">Comments</label>
-                                <textarea id="comments" name="comments" class="form-control form-control-sm" placeholder="Insert your comments" maxlength="200" rows="3">{{ tag.comments }}</textarea>
+                                <textarea id="comments" name="comments" class="form-control form-control-sm" placeholder="Insert your comments" maxlength="200" rows="1">{{ tag.comments }}</textarea>
                             </div>
 
                             <div class="form-group mb-1">

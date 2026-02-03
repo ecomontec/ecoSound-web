@@ -106,11 +106,6 @@
                 sidebarHTML += '<span class="ml-1">×</span>';
                 sidebarHTML += '</div>';
                 
-                // Review mode badge (only shown when in task/review mode)
-                if (isReviewMode) {
-                    sidebarHTML += '<span class="badge badge-success ml-2">Review Mode</span>';
-                }
-                
                 sidebarHTML += '</div>';
             } else if ($modalTitle.length) {
                 // Fallback: show title without navigation if no tag ID found
@@ -132,6 +127,12 @@
                 sidebarHTML += '<div class="d-flex align-items-center" style="gap: 0.5rem;">';
                 if ($saveBtn.length) sidebarHTML += $saveBtn[0].outerHTML;
                 if ($exportBtn.length) sidebarHTML += $exportBtn[0].outerHTML;
+                // Add Review Mode badge next to share button
+                const nav = window.currentTagNavigation;
+                const isReviewMode = nav && nav.isTask;
+                if (isReviewMode) {
+                    sidebarHTML += '<span class="badge badge-success ml-2">Review Mode</span>';
+                }
                 sidebarHTML += '</div>';
                 if ($deleteBtn.length) sidebarHTML += $deleteBtn[0].outerHTML;
                 sidebarHTML += '</div>';

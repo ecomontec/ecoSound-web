@@ -29,6 +29,7 @@
     {% endif %}
     <div class="review-table" style="max-height: 100px; overflow-y: auto;">
         <table class="table table-sm table-borderless mb-0" style="font-size: 0.75rem;">
+            {% if reviews|length > 0 %}
             <thead>
             <tr>
                 {% if isUserLogged %}
@@ -42,6 +43,7 @@
                 {% endif %}
             </tr>
             </thead>
+            {% endif %}
             <tbody>
             {% for review in reviews %}
                 <tr data-tag-id="{{ review.tag_id }}" data-reviewer-id="{{ review.reviewer_id }}">
