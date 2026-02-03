@@ -466,9 +466,13 @@ class SiteController extends BaseController
             throw new ForbiddenException();
         }
 
-        // Get IUCN data ordered by ID
-        $this->database->prepareQuery("SELECT * FROM iucn_get ORDER BY iucn_get_id");
-        $allIucnData = $this->database->executeSelect();
+        $iucnGet = new IucnGet();
+        $allIucnData = $iucnGet->getAllIucnGets();
+        
+        // Sort by iucn_get_id
+        usort($allIucnData, function($a, $b) {
+            return $a['iucn_get_id'] - $b['iucn_get_id'];
+        });
 
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename=iucn_realm_biome_functional_types.csv');
