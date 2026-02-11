@@ -58,7 +58,13 @@ class BaseClass
         !defined('USER') && define('USER', $this->config['USER']);
         !defined('PASSWORD') && define('PASSWORD', $this->config['PASSWORD']);
 
-        !defined('APP_URL') && define('APP_URL', $this->config['APP_URL']);
+        // APP_URL: Use config value if set, otherwise detect from current request
+        $appUrl = $this->config['APP_URL'];
+        if (empty($appUrl)) {
+            $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            $appUrl = $protocol . '://' . $_SERVER['HTTP_HOST'];
+        }
+        !defined('APP_URL') && define('APP_URL', $appUrl);
         !defined('HOST_URL') && define('HOST_URL', $this->config['HOST_URL']);
         !defined('IMAGES_URL') && define('IMAGES_URL', APP_URL . $this->config['IMAGES_URL']);
         !defined('PROJECT_IMAGES_URL') && define('PROJECT_IMAGES_URL', IMAGES_URL . $this->config['PROJECT_IMAGES_URL']);
@@ -68,6 +74,9 @@ class BaseClass
         !defined('CACHE_DIR') && define('CACHE_DIR', $this->config['CACHE_DIR']);
         !defined('LOGO') && define('LOGO', IMAGES_URL . $this->config['LOGO']);
         !defined('TMP_DIR') && define('TMP_DIR', $this->config['TMP_DIR']);
+        !defined('SOUNDS_DIR') && define('SOUNDS_DIR', $this->config['SOUNDS_DIR']);
+        !defined('IMAGES_DIR') && define('IMAGES_DIR', $this->config['IMAGES_DIR']);
+        !defined('PROJECTS_DIR') && define('PROJECTS_DIR', $this->config['PROJECTS_DIR']);
 
         !defined('QUEUE_NAME') && define('QUEUE_NAME', $this->config['QUEUE_NAME']);
         !defined('QUEUE_HOST') && define('QUEUE_HOST', $this->config['QUEUE_HOST']);

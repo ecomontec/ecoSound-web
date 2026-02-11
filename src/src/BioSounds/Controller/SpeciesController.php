@@ -30,7 +30,9 @@ class SpeciesController
                         'label' => $row[Species::BINOMIAL] . ' ( ' . $row[Species::NAME] . ' ) ',
                         'value' => $row[Species::ID],
                         'taxon_order' => $row['taxon_order'],
-                        'class' => $row['class']
+                        'class' => $row['class'],
+                        'genus' => $row['genus'],
+                        'family' => $row['family']
                     ];
                 }
             }
@@ -56,7 +58,7 @@ class SpeciesController
                     'name' => $row->getName(),
                 ];
             }
-        }else{
+        } else {
             return '';
         }
         return json_encode($data);

@@ -74,6 +74,8 @@ class TagController extends BaseController
      */
     public function edit(int $tagId)
     {
+        $isTask = false;
+        $hasTaskAssignment = false;
         $tag = (new TagProvider())->get($tagId);
         if (empty($tagId)) {
             throw new \Exception(ERROR_EMPTY_ID);
@@ -95,8 +97,15 @@ class TagController extends BaseController
             $displaySaveButton = $isReviewGranted || $isManageGranted ? '' : 'hidden';
         }
         /**********************/
+        
+        // Check if this tag is assigned as a task to the current user
+        $hasTaskAssignment = $this->isTagAssignedToUser($tagId);
+        
         $tagProvider = new TagProvider();
-        if (Auth::isUserAdmin() || $isReviewGranted || $isViewGranted || $isManageGranted) {
+        if ($_POST['type'] ?? $_GET['type'] ?? '' == 'task') {
+            $isTask = true;
+            $tags = $tagProvider->getListByTask();
+        } elseif (Auth::isUserAdmin() || $isReviewGranted || $isViewGranted || $isManageGranted) {
             $tags = $tagProvider->getList($tag->getRecording());
         } else {
             $tags = $tagProvider->getList($tag->getRecording(), Auth::getUserLoggedID());
@@ -131,8 +140,32 @@ class TagController extends BaseController
                 'edit' => 1,
                 'previous' => $previous,
                 'next' => $next,
+                'isTask' => $isTask,
+                'hasTaskAssignment' => $hasTaskAssignment,
             ]),
         ]);
+    }
+
+    /**
+     * Check if a tag is assigned as a task to the current logged-in user
+     * @param int $tagId
+     * @return bool
+     */
+    private function isTagAssignedToUser(int $tagId): bool
+    {
+        if (!Auth::isUserLogged()) {
+            return false;
+        }
+        
+        $sql = "SELECT COUNT(*) as count FROM task WHERE tag_id = :tag_id AND assignee_id = :user_id AND type = 'tag'";
+        $database = new \BioSounds\Database\Database('mysql', $_ENV['DATABASE_HOST'] ?? 'database', $_ENV['DATABASE_NAME'] ?? 'biosounds', $_ENV['DATABASE_USER'] ?? 'biosounds', $_ENV['DATABASE_PASSWORD'] ?? 'biosounds');
+        $database->prepareQuery($sql);
+        $result = $database->executeSelect([
+            ':tag_id' => $tagId,
+            ':user_id' => Auth::getUserLoggedID(),
+        ]);
+        
+        return !empty($result) && $result[0]['count'] > 0;
     }
 
     /**
@@ -206,5 +239,11 @@ class TagController extends BaseController
             'errorCode' => 0,
             'message' => 'Tag deleted successfully.',
         ]);
+    }
+
+    public function count()
+    {
+        $count = count((new tagProvider())->getList($_POST['id']));
+        return $count;
     }
 }

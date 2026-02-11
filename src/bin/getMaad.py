@@ -5,6 +5,7 @@ from maad.rois import template_matching
 from maad.features import shape_features
 import numpy
 from pathlib import Path
+import configparser
 
 
 def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency, maxFrequency):
@@ -355,7 +356,7 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
         if param != '' and param is not None:
             for p in param.split('@'):
                 parameter[p.split('?')[0]] = p.split('?')[1]
-        s_wav, fs_wav = maad.sound.load(str(Path(__file__).resolve().parent.parent) + '/sounds/sounds/' + parameter['collection_id'] + '/' + parameter['recording_directory'] + '/' + parameter['filename'].rsplit('.', 1)[0] + '.wav', channel=channel)
+        s_wav, fs_wav = maad.sound.load(str(Path(__file__).resolve().parent.parent) + '/' + sounds_dir + '/' + parameter['collection_id'] + '/' + parameter['recording_directory'] + '/' + parameter['filename'].rsplit('.', 1)[0] + '.wav', channel=channel)
         peak_th = float(parameter['peak_th'])
         peak_distance = parameter['peak_distance'] if parameter['peak_distance'] == None else float(parameter['peak_distance'])
         # zoom
@@ -380,6 +381,11 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
 
 
 if __name__ == '__main__':
+    # Read config to get SOUNDS_DIR
+    config = configparser.ConfigParser()
+    config.read(str(Path(__file__).resolve().parent.parent) + '/config/config.ini')
+    sounds_dir = config.get('Directories', 'SOUNDS_DIR', fallback='sounds/sounds')
+    
     parser = optparse.OptionParser()
     parser.add_option('-f', '--filename', type="string", dest='filename')
     parser.add_option('--it', type="string", dest='index_type')

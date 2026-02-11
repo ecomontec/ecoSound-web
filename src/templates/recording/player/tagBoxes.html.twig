@@ -6,7 +6,7 @@
         </div>
         <div class="card-body mx-auto">
             <div class="btn-group" role="group">
-                <a href="{{ baseUrl }}/api/tag/edit/{{ tag.id }}" id="tag_{{ tag.id }}" class='btn btn-outline-primary btn-sm js-tag'
+                <a href="{{ baseUrl }}/api/tag/edit/{{ tag.id }}{{ type?'?type='~type:'' }}" id="tag_{{ tag.id }}" class='btn btn-outline-primary btn-sm js-tag'
                    title='Edit tag'>
                     <i class='fas fa-edit' aria-hidden='true'></i>
                 </a>
