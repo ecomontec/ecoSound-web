@@ -1,5 +1,1 @@
- [*] Waiting for messages. To exit press CTRL+C
- [x] Received file id: 11
- [x] Done
- [x] Received file id: 12
- [x] Done
+time="2025-12-02T18:57:26+01:00" level=warning msg="/home/kdarras/Documents/Boulot/Projects/ecoSound-web/github/ecoSound-web/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
