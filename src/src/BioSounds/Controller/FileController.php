@@ -30,6 +30,7 @@ class FileController
         }
         (new FileService())->upload($_POST, 'tmp/' . $uploadDirectory . '/');
 
+        header('Content-Type: application/json');
         return json_encode([
             'error_code' => 0,
             'message' => 'Files sent to the upload queue successfully.',
@@ -41,6 +42,8 @@ class FileController
         if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
+
+        header('Content-Type: application/json');
 
         if (!isset($_FILES['metaDataFile']) || $_FILES['metaDataFile']['error'] != UPLOAD_ERR_OK) {
             return json_encode([
