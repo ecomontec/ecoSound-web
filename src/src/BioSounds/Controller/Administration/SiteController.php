@@ -309,6 +309,11 @@ class SiteController extends BaseController
                 continue;
             }
 
+            // Pad row to match header length (handles missing trailing columns)
+            $row = array_pad($row, count($headers), '');
+            // Trim to header length (handles extra trailing columns)
+            $row = array_slice($row, 0, count($headers));
+            
             $rowData = array_combine($headers, $row);
             
             if (empty($rowData['name'])) {

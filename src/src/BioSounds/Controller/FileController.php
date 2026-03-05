@@ -92,6 +92,11 @@ class FileController
                 continue;
             }
 
+            // Pad row to match header length (handles missing trailing columns)
+            $row = array_pad($row, count($headers), '');
+            // Trim to header length (handles extra trailing columns)
+            $row = array_slice($row, 0, count($headers));
+            
             // Map row data to headers
             $rowData = array_combine($headers, $row);
             
@@ -413,6 +418,11 @@ class FileController
                 continue;
             }
 
+            // Pad row to match header length (handles missing trailing columns)
+            $row = array_pad($row, count($headers), '');
+            // Trim to header length (handles extra trailing columns)
+            $row = array_slice($row, 0, count($headers));
+            
             $tagData = array_combine($headers, $row);
             
             if (empty($tagData['recording_id']) || empty($tagData['min_time']) || 
@@ -597,6 +607,11 @@ class FileController
                 continue;
             }
 
+            // Pad row to match header length (handles missing trailing columns)
+            $row = array_pad($row, count($headers), '');
+            // Trim to header length (handles extra trailing columns)
+            $row = array_slice($row, 0, count($headers));
+            
             $reviewData = array_combine($headers, $row);
             
             if (empty($reviewData['tag_id']) || empty($reviewData['tag_review_status_id'])) {
