@@ -238,17 +238,23 @@ class RecordingController extends BaseController
 
     public function download()
     {
-        $file_name = "meta-data demo.csv";
+        $file_name = "recording_metadata_template.csv";
         $fp = fopen('php://output', 'w');
         header('Content-Type: application/octet-stream;charset=utf-8');
         header('Accept-Ranges:bytes');
         header('Content-Disposition: attachment; filename=' . $file_name);
 
-        $tagAls[] = array('recording_start', 'duration_s', 'sampling_rate', 'name', 'bitdepth', 'channel_number', 'duty_cycle_recording', 'duty_cycle_period');
+        // Header row with all available columns
+        $headers = ['recording_start', 'duration', 'sampling_rate', 'name', 'site_id', 'recorder_id', 
+                    'microphone_id', 'license_id', 'type', 'medium', 'recording_gain', 
+                    'duty_cycle_recording', 'duty_cycle_period', 'note', 'DOI', 'bitdepth', 'channel_num'];
+        
+        // Example data row
+        $example = ['2024-01-15 10:30:00', '60.5', '48000', 'Example Recording', '', '', 
+                    '', '', 'Field Recording', 'Air', '', '', '', 'Example note', '', '16', '1'];
 
-        foreach ($tagAls as $line) {
-            fputcsv($fp, $line);
-        }
+        fputcsv($fp, $headers);
+        fputcsv($fp, $example);
         fclose($fp);
         exit();
     }

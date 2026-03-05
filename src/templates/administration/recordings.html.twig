@@ -142,10 +142,10 @@
         </div>
     </div>
     <div class="modal fade" id="modal-info" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
+        <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">View Instructions</h5>
+                    <h5 class="modal-title">CSV Upload Instructions</h5>
                     <button class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -154,15 +154,29 @@
                     <div>
                         <div class="form-group">
                             <label>Recording meta-data can be uploaded with a CSV containing the following columns:<br><br>
-                                recording_start (format: YYYY-MM-DD HH:MM:SS, local time)<br>
-                                duration_s (duration of recording in seconds)<br>
-                                sampling_rate (numeric value in Hz)<br>
-                                name (optional, limited to 40 characters)<br>
-                                bitdepth (optional, integer)<br>
-                                channel_number (optional, integer)<br>
-                                duty_cycle_recording (duration of duty-cycled recordings in minutes)<br>
-                                duty_cycle_period (duration of cycle - recording + pause - in minutes)<br><br>
-                                You can download a <a class="text-info" id="metaDemo">template CSV file</a> to fill in your data.</label>
+                                <strong>Required columns:</strong><br>
+                                <strong>recording_start</strong> (format: YYYY-MM-DD HH:MM:SS, local time) - Recording timestamp<br>
+                                &nbsp;&nbsp;<em>OR alternatively:</em><br>
+                                <strong>file_date</strong> (format: YYYY-MM-DD) - Recording date<br>
+                                <strong>file_time</strong> (format: HH:MM:SS) - Recording time<br>
+                                <strong>duration</strong> (float, seconds) - Recording duration<br>
+                                <strong>sampling_rate</strong> (integer, Hz) - Sampling rate<br><br>
+                                <strong>Optional columns:</strong><br>
+                                <strong>name</strong> (max 250 characters) - Recording name<br>
+                                <strong>site_id</strong> (integer) - Site identifier (must exist in Sites table)<br>
+                                <strong>recorder_id</strong> (integer) - Recorder identifier (must exist in Recorders table)<br>
+                                <strong>microphone_id</strong> (integer) - Microphone identifier (must exist in Microphones table)<br>
+                                <strong>license_id</strong> (integer) - License identifier (must exist in Licenses table)<br>
+                                <strong>type</strong> (max 50 characters) - Recording type<br>
+                                <strong>medium</strong> (max 50 characters) - Recording medium (e.g., "Air", "Water")<br>
+                                <strong>recording_gain</strong> (integer) - Recording gain in dB<br>
+                                <strong>duty_cycle_recording</strong> (integer, minutes) - Duration of duty-cycled recording<br>
+                                <strong>duty_cycle_period</strong> (integer, minutes) - Duration of full cycle (recording + pause)<br>
+                                <strong>note</strong> (max 250 characters) - Additional notes<br>
+                                <strong>DOI</strong> (max 255 characters) - Digital Object Identifier<br>
+                                <strong>bitdepth</strong> (integer) - Bit depth<br>
+                                <strong>channel_num</strong> (integer) - Number of channels<br><br>
+                                You can download a <a class="text-info" id="metaDemo" style="cursor:pointer">template CSV file</a> to fill in your data.</label>
                         </div>
                     </div>
                 </div>
