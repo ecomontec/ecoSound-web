@@ -56,20 +56,21 @@
                 <i class="fa fa-file-csv"></i>
                 Save all as CSV
             </button>
-            <div class="btn-group ml-2 mt-2">
-                <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="fa fa-upload"></i> Upload / Instructions
+            <span class="dropdown">
+                <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" id="addTags" data-toggle="dropdown" aria-expanded="false">
+                    <span class="fas fa-plus"></span>
+                    Add
                 </button>
-                <div class="dropdown-menu">
-                    <a id="tagsButton" class="dropdown-item" href="#">Upload Tags</a>
-                    <a id="viewTagsInstructions" class="dropdown-item" href="#">Tags Instructions</a>
+                <div class="dropdown-menu" aria-labelledby="addTags">
+                    <a id="tagsButton" class="dropdown-item" href="#"><i class="fa-solid fa-tags"></i> Upload Tags</a>
                     <div class="dropdown-divider"></div>
-                    <a id="tagsDemo" class="dropdown-item" href="#">Download Template</a>
-                    <a id="exportSounds" class="dropdown-item" href="#">Export Sounds</a>
-                    <a id="exportSpecies" class="dropdown-item" href="#">Export Species</a>
-                    <a id="exportRecordings" class="dropdown-item" href="#">Export Recordings</a>
+                    <a id="viewTagsInstructions" class="dropdown-item" href="#"><i class="fa-solid fa-circle-info"></i> Tags Instructions</a>
+                    <a id="tagsDemo" class="dropdown-item" href="#"><i class="fa-solid fa-download"></i> Download Template</a>
+                    <a id="exportSounds" class="dropdown-item" href="#"><i class="fa-solid fa-download"></i> Export Sounds</a>
+                    <a id="exportSpecies" class="dropdown-item" href="#"><i class="fa-solid fa-download"></i> Export Species</a>
+                    <a id="exportRecordings" class="dropdown-item" href="#"><i class="fa-solid fa-download"></i> Export Recordings</a>
                 </div>
-            </div>
+            </span>
         </div>
         <table id="tagsTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
@@ -289,22 +290,22 @@
             // Template and export downloads
             $('#tagsDemo, #tagsDemo2').click(function(e) {
                 e.preventDefault();
-                window.location.href = '{{ baseUrl }}/admin/tags/downloadTemplate';
+                window.location.href = '{{ baseUrl }}/admin/tagMgr/downloadTemplate';
             });
 
             $('#exportSounds, #exportSounds2').click(function(e) {
                 e.preventDefault();
-                window.location.href = '{{ baseUrl }}/admin/tags/exportSounds';
+                window.location.href = '{{ baseUrl }}/admin/tagMgr/exportSounds';
             });
 
             $('#exportSpecies, #exportSpecies2').click(function(e) {
                 e.preventDefault();
-                window.location.href = '{{ baseUrl }}/admin/tags/exportSpecies';
+                window.location.href = '{{ baseUrl }}/admin/tagMgr/exportSpecies';
             });
 
             $('#exportRecordings, #exportRecordings2').click(function(e) {
                 e.preventDefault();
-                window.location.href = '{{ baseUrl }}/admin/tags/exportRecordings';
+                window.location.href = '{{ baseUrl }}/admin/tagMgr/exportRecordings';
             });
 
             $('#viewTagsInstructions').click(function(e) {

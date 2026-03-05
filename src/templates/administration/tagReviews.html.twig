@@ -52,18 +52,19 @@
                 <i class="fa fa-file-csv"></i>
                 Save all as CSV
             </button>
-            <div class="btn-group ml-2 mt-2">
-                <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="fa fa-upload"></i> Upload / Instructions
+            <span class="dropdown">
+                <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" id="addReviews" data-toggle="dropdown" aria-expanded="false">
+                    <span class="fas fa-plus"></span>
+                    Add
                 </button>
-                <div class="dropdown-menu">
-                    <a id="reviewsButton" class="dropdown-item" href="#">Upload Reviews</a>
-                    <a id="viewReviewsInstructions" class="dropdown-item" href="#">Reviews Instructions</a>
+                <div class="dropdown-menu" aria-labelledby="addReviews">
+                    <a id="reviewsButton" class="dropdown-item" href="#"><i class="fa-solid fa-check-circle"></i> Upload Reviews</a>
                     <div class="dropdown-divider"></div>
-                    <a id="reviewsDemo" class="dropdown-item" href="#">Download Template</a>
-                    <a id="exportSpecies" class="dropdown-item" href="#">Export Species</a>
+                    <a id="viewReviewsInstructions" class="dropdown-item" href="#"><i class="fa-solid fa-circle-info"></i> Reviews Instructions</a>
+                    <a id="reviewsDemo" class="dropdown-item" href="#"><i class="fa-solid fa-download"></i> Download Template</a>
+                    <a id="exportSpecies" class="dropdown-item" href="#"><i class="fa-solid fa-download"></i> Export Species</a>
                 </div>
-            </div>
+            </span>
         </div>
         <table id="tagReviewsTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
@@ -259,12 +260,12 @@
             // Template and export downloads
             $('#reviewsDemo, #reviewsDemo2').click(function(e) {
                 e.preventDefault();
-                window.location.href = '{{ baseUrl }}/admin/tagReviews/downloadTemplate';
+                window.location.href = '{{ baseUrl }}/admin/tagReviewMgr/downloadTemplate';
             });
 
             $('#exportSpecies, #exportSpecies2').click(function(e) {
                 e.preventDefault();
-                window.location.href = '{{ baseUrl }}/admin/tagReviews/exportSpecies';
+                window.location.href = '{{ baseUrl }}/admin/tagReviewMgr/exportSpecies';
             });
 
             $('#viewReviewsInstructions').click(function(e) {

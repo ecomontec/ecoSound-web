@@ -356,4 +356,313 @@ class FileController
             'message' => 'Upload success.',
         ]);
     }
+
+    public function tags()
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
+        }
+
+        if (!isset($_FILES['file']) || $_FILES['file']['error'] != UPLOAD_ERR_OK) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'No file uploaded or upload error occurred.',
+            ]);
+        }
+
+        $handle = fopen($_FILES['file']['tmp_name'], "rb");
+        if (!$handle) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'Unable to open uploaded file.',
+            ]);
+        }
+
+        $data = [];
+        $rowNum = 1;
+        $headers = null;
+        
+        while (!feof($handle)) {
+            $row = fgetcsv($handle);
+            
+            if (!$row || empty(array_filter($row))) {
+                $rowNum++;
+                continue;
+            }
+
+            if ($headers === null) {
+                $headers = array_map('trim', $row);
+                
+                $requiredColumns = ['recording_id', 'min_time', 'max_time', 'min_freq', 'max_freq', 'sound_id', 'individuals'];
+                $missingColumns = array_diff($requiredColumns, $headers);
+                if (!empty($missingColumns)) {
+                    fclose($handle);
+                    return json_encode([
+                        'errorCode' => 1,
+                        'message' => 'Missing required columns: ' . implode(', ', $missingColumns),
+                    ]);
+                }
+                
+                $rowNum++;
+                continue;
+            }
+
+            $tagData = array_combine($headers, $row);
+            
+            if (empty($tagData['recording_id']) || empty($tagData['min_time']) || 
+                empty($tagData['max_time']) || empty($tagData['min_freq']) || 
+                empty($tagData['max_freq']) || empty($tagData['sound_id']) ||
+                !isset($tagData['individuals'])) {
+                fclose($handle);
+                return json_encode([
+                    'errorCode' => 1,
+                    'message' => "Row {$rowNum}: Missing required field values.",
+                ]);
+            }
+
+            if (!is_numeric($tagData['min_time']) || !is_numeric($tagData['max_time']) ||
+                !is_numeric($tagData['min_freq']) || !is_numeric($tagData['max_freq']) ||
+                (float)$tagData['max_time'] <= (float)$tagData['min_time'] ||
+                (float)$tagData['max_freq'] <= (float)$tagData['min_freq']) {
+                fclose($handle);
+                return json_encode([
+                    'errorCode' => 1,
+                    'message' => "Row {$rowNum}: Invalid time/frequency values (max must be > min).",
+                ]);
+            }
+
+            if (!is_numeric($tagData['recording_id']) || !is_numeric($tagData['sound_id']) ||
+                !is_numeric($tagData['individuals']) || (int)$tagData['individuals'] < 1) {
+                fclose($handle);
+                return json_encode([
+                    'errorCode' => 1,
+                    'message' => "Row {$rowNum}: Invalid numeric values.",
+                ]);
+            }
+
+            $recordingProvider = new RecordingProvider();
+            if (empty($recordingProvider->get($tagData['recording_id']))) {
+                fclose($handle);
+                return json_encode([
+                    'errorCode' => 1,
+                    'message' => "Row {$rowNum}: recording_id {$tagData['recording_id']} does not exist.",
+                ]);
+            }
+
+            if (isset($tagData['species_id']) && $tagData['species_id'] !== '') {
+                $speciesProvider = new \BioSounds\Provider\SpeciesProvider();
+                $species = $speciesProvider->get((int)$tagData['species_id']);
+                if (empty($species) || $species->getId() != $tagData['species_id']) {
+                    fclose($handle);
+                    return json_encode([
+                        'errorCode' => 1,
+                        'message' => "Row {$rowNum}: species_id {$tagData['species_id']} does not exist.",
+                    ]);
+                }
+            }
+
+            $data[] = $tagData;
+            $rowNum++;
+        }
+
+        fclose($handle);
+
+        if (empty($data)) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'No valid data rows found in CSV.',
+            ]);
+        }
+
+        $tagProvider = new \BioSounds\Provider\TagProvider();
+        $inserted = 0;
+
+        foreach ($data as $tagData) {
+            $insertData = [
+                'recording_id' => (int)$tagData['recording_id'],
+                'user_id' => Auth::getUserID(),
+                'min_time' => (float)$tagData['min_time'],
+                'max_time' => (float)$tagData['max_time'],
+                'min_freq' => (float)$tagData['min_freq'],
+                'max_freq' => (float)$tagData['max_freq'],
+                'sound_id' => (int)$tagData['sound_id'],
+                'individuals' => (int)$tagData['individuals'],
+                'creator_type' => 'user',
+                'reference_call' => 0,
+            ];
+
+            if (isset($tagData['species_id']) && $tagData['species_id'] !== '') {
+                $insertData['species_id'] = (int)$tagData['species_id'];
+            }
+            if (isset($tagData['uncertain']) && $tagData['uncertain'] !== '') {
+                $insertData['uncertain'] = (int)$tagData['uncertain'] ? 1 : 0;
+            }
+            if (isset($tagData['sound_distance_m']) && $tagData['sound_distance_m'] !== '') {
+                $insertData['sound_distance_m'] = (int)$tagData['sound_distance_m'];
+            }
+            if (isset($tagData['distance_not_estimable']) && $tagData['distance_not_estimable'] !== '') {
+                $insertData['distance_not_estimable'] = (int)$tagData['distance_not_estimable'] ? 1 : 0;
+            }
+            if (isset($tagData['animal_sound_type']) && $tagData['animal_sound_type'] !== '') {
+                $insertData['animal_sound_type'] = htmlentities(strip_tags(substr($tagData['animal_sound_type'], 0, 128)), ENT_QUOTES);
+            }
+            if (isset($tagData['reference_call']) && $tagData['reference_call'] !== '') {
+                $insertData['reference_call'] = (int)$tagData['reference_call'] ? 1 : 0;
+            }
+            if (isset($tagData['comments']) && $tagData['comments'] !== '') {
+                $insertData['comments'] = htmlentities(strip_tags(substr($tagData['comments'], 0, 2000)), ENT_QUOTES);
+            }
+            if (isset($tagData['confidence']) && $tagData['confidence'] !== '') {
+                $insertData['confidence'] = (float)$tagData['confidence'];
+            }
+
+            $tagProvider->insert($insertData);
+            $inserted++;
+        }
+
+        return json_encode([
+            'errorCode' => 0,
+            'message' => 'Upload success.',
+        ]);
+    }
+
+    public function reviews()
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
+        }
+
+        if (!isset($_FILES['file']) || $_FILES['file']['error'] != UPLOAD_ERR_OK) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'No file uploaded or upload error occurred.',
+            ]);
+        }
+
+        $handle = fopen($_FILES['file']['tmp_name'], "rb");
+        if (!$handle) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'Unable to open uploaded file.',
+            ]);
+        }
+
+        $data = [];
+        $rowNum = 1;
+        $headers = null;
+        
+        while (!feof($handle)) {
+            $row = fgetcsv($handle);
+            
+            if (!$row || empty(array_filter($row))) {
+                $rowNum++;
+                continue;
+            }
+
+            if ($headers === null) {
+                $headers = array_map('trim', $row);
+                
+                $requiredColumns = ['tag_id', 'tag_review_status_id'];
+                $missingColumns = array_diff($requiredColumns, $headers);
+                if (!empty($missingColumns)) {
+                    fclose($handle);
+                    return json_encode([
+                        'errorCode' => 1,
+                        'message' => 'Missing required columns: ' . implode(', ', $missingColumns),
+                    ]);
+                }
+                
+                $rowNum++;
+                continue;
+            }
+
+            $reviewData = array_combine($headers, $row);
+            
+            if (empty($reviewData['tag_id']) || empty($reviewData['tag_review_status_id'])) {
+                fclose($handle);
+                return json_encode([
+                    'errorCode' => 1,
+                    'message' => "Row {$rowNum}: Missing required field values.",
+                ]);
+            }
+
+            if (!is_numeric($reviewData['tag_id']) || !is_numeric($reviewData['tag_review_status_id'])) {
+                fclose($handle);
+                return json_encode([
+                    'errorCode' => 1,
+                    'message' => "Row {$rowNum}: Invalid numeric values for tag_id or tag_review_status_id.",
+                ]);
+            }
+
+            $validStatuses = [1, 2, 3, 4]; // accepted, corrected, rejected, uncertain
+            if (!in_array((int)$reviewData['tag_review_status_id'], $validStatuses)) {
+                fclose($handle);
+                return json_encode([
+                    'errorCode' => 1,
+                    'message' => "Row {$rowNum}: Invalid tag_review_status_id (must be 1-4).",
+                ]);
+            }
+
+            $tagProvider = new \BioSounds\Provider\TagProvider();
+            try {
+                $tagProvider->get((int)$reviewData['tag_id']);
+            } catch (\Exception $e) {
+                fclose($handle);
+                return json_encode([
+                    'errorCode' => 1,
+                    'message' => "Row {$rowNum}: tag_id {$reviewData['tag_id']} does not exist.",
+                ]);
+            }
+
+            if (isset($reviewData['species_id']) && $reviewData['species_id'] !== '') {
+                $speciesProvider = new \BioSounds\Provider\SpeciesProvider();
+                $species = $speciesProvider->get((int)$reviewData['species_id']);
+                if (empty($species) || $species->getId() != $reviewData['species_id']) {
+                    fclose($handle);
+                    return json_encode([
+                        'errorCode' => 1,
+                        'message' => "Row {$rowNum}: species_id {$reviewData['species_id']} does not exist.",
+                    ]);
+                }
+            }
+
+            $data[] = $reviewData;
+            $rowNum++;
+        }
+
+        fclose($handle);
+
+        if (empty($data)) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'No valid data rows found in CSV.',
+            ]);
+        }
+
+        $tagReviewEntity = new \BioSounds\Entity\TagReview();
+        $inserted = 0;
+
+        foreach ($data as $reviewData) {
+            $insertData = [
+                'tag_id' => (int)$reviewData['tag_id'],
+                'user_id' => Auth::getUserID(),
+                'tag_review_status_id' => (int)$reviewData['tag_review_status_id'],
+            ];
+
+            if (isset($reviewData['species_id']) && $reviewData['species_id'] !== '') {
+                $insertData['species_id'] = (int)$reviewData['species_id'];
+            }
+            if (isset($reviewData['note']) && $reviewData['note'] !== '') {
+                $insertData['note'] = htmlentities(strip_tags(substr($reviewData['note'], 0, 200)), ENT_QUOTES);
+            }
+
+            $tagReviewEntity->insert($insertData);
+            $inserted++;
+        }
+
+        return json_encode([
+            'errorCode' => 0,
+            'message' => 'Upload success.',
+        ]);
+    }
 }
