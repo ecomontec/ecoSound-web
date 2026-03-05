@@ -362,6 +362,8 @@ class FileController
 
     public function tags()
     {
+        header('Content-Type: application/json');
+        
         if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
@@ -531,6 +533,8 @@ class FileController
 
     public function reviews()
     {
+        header('Content-Type: application/json');
+        
         if (!Auth::isManage()) {
             throw new ForbiddenException();
         }

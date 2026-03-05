@@ -258,6 +258,8 @@ class SiteController extends BaseController
      */
     public function uploadCSV()
     {
+        header('Content-Type: application/json');
+        
         if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
