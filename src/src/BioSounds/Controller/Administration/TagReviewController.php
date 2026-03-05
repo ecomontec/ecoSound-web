@@ -204,7 +204,7 @@ class TagReviewController extends BaseController
         header('Content-Disposition: attachment; filename=' . $file_name);
         
         fputcsv($fp, ['tag_id', 'tag_review_status_id', 'species_id', 'note']);
-        fputcsv($fp, ['456', '1', '', 'Status 1=accepted, 2=corrected, 3=rejected, 4=uncertain']);
+        fputcsv($fp, ['456', '1', '', '1']);
         
         fclose($fp);
         exit();

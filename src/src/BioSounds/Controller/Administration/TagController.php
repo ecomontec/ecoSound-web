@@ -183,7 +183,7 @@ class TagController extends BaseController
         header('Content-Disposition: attachment; filename=' . $file_name);
         
         fputcsv($fp, ['recording_id', 'min_time', 'max_time', 'min_freq', 'max_freq', 'sound_id', 'individuals', 'species_id', 'uncertain', 'sound_distance_m', 'distance_not_estimable', 'animal_sound_type', 'reference_call', 'comments', 'confidence']);
-        fputcsv($fp, ['123', '5.5', '7.2', '1000', '8000', '45', '1', '678', '0', '50', '0', 'call', '0', 'Example tag', 'high']);
+        fputcsv($fp, ['123', '5.5', '7.2', '1000', '8000', '6', '1', '678', '0', '50', '0', 'call', '0', 'Example tag', '0.95']);
         
         fclose($fp);
         exit();
@@ -256,7 +256,7 @@ class TagController extends BaseController
         header('Content-Disposition: attachment; filename=' . $file_name);
         
         $recordingProvider = new RecordingProvider();
-        $recordings = $recordingProvider->getRecordingsList('0', '0');
+        $recordings = $recordingProvider->getList();
         
         if (!empty($recordings)) {
             fputcsv($fp, array_keys($recordings[0]));
