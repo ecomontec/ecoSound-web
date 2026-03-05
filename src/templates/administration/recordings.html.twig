@@ -33,6 +33,14 @@
                 <input type="file" name="metaDataFile" id="metaDataFile" accept="text/csv" style="display: none">
                 <input type="hidden" name="colId" value="{{ colId }}">
             </form>
+            <form id="tagsForm" method="POST" class="collapse">
+                <input type="file" name="tagsFile" id="tagsFile" accept="text/csv" style="display: none">
+                <input type="hidden" name="colId" value="{{ colId }}">
+            </form>
+            <form id="reviewsForm" method="POST" class="collapse">
+                <input type="file" name="reviewsFile" id="reviewsFile" accept="text/csv" style="display: none">
+                <input type="hidden" name="colId" value="{{ colId }}">
+            </form>
             <button id="viewing" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" data-target="#viewing" disabled>
                 <i class="fas fa-eye"></i>
                 View
@@ -65,7 +73,12 @@
                 <div class="dropdown-menu" aria-labelledby="metaData" .>
                     <a class="dropdown-item" type="button" id="uploadButton"><i class="fas fa-file-audio"></i> Upload Recordings</a>
                     <a class="dropdown-item" type="button" id="metaDataButton"><i class="fa-solid fa-file-arrow-up"></i> Upload Meta-data</a>
+                    <a class="dropdown-item" type="button" id="tagsButton"><i class="fa-solid fa-tags"></i> Upload Tags</a>
+                    <a class="dropdown-item" type="button" id="reviewsButton"><i class="fa-solid fa-check-circle"></i> Upload Reviews</a>
+                    <div class="dropdown-divider"></div>
                     <a class="dropdown-item" type="button" id="viewInstructions"><i class="fa-solid fa-circle-info"></i> Meta-data Instructions</a>
+                    <a class="dropdown-item" type="button" id="viewTagsInstructions"><i class="fa-solid fa-circle-info"></i> Tags Instructions</a>
+                    <a class="dropdown-item" type="button" id="viewReviewsInstructions"><i class="fa-solid fa-circle-info"></i> Reviews Instructions</a>
                 </div>
             </span>
             <button id="recordingsExport" class="btn btn-outline-primary btn-sm mt-2" data-target="#recordingsExport" aria-expanded="false" aria-controls="recordingsExport">
@@ -181,6 +194,93 @@
                 </div>
                 <div class="modal-footer">
                     <button id="js-close-button" class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-tags-info" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tags CSV Upload Instructions</h5>
+                    <button class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body ml-3">
+                    <div>
+                        <div class="form-group">
+                            <label>Tags can be uploaded with a CSV containing the following columns:<br><br>
+                                <strong>Required columns:</strong><br>
+                                <strong>recording_id</strong> (integer) - Recording ID<br>
+                                <strong>min_time</strong> (float, seconds) - Start time<br>
+                                <strong>max_time</strong> (float, seconds) - End time (must be > min_time)<br>
+                                <strong>min_freq</strong> (float, Hz) - Minimum frequency<br>
+                                <strong>max_freq</strong> (float, Hz) - Maximum frequency (must be > min_freq)<br>
+                                <strong>sound_id</strong> (integer) - Sound type ID<br>
+                                <strong>individuals</strong> (integer) - Number of individuals<br><br>
+                                <strong>Optional columns:</strong><br>
+                                <strong>species_id</strong> (integer) - Species ID<br>
+                                <strong>uncertain</strong> (0 or 1) - Uncertainty flag<br>
+                                <strong>sound_distance_m</strong> (integer) - Distance in meters<br>
+                                <strong>distance_not_estimable</strong> (0 or 1) - Distance not estimable flag<br>
+                                <strong>animal_sound_type</strong> (max 128 characters) - Sound type description<br>
+                                <strong>reference_call</strong> (0 or 1) - Reference call flag<br>
+                                <strong>comments</strong> (max 2000 characters) - Comments<br>
+                                <strong>confidence</strong> (float 0-1) - AI confidence score<br><br>
+                                <em>Note: All ID fields must reference existing entries in their respective tables.</em><br><br>
+                                Download reference tables:<br>
+                                <a class="text-info" id="exportSoundsForTags" style="cursor:pointer">Sounds</a> | 
+                                <a class="text-info" id="exportSpeciesForTags" style="cursor:pointer">Species</a> | 
+                                <a class="text-info" id="exportRecordingsForTags" style="cursor:pointer">Recordings</a><br><br>
+                                You can download a <a class="text-info" id="tagsDemo" style="cursor:pointer">template CSV file</a> to fill in your data.</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-reviews-info" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reviews CSV Upload Instructions</h5>
+                    <button class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body ml-3">
+                    <div>
+                        <div class="form-group">
+                            <label>Tag reviews can be uploaded with a CSV containing the following columns:<br><br>
+                                <strong>Required columns:</strong><br>
+                                <strong>tag_id</strong> (integer) - Tag ID to review<br>
+                                <strong>tag_review_status_id</strong> (integer) - Review status:<br>
+                                &nbsp;&nbsp;1 = Accepted<br>
+                                &nbsp;&nbsp;2 = Corrected<br>
+                                &nbsp;&nbsp;3 = Rejected<br>
+                                &nbsp;&nbsp;4 = Uncertain<br><br>
+                                <strong>Optional columns:</strong><br>
+                                <strong>species_id</strong> (integer) - Corrected species ID (required if status=2)<br>
+                                <strong>note</strong> (max 200 characters) - Review comments<br><br>
+                                <em>Note: All ID fields must reference existing entries in their respective tables.</em><br><br>
+                                Download reference tables:<br>
+                                <a class="text-info" id="exportSpeciesForReviews" style="cursor:pointer">Species</a><br><br>
+                                You can download a <a class="text-info" id="reviewsDemo" style="cursor:pointer">template CSV file</a> to fill in your data.</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
                         <i class="fas fa-times"></i>
                         Close
                     </button>
@@ -579,6 +679,35 @@
                 $('#exportSitesForRecordings').on('click', function () {
                     window.location.href = '{{ baseUrl }}/api/admin/recordingManager/exportSites/' + $('#projectId').val() + '/' + $('#colId').val();
                 });
+                
+                // Tags instructions and downloads
+                $('#viewTagsInstructions').click(function () {
+                    $("#modal-tags-info").modal('show');
+                })
+                $('#tagsDemo').on('click', function () {
+                    window.location.href = '{{ baseUrl }}/api/admin/recordingManager/downloadTagsTemplate';
+                });
+                $('#exportSoundsForTags').on('click', function () {
+                    window.location.href = '{{ baseUrl }}/api/admin/recordingManager/exportSounds';
+                });
+                $('#exportSpeciesForTags').on('click', function () {
+                    window.location.href = '{{ baseUrl }}/api/admin/recordingManager/exportSpecies';
+                });
+                $('#exportRecordingsForTags').on('click', function () {
+                    window.location.href = '{{ baseUrl }}/api/admin/recordingManager/export/' + $('#colId').val();
+                });
+                
+                // Reviews instructions and downloads
+                $('#viewReviewsInstructions').click(function () {
+                    $("#modal-reviews-info").modal('show');
+                })
+                $('#reviewsDemo').on('click', function () {
+                    window.location.href = '{{ baseUrl }}/api/admin/recordingManager/downloadReviewsTemplate';
+                });
+                $('#exportSpeciesForReviews').on('click', function () {
+                    window.location.href = '{{ baseUrl }}/api/admin/recordingManager/exportSpecies';
+                });
+                
                 $('#models').on('click', function () {
                     let count = 0
                     $('.js-checkbox:checked').each(function () {

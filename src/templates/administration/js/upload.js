@@ -148,4 +148,100 @@ $(function () {
         var nameArr = name.split(".");
         return nameArr[nameArr.length - 1].toLowerCase();
     }
+
+    // Tags upload
+    $("#tagsButton").on("click", function () {
+        $("#tagsFile").click();
+    })
+
+    $("#tagsFile").on("change", function () {
+        analysisTagsList(this.files);
+    })
+
+    function analysisTagsList(obj) {
+        if (obj.length < 1) {
+            return false;
+        }
+        var fileObj = obj[0];
+        var name = fileObj.name;
+        var size = fileObj.size;
+        var type = fileType(name);
+        if (("csv").indexOf(type) == -1) {
+            showAlert(name + ' file type error.');
+            return
+        }
+        if (size > 5 * 1024 * 1024 || size == 0) {
+            showAlert(name + ' file size exceeds 5M.');
+            return
+        }
+        toggleLoading();
+        $.ajax({
+            url: baseUrl + '/api/file/tags',
+            type: "POST",
+            data: new FormData($("#tagsForm")[0]),
+            processData: false,
+            contentType: false,
+            success: function (result) {
+                if (result.message == 'Upload success.') {
+                    location.reload();
+                } else {
+                    showAlert(result.message)
+                    $('#tagsFile').val('')
+                    toggleLoading();
+                }
+            },
+            error: function () {
+                showAlert("Failed to upload tags file.")
+                toggleLoading();
+            }
+        });
+    }
+
+    // Reviews upload
+    $("#reviewsButton").on("click", function () {
+        $("#reviewsFile").click();
+    })
+
+    $("#reviewsFile").on("change", function () {
+        analysisReviewsList(this.files);
+    })
+
+    function analysisReviewsList(obj) {
+        if (obj.length < 1) {
+            return false;
+        }
+        var fileObj = obj[0];
+        var name = fileObj.name;
+        var size = fileObj.size;
+        var type = fileType(name);
+        if (("csv").indexOf(type) == -1) {
+            showAlert(name + ' file type error.');
+            return
+        }
+        if (size > 5 * 1024 * 1024 || size == 0) {
+            showAlert(name + ' file size exceeds 5M.');
+            return
+        }
+        toggleLoading();
+        $.ajax({
+            url: baseUrl + '/api/file/reviews',
+            type: "POST",
+            data: new FormData($("#reviewsForm")[0]),
+            processData: false,
+            contentType: false,
+            success: function (result) {
+                if (result.message == 'Upload success.') {
+                    location.reload();
+                } else {
+                    showAlert(result.message)
+                    $('#reviewsFile').val('')
+                    toggleLoading();
+                }
+            },
+            error: function () {
+                showAlert("Failed to upload reviews file.")
+                toggleLoading();
+            }
+        });
+    }
 })
