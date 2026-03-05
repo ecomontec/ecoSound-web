@@ -245,16 +245,132 @@ class RecordingController extends BaseController
         header('Content-Disposition: attachment; filename=' . $file_name);
 
         // Header row with all available columns
-        $headers = ['recording_start', 'duration', 'sampling_rate', 'name', 'site_id', 'recorder_id', 
+        $headers = ['file_date', 'file_time', 'duration', 'sampling_rate', 'name', 'site_id', 'recorder_id', 
                     'microphone_id', 'license_id', 'type', 'medium', 'recording_gain', 
                     'duty_cycle_recording', 'duty_cycle_period', 'note', 'DOI', 'bitdepth', 'channel_num'];
         
         // Example data row
-        $example = ['2024-01-15 10:30:00', '60.5', '48000', 'Example Recording', '', '', 
-                    '', '', 'Field Recording', 'Air', '', '', '', 'Example note', '', '16', '1'];
+        $example = ['2024-01-15', '10:30:00', '60.5', '48000', 'Example Recording', '', '', 
+                    '', '', 'Passive', 'Air', '', '', '', 'Example note', '', '16', '1'];
 
         fputcsv($fp, $headers);
         fputcsv($fp, $example);
+        fclose($fp);
+        exit();
+    }
+
+    public function exportLicenses()
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
+        }
+        
+        $file_name = "licenses.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        
+        $licenses = (new License())->getBasicList();
+        
+        if (!empty($licenses)) {
+            // Write header
+            fputcsv($fp, array_keys($licenses[0]));
+            
+            // Write data
+            foreach ($licenses as $license) {
+                fputcsv($fp, $license);
+            }
+        }
+        
+        fclose($fp);
+        exit();
+    }
+
+    public function exportRecorders()
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
+        }
+        
+        $file_name = "recorders.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        
+        $recorders = (new Recorder())->getBasicList();
+        
+        if (!empty($recorders)) {
+            // Write header
+            fputcsv($fp, array_keys($recorders[0]));
+            
+            // Write data
+            foreach ($recorders as $recorder) {
+                fputcsv($fp, $recorder);
+            }
+        }
+        
+        fclose($fp);
+        exit();
+    }
+
+    public function exportMicrophones()
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
+        }
+        
+        $file_name = "microphones.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        
+        $microphones = (new Microphone())->getBasicList();
+        
+        if (!empty($microphones)) {
+            // Write header
+            fputcsv($fp, array_keys($microphones[0]));
+            
+            // Write data
+            foreach ($microphones as $microphone) {
+                fputcsv($fp, $microphone);
+            }
+        }
+        
+        fclose($fp);
+        exit();
+    }
+
+    public function exportSites($project_id, $collection_id)
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
+        }
+        
+        $file_name = "sites.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        
+        $columns = (new SiteProvider())->getColumns();
+        $colArr = [];
+        foreach ($columns as $column) {
+            if ($column['COLUMN_NAME'] == 'user_id') {
+                continue;
+            }
+            $colArr[] = $column['COLUMN_NAME'];
+        }
+        fputcsv($fp, $colArr);
+        
+        $sites = (new SiteProvider())->getSite($project_id, $collection_id);
+        foreach ($sites as $site) {
+            unset($site['user_id']);
+            fputcsv($fp, $site);
+        }
+        
         fclose($fp);
         exit();
     }

@@ -155,20 +155,18 @@
                         <div class="form-group">
                             <label>Recording meta-data can be uploaded with a CSV containing the following columns:<br><br>
                                 <strong>Required columns:</strong><br>
-                                <strong>recording_start</strong> (format: YYYY-MM-DD HH:MM:SS, local time) - Recording timestamp<br>
-                                &nbsp;&nbsp;<em>OR alternatively:</em><br>
                                 <strong>file_date</strong> (format: YYYY-MM-DD) - Recording date<br>
                                 <strong>file_time</strong> (format: HH:MM:SS) - Recording time<br>
                                 <strong>duration</strong> (float, seconds) - Recording duration<br>
                                 <strong>sampling_rate</strong> (integer, Hz) - Sampling rate<br><br>
                                 <strong>Optional columns:</strong><br>
                                 <strong>name</strong> (max 250 characters) - Recording name<br>
-                                <strong>site_id</strong> (integer) - Site identifier (must exist in Sites table)<br>
-                                <strong>recorder_id</strong> (integer) - Recorder identifier (must exist in Recorders table)<br>
-                                <strong>microphone_id</strong> (integer) - Microphone identifier (must exist in Microphones table)<br>
-                                <strong>license_id</strong> (integer) - License identifier (must exist in Licenses table)<br>
-                                <strong>type</strong> (max 50 characters) - Recording type<br>
-                                <strong>medium</strong> (max 50 characters) - Recording medium (e.g., "Air", "Water")<br>
+                                <strong>site_id</strong> (integer) - Site identifier. Download <a class="text-info" id="exportSitesForRecordings" style="cursor:pointer">Sites table</a> for IDs<br>
+                                <strong>recorder_id</strong> (integer) - Recorder identifier. Download <a class="text-info" id="exportRecordersForRecordings" style="cursor:pointer">Recorders table</a> for IDs<br>
+                                <strong>microphone_id</strong> (integer) - Microphone identifier. Download <a class="text-info" id="exportMicrophonesForRecordings" style="cursor:pointer">Microphones table</a> for IDs<br>
+                                <strong>license_id</strong> (integer) - License identifier. Download <a class="text-info" id="exportLicensesForRecordings" style="cursor:pointer">Licenses table</a> for IDs<br>
+                                <strong>type</strong> (max 50 characters) - Recording type. Allowed values: <em>Passive</em>, <em>Focal</em>, <em>Enclosure</em><br>
+                                <strong>medium</strong> (max 50 characters) - Recording medium. Allowed values: <em>Air</em>, <em>Water</em><br>
                                 <strong>recording_gain</strong> (integer) - Recording gain in dB<br>
                                 <strong>duty_cycle_recording</strong> (integer, minutes) - Duration of duty-cycled recording<br>
                                 <strong>duty_cycle_period</strong> (integer, minutes) - Duration of full cycle (recording + pause)<br>
@@ -176,6 +174,7 @@
                                 <strong>DOI</strong> (max 255 characters) - Digital Object Identifier<br>
                                 <strong>bitdepth</strong> (integer) - Bit depth<br>
                                 <strong>channel_num</strong> (integer) - Number of channels<br><br>
+                                <em>Note: All optional ID fields must reference existing entries in their respective tables.</em><br><br>
                                 You can download a <a class="text-info" id="metaDemo" style="cursor:pointer">template CSV file</a> to fill in your data.</label>
                         </div>
                     </div>
@@ -567,6 +566,18 @@
                 });
                 $('#metaDemo').on('click', function () {
                     window.location.href = '{{ baseUrl }}/api/admin/recordingManager/download';
+                });
+                $('#exportLicensesForRecordings').on('click', function () {
+                    window.location.href = '{{ baseUrl }}/api/admin/recordingManager/exportLicenses';
+                });
+                $('#exportRecordersForRecordings').on('click', function () {
+                    window.location.href = '{{ baseUrl }}/api/admin/recordingManager/exportRecorders';
+                });
+                $('#exportMicrophonesForRecordings').on('click', function () {
+                    window.location.href = '{{ baseUrl }}/api/admin/recordingManager/exportMicrophones';
+                });
+                $('#exportSitesForRecordings').on('click', function () {
+                    window.location.href = '{{ baseUrl }}/api/admin/recordingManager/exportSites/' + $('#projectId').val() + '/' + $('#collectionId').val();
                 });
                 $('#models').on('click', function () {
                     let count = 0

@@ -4,6 +4,10 @@ namespace BioSounds\Controller;
 
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\RecordingProvider;
+use BioSounds\Provider\SiteProvider;
+use BioSounds\Entity\License;
+use BioSounds\Entity\Recorder;
+use BioSounds\Entity\Microphone;
 use BioSounds\Service\FileService;
 use BioSounds\Utils\Auth;
 use Cassandra\Varint;
@@ -70,20 +74,8 @@ class FileController
             if ($headers === null) {
                 $headers = array_map('trim', $row);
                 
-                // Validate required columns (support both recording_start and file_date/file_time)
-                $hasRecordingStart = in_array('recording_start', $headers);
-                $hasFileDate = in_array('file_date', $headers);
-                $hasFileTime = in_array('file_time', $headers);
-                
-                if (!$hasRecordingStart && (!$hasFileDate || !$hasFileTime)) {
-                    fclose($handle);
-                    return json_encode([
-                        'error_code' => 1,
-                        'message' => "Missing required columns: either 'recording_start' OR both 'file_date' and 'file_time' are required.",
-                    ]);
-                }
-                
-                $requiredColumns = ['duration', 'sampling_rate'];
+                // Validate required columns
+                $requiredColumns = ['file_date', 'file_time', 'duration', 'sampling_rate'];
                 foreach ($requiredColumns as $required) {
                     if (!in_array($required, $headers)) {
                         fclose($handle);
@@ -101,46 +93,36 @@ class FileController
             $rowData = array_combine($headers, $row);
             
             // Validate required fields
-            $hasRecordingStart = isset($rowData['recording_start']) && !empty($rowData['recording_start']);
-            $hasFileDate = isset($rowData['file_date']) && !empty($rowData['file_date']);
-            $hasFileTime = isset($rowData['file_time']) && !empty($rowData['file_time']);
-            
-            if (!$hasRecordingStart && (!$hasFileDate || !$hasFileTime)) {
+            if (empty($rowData['file_date'])) {
                 fclose($handle);
                 return json_encode([
                     'error_code' => 1,
-                    'message' => "Row {$rowNum}: recording_start OR both file_date and file_time are required.",
+                    'message' => "Row {$rowNum}: file_date is required.",
                 ]);
             }
             
-            // Parse recording_start if provided
-            if ($hasRecordingStart) {
-                if (!preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $rowData['recording_start'])) {
-                    fclose($handle);
-                    return json_encode([
-                        'error_code' => 1,
-                        'message' => "Row {$rowNum}: recording_start must be in format YYYY-MM-DD HH:MM:SS.",
-                    ]);
-                }
-                $parts = explode(' ', $rowData['recording_start']);
-                $rowData['file_date'] = $parts[0];
-                $rowData['file_time'] = $parts[1];
-            } else {
-                // Validate file_date and file_time formats
-                if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $rowData['file_date'])) {
-                    fclose($handle);
-                    return json_encode([
-                        'error_code' => 1,
-                        'message' => "Row {$rowNum}: file_date must be in format YYYY-MM-DD.",
-                    ]);
-                }
-                if (!preg_match('/^\d{2}:\d{2}:\d{2}$/', $rowData['file_time'])) {
-                    fclose($handle);
-                    return json_encode([
-                        'error_code' => 1,
-                        'message' => "Row {$rowNum}: file_time must be in format HH:MM:SS.",
-                    ]);
-                }
+            if (empty($rowData['file_time'])) {
+                fclose($handle);
+                return json_encode([
+                    'error_code' => 1,
+                    'message' => "Row {$rowNum}: file_time is required.",
+                ]);
+            }
+            
+            // Validate file_date and file_time formats
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $rowData['file_date'])) {
+                fclose($handle);
+                return json_encode([
+                    'error_code' => 1,
+                    'message' => "Row {$rowNum}: file_date must be in format YYYY-MM-DD.",
+                ]);
+            }
+            if (!preg_match('/^\d{2}:\d{2}:\d{2}$/', $rowData['file_time'])) {
+                fclose($handle);
+                return json_encode([
+                    'error_code' => 1,
+                    'message' => "Row {$rowNum}: file_time must be in format HH:MM:SS.",
+                ]);
             }
             
             if (empty($rowData['duration']) || !is_numeric($rowData['duration']) || $rowData['duration'] <= 0) {
@@ -183,6 +165,30 @@ class FileController
                 }
             }
             
+            // Validate type enum values
+            if (isset($rowData['type']) && $rowData['type'] !== '') {
+                $allowedTypes = ['Passive', 'Focal', 'Enclosure'];
+                if (!in_array($rowData['type'], $allowedTypes)) {
+                    fclose($handle);
+                    return json_encode([
+                        'error_code' => 1,
+                        'message' => "Row {$rowNum}: type must be one of: " . implode(', ', $allowedTypes) . ".",
+                    ]);
+                }
+            }
+            
+            // Validate medium enum values
+            if (isset($rowData['medium']) && $rowData['medium'] !== '') {
+                $allowedMediums = ['Air', 'Water'];
+                if (!in_array($rowData['medium'], $allowedMediums)) {
+                    fclose($handle);
+                    return json_encode([
+                        'error_code' => 1,
+                        'message' => "Row {$rowNum}: medium must be one of: " . implode(', ', $allowedMediums) . ".",
+                    ]);
+                }
+            }
+            
             $data[] = $rowData;
             $rowNum++;
         }
@@ -193,6 +199,88 @@ class FileController
                 'error_code' => 1,
                 'message' => 'No valid data rows found in CSV file.',
             ]);
+        }
+
+        // Validate foreign key IDs exist in database
+        $siteProvider = new SiteProvider();
+        $licenseEntity = new License();
+        $recorderEntity = new Recorder();
+        $microphoneEntity = new Microphone();
+        
+        foreach ($data as $index => $recordingData) {
+            $rowNum = $index + 2; // +2 because index starts at 0 and we skip header row
+            
+            if (isset($recordingData['site_id']) && $recordingData['site_id'] !== '') {
+                $siteId = (int)$recordingData['site_id'];
+                try {
+                    $site = $siteProvider->get((string)$siteId);
+                    if (empty($site)) {
+                        return json_encode([
+                            'error_code' => 1,
+                            'message' => "Row {$rowNum}: site_id {$siteId} does not exist in the database.",
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    return json_encode([
+                        'error_code' => 1,
+                        'message' => "Row {$rowNum}: site_id {$siteId} does not exist in the database.",
+                    ]);
+                }
+            }
+            
+            if (isset($recordingData['license_id']) && $recordingData['license_id'] !== '') {
+                $licenseId = (int)$recordingData['license_id'];
+                $licenses = $licenseEntity->getBasicList();
+                $licenseExists = false;
+                foreach ($licenses as $license) {
+                    if ($license['license_id'] == $licenseId) {
+                        $licenseExists = true;
+                        break;
+                    }
+                }
+                if (!$licenseExists) {
+                    return json_encode([
+                        'error_code' => 1,
+                        'message' => "Row {$rowNum}: license_id {$licenseId} does not exist in the database.",
+                    ]);
+                }
+            }
+            
+            if (isset($recordingData['recorder_id']) && $recordingData['recorder_id'] !== '') {
+                $recorderId = (int)$recordingData['recorder_id'];
+                $recorders = $recorderEntity->getBasicList();
+                $recorderExists = false;
+                foreach ($recorders as $recorder) {
+                    if ($recorder['recorder_id'] == $recorderId) {
+                        $recorderExists = true;
+                        break;
+                    }
+                }
+                if (!$recorderExists) {
+                    return json_encode([
+                        'error_code' => 1,
+                        'message' => "Row {$rowNum}: recorder_id {$recorderId} does not exist in the database.",
+                    ]);
+                }
+            }
+            
+            if (isset($recordingData['microphone_id']) && $recordingData['microphone_id'] !== '') {
+                $microphoneId = (int)$recordingData['microphone_id'];
+                $microphones = $microphoneEntity->getBasicList();
+                $microphoneExists = false;
+                foreach ($microphones as $microphone) {
+                    if ($microphone['microphone_id'] == $microphoneId) {
+                        $microphoneExists = true;
+                        break;
+                    }
+                }
+                if (!$microphoneExists) {
+                    return json_encode([
+                        'error_code' => 1,
+                        'message' => "Row {$rowNum}: microphone_id {$microphoneId} does not exist in the database.",
+                    ]);
+                }
+            }
         }
 
         // Insert recordings
