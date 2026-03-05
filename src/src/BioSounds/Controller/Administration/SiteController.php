@@ -449,7 +449,6 @@ class SiteController extends BaseController
             $inserted++;
         }
 
-        header('Content-Type: application/json');
         return json_encode([
             'errorCode' => 0,
             'message' => "Successfully uploaded {$inserted} sites.",

@@ -255,8 +255,17 @@ class TagController extends BaseController
         header('Accept-Ranges:bytes');
         header('Content-Disposition: attachment; filename=' . $file_name);
         
-        $recordingProvider = new RecordingProvider();
-        $recordings = $recordingProvider->getList();
+        // Query database directly to get array data
+        $db = new \BioSounds\Database\Database(DRIVER, HOST, DATABASE, USER, PASSWORD);
+        $query = 'SELECT recording_id, name, filename, col_id, directory, site_id, ';
+        $query .= 'file_size, bitdepth, channel_num, DATE_FORMAT(file_date, \'%Y-%m-%d\') ';
+        $query .= 'AS file_date, DATE_FORMAT(file_time, \'%H:%i:%s\') AS file_time, sampling_rate, ';
+        $query .= 'duration, type, medium, recorder_id, microphone_id, recording_gain, ';
+        $query .= 'duty_cycle_recording, duty_cycle_period, note, doi, license_id ';
+        $query .= 'FROM recording';
+        
+        $db->prepareQuery($query);
+        $recordings = $db->executeSelect();
         
         if (!empty($recordings)) {
             fputcsv($fp, array_keys($recordings[0]));
