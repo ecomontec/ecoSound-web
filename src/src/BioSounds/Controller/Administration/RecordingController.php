@@ -99,11 +99,9 @@ class RecordingController extends BaseController
                 'recordsFiltered' => (new RecordingProvider())->getFilterCount($collectionId, $search),
                 'data' => $data,
             ];
-            header('Content-Type: application/json');
             return json_encode($result);
         } catch (\Exception $e) {
             error_log('RecordingController::getListByPage error: ' . $e->getMessage());
-            header('Content-Type: application/json');
             return json_encode([
                 'draw' => isset($_POST['draw']) ? $_POST['draw'] : '1',
                 'recordsTotal' => 0,
@@ -125,7 +123,6 @@ class RecordingController extends BaseController
         }
 
         if (!preg_match('/^[0-9]\d*$/', $_POST['recording_gain_number'])) {
-            header('Content-Type: application/json');
             return json_encode([
                 'isValid' => 1,
                 'message' => 'Recording gain cannot be a negative integer.',
@@ -170,9 +167,8 @@ class RecordingController extends BaseController
         if (isset($data["itemID"])) {
             (new RecordingProvider())->update($data);
 
-            header('Content-Type: application/json');
             return json_encode([
-                'error_code' => 0,
+                'errorCode' => 0,
                 'message' => 'Recording updated successfully.',
             ]);
         }
@@ -228,9 +224,8 @@ class RecordingController extends BaseController
         $recordingProvider->delete($id);
         $indexLogProvider->deleteByRecording($id);
 
-        header('Content-Type: application/json');
         return json_encode([
-            'error_code' => 0,
+            'errorCode' => 0,
             'message' => 'Recording deleted successfully.',
         ]);
     }
@@ -503,9 +498,8 @@ class RecordingController extends BaseController
         $this->queueService = new RabbitQueueService();
         $this->queueService->queue(json_encode($data), 'AI model', count($data));
         $this->queueService->closeConnection();
-        header('Content-Type: application/json');
         return json_encode([
-            'error_code' => 0,
+            'errorCode' => 0,
             'message' => 'Models successfully.'
         ]);
     }
@@ -540,9 +534,8 @@ class RecordingController extends BaseController
         $this->queueService = new RabbitQueueService();
         $this->queueService->queue(json_encode($data), 'index analysis', count($data));
         $this->queueService->closeConnection();
-        header('Content-Type: application/json');
         return json_encode([
-            'error_code' => 0,
+            'errorCode' => 0,
             'message' => 'Alpha acoustic indices successfully.'
         ]);
     }

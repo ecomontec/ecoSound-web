@@ -234,7 +234,7 @@ function asyncRequest(type, href, data = [], showMessage = false, showLoading = 
                     //window.location.href = baseUrl;
                 }
                 if (!response.responseJSON) {
-                    showAlert('Error ' + response.status + ': ' + (response.statusText || 'Unknown error'));
+                    showAlert('Error ' + response.message);
                     return;
                 }
                 showAlert(response.responseJSON.message);
