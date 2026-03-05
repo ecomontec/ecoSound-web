@@ -193,7 +193,7 @@ class TagReviewController extends BaseController
 
     public function downloadTemplate()
     {
-        if (!Auth::isView()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
         
@@ -212,7 +212,7 @@ class TagReviewController extends BaseController
 
     public function exportSpecies()
     {
-        if (!Auth::isView()) {
+        if (!Auth::isManage()) {
             throw new ForbiddenException();
         }
         

@@ -103,4 +103,63 @@ class QueueController extends BaseController
         fclose($fp);
         exit();
     }
+
+    /**
+     * Restart the RabbitMQ worker
+     * @return string
+     * @throws \Exception
+     */
+    public function restartWorker()
+    {
+        if (!Auth::isUserAdmin()) {
+            throw new ForbiddenException();
+        }
+
+        try {
+            // Kill existing worker processes
+            exec('pkill -f "php.*worker.php" 2>&1', $output, $returnCode);
+            
+            // Wait a moment for processes to terminate
+            sleep(1);
+            
+            // Restart the worker using the start-worker.sh script
+            exec('setsid /var/www/html/start-worker.sh < /dev/null > /dev/null 2>&1 &', $output2, $returnCode2);
+            
+            // Log the restart
+            $logMessage = "[" . date('Y-m-d H:i:s') . "] Worker manually restarted by user " . Auth::getUserID() . "\n";
+            file_put_contents('/var/www/html/tmp/worker.log', $logMessage, FILE_APPEND);
+            
+            return json_encode([
+                'errorCode' => 0,
+                'message' => 'Worker restart initiated. Jobs should resume processing shortly.',
+            ]);
+        } catch (\Exception $e) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'Failed to restart worker: ' . $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Check if the RabbitMQ worker is running
+     * @return string
+     * @throws \Exception
+     */
+    public function workerStatus()
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
+        }
+
+        // Check if worker.php process is running
+        exec('pgrep -f "php.*worker.php"', $output, $returnCode);
+        
+        $running = ($returnCode === 0 && !empty($output));
+        
+        return json_encode([
+            'running' => $running,
+            'pid' => $running ? implode(',', $output) : null,
+        ]);
+    }
 }
