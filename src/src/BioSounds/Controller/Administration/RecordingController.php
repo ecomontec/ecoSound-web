@@ -168,7 +168,7 @@ class RecordingController extends BaseController
             (new RecordingProvider())->update($data);
 
             return json_encode([
-                'errorCode' => 0,
+                'error_code' => 0,
                 'message' => 'Recording updated successfully.',
             ]);
         }
@@ -225,7 +225,7 @@ class RecordingController extends BaseController
         $indexLogProvider->deleteByRecording($id);
 
         return json_encode([
-            'errorCode' => 0,
+            'error_code' => 0,
             'message' => 'Recording deleted successfully.',
         ]);
     }
@@ -499,7 +499,7 @@ class RecordingController extends BaseController
         $this->queueService->queue(json_encode($data), 'AI model', count($data));
         $this->queueService->closeConnection();
         return json_encode([
-            'errorCode' => 0,
+            'error_code' => 0,
             'message' => 'Models successfully.'
         ]);
     }
@@ -535,7 +535,7 @@ class RecordingController extends BaseController
         $this->queueService->queue(json_encode($data), 'index analysis', count($data));
         $this->queueService->closeConnection();
         return json_encode([
-            'errorCode' => 0,
+            'error_code' => 0,
             'message' => 'Alpha acoustic indices successfully.'
         ]);
     }

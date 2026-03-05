@@ -458,8 +458,10 @@
                 })
 
                 $('#js-delete-button').click(function () {
-                    postRequest('{{ baseUrl }}/api/admin/recordingManager/delete', {'id': $('#delete_id').val()}, false, false, function () {
-                        location.reload();
+                    postRequest('{{ baseUrl }}/api/admin/recordingManager/delete', {'id': $('#delete_id').val()}, false, false, function (response) {
+                        $("#modal-delete").modal('hide');
+                        $('#recordingTable').DataTable().ajax.reload(null, false);
+                        showAlert(response.message);
                     });
                 });
 
