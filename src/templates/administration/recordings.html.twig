@@ -458,10 +458,8 @@
                 })
 
                 $('#js-delete-button').click(function () {
-                    postRequest('{{ baseUrl }}/api/admin/recordingManager/delete', {'id': $('#delete_id').val()}, false, false, function (response) {
-                        $("#modal-delete").modal('hide');
-                        $('#recordingTable').DataTable().ajax.reload(null, false);
-                        showAlert(response.message);
+                    postRequest('{{ baseUrl }}/api/admin/recordingManager/delete', {'id': $('#delete_id').val()}, false, false, function () {
+                        location.reload();
                     });
                 });
 
@@ -579,7 +577,7 @@
                     window.location.href = '{{ baseUrl }}/api/admin/recordingManager/exportMicrophones';
                 });
                 $('#exportSitesForRecordings').on('click', function () {
-                    window.location.href = '{{ baseUrl }}/api/admin/recordingManager/exportSites/' + $('#projectId').val() + '/' + $('#collectionId').val();
+                    window.location.href = '{{ baseUrl }}/api/admin/recordingManager/exportSites/' + $('#projectId').val() + '/' + $('#colId').val();
                 });
                 $('#models').on('click', function () {
                     let count = 0
