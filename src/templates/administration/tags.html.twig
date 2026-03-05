@@ -1,6 +1,10 @@
 {% extends 'administration/admin.html.twig' %}
 
 {% block admin_content %}
+    <form id="tagsForm" style="display:none">
+        <input type="file" name="tagsFile" id="tagsFile" accept=".csv"/>
+    </form>
+
     <div class="card mb-3" id="tagsList">
         <div class="card-header border-light bg-white text-right">
             <div class="form-inline">
@@ -52,6 +56,20 @@
                 <i class="fa fa-file-csv"></i>
                 Save all as CSV
             </button>
+            <div class="btn-group ml-2 mt-2">
+                <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fa fa-upload"></i> Upload / Instructions
+                </button>
+                <div class="dropdown-menu">
+                    <a id="tagsButton" class="dropdown-item" href="#">Upload Tags</a>
+                    <a id="viewTagsInstructions" class="dropdown-item" href="#">Tags Instructions</a>
+                    <div class="dropdown-divider"></div>
+                    <a id="tagsDemo" class="dropdown-item" href="#">Download Template</a>
+                    <a id="exportSounds" class="dropdown-item" href="#">Export Sounds</a>
+                    <a id="exportSpecies" class="dropdown-item" href="#">Export Species</a>
+                    <a id="exportRecordings" class="dropdown-item" href="#">Export Recordings</a>
+                </div>
+            </div>
         </div>
         <table id="tagsTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
@@ -114,6 +132,53 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="modal-tags-info" tabindex="-1" role="dialog" aria-labelledby="modal-tags-info-label" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-tags-info-label">Tags CSV Upload Instructions</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Upload a CSV file with the following columns:</p>
+                    <h6>Required Columns:</h6>
+                    <ul>
+                        <li><strong>recording_id</strong>: Recording ID (must exist in database)</li>
+                        <li><strong>min_time</strong>: Start time in seconds</li>
+                        <li><strong>max_time</strong>: End time in seconds (must be > min_time)</li>
+                        <li><strong>min_freq</strong>: Minimum frequency in Hz</li>
+                        <li><strong>max_freq</strong>: Maximum frequency in Hz (must be > min_freq)</li>
+                        <li><strong>sound_id</strong>: Sound ID (must exist in database)</li>
+                        <li><strong>individuals</strong>: Number of individuals</li>
+                    </ul>
+                    <h6>Optional Columns:</h6>
+                    <ul>
+                        <li><strong>species_id</strong>: Species ID (must exist if provided)</li>
+                        <li><strong>uncertain</strong>: 1 if uncertain, 0 or empty otherwise</li>
+                        <li><strong>sound_distance_m</strong>: Distance in meters</li>
+                        <li><strong>distance_not_estimable</strong>: 1 if not estimable, 0 or empty otherwise</li>
+                        <li><strong>animal_sound_type</strong>: Animal sound type</li>
+                        <li><strong>reference_call</strong>: 1 if reference call, 0 or empty otherwise</li>
+                        <li><strong>comments</strong>: Comments</li>
+                        <li><strong>confidence</strong>: Confidence level</li>
+                    </ul>
+                    <p class="mt-3"><strong>Download files:</strong></p>
+                    <ul>
+                        <li><a href="#" id="tagsDemo2">Download Tags Template</a></li>
+                        <li><a href="#" id="exportSounds2">Export Sounds Reference Table</a></li>
+                        <li><a href="#" id="exportSpecies2">Export Species Reference Table</a></li>
+                        <li><a href="#" id="exportRecordings2">Export Recordings Reference Table</a></li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 {% block header %}
     {{ parent() }}
@@ -164,6 +229,87 @@
             'use strict';
             $(document).on('click', '#tagsExport', function () {
                 window.location.href = '{{ baseUrl }}/api/admin/tagMgr/export/{{ colId }}/{{ recordingId }}';
+            });
+
+            // Tags CSV Upload
+            $('#tagsButton').click(function(e) {
+                e.preventDefault();
+                $('#tagsFile').click();
+            });
+
+            $('#tagsFile').on('change', function() {
+                var file = this.files[0];
+                if (!file) return;
+
+                var fileName = file.name;
+                var fileSize = file.size;
+                var fileType = file.type;
+
+                if (fileType !== 'text/csv' && !fileName.endsWith('.csv')) {
+                    alert('Please select a CSV file.');
+                    $('#tagsForm')[0].reset();
+                    return;
+                }
+
+                if (fileSize > 5242880) {
+                    alert('File size exceeds 5MB limit.');
+                    $('#tagsForm')[0].reset();
+                    return;
+                }
+
+                var formData = new FormData();
+                formData.append('file', file);
+
+                $.ajax({
+                    url: '{{ baseUrl }}/api/file/tags',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.message === 'Upload success.') {
+                            location.reload();
+                        } else {
+                            alert(response.message || 'Upload completed');
+                            $('#tagsForm')[0].reset();
+                        }
+                    },
+                    error: function(xhr) {
+                        var errorMsg = 'Upload failed.';
+                        try {
+                            var response = JSON.parse(xhr.responseText);
+                            errorMsg = response.message || errorMsg;
+                        } catch(e) {}
+                        alert(errorMsg);
+                        $('#tagsForm')[0].reset();
+                    }
+                });
+            });
+
+            // Template and export downloads
+            $('#tagsDemo, #tagsDemo2').click(function(e) {
+                e.preventDefault();
+                window.location.href = '{{ baseUrl }}/admin/tags/downloadTemplate';
+            });
+
+            $('#exportSounds, #exportSounds2').click(function(e) {
+                e.preventDefault();
+                window.location.href = '{{ baseUrl }}/admin/tags/exportSounds';
+            });
+
+            $('#exportSpecies, #exportSpecies2').click(function(e) {
+                e.preventDefault();
+                window.location.href = '{{ baseUrl }}/admin/tags/exportSpecies';
+            });
+
+            $('#exportRecordings, #exportRecordings2').click(function(e) {
+                e.preventDefault();
+                window.location.href = '{{ baseUrl }}/admin/tags/exportRecordings';
+            });
+
+            $('#viewTagsInstructions').click(function(e) {
+                e.preventDefault();
+                $('#modal-tags-info').modal('show');
             });
 
             $('#js-delete-button').click(function (e) {

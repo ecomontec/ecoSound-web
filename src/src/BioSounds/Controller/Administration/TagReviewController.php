@@ -191,6 +191,52 @@ class TagReviewController extends BaseController
         exit();
     }
 
+    public function downloadTemplate()
+    {
+        if (!Auth::isView()) {
+            throw new ForbiddenException();
+        }
+        
+        $file_name = "reviews_template.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        
+        fputcsv($fp, ['tag_id', 'tag_review_status_id', 'species_id', 'note']);
+        fputcsv($fp, ['456', '1', '', 'Status 1=accepted, 2=corrected, 3=rejected, 4=uncertain']);
+        
+        fclose($fp);
+        exit();
+    }
+
+    public function exportSpecies()
+    {
+        if (!Auth::isView()) {
+            throw new ForbiddenException();
+        }
+        
+        $file_name = "species.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        
+        $speciesProvider = new \BioSounds\Entity\Species();
+        $species = $speciesProvider->get();
+        
+        if (!empty($species)) {
+            fputcsv($fp, array_keys($species[0]));
+            
+            foreach ($species as $sp) {
+                fputcsv($fp, $sp);
+            }
+        }
+        
+        fclose($fp);
+        exit();
+    }
+
     /**
      * @return false|string
      * @throws \Exception

@@ -170,6 +170,124 @@ class TagController extends BaseController
         exit();
     }
 
+    public function downloadTemplate()
+    {
+        if (!Auth::isView()) {
+            throw new ForbiddenException();
+        }
+        
+        $file_name = "tags_template.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        
+        fputcsv($fp, ['recording_id', 'min_time', 'max_time', 'min_freq', 'max_freq', 'sound_id', 'individuals', 'species_id', 'uncertain', 'sound_distance_m', 'distance_not_estimable', 'animal_sound_type', 'reference_call', 'comments', 'confidence']);
+        fputcsv($fp, ['123', '5.5', '7.2', '1000', '8000', '45', '1', '678', '0', '50', '0', 'call', '0', 'Example tag', 'high']);
+        
+        fclose($fp);
+        exit();
+    }
+
+    public function exportSounds()
+    {
+        if (!Auth::isView()) {
+            throw new ForbiddenException();
+        }
+        
+        $file_name = "sounds.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        
+        $soundProvider = new SoundProvider();
+        $sounds = $soundProvider->getAll();
+        
+        if (!empty($sounds)) {
+            fputcsv($fp, array_keys($sounds[0]));
+            
+            foreach ($sounds as $sound) {
+                fputcsv($fp, $sound);
+            }
+        }
+        
+        fclose($fp);
+        exit();
+    }
+
+    public function exportSpecies()
+    {
+        if (!Auth::isView()) {
+            throw new ForbiddenException();
+        }
+        
+        $file_name = "species.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        
+        $speciesProvider = new \BioSounds\Entity\Species();
+        $species = $speciesProvider->get();
+        
+        if (!empty($species)) {
+            fputcsv($fp, array_keys($species[0]));
+            
+            foreach ($species as $sp) {
+                fputcsv($fp, $sp);
+            }
+        }
+        
+        fclose($fp);
+        exit();
+    }
+
+    public function exportRecordings()
+    {
+        if (!Auth::isView()) {
+            throw new ForbiddenException();
+        }
+        
+        $file_name = "recordings.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        
+        $recordingProvider = new RecordingProvider();
+        $recordings = $recordingProvider->getList();
+        
+        if (!empty($recordings)) {
+            // Get column names from the first recording object
+            $firstRecording = $recordings[0];
+            $columns = [];
+            foreach (get_class_methods($firstRecording) as $method) {
+                if (strpos($method, 'get') === 0 && $method !== 'getIterator') {
+                    $columns[] = lcfirst(substr($method, 3));
+                }
+            }
+            fputcsv($fp, $columns);
+            
+            // Export each recording
+            foreach ($recordings as $recording) {
+                $row = [];
+                foreach ($columns as $column) {
+                    $method = 'get' . ucfirst($column);
+                    if (method_exists($recording, $method)) {
+                        $row[] = $recording->$method();
+                    } else {
+                        $row[] = '';
+                    }
+                }
+                fputcsv($fp, $row);
+            }
+        }
+        
+        fclose($fp);
+        exit();
+    }
+
     /**
      * @return false|string
      * @throws \Exception
