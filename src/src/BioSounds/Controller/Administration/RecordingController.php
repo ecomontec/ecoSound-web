@@ -198,6 +198,11 @@ class RecordingController extends BaseController
             $colId = $recording[Recording::COL_ID];
             $dirID = $recording[Recording::DIRECTORY];
 
+            // Skip file deletion for meta-data recordings (no actual audio file)
+            if (empty($fileName)) {
+                continue;
+            }
+
             $soundsDir = SOUNDS_DIR . "/$colId/$dirID/";
             $imagesDir = IMAGES_DIR . "/$colId/$dirID/";
 

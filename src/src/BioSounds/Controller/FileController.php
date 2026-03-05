@@ -352,8 +352,8 @@ class FileController
         }
 
         return json_encode([
-            'error_code' => 0,
-            'message' => "Successfully uploaded {$inserted} recording metadata entries.",
+            'errorCode' => 0,
+            'message' => 'Upload success.',
         ]);
     }
 }
