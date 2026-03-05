@@ -5,11 +5,14 @@ namespace BioSounds\Controller;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\SiteProvider;
+use BioSounds\Provider\TagProvider;
 use BioSounds\Entity\License;
 use BioSounds\Entity\Recorder;
 use BioSounds\Entity\Microphone;
+use BioSounds\Entity\Species;
 use BioSounds\Service\FileService;
 use BioSounds\Utils\Auth;
+use BioSounds\Entity\TagReview;
 use Cassandra\Varint;
 
 /**
@@ -450,9 +453,9 @@ class FileController
             }
 
             if (isset($tagData['species_id']) && $tagData['species_id'] !== '') {
-                $speciesProvider = new \BioSounds\Provider\SpeciesProvider();
-                $species = $speciesProvider->get((int)$tagData['species_id']);
-                if (empty($species) || $species->getId() != $tagData['species_id']) {
+                $speciesEntity = new Species();
+                $species = $speciesEntity->getById((int)$tagData['species_id']);
+                if (empty($species)) {
                     fclose($handle);
                     return json_encode([
                         'errorCode' => 1,
@@ -474,7 +477,7 @@ class FileController
             ]);
         }
 
-        $tagProvider = new \BioSounds\Provider\TagProvider();
+        $tagProvider = new TagProvider();
         $inserted = 0;
 
         foreach ($data as $tagData) {
@@ -603,7 +606,7 @@ class FileController
                 ]);
             }
 
-            $tagProvider = new \BioSounds\Provider\TagProvider();
+            $tagProvider = new TagProvider();
             try {
                 $tagProvider->get((int)$reviewData['tag_id']);
             } catch (\Exception $e) {
@@ -615,9 +618,9 @@ class FileController
             }
 
             if (isset($reviewData['species_id']) && $reviewData['species_id'] !== '') {
-                $speciesProvider = new \BioSounds\Provider\SpeciesProvider();
-                $species = $speciesProvider->get((int)$reviewData['species_id']);
-                if (empty($species) || $species->getId() != $reviewData['species_id']) {
+                $speciesEntity = new Species();
+                $species = $speciesEntity->getById((int)$reviewData['species_id']);
+                if (empty($species)) {
                     fclose($handle);
                     return json_encode([
                         'errorCode' => 1,

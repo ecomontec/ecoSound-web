@@ -52,10 +52,6 @@
                 <i class="fas fa-trash"></i>
                 Delete
             </button>
-            <button id="tagsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#tagsExport" aria-expanded="false" aria-controls="tagsExport">
-                <i class="fa fa-file-csv"></i>
-                Save all as CSV
-            </button>
             <span class="dropdown">
                 <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" id="addTags" data-toggle="dropdown" aria-expanded="false">
                     <span class="fas fa-plus"></span>
@@ -71,6 +67,10 @@
                     <a id="exportRecordings" class="dropdown-item" href="#"><i class="fa-solid fa-download"></i> Export Recordings</a>
                 </div>
             </span>
+            <button id="tagsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#tagsExport" aria-expanded="false" aria-controls="tagsExport">
+                <i class="fa fa-file-csv"></i>
+                Save all as CSV
+            </button>
         </div>
         <table id="tagsTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
@@ -143,36 +143,31 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
-                    <p>Upload a CSV file with the following columns:</p>
-                    <h6>Required Columns:</h6>
-                    <ul>
-                        <li><strong>recording_id</strong>: Recording ID (must exist in database)</li>
-                        <li><strong>min_time</strong>: Start time in seconds</li>
-                        <li><strong>max_time</strong>: End time in seconds (must be > min_time)</li>
-                        <li><strong>min_freq</strong>: Minimum frequency in Hz</li>
-                        <li><strong>max_freq</strong>: Maximum frequency in Hz (must be > min_freq)</li>
-                        <li><strong>sound_id</strong>: Sound ID (must exist in database)</li>
-                        <li><strong>individuals</strong>: Number of individuals</li>
-                    </ul>
-                    <h6>Optional Columns:</h6>
-                    <ul>
-                        <li><strong>species_id</strong>: Species ID (must exist if provided)</li>
-                        <li><strong>uncertain</strong>: 1 if uncertain, 0 or empty otherwise</li>
-                        <li><strong>sound_distance_m</strong>: Distance in meters</li>
-                        <li><strong>distance_not_estimable</strong>: 1 if not estimable, 0 or empty otherwise</li>
-                        <li><strong>animal_sound_type</strong>: Animal sound type</li>
-                        <li><strong>reference_call</strong>: 1 if reference call, 0 or empty otherwise</li>
-                        <li><strong>comments</strong>: Comments</li>
-                        <li><strong>confidence</strong>: Confidence level</li>
-                    </ul>
-                    <p class="mt-3"><strong>Download files:</strong></p>
-                    <ul>
-                        <li><a href="#" id="tagsDemo2">Download Tags Template</a></li>
-                        <li><a href="#" id="exportSounds2">Export Sounds Reference Table</a></li>
-                        <li><a href="#" id="exportSpecies2">Export Species Reference Table</a></li>
-                        <li><a href="#" id="exportRecordings2">Export Recordings Reference Table</a></li>
-                    </ul>
+                <div class="modal-body ml-3">
+                    <div>
+                        <div class="form-group">
+                            <label>Tags can be uploaded with a CSV containing the following columns:<br><br>
+                                <strong>Required columns:</strong><br>
+                                <strong>recording_id</strong> (integer) - Recording identifier. Download <a class="text-info" id="exportRecordings2" style="cursor:pointer">Recordings table</a> for IDs<br>
+                                <strong>min_time</strong> (float, seconds) - Start time<br>
+                                <strong>max_time</strong> (float, seconds) - End time (must be > min_time)<br>
+                                <strong>min_freq</strong> (float, Hz) - Minimum frequency<br>
+                                <strong>max_freq</strong> (float, Hz) - Maximum frequency (must be > min_freq)<br>
+                                <strong>sound_id</strong> (integer) - Sound identifier. Download <a class="text-info" id="exportSounds2" style="cursor:pointer">Sounds table</a> for IDs<br>
+                                <strong>individuals</strong> (integer) - Number of individuals<br><br>
+                                <strong>Optional columns:</strong><br>
+                                <strong>species_id</strong> (integer) - Species identifier. Download <a class="text-info" id="exportSpecies2" style="cursor:pointer">Species table</a> for IDs<br>
+                                <strong>uncertain</strong> (0 or 1) - Uncertainty flag<br>
+                                <strong>sound_distance_m</strong> (integer) - Distance in meters<br>
+                                <strong>distance_not_estimable</strong> (0 or 1) - Distance not estimable flag<br>
+                                <strong>animal_sound_type</strong> (max 128 characters) - Sound type description<br>
+                                <strong>reference_call</strong> (0 or 1) - Reference call flag<br>
+                                <strong>comments</strong> (max 2000 characters) - Comments<br>
+                                <strong>confidence</strong> (float 0-1) - AI confidence score<br><br>
+                                <em>Note: All ID fields must reference existing entries in their respective tables.</em><br><br>
+                                You can download a <a class="text-info" id="tagsDemo2" style="cursor:pointer">template CSV file</a> to fill in your data.</label>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

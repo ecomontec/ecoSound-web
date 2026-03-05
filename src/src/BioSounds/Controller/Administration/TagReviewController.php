@@ -164,7 +164,7 @@ class TagReviewController extends BaseController
         array_splice($colArr, 8, 0, 'species');
 
         $Als[] = $colArr;
-        $List = (new TagReviewProvider())->getReview($collection_id);
+        $List = (new TagReviewProvider())->getReview($collection_id, '0');
         foreach ($List as $Item) {
             $valueToMove = $Item['username'] == null ? '' : $Item['username'];
             unset($Item['username']);

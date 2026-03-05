@@ -48,10 +48,6 @@
                 <i class="fas fa-trash"></i>
                 Delete
             </button>
-            <button id="tagReviewsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#tagReviewsExport" aria-expanded="false" aria-controls="tagReviewsExport">
-                <i class="fa fa-file-csv"></i>
-                Save all as CSV
-            </button>
             <span class="dropdown">
                 <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" id="addReviews" data-toggle="dropdown" aria-expanded="false">
                     <span class="fas fa-plus"></span>
@@ -65,6 +61,10 @@
                     <a id="exportSpecies" class="dropdown-item" href="#"><i class="fa-solid fa-download"></i> Export Species</a>
                 </div>
             </span>
+            <button id="tagReviewsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#tagReviewsExport" aria-expanded="false" aria-controls="tagReviewsExport">
+                <i class="fa fa-file-csv"></i>
+                Save all as CSV
+            </button>
         </div>
         <table id="tagReviewsTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
@@ -124,23 +124,20 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
-                    <p>Upload a CSV file with the following columns:</p>
-                    <h6>Required Columns:</h6>
-                    <ul>
-                        <li><strong>tag_id</strong>: Tag ID (must exist in database)</li>
-                        <li><strong>tag_review_status_id</strong>: Status ID: 1=accepted, 2=corrected, 3=rejected, 4=uncertain</li>
-                    </ul>
-                    <h6>Optional Columns:</h6>
-                    <ul>
-                        <li><strong>species_id</strong>: Species ID (must exist if provided, required for corrected status)</li>
-                        <li><strong>note</strong>: Review notes/comments</li>
-                    </ul>
-                    <p class="mt-3"><strong>Download files:</strong></p>
-                    <ul>
-                        <li><a href="#" id="reviewsDemo2">Download Reviews Template</a></li>
-                        <li><a href="#" id="exportSpecies2">Export Species Reference Table</a></li>
-                    </ul>
+                <div class="modal-body ml-3">
+                    <div>
+                        <div class="form-group">
+                            <label>Tag reviews can be uploaded with a CSV containing the following columns:<br><br>
+                                <strong>Required columns:</strong><br>
+                                <strong>tag_id</strong> (integer) - Tag identifier to review<br>
+                                <strong>tag_review_status_id</strong> (integer) - Review status. Allowed values: <em>1=Accepted</em>, <em>2=Corrected</em>, <em>3=Rejected</em>, <em>4=Uncertain</em><br><br>
+                                <strong>Optional columns:</strong><br>
+                                <strong>species_id</strong> (integer) - Corrected species identifier (required if status=2). Download <a class="text-info" id="exportSpecies2" style="cursor:pointer">Species table</a> for IDs<br>
+                                <strong>note</strong> (max 200 characters) - Review comments<br><br>
+                                <em>Note: All ID fields must reference existing entries in their respective tables.</em><br><br>
+                                You can download a <a class="text-info" id="reviewsDemo2" style="cursor:pointer">template CSV file</a> to fill in your data.</label>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
