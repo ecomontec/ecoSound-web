@@ -256,31 +256,13 @@ class TagController extends BaseController
         header('Content-Disposition: attachment; filename=' . $file_name);
         
         $recordingProvider = new RecordingProvider();
-        $recordings = $recordingProvider->getList();
+        $recordings = $recordingProvider->getRecordingsList('0', '0');
         
         if (!empty($recordings)) {
-            // Get column names from the first recording object
-            $firstRecording = $recordings[0];
-            $columns = [];
-            foreach (get_class_methods($firstRecording) as $method) {
-                if (strpos($method, 'get') === 0 && $method !== 'getIterator') {
-                    $columns[] = lcfirst(substr($method, 3));
-                }
-            }
-            fputcsv($fp, $columns);
+            fputcsv($fp, array_keys($recordings[0]));
             
-            // Export each recording
             foreach ($recordings as $recording) {
-                $row = [];
-                foreach ($columns as $column) {
-                    $method = 'get' . ucfirst($column);
-                    if (method_exists($recording, $method)) {
-                        $row[] = $recording->$method();
-                    } else {
-                        $row[] = '';
-                    }
-                }
-                fputcsv($fp, $row);
+                fputcsv($fp, $recording);
             }
         }
         

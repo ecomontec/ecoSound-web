@@ -525,7 +525,7 @@ class FileController
 
         return json_encode([
             'errorCode' => 0,
-            'message' => 'Upload success.',
+            'message' => "Successfully uploaded {$inserted} tags.",
         ]);
     }
 
@@ -665,7 +665,7 @@ class FileController
 
         return json_encode([
             'errorCode' => 0,
-            'message' => 'Upload success.',
+            'message' => "Successfully uploaded {$inserted} reviews.",
         ]);
     }
 }

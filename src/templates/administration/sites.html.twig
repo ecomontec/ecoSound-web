@@ -662,7 +662,7 @@
                         let formData = new FormData($('#sitesCSVForm')[0]);
                         postRequest('{{ baseUrl }}/api/admin/siteManager/uploadCSV', formData, false, false, function (response) {
                             alert(response.message);
-                            if (response.error_code === 0) {
+                            if (response.errorCode === 0) {
                                 location.reload();
                             }
                         });

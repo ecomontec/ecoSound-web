@@ -264,7 +264,7 @@ class SiteController extends BaseController
 
         if (!isset($_FILES['sitesCSVFile']) || $_FILES['sitesCSVFile']['error'] != UPLOAD_ERR_OK) {
             return json_encode([
-                'error_code' => 1,
+                'errorCode' => 1,
                 'message' => 'No file uploaded or upload error occurred.',
             ]);
         }
@@ -275,7 +275,7 @@ class SiteController extends BaseController
         $handle = fopen($_FILES['sitesCSVFile']['tmp_name'], "rb");
         if (!$handle) {
             return json_encode([
-                'error_code' => 1,
+                'errorCode' => 1,
                 'message' => 'Unable to open uploaded file.',
             ]);
         }
@@ -298,7 +298,7 @@ class SiteController extends BaseController
                 if (!in_array('name', $headers)) {
                     fclose($handle);
                     return json_encode([
-                        'error_code' => 1,
+                        'errorCode' => 1,
                         'message' => "Missing required column: name",
                     ]);
                 }
@@ -311,7 +311,7 @@ class SiteController extends BaseController
             if (empty($rowData['name'])) {
                 fclose($handle);
                 return json_encode([
-                    'error_code' => 1,
+                    'errorCode' => 1,
                     'message' => "Row {$rowNum}: name is required.",
                 ]);
             }
@@ -322,7 +322,7 @@ class SiteController extends BaseController
             if (!$hasCoords && !$hasGadm) {
                 fclose($handle);
                 return json_encode([
-                    'error_code' => 1,
+                    'errorCode' => 1,
                     'message' => "Row {$rowNum}: Either coordinates (longitude AND latitude) OR gadm0 must be provided.",
                 ]);
             }
@@ -330,7 +330,7 @@ class SiteController extends BaseController
             if (!empty($rowData['longitude_WGS84_dd_dddd']) && !is_numeric($rowData['longitude_WGS84_dd_dddd'])) {
                 fclose($handle);
                 return json_encode([
-                    'error_code' => 1,
+                    'errorCode' => 1,
                     'message' => "Row {$rowNum}: longitude must be a number.",
                 ]);
             }
@@ -338,7 +338,7 @@ class SiteController extends BaseController
             if (!empty($rowData['latitude_WGS84_dd_dddd']) && !is_numeric($rowData['latitude_WGS84_dd_dddd'])) {
                 fclose($handle);
                 return json_encode([
-                    'error_code' => 1,
+                    'errorCode' => 1,
                     'message' => "Row {$rowNum}: latitude must be a number.",
                 ]);
             }
@@ -348,14 +348,14 @@ class SiteController extends BaseController
                 if (!is_numeric($rowData['topography_m'])) {
                     fclose($handle);
                     return json_encode([
-                        'error_code' => 1,
+                        'errorCode' => 1,
                         'message' => "Row {$rowNum}: topography_m must be a number.",
                     ]);
                 }
                 if ($rowData['topography_m'] < -15000 || $rowData['topography_m'] > 10000) {
                     fclose($handle);
                     return json_encode([
-                        'error_code' => 1,
+                        'errorCode' => 1,
                         'message' => "Row {$rowNum}: topography_m must be between -15000 and 10000 meters.",
                     ]);
                 }
@@ -366,14 +366,14 @@ class SiteController extends BaseController
                 if (!is_numeric($rowData['freshwater_depth_m'])) {
                     fclose($handle);
                     return json_encode([
-                        'error_code' => 1,
+                        'errorCode' => 1,
                         'message' => "Row {$rowNum}: freshwater_depth_m must be a number.",
                     ]);
                 }
                 if ($rowData['freshwater_depth_m'] < 0 || $rowData['freshwater_depth_m'] > 2000) {
                     fclose($handle);
                     return json_encode([
-                        'error_code' => 1,
+                        'errorCode' => 1,
                         'message' => "Row {$rowNum}: freshwater_depth_m must be between 0 and 2000 meters.",
                     ]);
                 }
@@ -386,7 +386,7 @@ class SiteController extends BaseController
 
         if (empty($data)) {
             return json_encode([
-                'error_code' => 1,
+                'errorCode' => 1,
                 'message' => 'No valid data rows found in CSV file.',
             ]);
         }
@@ -450,7 +450,7 @@ class SiteController extends BaseController
         }
 
         return json_encode([
-            'error_code' => 0,
+            'errorCode' => 0,
             'message' => "Successfully uploaded {$inserted} sites.",
         ]);
     }

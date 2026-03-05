@@ -138,7 +138,10 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
                 </div>
             </div>
         </div>
@@ -233,7 +236,8 @@
                     processData: false,
                     contentType: false,
                     success: function(response) {
-                        if (response.message === 'Upload success.') {
+                        if (response.errorCode === 0) {
+                            alert(response.message);
                             location.reload();
                         } else {
                             alert(response.message || 'Upload completed');
