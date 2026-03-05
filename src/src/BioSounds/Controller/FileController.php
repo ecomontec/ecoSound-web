@@ -364,15 +364,16 @@ class FileController
     {
         header('Content-Type: application/json');
         
-        if (!Auth::isManage()) {
-            throw new ForbiddenException();
-        }
+        try {
+            if (!Auth::isManage()) {
+                throw new ForbiddenException();
+            }
 
-        if (!isset($_FILES['file']) || $_FILES['file']['error'] != UPLOAD_ERR_OK) {
-            return json_encode([
-                'errorCode' => 1,
-                'message' => 'No file uploaded or upload error occurred.',
-            ]);
+            if (!isset($_FILES['file']) || $_FILES['file']['error'] != UPLOAD_ERR_OK) {
+                return json_encode([
+                    'errorCode' => 1,
+                    'message' => 'No file uploaded or upload error occurred.',
+                ]);
         }
 
         $handle = fopen($_FILES['file']['tmp_name'], "rb");
@@ -529,20 +530,33 @@ class FileController
             'errorCode' => 0,
             'message' => "Successfully uploaded {$inserted} tags.",
         ]);
+        
+        } catch (ForbiddenException $e) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+        } catch (\Exception $e) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'Error: ' . $e->getMessage(),
+            ]);
+        }
     }
 
     public function reviews()
     {
         header('Content-Type: application/json');
         
-        if (!Auth::isManage()) {
-            throw new ForbiddenException();
-        }
+        try {
+            if (!Auth::isManage()) {
+                throw new ForbiddenException();
+            }
 
-        if (!isset($_FILES['file']) || $_FILES['file']['error'] != UPLOAD_ERR_OK) {
-            return json_encode([
-                'errorCode' => 1,
-                'message' => 'No file uploaded or upload error occurred.',
+            if (!isset($_FILES['file']) || $_FILES['file']['error'] != UPLOAD_ERR_OK) {
+                return json_encode([
+                    'errorCode' => 1,
+                    'message' => 'No file uploaded or upload error occurred.',
             ]);
         }
 
@@ -671,5 +685,17 @@ class FileController
             'errorCode' => 0,
             'message' => "Successfully uploaded {$inserted} reviews.",
         ]);
+        
+        } catch (ForbiddenException $e) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+        } catch (\Exception $e) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'Error: ' . $e->getMessage(),
+            ]);
+        }
     }
 }

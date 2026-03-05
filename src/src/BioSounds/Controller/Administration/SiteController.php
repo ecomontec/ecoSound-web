@@ -260,16 +260,17 @@ class SiteController extends BaseController
     {
         header('Content-Type: application/json');
         
-        if (!Auth::isManage()) {
-            throw new ForbiddenException();
-        }
+        try {
+            if (!Auth::isManage()) {
+                throw new ForbiddenException();
+            }
 
-        if (!isset($_FILES['sitesCSVFile']) || $_FILES['sitesCSVFile']['error'] != UPLOAD_ERR_OK) {
-            return json_encode([
-                'errorCode' => 1,
-                'message' => 'No file uploaded or upload error occurred.',
-            ]);
-        }
+            if (!isset($_FILES['sitesCSVFile']) || $_FILES['sitesCSVFile']['error'] != UPLOAD_ERR_OK) {
+                return json_encode([
+                    'errorCode' => 1,
+                    'message' => 'No file uploaded or upload error occurred.',
+                ]);
+            }
 
         $projectId = $_POST['projectId'] ?? null;
         $collectionId = $_POST['collectionId'] ?? null;
@@ -455,6 +456,18 @@ class SiteController extends BaseController
             'errorCode' => 0,
             'message' => "Successfully uploaded {$inserted} sites.",
         ]);
+        
+        } catch (ForbiddenException $e) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+        } catch (\Exception $e) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'Error: ' . $e->getMessage(),
+            ]);
+        }
     }
 
     /**
