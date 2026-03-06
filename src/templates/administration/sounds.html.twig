@@ -2,6 +2,28 @@
 
 {% block admin_content %}
 
+<div class="collapse mb-5" id="soundFormSection">
+    <div class="card">
+        <div class="card-body">
+            <button class="close" type="button" data-toggle="collapse" data-target="#soundFormSection" aria-expanded="false" aria-controls="soundFormSection">
+                <span>&times;</span>
+            </button>
+            <form id="soundForm" class="needs-validation" novalidate>
+                <div class="form-group">
+                    <label for="sound_component" class="col-form-label-sm">Soundscape Component *</label>
+                    <input id="sound_component" type="text" name="soundscape_component" class="form-control form-control-sm" maxlength="200" placeholder="e.g. biophony, anthropophony, geophony" required>
+                    <div class="invalid-feedback">Please provide a soundscape component.</div>
+                </div>
+                <div class="form-group">
+                    <label for="sound_type" class="col-form-label-sm">Sound Type</label>
+                    <input id="sound_type" type="text" name="sound_type" class="form-control form-control-sm" maxlength="30" placeholder="e.g. snapping shrimps">
+                </div>
+                <button type="submit" class="btn btn-primary">Add Sound</button>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div class="card mb-3" id="soundsList">
     <div class="card-header border-light bg-white text-right">
         <div class="form-inline">
@@ -31,7 +53,7 @@
                 Add
             </button>
             <div class="dropdown-menu" aria-labelledby="addSound">
-                <a class="dropdown-item" type="button" id="soundFormButton"><i class="fas fa-plus"></i> Add Sound</a>
+                <a class="dropdown-item" type="button" id="soundFormButton" data-toggle="collapse" data-target="#soundFormSection" aria-expanded="false" aria-controls="soundFormSection"><i class="fas fa-plus"></i> Add Sound</a>
                 <a class="dropdown-item" type="button" id="soundsCSVButton"><i class="fa-solid fa-file-arrow-up"></i> Upload Sounds CSV</a>
                 <a class="dropdown-item" type="button" id="soundsInstructions"><i class="fa-solid fa-circle-info"></i> CSV Instructions</a>
             </div>
@@ -148,9 +170,6 @@
                 "columnDefs": [
                     {
                         "orderable": false,
-                        "targets": [0]
-                    },
-                    {
                         "className": "dt-center",
                         "targets": [0]
                     }
@@ -165,6 +184,35 @@
                 table.search($('#search').val()).draw();
             });
 
+            // Collapsible form handlers
+            $("#soundFormSection").on('shown.bs.collapse', function () {
+                $("#soundsList").hide();
+            }).on('hidden.bs.collapse', function () {
+                $("#soundsList").show();
+            });
+
+            $('#soundForm').submit(function(e) {
+                e.preventDefault();
+                if (this.checkValidity() === false) {
+                    e.stopPropagation();
+                    this.classList.add('was-validated');
+                } else {
+                    const formData = {};
+                    $(this).find('input[name], select[name]').each(function() {
+                        if ($(this).val()) {
+                            formData[$(this).attr('name')] = $(this).val();
+                        }
+                    });
+                    postRequest('{{ baseUrl }}/api/admin/soundMgr/save', formData, false, false, function(response) {
+                        if (response.errorCode === 0) {
+                            location.reload();
+                        } else {
+                            showAlert(response.message);
+                        }
+                    });
+                }
+            });
+
             // Checkbox handlers
             $('.js-all-checkbox').change(function () {
                 $('.js-checkbox').prop('checked', this.checked);
@@ -176,17 +224,6 @@
                     $('.js-all-checkbox').prop('checked', false);
                 }
                 $('button[name="table-btn"]').prop('disabled', ($('.js-checkbox:checked').length === 0));
-            });
-
-            /* Add new sound row */
-            $('#soundFormButton').click(function (e) {
-                table.row.add([
-                    '<input type="checkbox" class="js-checkbox" data-id="">',
-                    '<input type="hidden" name="itemID" value="">New',
-                    '<input type="text" class="form-control form-control-sm" name="soundscape_component" value="" maxlength="200">',
-                    '<input type="text" class="form-control form-control-sm" name="sound_type" value="" maxlength="30">'
-                ]);
-                table.draw(false);
             });
 
             /* Save on input change */

@@ -2,6 +2,37 @@
 
 {% block admin_content %}
 
+<div class="collapse mb-5" id="recorderFormSection">
+    <div class="card">
+        <div class="card-body">
+            <button class="close" type="button" data-toggle="collapse" data-target="#recorderFormSection" aria-expanded="false" aria-controls="recorderFormSection">
+                <span>&times;</span>
+            </button>
+            <form id="recorderForm" class="needs-validation" novalidate>
+                <div class="form-group">
+                    <label for="rec_model" class="col-form-label-sm">Model *</label>
+                    <input id="rec_model" type="text" name="model" class="form-control form-control-sm" maxlength="100" required>
+                    <div class="invalid-feedback">Please provide a recorder model.</div>
+                </div>
+                <div class="form-group">
+                    <label for="rec_version" class="col-form-label-sm">Version</label>
+                    <input id="rec_version" type="text" name="version" class="form-control form-control-sm" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label for="rec_brand" class="col-form-label-sm">Brand</label>
+                    <input id="rec_brand" type="text" name="brand" class="form-control form-control-sm" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label for="rec_microphone" class="col-form-label-sm">Microphone IDs</label>
+                    <input id="rec_microphone" type="text" name="microphone" class="form-control form-control-sm" maxlength="300" placeholder="e.g. 1,2,3">
+                    <small class="form-text text-muted">Comma-separated microphone IDs from the <a href="{{ baseUrl }}/admin/microphones" class="text-info" target="_blank">Microphones table</a></small>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Recorder</button>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div class="card mb-3" id="recordersList">
     <div class="card-header border-light bg-white text-right">
         <div class="form-inline">
@@ -31,7 +62,7 @@
                 Add
             </button>
             <div class="dropdown-menu" aria-labelledby="addRecorder">
-                <a class="dropdown-item" type="button" id="recorderFormButton"><i class="fas fa-plus"></i> Add Recorder</a>
+                <a class="dropdown-item" type="button" id="recorderFormButton" data-toggle="collapse" data-target="#recorderFormSection" aria-expanded="false" aria-controls="recorderFormSection"><i class="fas fa-plus"></i> Add Recorder</a>
                 <a class="dropdown-item" type="button" id="recordersCSVButton"><i class="fa-solid fa-file-arrow-up"></i> Upload Recorders CSV</a>
                 <a class="dropdown-item" type="button" id="recordersInstructions"><i class="fa-solid fa-circle-info"></i> CSV Instructions</a>
             </div>
@@ -161,9 +192,6 @@
                 "columnDefs": [
                     {
                         "orderable": false,
-                        "targets": [0]
-                    },
-                    {
                         "className": "dt-center",
                         "targets": [0]
                     }
@@ -181,6 +209,35 @@
             // Initialize tooltips
             $('[data-toggle="tooltip"]').tooltip();
 
+            // Collapsible form handlers
+            $("#recorderFormSection").on('shown.bs.collapse', function () {
+                $("#recordersList").hide();
+            }).on('hidden.bs.collapse', function () {
+                $("#recordersList").show();
+            });
+
+            $('#recorderForm').submit(function(e) {
+                e.preventDefault();
+                if (this.checkValidity() === false) {
+                    e.stopPropagation();
+                    this.classList.add('was-validated');
+                } else {
+                    const formData = {};
+                    $(this).find('input[name], select[name]').each(function() {
+                        if ($(this).val()) {
+                            formData[$(this).attr('name')] = $(this).val();
+                        }
+                    });
+                    postRequest('{{ baseUrl }}/api/admin/recorderMgr/save', formData, false, false, function(response) {
+                        if (response.errorCode === 0) {
+                            location.reload();
+                        } else {
+                            showAlert(response.message);
+                        }
+                    });
+                }
+            });
+
             // Checkbox handlers
             $('.js-all-checkbox').change(function () {
                 $('.js-checkbox').prop('checked', this.checked);
@@ -192,19 +249,6 @@
                     $('.js-all-checkbox').prop('checked', false);
                 }
                 $('button[name="table-btn"]').prop('disabled', ($('.js-checkbox:checked').length === 0));
-            });
-
-            /* Add new recorder row */
-            $('#recorderFormButton').click(function (e) {
-                table.row.add([
-                    '<input type="checkbox" class="js-checkbox" data-id="">',
-                    '<input type="hidden" name="itemID" value="">New',
-                    '<input type="text" class="form-control form-control-sm" name="model" value="" maxlength="100" required>',
-                    '<input type="text" class="form-control form-control-sm" name="version" value="" maxlength="100">',
-                    '<input type="text" class="form-control form-control-sm" name="brand" value="" maxlength="100">',
-                    '<input type="text" class="form-control form-control-sm" name="microphone" value="" maxlength="300" placeholder="e.g. 1,2,3">'
-                ]);
-                table.draw(false);
             });
 
             /* Save on input change */

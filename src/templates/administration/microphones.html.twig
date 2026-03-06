@@ -2,6 +2,36 @@
 
 {% block admin_content %}
 
+<div class="collapse mb-5" id="microphoneFormSection">
+    <div class="card">
+        <div class="card-body">
+            <button class="close" type="button" data-toggle="collapse" data-target="#microphoneFormSection" aria-expanded="false" aria-controls="microphoneFormSection">
+                <span>&times;</span>
+            </button>
+            <form id="microphoneForm" class="needs-validation" novalidate>
+                <div class="form-group">
+                    <label for="mic_name" class="col-form-label-sm">Name *</label>
+                    <input id="mic_name" type="text" name="name" class="form-control form-control-sm" maxlength="100" required>
+                    <div class="invalid-feedback">Please provide a microphone name.</div>
+                </div>
+                <div class="form-group">
+                    <label for="mic_element" class="col-form-label-sm">Microphone Element</label>
+                    <input id="mic_element" type="text" name="microphone_element" class="form-control form-control-sm" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label for="mic_sensitivity" class="col-form-label-sm">Sensitivity (dBV)</label>
+                    <input id="mic_sensitivity" type="number" name="sensitivity" class="form-control form-control-sm">
+                </div>
+                <div class="form-group">
+                    <label for="mic_snr" class="col-form-label-sm">Signal-to-Noise Ratio (dB)</label>
+                    <input id="mic_snr" type="number" name="signal_to_noise_ratio" class="form-control form-control-sm">
+                </div>
+                <button type="submit" class="btn btn-primary">Add Microphone</button>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div class="card mb-3" id="microphonesList">
     <div class="card-header border-light bg-white text-right">
         <div class="form-inline">
@@ -31,7 +61,7 @@
                 Add
             </button>
             <div class="dropdown-menu" aria-labelledby="addMicrophone">
-                <a class="dropdown-item" type="button" id="microphoneFormButton"><i class="fas fa-plus"></i> Add Microphone</a>
+                <a class="dropdown-item" type="button" id="microphoneFormButton" data-toggle="collapse" data-target="#microphoneFormSection" aria-expanded="false" aria-controls="microphoneFormSection"><i class="fas fa-plus"></i> Add Microphone</a>
                 <a class="dropdown-item" type="button" id="microphonesCSVButton"><i class="fa-solid fa-file-arrow-up"></i> Upload Microphones CSV</a>
                 <a class="dropdown-item" type="button" id="microphonesInstructions"><i class="fa-solid fa-circle-info"></i> CSV Instructions</a>
             </div>
@@ -158,9 +188,6 @@
                 "columnDefs": [
                     {
                         "orderable": false,
-                        "targets": [0]
-                    },
-                    {
                         "className": "dt-center",
                         "targets": [0]
                     }
@@ -175,6 +202,35 @@
                 table.search($('#search').val()).draw();
             });
 
+            // Collapsible form handlers
+            $("#microphoneFormSection").on('shown.bs.collapse', function () {
+                $("#microphonesList").hide();
+            }).on('hidden.bs.collapse', function () {
+                $("#microphonesList").show();
+            });
+
+            $('#microphoneForm').submit(function(e) {
+                e.preventDefault();
+                if (this.checkValidity() === false) {
+                    e.stopPropagation();
+                    this.classList.add('was-validated');
+                } else {
+                    const formData = {};
+                    $(this).find('input[name], select[name]').each(function() {
+                        if ($(this).val()) {
+                            formData[$(this).attr('name')] = $(this).val();
+                        }
+                    });
+                    postRequest('{{ baseUrl }}/api/admin/microphoneMgr/save', formData, false, false, function(response) {
+                        if (response.errorCode === 0) {
+                            location.reload();
+                        } else {
+                            showAlert(response.message);
+                        }
+                    });
+                }
+            });
+
             // Checkbox handlers
             $('.js-all-checkbox').change(function () {
                 $('.js-checkbox').prop('checked', this.checked);
@@ -186,19 +242,6 @@
                     $('.js-all-checkbox').prop('checked', false);
                 }
                 $('button[name="table-btn"]').prop('disabled', ($('.js-checkbox:checked').length === 0));
-            });
-
-            /* Add new microphone row */
-            $('#microphoneFormButton').click(function (e) {
-                table.row.add([
-                    '<input type="checkbox" class="js-checkbox" data-id="">',
-                    '<input type="hidden" name="itemID" value="">New',
-                    '<input type="text" class="form-control form-control-sm" name="name" value="" maxlength="100" required>',
-                    '<input type="text" class="form-control form-control-sm" name="microphone_element" value="" maxlength="100">',
-                    '<input type="number" class="form-control form-control-sm" name="sensitivity" value="">',
-                    '<input type="number" class="form-control form-control-sm" name="signal_to_noise_ratio" value="">'
-                ]);
-                table.draw(false);
             });
 
             /* Save on input change */
