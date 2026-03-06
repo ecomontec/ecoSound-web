@@ -640,7 +640,10 @@
                 if (reviewForm.length) {
                     reviewForm.submit();
                 }
-                // Just show success message, don't close sidebar
+                // Close sidebar after save
+                if (typeof window.closeTagSidebar === 'function') {
+                    window.closeTagSidebar();
+                }
                 showAlert("Saved successfully.");
                 return;
             }
@@ -680,7 +683,11 @@
                 // Note: Review form is now handled separately with immediate saving
                 // so we don't submit it here
                 
-                // Just show success message, don't close sidebar
+                // Close sidebar after successful save
+                if (typeof window.closeTagSidebar === 'function') {
+                    window.closeTagSidebar();
+                }
+                
                 showAlert("Saved successfully.");
             });
         });
