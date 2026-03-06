@@ -21,7 +21,6 @@
                 <i class="fas fa-sync-alt"></i>
                 Restart Worker
             </button>
-            <span id="workerStatus" class="badge badge-secondary ml-2" style="vertical-align: middle;">Worker: checking...</span>
         </div>
         <table id="queuesTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
@@ -186,46 +185,23 @@
             /* Restart Worker */
             $('#restartWorker').click(function () {
                 if (confirm('Are you sure you want to restart the RabbitMQ worker? This will stop and restart the worker process.')) {
-                    $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Restarting...');
+                    var $btn = $(this);
+                    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Restarting...');
                     $.ajax({
                         url: '{{ baseUrl }}/api/admin/queueMgr/restartWorker',
                         type: 'POST',
-                        success: function(response) {
-                            var result = JSON.parse(response);
-                            alert(result.message);
-                            $('#restartWorker').prop('disabled', false).html('<i class="fas fa-sync-alt"></i> Restart Worker');
-                            checkWorkerStatus();
+                        dataType: 'json',
+                        success: function(result) {
+                            showAlert(result.message || 'Worker restarted successfully.');
+                            $btn.prop('disabled', false).html('<i class="fas fa-sync-alt"></i> Restart Worker');
                         },
                         error: function() {
-                            alert('Failed to restart worker. Please check server logs.');
-                            $('#restartWorker').prop('disabled', false).html('<i class="fas fa-sync-alt"></i> Restart Worker');
+                            showAlert('Failed to restart worker. Please check server logs.');
+                            $btn.prop('disabled', false).html('<i class="fas fa-sync-alt"></i> Restart Worker');
                         }
                     });
                 }
             });
-
-            /* Check Worker Status */
-            function checkWorkerStatus() {
-                $.ajax({
-                    url: '{{ baseUrl }}/api/admin/queueMgr/workerStatus',
-                    type: 'GET',
-                    success: function(response) {
-                        var result = JSON.parse(response);
-                        if (result.running) {
-                            $('#workerStatus').removeClass('badge-danger badge-secondary').addClass('badge-success').text('Worker: Running');
-                        } else {
-                            $('#workerStatus').removeClass('badge-success badge-secondary').addClass('badge-danger').text('Worker: Stopped');
-                        }
-                    },
-                    error: function() {
-                        $('#workerStatus').removeClass('badge-success badge-danger').addClass('badge-secondary').text('Worker: Unknown');
-                    }
-                });
-            }
-
-            // Check worker status on page load and every 10 seconds
-            checkWorkerStatus();
-            setInterval(checkWorkerStatus, 10000);
         });
     </script>
 {% endblock %}

@@ -784,6 +784,57 @@ class RecordingController extends BaseController
         ]);
     }
 
+    public function deleteLabel()
+    {
+        if (!Auth::isUserLogged()) {
+            throw new NotAuthenticatedException();
+        }
+
+        $labelId = filter_var($_POST['label_id'], FILTER_SANITIZE_NUMBER_INT);
+        
+        if (empty($labelId)) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'Invalid label ID.'
+            ]);
+        }
+
+        try {
+            // Check if user owns this label (only creator can delete private labels)
+            $labelProvider = new LabelProvider();
+            $label = $labelProvider->get($labelId);
+            
+            if ($label && $label->getCreatorId() == Auth::getUserLoggedID()) {
+                // Delete all label associations first using a direct query since no provider method exists
+                $database = new \BioSounds\Utils\Database();
+                $database->prepareQuery('DELETE FROM label_association WHERE label_id = :label_id');
+                $database->executeDelete([':label_id' => $labelId]);
+                
+                // Delete the label itself
+                $database->prepareQuery('DELETE FROM label WHERE label_id = :label_id AND creator_id = :creator_id');
+                $database->executeDelete([
+                    ':label_id' => $labelId, 
+                    ':creator_id' => Auth::getUserLoggedID()
+                ]);
+                
+                return json_encode([
+                    'errorCode' => 0,
+                    'message' => 'Label deleted successfully.'
+                ]);
+            } else {
+                return json_encode([
+                    'errorCode' => 1,
+                    'message' => 'You can only delete labels you created.'
+                ]);
+            }
+        } catch (\Exception $e) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'Error deleting label: ' . $e->getMessage()
+            ]);
+        }
+    }
+
     public function saveMaadResult()
     {
         if (!Auth::isUserLogged()) {

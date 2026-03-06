@@ -46,13 +46,13 @@ class LabelProvider extends BaseProvider
     }
 
     /**
-     * @param int $siteId , $userId
-     * @return Site|null
+     * @param int $lblId
+     * @return Label|null
      * @throws \Exception
      */
     public function get(int $lblId): ?Label
     {
-        $this->database->prepareQuery('SELECT * FROM site WHERE label_id = :labelId');
+        $this->database->prepareQuery('SELECT * FROM label WHERE label_id = :labelId');
 
         if (empty($result = $this->database->executeSelect([':labelId' => $lblId]))) {
             throw new NotFoundException($lblId);
@@ -64,7 +64,7 @@ class LabelProvider extends BaseProvider
             ->setId($result['label_id'])
             ->setName($result['name'])
             ->setCreationDate($result['creation_date'])
-            ->setCreatorId($result['creatorId'])
+            ->setCreatorId($result['creator_id'])
             ->setType($result['type']);
     }
 
@@ -85,7 +85,7 @@ class LabelProvider extends BaseProvider
      */
     public function delete(int $id): void
     {
-        $this->database->prepareQuery('DELETE FROM site WHERE ' . Label::PRIMARY_KEY . ' = :id');
+        $this->database->prepareQuery('DELETE FROM label WHERE ' . Label::PRIMARY_KEY . ' = :id');
         $this->database->executeDelete([':id' => $id]);
     }
 }

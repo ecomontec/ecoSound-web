@@ -30,12 +30,15 @@
                                     <input type="hidden" name="user_id" value="{{ user_id }}"/>
                                     <select id="reclabel" name="label_id" class="form-control form-control-sm" required>
                                         {% for lbl in labels %}
-                                            <option value="{{ lbl.id }}" {{ lbl.id == myLabel.id ? 'selected' }}>{{ lbl.name }}</option>
+                                            <option value="{{ lbl.id }}" {{ lbl.id == myLabel.id ? 'selected' }} data-creator="{{ lbl.creatorId }}" data-type="{{ lbl.type }}">{{ lbl.name }}</option>
                                         {% endfor %}
                                     </select>
-                                    <a href="{{ baseUrl }}/recording/addLabel" class="js-open-modal ml-1" title="add custom label">
+                                    <a href="{{ baseUrl }}/recording/addLabel" class="js-open-modal ml-1 btn btn-sm btn-outline-primary" title="Add custom label" style="padding: 0.15rem 0.35rem;">
                                         <i class="fas fa-plus"></i>
                                     </a>
+                                    <button type="button" id="deleteLabelBtn" class="btn btn-sm btn-outline-danger ml-1" title="Delete selected custom label" style="padding: 0.15rem 0.35rem; display: none;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                 </form>
                             </div>
                         {% endif %}
@@ -454,6 +457,7 @@
 
             $('#reclabel').on('change', function () {
                 $('#reclabelform').submit();
+                updateDeleteButtonVisibility();
             });
 
             $('#reclabelform').submit(function (e) {
@@ -461,6 +465,43 @@
                 postRequest('{{ baseUrl }}/recording/update', new FormData($(this)[0]), false, false, function () {
                 });
             });
+
+            // Update delete button visibility based on selected label
+            function updateDeleteButtonVisibility() {
+                var $selectedOption = $('#reclabel option:selected');
+                var creatorId = $selectedOption.data('creator');
+                var labelType = $selectedOption.data('type');
+                var currentUserId = {{ user_id }};
+                
+                // Show delete button only for private labels created by current user
+                if (labelType === 'private' && creatorId == currentUserId) {
+                    $('#deleteLabelBtn').show();
+                } else {
+                    $('#deleteLabelBtn').hide();
+                }
+            }
+
+            // Delete label button handler
+            $('#deleteLabelBtn').on('click', function (e) {
+                e.preventDefault();
+                var $selectedOption = $('#reclabel option:selected');
+                var labelId = $selectedOption.val();
+                var labelName = $selectedOption.text();
+                
+                if (confirm('Are you sure you want to delete the label "' + labelName + '"? This will remove it from all recordings that use it.')) {
+                    postRequest('{{ baseUrl }}/recording/deleteLabel', {label_id: labelId}, false, false, function (response) {
+                        if (response.errorCode === 0) {
+                            showAlert('Label deleted successfully.');
+                            location.reload();
+                        } else {
+                            showAlert(response.message || 'Error deleting label.');
+                        }
+                    });
+                }
+            });
+
+            // Initialize delete button visibility on page load
+            updateDeleteButtonVisibility();
             $('#fft').on('change', function (e) {
                 e.preventDefault();
                 postRequest('{{ baseUrl }}/recordingFft/save', new FormData($("#fftForm")[0]), false, false, function () {
