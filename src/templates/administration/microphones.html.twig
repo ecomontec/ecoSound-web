@@ -1,0 +1,307 @@
+{% extends 'administration/admin.html.twig' %}
+
+{% block admin_content %}
+
+<div class="card mb-3" id="microphonesList">
+    <div class="card-header border-light bg-white text-right">
+        <div class="form-inline">
+            <div class="col-8"></div>
+            <div class="col-4 form-inline justify-content-end">
+                <label class="mr-2">Search:</label>
+                <input class="form-control-sm" id="search">
+            </div>
+        </div>
+        <form id="microphonesCSVForm" method="POST" class="collapse">
+            <input type="file" name="microphonesCSVFile" id="microphonesCSVFile" accept="text/csv" style="display: none">
+        </form>
+        <button
+            id="deletion"
+            name="table-btn"
+            class="btn btn-outline-secondary btn-sm mt-2"
+            type="button"
+            data-target="#deletion"
+            disabled
+        >
+            <i class="fas fa-trash"></i>
+            Delete
+        </button>
+        <span class="dropdown">
+            <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" id="addMicrophone" data-toggle="dropdown" aria-expanded="false">
+                <span class="fas fa-plus"></span>
+                Add
+            </button>
+            <div class="dropdown-menu" aria-labelledby="addMicrophone">
+                <a class="dropdown-item" type="button" id="microphoneFormButton"><i class="fas fa-plus"></i> Add Microphone</a>
+                <a class="dropdown-item" type="button" id="microphonesCSVButton"><i class="fa-solid fa-file-arrow-up"></i> Upload Microphones CSV</a>
+                <a class="dropdown-item" type="button" id="microphonesInstructions"><i class="fa-solid fa-circle-info"></i> CSV Instructions</a>
+            </div>
+        </span>
+        <button id="microphonesExport" class="btn btn-outline-primary btn-sm mt-2">
+            <i class="fa fa-file-csv"></i>
+            Save all as CSV
+        </button>
+    </div>
+    <table id="microphonesTable" style="display:none;white-space: nowrap;">
+            <thead class="table-borderless">
+                <tr style="font-size: .875rem;">
+                    <th>
+                        <input type="checkbox" class="js-all-checkbox" name="check-all" id="check-all">
+                    </th>
+                    <th scope="col">#</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Microphone Element</th>
+                    <th scope="col">Sensitivity (dBV)</th>
+                    <th scope="col">Signal-to-Noise Ratio (dB)</th>
+                </tr>
+            </thead>
+            <tbody class="form-control-sm js-microphones-list">
+                {% for microphone in microphones %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="js-checkbox" data-id="{{ microphone.microphone_id }}">
+                        </td>
+                        <th scope='row'>
+                            <input type="hidden" name="itemID" value="{{ microphone.microphone_id }}">
+                            {{ microphone.microphone_id }}
+                        </th>
+                        <td data-order="{{ microphone.name }}" data-search="{{ microphone.name }}">
+                            <input type='text' class="form-control form-control-sm" name="name" value="{{ microphone.name }}" maxlength="100">
+                        </td>
+                        <td data-order="{{ microphone.microphone_element }}" data-search="{{ microphone.microphone_element }}">
+                            <input type='text' class="form-control form-control-sm" name="microphone_element" value="{{ microphone.microphone_element }}" maxlength="100">
+                        </td>
+                        <td data-order="{{ microphone.sensitivity }}" data-search="{{ microphone.sensitivity }}">
+                            <input type='number' class="form-control form-control-sm" name="sensitivity" value="{{ microphone.sensitivity }}">
+                        </td>
+                        <td data-order="{{ microphone.signal_to_noise_ratio }}" data-search="{{ microphone.signal_to_noise_ratio }}">
+                            <input type='number' class="form-control form-control-sm" name="signal_to_noise_ratio" value="{{ microphone.signal_to_noise_ratio }}">
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+</div>
+
+<div class="modal fade" id="modal-delete" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Warning</h5>
+                <button class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body ml-3">
+                <div>
+                    <div class="form-group">
+                        <label>Are you sure you want to delete <b class="text-danger"><span id="delete_count"></span> microphone(s)</b>: <b class="text-danger" id="delete_name"></b>? This action cannot be undone.</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                    Close
+                </button>
+                <button id="js-delete-button" class="btn btn-outline-danger">
+                    <i class="fas fa-trash-alt"></i>
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-microphones-instructions" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">CSV Upload Instructions</h5>
+                <button class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body ml-3">
+                <div>
+                    <div class="form-group">
+                        <label>Microphone data can be uploaded with a CSV containing the following columns:<br><br>
+                            <strong>name</strong> (optional, max 100 characters) - Microphone name/model<br>
+                            <strong>microphone_element</strong> (optional, max 100 characters) - Type of microphone element<br>
+                            <strong>sensitivity</strong> (optional, integer) - Sensitivity in dBV<br>
+                            <strong>signal_to_noise_ratio</strong> (optional, integer) - Signal-to-noise ratio in dB<br><br>
+                            You can download a <a class="text-info" id="microphonesCSVTemplate" style="cursor:pointer">template CSV file</a> to fill in your data.</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ parent() }}
+
+    <script>
+        $(function(){
+            'use strict';
+
+            // Show and initialize DataTable
+            $('#microphonesTable').show();
+            var table = $('#microphonesTable').DataTable({
+                "dom": 'lrtip',
+                "scrollX": true,
+                "lengthMenu": [ [10, 25, 50, 100], [10, 25, 50, 100] ],
+                "pageLength": 10,
+                "ordering": true,
+                "bAutoWidth": false,
+                "columnDefs": [
+                    {
+                        "orderable": false,
+                        "targets": [0]
+                    },
+                    {
+                        "className": "dt-center",
+                        "targets": [0]
+                    }
+                ]
+            });
+            
+            // Custom search handler
+            if (table.state.loaded()) {
+                $('#search').val(table.state.loaded().search.search);
+            }
+            $('#search').on('input', () => {
+                table.search($('#search').val()).draw();
+            });
+
+            // Checkbox handlers
+            $('.js-all-checkbox').change(function () {
+                $('.js-checkbox').prop('checked', this.checked);
+                $('button[name="table-btn"]').prop('disabled', !this.checked);
+            });
+
+            $(document).on('change', '.js-checkbox', function () {
+                if (!$(this).is(':checked')) {
+                    $('.js-all-checkbox').prop('checked', false);
+                }
+                $('button[name="table-btn"]').prop('disabled', ($('.js-checkbox:checked').length === 0));
+            });
+
+            /* Add new microphone row */
+            $('#microphoneFormButton').click(function (e) {
+                const newRow = `
+                    <tr>
+                        <td><input type="checkbox" class="js-checkbox" data-id=""></td>
+                        <th scope='row'><input type="hidden" name="itemID" value="">New</th>
+                        <td><input type='text' class="form-control form-control-sm" name="name" value="" maxlength="100"></td>
+                        <td><input type='text' class="form-control form-control-sm" name="microphone_element" value="" maxlength="100"></td>
+                        <td><input type='number' class="form-control form-control-sm" name="sensitivity" value=""></td>
+                        <td><input type='number' class="form-control form-control-sm" name="signal_to_noise_ratio" value=""></td>
+                    </tr>
+                `;
+                $('.js-microphones-list').prepend(newRow);
+                table.row.add($(newRow)).draw(false);
+            });
+
+            /* Save on input change */
+            $('.js-microphones-list').on('change', 'input[type="text"], input[type="number"]', function () {
+                if ($(this).hasClass('js-checkbox')) {
+                    return;
+                }
+                
+                const row = $(this).closest('tr');
+                const formData = {};
+                row.find('input[name]').each(function() {
+                    formData[$(this).attr('name')] = $(this).val();
+                });
+                
+                postRequest('{{ baseUrl }}/api/admin/microphoneMgr/save', formData, false, false, function (response) {
+                    if (response.errorCode !== 0) {
+                        showAlert(response.message);
+                    } else {
+                        // Reload to get the new ID for new rows
+                        if (!formData.itemID) {
+                            location.reload();
+                        }
+                    }
+                });
+            });
+
+            /* Delete microphones */
+            $('#deletion').click(function (e) {
+                let name = [];
+                $('.js-checkbox:checked').each(function () {
+                    const micName = $(this).parent().parent().find('input[name="name"]').val();
+                    name.push(micName || 'Unknown');
+                });
+                if (name.length === 0) {
+                    return;
+                }
+                $('#delete_name').html(name.join(', '));
+                $('#delete_count').html(name.length);
+                $("#modal-delete").modal('show');
+            });
+
+            $('#js-delete-button').click(function (e) {
+                let id = [];
+                $('.js-checkbox:checked').each(function () {
+                    id.push($(this).data('id'));
+                });
+                let data = {'id': id};
+                postRequest('{{ baseUrl }}/api/admin/microphoneMgr/delete', data, true, false, function () {
+                    table.state.clear();
+                    location.reload();
+                });
+            });
+
+            /* Export microphones */
+            $('#microphonesExport').click(function () {
+                window.location.href = '{{ baseUrl }}/api/admin/microphoneMgr/export';
+            });
+
+            /* CSV Upload */
+            $('#microphonesCSVButton').click(function () {
+                $('#microphonesCSVFile').click();
+            });
+
+            $('#microphonesCSVFile').change(function () {
+                if (this.files.length > 0) {
+                    let formData = new FormData($('#microphonesCSVForm')[0]);
+                    postRequest('{{ baseUrl }}/api/admin/microphoneMgr/uploadCSV', formData, false, false, function (response) {
+                        alert(response.message);
+                        if (response.errorCode === 0) {
+                            location.reload();
+                        }
+                    });
+                }
+            });
+
+            /* CSV Instructions */
+            $('#microphonesInstructions').click(function () {
+                $('#modal-microphones-instructions').modal('show');
+            });
+
+            /* Download CSV Template */
+            $('#microphonesCSVTemplate').click(function () {
+                const csvContent = "name,microphone_element,sensitivity,signal_to_noise_ratio\n" +
+                    "Knowles FG-23329,-40,70\n";
+                const blob = new Blob([csvContent], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.setAttribute('hidden', '');
+                a.setAttribute('href', url);
+                a.setAttribute('download', 'microphones_template.csv');
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            });
+        });
+    </script>
+{% endblock %}
