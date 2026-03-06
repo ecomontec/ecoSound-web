@@ -117,8 +117,8 @@
                 <div>
                     <div class="form-group">
                         <label>Sound data can be uploaded with a CSV containing the following columns:<br><br>
-                            <strong>soundscape_component</strong> (optional, max 200 characters) - Description of the soundscape component<br>
-                            <strong>sound_type</strong> (optional, max 30 characters) - Type of sound<br><br>
+                            <strong>soundscape_component</strong> (required, max 200 characters) - Main soundscape category: biophony, anthropophony, or geophony<br>
+                            <strong>sound_type</strong> (optional, max 30 characters) - Specific sound type or description<br><br>
                             You can download a <a class="text-info" id="soundsCSVTemplate" style="cursor:pointer">template CSV file</a> to fill in your data.</label>
                     </div>
                 </div>
@@ -185,7 +185,8 @@
                     '<input type="hidden" name="itemID" value="">New',
                     '<input type="text" class="form-control form-control-sm" name="soundscape_component" value="" maxlength="200">',
                     '<input type="text" class="form-control form-control-sm" name="sound_type" value="" maxlength="30">'
-                ]).draw(false);
+                ]);
+                table.draw(false);
             });
 
             /* Save on input change */
@@ -272,8 +273,7 @@
             /* Download CSV Template */
             $('#soundsCSVTemplate').click(function () {
                 const csvContent = "soundscape_component,sound_type\n" +
-                    "biophony,\n" +
-                    "snapping shrimps,\n";
+                    "biophony,snapping shrimps\n";
                 const blob = new Blob([csvContent], { type: 'text/csv' });
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');

@@ -131,7 +131,7 @@
                             <strong>model</strong> (required, max 100 characters) - Recorder model name<br>
                             <strong>version</strong> (optional, max 100 characters) - Version or model number<br>
                             <strong>brand</strong> (optional, max 100 characters) - Manufacturer/brand name<br>
-                            <strong>microphone</strong> (optional, max 300 characters) - Comma-separated microphone IDs from the Microphones table (e.g. "1,2,3")<br><br>
+                            <strong>microphone</strong> (optional, max 300 characters) - Comma-separated microphone IDs from the <a href="{{ baseUrl }}/admin/microphones" class="text-info" target="_blank">Microphones table</a> (e.g. "1,2,3")<br><br>
                             You can download a <a class="text-info" id="recordersCSVTemplate" style="cursor:pointer">template CSV file</a> to fill in your data.</label>
                     </div>
                 </div>
@@ -203,7 +203,8 @@
                     '<input type="text" class="form-control form-control-sm" name="version" value="" maxlength="100">',
                     '<input type="text" class="form-control form-control-sm" name="brand" value="" maxlength="100">',
                     '<input type="text" class="form-control form-control-sm" name="microphone" value="" maxlength="300" placeholder="e.g. 1,2,3">'
-                ]).draw(false);
+                ]);
+                table.draw(false);
             });
 
             /* Save on input change */

@@ -200,17 +200,18 @@ class SoundController extends BaseController
             foreach ($data as $soundData) {
                 $insertData = [];
                 
-                if (!empty($soundData['soundscape_component'])) {
-                    $insertData['soundscape_component'] = htmlentities(strip_tags($soundData['soundscape_component']), ENT_QUOTES);
+                if (empty($soundData['soundscape_component'])) {
+                    continue; // Skip rows without required soundscape_component
                 }
+                
+                $insertData['soundscape_component'] = htmlentities(strip_tags($soundData['soundscape_component']), ENT_QUOTES);
+                
                 if (!empty($soundData['sound_type'])) {
                     $insertData['sound_type'] = htmlentities(strip_tags($soundData['sound_type']), ENT_QUOTES);
                 }
                 
-                if (!empty($insertData)) {
-                    $sound->insert($insertData);
-                    $inserted++;
-                }
+                $sound->insert($insertData);
+                $inserted++;
             }
 
             return json_encode([
