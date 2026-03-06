@@ -77,6 +77,11 @@ $(function () {
                 const coords = myJcrop.tellSelect() || {};
                 if (coords.w > 0 && coords.h > 0) {
                     e.preventDefault();
+                    
+                    // Populate the form fields with selection coordinates
+                    selectData(coords);
+                    
+                    // Now trigger the new tag button
                     $('.js-new-tag').trigger('click');
 
                     canExec = false;

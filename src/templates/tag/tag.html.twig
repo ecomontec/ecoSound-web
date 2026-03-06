@@ -55,17 +55,15 @@
                                     >
                                 </div>
                             </div>
-                            <div class="form-row align-items-center biophony mb-1">
-                                <div class="col-12">
-                                    <div class="d-flex" style="gap: 1rem;">
-                                        <div class="form-check form-control-sm" id="uncertain_check">
-                                            <input class="form-check-input" id="uncertain" name="uncertain" type="checkbox" value="1" {{ tag.uncertain ? "checked" }}>
-                                            <label class="form-check-label" for="uncertain">Uncertain</label>
-                                        </div>
-                                        <div class="form-check form-control-sm" id="reference">
-                                            <input class="form-check-input" id="referenceCall" name="reference_call" type="checkbox" value="1" {{ tag.referenceCall ? "checked" }}>
-                                            <label class="form-check-label" for="referenceCall">Reference</label>
-                                        </div>
+                            <div class="biophony mb-2">
+                                <div class="d-flex" style="gap: 1.5rem;">
+                                    <div class="form-check form-control-sm">
+                                        <input class="form-check-input" id="uncertain" name="uncertain" type="checkbox" value="1" {{ tag.uncertain ? "checked" }}>
+                                        <label class="form-check-label" for="uncertain">Uncertain</label>
+                                    </div>
+                                    <div class="form-check form-control-sm">
+                                        <input class="form-check-input" id="referenceCall" name="reference_call" type="checkbox" value="1" {{ tag.referenceCall ? "checked" }}>
+                                        <label class="form-check-label" for="referenceCall">Reference</label>
                                     </div>
                                 </div>
                             </div>

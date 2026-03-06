@@ -533,10 +533,8 @@
             // Show/hide biophony fields
             if (selectedComponent == 'biophony') {
                 $sidebar.find(".biophony").show();
-                $sidebar.find("#reference").addClass('pt-4');
             } else {
                 $sidebar.find(".biophony").hide();
-                $sidebar.find("#reference").removeClass('pt-4');
             }
             
             // Use sidebarSoundTypes which we extracted from the response
