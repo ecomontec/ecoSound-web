@@ -74,7 +74,7 @@ $(function () {
         }
         if (canExec) {
             if (e.code === 'Enter' && !$('#modal-div').hasClass('show') && !$('.tag-sidebar-wrapper').length) {
-                const coords = myJcrop.tellSelect() || {};
+                const coords = window.jcropApi.tellSelect() || {};
                 if (coords.w > 0 && coords.h > 0) {
                     e.preventDefault();
                     
