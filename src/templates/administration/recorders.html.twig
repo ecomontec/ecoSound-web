@@ -208,10 +208,6 @@
                 if ($(this).hasClass('js-checkbox')) {
                     return;
                 }
-               #recordersTable').on('change', 'input[type="text"], input[type="number"]', function () {
-                if ($(this).hasClass('js-checkbox')) {
-                    return;
-                }
                 
                 // Validate required fields
                 const row = $(this).closest('tr');
@@ -222,6 +218,10 @@
                     return;
                 }
                 
+                const formData = {};
+                row.find('input[name]').each(function() {
+                    formData[$(this).attr('name')] = $(this).val();
+                });
                 
                 postRequest('{{ baseUrl }}/api/admin/recorderMgr/save', formData, false, false, function (response) {
                     if (response.errorCode !== 0) {

@@ -11,6 +11,43 @@ class Sound extends BaseProvider
     const SOUNDSCAPE_COMPONENT = 'soundscape_component';
     const SOUND_TYPE = 'sound_type';
 
+    private $sound_id;
+    private $soundscape_component;
+    private $sound_type;
+
+    public function getSoundId()
+    {
+        return $this->sound_id;
+    }
+
+    public function setSoundId($sound_id)
+    {
+        $this->sound_id = $sound_id;
+        return $this;
+    }
+
+    public function getSoundscapeComponent()
+    {
+        return $this->soundscape_component;
+    }
+
+    public function setSoundscapeComponent($soundscape_component)
+    {
+        $this->soundscape_component = $soundscape_component;
+        return $this;
+    }
+
+    public function getSoundType()
+    {
+        return $this->sound_type;
+    }
+
+    public function setSoundType($sound_type)
+    {
+        $this->sound_type = $sound_type;
+        return $this;
+    }
+
     public function getAll()
     {
         $query = 'SELECT * FROM ' . self::TABLE_NAME . ' ORDER BY ' . self::SOUNDSCAPE_COMPONENT . ' ASC';
