@@ -821,7 +821,7 @@ class RecordingController extends BaseController
             }
             
             // Delete all label associations first using a direct query since no provider method exists
-            $database = new \BioSounds\Utils\Database();
+            $database = new \BioSounds\Database\Database(DRIVER, HOST, DATABASE, USER, PASSWORD);
             error_log("Deleting label associations");
             $database->prepareQuery('DELETE FROM label_association WHERE label_id = :label_id');
             $database->executeDelete([':label_id' => $labelId]);
