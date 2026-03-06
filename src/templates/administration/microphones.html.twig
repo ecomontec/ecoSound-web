@@ -65,7 +65,7 @@
                             {{ microphone.microphone_id }}
                         </th>
                         <td data-order="{{ microphone.name }}" data-search="{{ microphone.name }}">
-                            <input type='text' class="form-control form-control-sm" name="name" value="{{ microphone.name }}" maxlength="100">
+                            <input type='text' class="form-control form-control-sm" name="name" value="{{ microphone.name }}" maxlength="100" required>
                         </td>
                         <td data-order="{{ microphone.microphone_element }}" data-search="{{ microphone.microphone_element }}">
                             <input type='text' class="form-control form-control-sm" name="microphone_element" value="{{ microphone.microphone_element }}" maxlength="100">
@@ -125,7 +125,7 @@
                 <div>
                     <div class="form-group">
                         <label>Microphone data can be uploaded with a CSV containing the following columns:<br><br>
-                            <strong>name</strong> (optional, max 100 characters) - Microphone name/model<br>
+                            <strong>name</strong> (required, max 100 characters) - Microphone name/model<br>
                             <strong>microphone_element</strong> (optional, max 100 characters) - Type of microphone element<br>
                             <strong>sensitivity</strong> (optional, integer) - Sensitivity in dBV<br>
                             <strong>signal_to_noise_ratio</strong> (optional, integer) - Signal-to-noise ratio in dB<br><br>
@@ -165,10 +165,6 @@
                     {
                         "orderable": false,
                         "targets": [0]
-                    },
-                    {
-                        "className": "dt-center",
-                        "targets": [0]
                     }
                 ]
             });
@@ -196,27 +192,31 @@
 
             /* Add new microphone row */
             $('#microphoneFormButton').click(function (e) {
-                const newRow = `
-                    <tr>
-                        <td><input type="checkbox" class="js-checkbox" data-id=""></td>
-                        <th scope='row'><input type="hidden" name="itemID" value="">New</th>
-                        <td><input type='text' class="form-control form-control-sm" name="name" value="" maxlength="100"></td>
-                        <td><input type='text' class="form-control form-control-sm" name="microphone_element" value="" maxlength="100"></td>
-                        <td><input type='number' class="form-control form-control-sm" name="sensitivity" value=""></td>
-                        <td><input type='number' class="form-control form-control-sm" name="signal_to_noise_ratio" value=""></td>
-                    </tr>
-                `;
-                $('.js-microphones-list').prepend(newRow);
-                table.row.add($(newRow)).draw(false);
+                const newRow = table.row.add([
+                    '<input type="checkbox" class="js-checkbox" data-id="">',
+                    '<input type="hidden" name="itemID" value="">New',
+                    '<input type="text" class="form-control form-control-sm" name="name" value="" maxlength="100" required>',
+                    '<input type="text" class="form-control form-control-sm" name="microphone_element" value="" maxlength="100">',
+                    '<input type="number" class="form-control form-control-sm" name="sensitivity" value="">',
+                    '<input type="number" class="form-control form-control-sm" name="signal_to_noise_ratio" value="">'
+                ]).draw(false).node();
             });
 
             /* Save on input change */
-            $('.js-microphones-list').on('change', 'input[type="text"], input[type="number"]', function () {
+            $('#microphonesTable').on('change', 'input[type="text"], input[type="number"]', function () {
                 if ($(this).hasClass('js-checkbox')) {
                     return;
                 }
                 
+                // Validate required fields
                 const row = $(this).closest('tr');
+                const name = row.find('input[name="name"]').val();
+                
+                if (!name || name.trim() === '') {
+                    showAlert('Name is required');
+                    return;
+                }
+                
                 const formData = {};
                 row.find('input[name]').each(function() {
                     formData[$(this).attr('name')] = $(this).val();
@@ -255,9 +255,15 @@
                     id.push($(this).data('id'));
                 });
                 let data = {'id': id};
-                postRequest('{{ baseUrl }}/api/admin/microphoneMgr/delete', data, true, false, function () {
-                    table.state.clear();
-                    location.reload();
+                postRequest('{{ baseUrl }}/api/admin/microphoneMgr/delete', data, false, false, function (response) {
+                    if (response.errorCode === 0) {
+                        showAlert(response.message);
+                        setTimeout(function() {
+                            location.reload();
+                        }, 2000);
+                    } else {
+                        showAlert(response.message);
+                    }
                 });
             });
 
@@ -291,7 +297,7 @@
             /* Download CSV Template */
             $('#microphonesCSVTemplate').click(function () {
                 const csvContent = "name,microphone_element,sensitivity,signal_to_noise_ratio\n" +
-                    "Knowles FG-23329,-40,70\n";
+                    "MAARU (built-in microphone),MSM321A3729H9CP,-32,80\n";
                 const blob = new Blob([csvContent], { type: 'text/csv' });
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');

@@ -10,7 +10,7 @@ use BioSounds\Controller\Administration\UserController;
 use BioSounds\Controller\Administration\SpeciesController;
 use BioSounds\Controller\Administration\RecorderController;
 use BioSounds\Controller\Administration\MicrophoneController;
-use BioSounds\Controller\Administration\SoundTypeController;
+use BioSounds\Controller\Administration\SoundController;
 use BioSounds\Utils\Auth;
 use BioSounds\Controller\Administration\CollectionController as CollectionController;
 use BioSounds\Controller\Administration\SettingController as SettingController;
@@ -336,9 +336,9 @@ class AdminController extends BaseController
      * @return false|string
      * @throws \Exception
      */
-    public function soundTypes()
+    public function sounds()
     {
-        return (new SoundTypeController($this->twig))->show();
+        return (new SoundController($this->twig))->show();
     }
 
     /**
@@ -346,8 +346,8 @@ class AdminController extends BaseController
      * @param int|null $id
      * @return mixed
      */
-    public function soundTypeMgr(string $action, int $id = null)
+    public function soundMgr(string $action, int $id = null)
     {
-        return (new SoundTypeController($this->twig))->$action($id);
+        return (new SoundController($this->twig))->$action($id);
     }
 }

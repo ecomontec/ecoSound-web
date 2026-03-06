@@ -51,7 +51,10 @@
                     <th scope="col">Model</th>
                     <th scope="col">Version</th>
                     <th scope="col">Brand</th>
-                    <th scope="col">Microphone</th>
+                    <th scope="col">
+                        Microphone 
+                        <i class="fa fa-info-circle" title="Comma-separated microphone IDs from the Microphones table" data-toggle="tooltip"></i>
+                    </th>
                 </tr>
             </thead>
             <tbody class="form-control-sm js-recorders-list">
@@ -65,7 +68,7 @@
                             {{ recorder.recorder_id }}
                         </th>
                         <td data-order="{{ recorder.model }}" data-search="{{ recorder.model }}">
-                            <input type='text' class="form-control form-control-sm" name="model" value="{{ recorder.model }}" maxlength="100">
+                            <input type='text' class="form-control form-control-sm" name="model" value="{{ recorder.model }}" maxlength="100" required>
                         </td>
                         <td data-order="{{ recorder.version }}" data-search="{{ recorder.version }}">
                             <input type='text' class="form-control form-control-sm" name="version" value="{{ recorder.version }}" maxlength="100">
@@ -74,7 +77,7 @@
                             <input type='text' class="form-control form-control-sm" name="brand" value="{{ recorder.brand }}" maxlength="100">
                         </td>
                         <td data-order="{{ recorder.microphone }}" data-search="{{ recorder.microphone }}">
-                            <input type='text' class="form-control form-control-sm" name="microphone" value="{{ recorder.microphone }}" maxlength="300">
+                            <input type='text' class="form-control form-control-sm" name="microphone" value="{{ recorder.microphone }}" maxlength="300" placeholder="e.g. 1,2,3">
                         </td>
                     </tr>
                 {% endfor %}
@@ -125,10 +128,10 @@
                 <div>
                     <div class="form-group">
                         <label>Recorder data can be uploaded with a CSV containing the following columns:<br><br>
-                            <strong>model</strong> (optional, max 100 characters) - Recorder model name<br>
+                            <strong>model</strong> (required, max 100 characters) - Recorder model name<br>
                             <strong>version</strong> (optional, max 100 characters) - Version or model number<br>
                             <strong>brand</strong> (optional, max 100 characters) - Manufacturer/brand name<br>
-                            <strong>microphone</strong> (optional, max 300 characters) - Associated microphone details<br><br>
+                            <strong>microphone</strong> (optional, max 300 characters) - Comma-separated microphone IDs from the Microphones table (e.g. "1,2,3")<br><br>
                             You can download a <a class="text-info" id="recordersCSVTemplate" style="cursor:pointer">template CSV file</a> to fill in your data.</label>
                     </div>
                 </div>
@@ -165,10 +168,6 @@
                     {
                         "orderable": false,
                         "targets": [0]
-                    },
-                    {
-                        "className": "dt-center",
-                        "targets": [0]
                     }
                 ]
             });
@@ -180,6 +179,9 @@
             $('#search').on('input', () => {
                 table.search($('#search').val()).draw();
             });
+
+            // Initialize tooltips
+            $('[data-toggle="tooltip"]').tooltip();
 
             // Checkbox handlers
             $('.js-all-checkbox').change(function () {
@@ -196,18 +198,14 @@
 
             /* Add new recorder row */
             $('#recorderFormButton').click(function (e) {
-                const newRow = `
-                    <tr>
-                        <td><input type="checkbox" class="js-checkbox" data-id=""></td>
-                        <th scope='row'><input type="hidden" name="itemID" value="">New</th>
-                        <td><input type='text' class="form-control form-control-sm" name="model" value="" maxlength="100"></td>
-                        <td><input type='text' class="form-control form-control-sm" name="version" value="" maxlength="100"></td>
-                        <td><input type='text' class="form-control form-control-sm" name="brand" value="" maxlength="100"></td>
-                        <td><input type='text' class="form-control form-control-sm" name="microphone" value="" maxlength="300"></td>
-                    </tr>
-                `;
-                $('.js-recorders-list').prepend(newRow);
-                table.row.add($(newRow)).draw(false);
+                const newRow = table.row.add([
+                    '<input type="checkbox" class="js-checkbox" data-id="">',
+                    '<input type="hidden" name="itemID" value="">New',
+                    '<input type="text" class="form-control form-control-sm" name="model" value="" maxlength="100" required>',
+                    '<input type="text" class="form-control form-control-sm" name="version" value="" maxlength="100">',
+                    '<input type="text" class="form-control form-control-sm" name="brand" value="" maxlength="100">',
+                    '<input type="text" class="form-control form-control-sm" name="microphone" value="" maxlength="300" placeholder="e.g. 1,2,3">'
+                ]).draw(false).node();
             });
 
             /* Save on input change */
@@ -215,12 +213,20 @@
                 if ($(this).hasClass('js-checkbox')) {
                     return;
                 }
+               #recordersTable').on('change', 'input[type="text"], input[type="number"]', function () {
+                if ($(this).hasClass('js-checkbox')) {
+                    return;
+                }
                 
+                // Validate required fields
                 const row = $(this).closest('tr');
-                const formData = {};
-                row.find('input[name]').each(function() {
-                    formData[$(this).attr('name')] = $(this).val();
-                });
+                const model = row.find('input[name="model"]').val();
+                
+                if (!model || model.trim() === '') {
+                    showAlert('Model is required');
+                    return;
+                }
+                
                 
                 postRequest('{{ baseUrl }}/api/admin/recorderMgr/save', formData, false, false, function (response) {
                     if (response.errorCode !== 0) {
@@ -247,9 +253,15 @@
                 $('#delete_name').html(name.join(', '));
                 $('#delete_count').html(name.length);
                 $("#modal-delete").modal('show');
-            });
-
-            $('#js-delete-button').click(function (e) {
+            });false, false, function (response) {
+                    if (response.errorCode === 0) {
+                        showAlert(response.message);
+                        setTimeout(function() {
+                            location.reload();
+                        }, 2000);
+                    } else {
+                        showAlert(response.message);
+                    }ck(function (e) {
                 let id = [];
                 $('.js-checkbox:checked').each(function () {
                     id.push($(this).data('id'));
@@ -291,7 +303,7 @@
             /* Download CSV Template */
             $('#recordersCSVTemplate').click(function () {
                 const csvContent = "model,version,brand,microphone\n" +
-                    "Song Meter SM4,4.0,Wildlife Acoustics,Built-in omnidirectional\n";
+                    "Song Meter SM4,4.0,Wildlife Acoustics,1\n";
                 const blob = new Blob([csvContent], { type: 'text/csv' });
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');

@@ -3,13 +3,13 @@
 namespace BioSounds\Controller\Administration;
 
 use BioSounds\Controller\BaseController;
-use BioSounds\Entity\SoundType;
+use BioSounds\Entity\Sound;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Utils\Auth;
 
-class SoundTypeController extends BaseController
+class SoundController extends BaseController
 {
-    const SECTION_TITLE = 'Sound Types';
+    const SECTION_TITLE = 'Sounds';
 
     /**
      * @return false|string
@@ -21,11 +21,11 @@ class SoundTypeController extends BaseController
             throw new ForbiddenException();
         }
 
-        $soundType = new SoundType();
-        $soundTypes = $soundType->getAll();
+        $sound = new Sound();
+        $sounds = $sound->getAll();
 
-        return $this->twig->render('administration/soundTypes.html.twig', [
-            'soundTypes' => $soundTypes,
+        return $this->twig->render('administration/sounds.html.twig', [
+            'sounds' => $sounds,
         ]);
     }
 
@@ -42,7 +42,7 @@ class SoundTypeController extends BaseController
                 throw new ForbiddenException();
             }
 
-            $soundType = new SoundType();
+            $sound = new Sound();
             $data = [];
             $itemID = null;
 
@@ -54,7 +54,7 @@ class SoundTypeController extends BaseController
                     continue;
                 }
                 
-                if ($fieldName === 'sound_type_id') {
+                if ($fieldName === 'sound_id') {
                     $data[$fieldName] = filter_var($value, FILTER_SANITIZE_NUMBER_INT);
                 } else {
                     $data[$fieldName] = htmlentities(strip_tags(filter_var($value, FILTER_SANITIZE_STRING)), ENT_QUOTES);
@@ -62,14 +62,14 @@ class SoundTypeController extends BaseController
             }
 
             if (!empty($itemID)) {
-                $soundType->update($data, $itemID);
+                $sound->update($data, $itemID);
             } else {
-                $soundType->insert($data);
+                $sound->insert($data);
             }
 
             return json_encode([
                 'errorCode' => 0,
-                'message' => 'Sound type saved successfully.',
+                'message' => 'Sound saved successfully.',
             ]);
         } catch (ForbiddenException $e) {
             return json_encode([
@@ -79,7 +79,7 @@ class SoundTypeController extends BaseController
         } catch (\Exception $e) {
             return json_encode([
                 'errorCode' => 1,
-                'message' => 'Error saving sound type: ' . $e->getMessage(),
+                'message' => 'Error saving sound: ' . $e->getMessage(),
             ]);
         }
     }
@@ -102,15 +102,15 @@ class SoundTypeController extends BaseController
                 $ids = [$ids];
             }
             
-            $soundType = new SoundType();
+            $sound = new Sound();
             foreach ($ids as $id) {
-                $soundTypeId = (int) filter_var($id, FILTER_SANITIZE_NUMBER_INT);
-                $soundType->delete($soundTypeId);
+                $soundId = (int) filter_var($id, FILTER_SANITIZE_NUMBER_INT);
+                $sound->delete($soundId);
             }
 
             return json_encode([
                 'errorCode' => 0,
-                'message' => 'Sound type(s) deleted successfully.',
+                'message' => 'Sound(s) deleted successfully.',
             ]);
         } catch (ForbiddenException $e) {
             return json_encode([
@@ -120,13 +120,13 @@ class SoundTypeController extends BaseController
         } catch (\Exception $e) {
             return json_encode([
                 'errorCode' => 1,
-                'message' => 'Error deleting sound type: ' . $e->getMessage(),
+                'message' => 'Error deleting sound: ' . $e->getMessage(),
             ]);
         }
     }
 
     /**
-     * Upload sound types from CSV file
+     * Upload sounds from CSV file
      * @return string
      * @throws \Exception
      */
@@ -139,14 +139,14 @@ class SoundTypeController extends BaseController
                 throw new ForbiddenException();
             }
 
-            if (!isset($_FILES['soundTypesCSVFile']) || $_FILES['soundTypesCSVFile']['error'] != UPLOAD_ERR_OK) {
+            if (!isset($_FILES['soundsCSVFile']) || $_FILES['soundsCSVFile']['error'] != UPLOAD_ERR_OK) {
                 return json_encode([
                     'errorCode' => 1,
                     'message' => 'No file uploaded or upload error occurred.',
                 ]);
             }
 
-            $handle = fopen($_FILES['soundTypesCSVFile']['tmp_name'], "rb");
+            $handle = fopen($_FILES['soundsCSVFile']['tmp_name'], "rb");
             if (!$handle) {
                 return json_encode([
                     'errorCode' => 1,
@@ -170,18 +170,6 @@ class SoundTypeController extends BaseController
                 // First row is headers
                 if ($headers === null) {
                     $headers = array_map('trim', $row);
-                    
-                    // Validate required columns
-                    $requiredColumns = ['sound_type_id', 'name', 'taxon_class', 'taxon_order'];
-                    foreach ($requiredColumns as $required) {
-                        if (!in_array($required, $headers)) {
-                            fclose($handle);
-                            return json_encode([
-                                'errorCode' => 1,
-                                'message' => "Missing required column: {$required}",
-                            ]);
-                        }
-                    }
                     $rowNum++;
                     continue;
                 }
@@ -193,39 +181,6 @@ class SoundTypeController extends BaseController
                 
                 // Map row data to headers
                 $rowData = array_combine($headers, $row);
-                
-                // Validate required fields
-                if (empty($rowData['sound_type_id'])) {
-                    fclose($handle);
-                    return json_encode([
-                        'errorCode' => 1,
-                        'message' => "Row {$rowNum}: sound_type_id is required.",
-                    ]);
-                }
-                
-                if (empty($rowData['name'])) {
-                    fclose($handle);
-                    return json_encode([
-                        'errorCode' => 1,
-                        'message' => "Row {$rowNum}: name is required.",
-                    ]);
-                }
-                
-                if (empty($rowData['taxon_class'])) {
-                    fclose($handle);
-                    return json_encode([
-                        'errorCode' => 1,
-                        'message' => "Row {$rowNum}: taxon_class is required.",
-                    ]);
-                }
-                
-                if (empty($rowData['taxon_order'])) {
-                    fclose($handle);
-                    return json_encode([
-                        'errorCode' => 1,
-                        'message' => "Row {$rowNum}: taxon_order is required.",
-                    ]);
-                }
                 
                 $data[] = $rowData;
                 $rowNum++;
@@ -239,24 +194,28 @@ class SoundTypeController extends BaseController
                 ]);
             }
 
-            // Insert sound types
-            $soundType = new SoundType();
+            // Insert sounds
+            $sound = new Sound();
             $inserted = 0;
-            foreach ($data as $soundTypeData) {
-                $insertData = [
-                    'sound_type_id' => (int)$soundTypeData['sound_type_id'],
-                    'name' => htmlentities(strip_tags($soundTypeData['name']), ENT_QUOTES),
-                    'taxon_class' => htmlentities(strip_tags($soundTypeData['taxon_class']), ENT_QUOTES),
-                    'taxon_order' => htmlentities(strip_tags($soundTypeData['taxon_order']), ENT_QUOTES),
-                ];
+            foreach ($data as $soundData) {
+                $insertData = [];
                 
-                $soundType->insert($insertData);
-                $inserted++;
+                if (!empty($soundData['soundscape_component'])) {
+                    $insertData['soundscape_component'] = htmlentities(strip_tags($soundData['soundscape_component']), ENT_QUOTES);
+                }
+                if (!empty($soundData['sound_type'])) {
+                    $insertData['sound_type'] = htmlentities(strip_tags($soundData['sound_type']), ENT_QUOTES);
+                }
+                
+                if (!empty($insertData)) {
+                    $sound->insert($insertData);
+                    $inserted++;
+                }
             }
 
             return json_encode([
                 'errorCode' => 0,
-                'message' => "Successfully uploaded {$inserted} sound types.",
+                'message' => "Successfully uploaded {$inserted} sounds.",
             ]);
         } catch (ForbiddenException $e) {
             return json_encode([
@@ -272,7 +231,7 @@ class SoundTypeController extends BaseController
     }
 
     /**
-     * Export all sound types to CSV
+     * Export all sounds to CSV
      * @return void
      * @throws \Exception
      */
@@ -282,24 +241,23 @@ class SoundTypeController extends BaseController
             throw new ForbiddenException();
         }
 
-        $soundType = new SoundType();
-        $soundTypes = $soundType->getAll();
+        $sound = new Sound();
+        $sounds = $sound->getAll();
 
         header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename=sound_types_export.csv');
+        header('Content-Disposition: attachment; filename=sounds_export.csv');
         
         $fp = fopen('php://output', 'w');
         
         // Write headers
-        fputcsv($fp, ['sound_type_id', 'name', 'taxon_class', 'taxon_order']);
+        fputcsv($fp, ['sound_id', 'soundscape_component', 'sound_type']);
         
         // Write data
-        foreach ($soundTypes as $st) {
+        foreach ($sounds as $s) {
             fputcsv($fp, [
-                $st['sound_type_id'] ?? '',
-                $st['name'] ?? '',
-                $st['taxon_class'] ?? '',
-                $st['taxon_order'] ?? ''
+                $s['sound_id'] ?? '',
+                $s['soundscape_component'] ?? '',
+                $s['sound_type'] ?? ''
             ]);
         }
         

@@ -2,7 +2,7 @@
 
 {% block admin_content %}
 
-<div class="card mb-3" id="soundTypesList">
+<div class="card mb-3" id="soundsList">
     <div class="card-header border-light bg-white text-right">
         <div class="form-inline">
             <div class="col-8"></div>
@@ -11,8 +11,8 @@
                 <input class="form-control-sm" id="search">
             </div>
         </div>
-        <form id="soundTypesCSVForm" method="POST" class="collapse">
-            <input type="file" name="soundTypesCSVFile" id="soundTypesCSVFile" accept="text/csv" style="display: none">
+        <form id="soundsCSVForm" method="POST" class="collapse">
+            <input type="file" name="soundsCSVFile" id="soundsCSVFile" accept="text/csv" style="display: none">
         </form>
         <button
             id="deletion"
@@ -26,51 +26,47 @@
             Delete
         </button>
         <span class="dropdown">
-            <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" id="addSoundType" data-toggle="dropdown" aria-expanded="false">
+            <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" id="addSound" data-toggle="dropdown" aria-expanded="false">
                 <span class="fas fa-plus"></span>
                 Add
             </button>
-            <div class="dropdown-menu" aria-labelledby="addSoundType">
-                <a class="dropdown-item" type="button" id="soundTypeFormButton"><i class="fas fa-plus"></i> Add Sound Type</a>
-                <a class="dropdown-item" type="button" id="soundTypesCSVButton"><i class="fa-solid fa-file-arrow-up"></i> Upload Sound Types CSV</a>
-                <a class="dropdown-item" type="button" id="soundTypesInstructions"><i class="fa-solid fa-circle-info"></i> CSV Instructions</a>
+            <div class="dropdown-menu" aria-labelledby="addSound">
+                <a class="dropdown-item" type="button" id="soundFormButton"><i class="fas fa-plus"></i> Add Sound</a>
+                <a class="dropdown-item" type="button" id="soundsCSVButton"><i class="fa-solid fa-file-arrow-up"></i> Upload Sounds CSV</a>
+                <a class="dropdown-item" type="button" id="soundsInstructions"><i class="fa-solid fa-circle-info"></i> CSV Instructions</a>
             </div>
         </span>
-        <button id="soundTypesExport" class="btn btn-outline-primary btn-sm mt-2">
+        <button id="soundsExport" class="btn btn-outline-primary btn-sm mt-2">
             <i class="fa fa-file-csv"></i>
             Save all as CSV
         </button>
     </div>
-    <table id="soundTypesTable" style="display:none;white-space: nowrap;">
+    <table id="soundsTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
                 <tr style="font-size: .875rem;">
                     <th>
                         <input type="checkbox" class="js-all-checkbox" name="check-all" id="check-all">
                     </th>
                     <th scope="col">#</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Taxon Class</th>
-                    <th scope="col">Taxon Order</th>
+                    <th scope="col">Soundscape Component</th>
+                    <th scope="col">Sound Type</th>
                 </tr>
             </thead>
-            <tbody class="form-control-sm js-soundTypes-list">
-                {% for soundType in soundTypes %}
+            <tbody class="form-control-sm js-sounds-list">
+                {% for sound in sounds %}
                     <tr>
                         <td>
-                            <input type="checkbox" class="js-checkbox" data-id="{{ soundType.sound_type_id }}">
+                            <input type="checkbox" class="js-checkbox" data-id="{{ sound.sound_id }}">
                         </td>
                         <th scope='row'>
-                            <input type="hidden" name="itemID" value="{{ soundType.sound_type_id }}">
-                            {{ soundType.sound_type_id }}
+                            <input type="hidden" name="itemID" value="{{ sound.sound_id }}">
+                            {{ sound.sound_id }}
                         </th>
-                        <td data-order="{{ soundType.name }}" data-search="{{ soundType.name }}">
-                            <input type='text' class="form-control form-control-sm" name="name" value="{{ soundType.name }}" maxlength="100" required>
+                        <td data-order="{{ sound.soundscape_component }}" data-search="{{ sound.soundscape_component }}">
+                            <input type='text' class="form-control form-control-sm" name="soundscape_component" value="{{ sound.soundscape_component }}" maxlength="200">
                         </td>
-                        <td data-order="{{ soundType.taxon_class }}" data-search="{{ soundType.taxon_class }}">
-                            <input type='text' class="form-control form-control-sm" name="taxon_class" value="{{ soundType.taxon_class }}" maxlength="20" required>
-                        </td>
-                        <td data-order="{{ soundType.taxon_order }}" data-search="{{ soundType.taxon_order }}">
-                            <input type='text' class="form-control form-control-sm" name="taxon_order" value="{{ soundType.taxon_order }}" maxlength="20" required>
+                        <td data-order="{{ sound.sound_type }}" data-search="{{ sound.sound_type }}">
+                            <input type='text' class="form-control form-control-sm" name="sound_type" value="{{ sound.sound_type }}" maxlength="30">
                         </td>
                     </tr>
                 {% endfor %}
@@ -90,7 +86,7 @@
             <div class="modal-body ml-3">
                 <div>
                     <div class="form-group">
-                        <label>Are you sure you want to delete <b class="text-danger"><span id="delete_count"></span> sound type(s)</b>: <b class="text-danger" id="delete_name"></b>? This action cannot be undone.</label>
+                        <label>Are you sure you want to delete <b class="text-danger"><span id="delete_count"></span> sound(s)</b>: <b class="text-danger" id="delete_name"></b>? This action cannot be undone.</label>
                     </div>
                 </div>
             </div>
@@ -108,7 +104,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="modal-soundTypes-instructions" tabindex="-1" role="dialog">
+<div class="modal fade" id="modal-sounds-instructions" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -120,12 +116,10 @@
             <div class="modal-body ml-3">
                 <div>
                     <div class="form-group">
-                        <label>Sound type data can be uploaded with a CSV containing the following columns:<br><br>
-                            <strong>sound_type_id</strong> (required, integer) - Unique identifier for the sound type<br>
-                            <strong>name</strong> (required, max 100 characters) - Name of the sound type<br>
-                            <strong>taxon_class</strong> (required, max 20 characters) - Taxonomic class<br>
-                            <strong>taxon_order</strong> (required, max 20 characters) - Taxonomic order<br><br>
-                            You can download a <a class="text-info" id="soundTypesCSVTemplate" style="cursor:pointer">template CSV file</a> to fill in your data.</label>
+                        <label>Sound data can be uploaded with a CSV containing the following columns:<br><br>
+                            <strong>soundscape_component</strong> (optional, max 200 characters) - Description of the soundscape component<br>
+                            <strong>sound_type</strong> (optional, max 30 characters) - Type of sound<br><br>
+                            You can download a <a class="text-info" id="soundsCSVTemplate" style="cursor:pointer">template CSV file</a> to fill in your data.</label>
                     </div>
                 </div>
             </div>
@@ -149,8 +143,8 @@
             'use strict';
 
             // Show and initialize DataTable
-            $('#soundTypesTable').show();
-            var table = $('#soundTypesTable').DataTable({
+            $('#soundsTable').show();
+            var table = $('#soundsTable').DataTable({
                 "dom": 'lrtip',
                 "scrollX": true,
                 "lengthMenu": [ [10, 25, 50, 100], [10, 25, 50, 100] ],
@@ -160,10 +154,6 @@
                 "columnDefs": [
                     {
                         "orderable": false,
-                        "targets": [0]
-                    },
-                    {
-                        "className": "dt-center",
                         "targets": [0]
                     }
                 ]
@@ -190,23 +180,18 @@
                 $('button[name="table-btn"]').prop('disabled', ($('.js-checkbox:checked').length === 0));
             });
 
-            /* Add new sound type row */
-            $('#soundTypeFormButton').click(function (e) {
-                const newRow = `
-                    <tr>
-                        <td><input type="checkbox" class="js-checkbox" data-id=""></td>
-                        <th scope='row'><input type="hidden" name="itemID" value="">New</th>
-                        <td><input type='text' class="form-control form-control-sm" name="name" value="" maxlength="100" required></td>
-                        <td><input type='text' class="form-control form-control-sm" name="taxon_class" value="" maxlength="20" required></td>
-                        <td><input type='text' class="form-control form-control-sm" name="taxon_order" value="" maxlength="20" required></td>
-                    </tr>
-                `;
-                $('.js-soundTypes-list').prepend(newRow);
-                table.row.add($(newRow)).draw(false);
+            /* Add new sound row */
+            $('#soundFormButton').click(function (e) {
+                const newRow = table.row.add([
+                    '<input type="checkbox" class="js-checkbox" data-id="">',
+                    '<input type="hidden" name="itemID" value="">New',
+                    '<input type="text" class="form-control form-control-sm" name="soundscape_component" value="" maxlength="200">',
+                    '<input type="text" class="form-control form-control-sm" name="sound_type" value="" maxlength="30">'
+                ]).draw(false).node();
             });
 
             /* Save on input change */
-            $('.js-soundTypes-list').on('change', 'input[type="text"], input[type="number"]', function () {
+            $('#soundsTable').on('change', 'input[type="text"], input[type="number"]', function () {
                 if ($(this).hasClass('js-checkbox')) {
                     return;
                 }
@@ -217,7 +202,7 @@
                     formData[$(this).attr('name')] = $(this).val();
                 });
                 
-                postRequest('{{ baseUrl }}/api/admin/soundTypeMgr/save', formData, false, false, function (response) {
+                postRequest('{{ baseUrl }}/api/admin/soundMgr/save', formData, false, false, function (response) {
                     if (response.errorCode !== 0) {
                         showAlert(response.message);
                     } else {
@@ -229,12 +214,12 @@
                 });
             });
 
-            /* Delete sound types */
+            /* Delete sounds */
             $('#deletion').click(function (e) {
                 let name = [];
                 $('.js-checkbox:checked').each(function () {
-                    const typeName = $(this).parent().parent().find('input[name="name"]').val();
-                    name.push(typeName || 'Unknown');
+                    const component = $(this).parent().parent().find('input[name="soundscape_component"]').val();
+                    name.push(component || 'Unknown');
                 });
                 if (name.length === 0) {
                     return;
@@ -250,26 +235,32 @@
                     id.push($(this).data('id'));
                 });
                 let data = {'id': id};
-                postRequest('{{ baseUrl }}/api/admin/soundTypeMgr/delete', data, true, false, function () {
-                    table.state.clear();
-                    location.reload();
+                postRequest('{{ baseUrl }}/api/admin/soundMgr/delete', data, false, false, function (response) {
+                    if (response.errorCode === 0) {
+                        showAlert(response.message);
+                        setTimeout(function() {
+                            location.reload();
+                        }, 2000);
+                    } else {
+                        showAlert(response.message);
+                    }
                 });
             });
 
-            /* Export sound types */
-            $('#soundTypesExport').click(function () {
-                window.location.href = '{{ baseUrl }}/api/admin/soundTypeMgr/export';
+            /* Export sounds */
+            $('#soundsExport').click(function () {
+                window.location.href = '{{ baseUrl }}/api/admin/soundMgr/export';
             });
 
             /* CSV Upload */
-            $('#soundTypesCSVButton').click(function () {
-                $('#soundTypesCSVFile').click();
+            $('#soundsCSVButton').click(function () {
+                $('#soundsCSVFile').click();
             });
 
-            $('#soundTypesCSVFile').change(function () {
+            $('#soundsCSVFile').change(function () {
                 if (this.files.length > 0) {
-                    let formData = new FormData($('#soundTypesCSVForm')[0]);
-                    postRequest('{{ baseUrl }}/api/admin/soundTypeMgr/uploadCSV', formData, false, false, function (response) {
+                    let formData = new FormData($('#soundsCSVForm')[0]);
+                    postRequest('{{ baseUrl }}/api/admin/soundMgr/uploadCSV', formData, false, false, function (response) {
                         alert(response.message);
                         if (response.errorCode === 0) {
                             location.reload();
@@ -279,20 +270,20 @@
             });
 
             /* CSV Instructions */
-            $('#soundTypesInstructions').click(function () {
-                $('#modal-soundTypes-instructions').modal('show');
+            $('#soundsInstructions').click(function () {
+                $('#modal-sounds-instructions').modal('show');
             });
 
             /* Download CSV Template */
-            $('#soundTypesCSVTemplate').click(function () {
-                const csvContent = "sound_type_id,name,taxon_class,taxon_order\n" +
-                    "1,Song,Aves,Passeriformes\n";
+            $('#soundsCSVTemplate').click(function () {
+                const csvContent = "soundscape_component,sound_type\\n" +
+                    "Biophony,Call\\n";
                 const blob = new Blob([csvContent], { type: 'text/csv' });
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.setAttribute('hidden', '');
                 a.setAttribute('href', url);
-                a.setAttribute('download', 'sound_types_template.csv');
+                a.setAttribute('download', 'sounds_template.csv');
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);

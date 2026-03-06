@@ -2,80 +2,75 @@
 
 namespace BioSounds\Entity;
 
+use BioSounds\Provider\BaseProvider;
 
-class Sound
+class Sound extends BaseProvider
 {
     const TABLE_NAME = 'sound';
-    const SOUND_ID = 'sound_id';
+    const ID = 'sound_id';
     const SOUNDSCAPE_COMPONENT = 'soundscape_component';
     const SOUND_TYPE = 'sound_type';
 
-    /**
-     * @var int
-     */
-    private $sound_id;
-
-    /**
-     * @var string
-     */
-    private $soundscape_component;
-
-    /**
-     * @var string
-     */
-    private $sound_type;
-
-    /**
-     * @return int
-     */
-    public function getSoundId(): int
+    public function getAll()
     {
-        return $this->sound_id;
+        $query = 'SELECT * FROM ' . self::TABLE_NAME . ' ORDER BY ' . self::SOUNDSCAPE_COMPONENT . ' ASC';
+        $this->database->prepareQuery($query);
+        $result = $this->database->executeSelect();
+        return $result;
     }
 
-    /**
-     * @param int $sound_id
-     * @return Sound
-     */
-    public function setSoundId(int $sound_id): Sound
+    public function getById(int $id)
     {
-        $this->sound_id = $sound_id;
-        return $this;
+        $query = 'SELECT * FROM ' . self::TABLE_NAME . ' WHERE ' . self::ID . ' = :id';
+        $this->database->prepareQuery($query);
+        $result = $this->database->executeSelect([':id' => $id]);
+        return !empty($result) ? $result[0] : null;
     }
 
-    /**
-     * @return null|string
-     */
-    public function getSoundscapeComponent(): ?string
+    public function insert(array $data)
     {
-        return $this->soundscape_component;
+        $fields = [];
+        $values = [];
+        $placeholders = [];
+
+        foreach ($data as $key => $value) {
+            $fields[] = $key;
+            $placeholders[] = ':' . $key;
+            $values[':' . $key] = $value;
+        }
+
+        $query = 'INSERT INTO ' . self::TABLE_NAME . ' (' . implode(', ', $fields) . ') VALUES (' . implode(', ', $placeholders) . ')';
+        $this->database->prepareQuery($query);
+        return $this->database->executeInsert($values);
     }
 
-    /**
-     * @param null|string $soundscape_component
-     * @return Sound
-     */
-    public function setSoundscapeComponent(?string $soundscape_component): Sound
+    public function update(array $data, int $id)
     {
-        $this->soundscape_component = $soundscape_component;
-        return $this;
+        $setParts = [];
+        $values = [];
+
+        foreach ($data as $key => $value) {
+            $setParts[] = $key . ' = :' . $key;
+            $values[':' . $key] = $value;
+        }
+
+        $values[':id'] = $id;
+        $query = 'UPDATE ' . self::TABLE_NAME . ' SET ' . implode(', ', $setParts) . ' WHERE ' . self::ID . ' = :id';
+        $this->database->prepareQuery($query);
+        return $this->database->executeUpdate($values);
     }
 
-    /**
-     * @return null|string
-     */
-    public function getSoundType(): ?string
+    public function delete(int $id)
     {
-        return $this->sound_type;
+        $query = 'DELETE FROM ' . self::TABLE_NAME . ' WHERE ' . self::ID . ' = :id';
+        $this->database->prepareQuery($query);
+        return $this->database->executeUpdate([':id' => $id]);
     }
 
-    /**
-     * @param null|string $sound_type
-     * @return Sound
-     */
-    public function setSoundType(?string $sound_type): Sound
+    public function getColumns()
     {
-        $this->sound_type = $sound_type;
-        return $this;
+        $sql = "SELECT COLUMN_NAME FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = '" . self::TABLE_NAME . "' ORDER BY ordinal_position";
+        $this->database->prepareQuery($sql);
+        return $this->database->executeSelect();
     }
 }
