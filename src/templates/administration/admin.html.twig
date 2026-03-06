@@ -139,6 +139,62 @@
                     }
                 }
             });
+
+            // Admin filter persistence with localStorage
+            var adminPage = window.location.pathname.split('/').filter(el => el !== '').pop();
+            var storagePrefix = 'biosounds_admin_' + adminPage + '_';
+            
+            // Restore filter values from localStorage on page load
+            function restoreFilters() {
+                var projectId = localStorage.getItem(storagePrefix + 'projectId');
+                var colId = localStorage.getItem(storagePrefix + 'colId');
+                var recordingId = localStorage.getItem(storagePrefix + 'recordingId');
+                
+                if (projectId && $('#projectId').length && !$('#projectId').val()) {
+                    $('#projectId').val(projectId);
+                    $('#projectId').selectpicker('refresh');
+                }
+                if (colId && $('#colId').length && !$('#colId').val()) {
+                    $('#colId').val(colId);
+                    $('#colId').selectpicker('refresh');
+                }
+                if (recordingId && $('#recordingId').length && !$('#recordingId').val()) {
+                    $('#recordingId').val(recordingId);
+                    $('#recordingId').selectpicker('refresh');
+                }
+            }
+            
+            // Save filter value to localStorage
+            function saveFilter(filterId, value) {
+                if(value) {
+                    localStorage.setItem(storagePrefix + filterId, value);
+                } else {
+                    localStorage.removeItem(storagePrefix + filterId);
+                }
+            }
+            
+            // Restore filters if page was just loaded (not from form submission)
+            if (!performance.navigation.type || performance.navigation.type !== 1) {
+                restoreFilters();
+            }
+            
+            // Save filter values when dropdowns change
+            $(document).on('change', '#projectId', function() {
+                saveFilter('projectId', $(this).val());
+                // Clear dependent filters
+                localStorage.removeItem(storagePrefix + 'colId');
+                localStorage.removeItem(storagePrefix + 'recordingId');
+            });
+            
+            $(document).on('change', '#colId', function() {
+                saveFilter('colId', $(this).val());
+                // Clear dependent recording filter
+                localStorage.removeItem(storagePrefix + 'recordingId');
+            });
+            
+            $(document).on('change', '#recordingId', function() {
+                saveFilter('recordingId', $(this).val());
+            });
         });
     </script>
 {% endblock %}
