@@ -790,7 +790,7 @@ class RecordingController extends BaseController
             throw new NotAuthenticatedException();
         }
 
-        $labelId = filter_var($_POST['label_id'], FILTER_SANITIZE_NUMBER_INT);
+        $labelId = filter_var($_POST['label_id'] ?? '', FILTER_SANITIZE_NUMBER_INT);
         
         if (empty($labelId)) {
             return json_encode([
@@ -803,13 +803,6 @@ class RecordingController extends BaseController
             // Check if user owns this label (only creator can delete private labels)
             $labelProvider = new LabelProvider();
             $label = $labelProvider->get($labelId);
-            
-            if (!$label) {
-                return json_encode([
-                    'errorCode' => 1,
-                    'message' => 'Label not found.'
-                ]);
-            }
             
             if ($label->getCreatorId() != Auth::getUserLoggedID()) {
                 return json_encode([
@@ -833,6 +826,11 @@ class RecordingController extends BaseController
             return json_encode([
                 'errorCode' => 0,
                 'message' => 'Label deleted successfully.'
+            ]);
+        } catch (\BioSounds\Exception\Database\NotFoundException $e) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'Label not found.'
             ]);
         } catch (\Exception $e) {
             return json_encode([

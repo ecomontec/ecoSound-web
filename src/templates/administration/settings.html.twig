@@ -7,32 +7,17 @@
                 {% if is_admin %}
                     <h4 class="mb-3">Server Information</h4>
                     <div class="form-group input-group-sm">
-                        <label for="api_key">API Key</label>
-                        <input type="text" class="form-control" value="{{ api_key }}" disabled>
-                    </div>
-                    <div class="form-group input-group-sm">
                         <label for="disk_space">Server Disk Space</label>
-                        <div class="d-flex align-items-center">
-                            <div class="progress flex-grow-1" style="height: 25px;">
-                                <div class="progress-bar {% if diskUsedPercent < 70 %}bg-success{% elseif diskUsedPercent < 85 %}bg-warning{% else %}bg-danger{% endif %}" 
-                                     role="progressbar" 
-                                     style="width: {{ diskUsedPercent }}%;" 
-                                     aria-valuenow="{{ diskUsedPercent }}" 
-                                     aria-valuemin="0" 
-                                     aria-valuemax="100">
-                                    {{ diskUsedPercent|number_format(1) }}%
-                                </div>
-                            </div>
-                            <span class="ml-3 text-nowrap">
-                                <strong>{{ (diskUsed / 1073741824)|number_format(1) }} GB</strong> / {{ (diskTotal / 1073741824)|number_format(1) }} GB
+                        <div class="form-control bg-light" style="border: none;">
+                            {{ (diskUsed / 1073741824)|number_format(1) }} GB / {{ (diskTotal / 1073741824)|number_format(1) }} GB - 
+                            <span class="font-weight-bold {% if diskUsedPercent < 70 %}text-success{% elseif diskUsedPercent < 85 %}text-warning{% else %}text-danger{% endif %}">
+                                {{ diskUsedPercent|number_format(1) }}% full
                             </span>
                         </div>
-                        <small class="form-text text-muted">
-                            Free: {{ (diskFree / 1073741824)|number_format(1) }} GB
-                            {% if diskUsedPercent >= 85 %}
-                                <span class="text-danger font-weight-bold">⚠ Warning: Low disk space!</span>
-                            {% endif %}
-                        </small>
+                    </div>
+                    <div class="form-group input-group-sm">
+                        <label for="api_key">API Key</label>
+                        <input type="text" class="form-control" value="{{ api_key }}" disabled>
                     </div>
                     {% if setting.shared %}
                         <div class="form-group text-right">
