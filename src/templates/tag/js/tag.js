@@ -36,7 +36,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (reviewForm.length) {
                     reviewForm.submit();
                 }
-                // Just show success message, don't close or navigate
+                // Close modal and show success message
+                let modal = $('#modal-div');
+                modal.modal('hide');
                 showAlert("Saved successfully.")
                 return;
             }
@@ -62,7 +64,15 @@ document.addEventListener('DOMContentLoaded', function () {
                         reviewForm.submit();
                     }
                     
-                    // Just show success message, don't close or navigate
+                    // Close modal, reload table data, and show success message
+                    let modal = $('#modal-div');
+                    modal.modal('hide');
+                    
+                    // Reload the tags table to show the new/updated tag
+                    if ($.fn.DataTable.isDataTable('#tagsTable')) {
+                        $('#tagsTable').DataTable().ajax.reload(null, false);
+                    }
+                    
                     showAlert("Saved successfully.")
                 });
             }
@@ -87,10 +97,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         $('#saveButton').click(function () {
             tagForm.submit();
-
-            // Reload the tags table to reflect changes
-            $('#tagsTable').DataTable().ajax.reload(null, false);
-            $('.tagsForm').removeAttr("hidden");
+            // Note: Table reload and visibility are now handled in the form submit success callback
         });
 
         $('#distance').click(function () {
