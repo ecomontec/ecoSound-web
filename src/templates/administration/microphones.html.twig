@@ -26,7 +26,12 @@
                     <label for="mic_snr" class="col-form-label-sm">Signal-to-Noise Ratio (dB)</label>
                     <input id="mic_snr" type="number" name="signal_to_noise_ratio" class="form-control form-control-sm">
                 </div>
-                <button type="submit" class="btn btn-primary">Add Microphone</button>
+                <div class="form-group text-right">
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="fas fa-save"></i>
+                        Save
+                    </button>
+                </div>
             </form>
         </div>
     </div>
@@ -129,10 +134,6 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
-                    <i class="fas fa-times"></i>
-                    Close
-                </button>
                 <button id="js-delete-button" class="btn btn-outline-danger">
                     <i class="fas fa-trash-alt"></i>
                     Delete
@@ -184,6 +185,7 @@
                 "lengthMenu": [ [10, 25, 50, 100], [10, 25, 50, 100] ],
                 "pageLength": 10,
                 "ordering": true,
+                "order": [[1, 'asc']],
                 "bAutoWidth": false,
                 "columnDefs": [
                     {

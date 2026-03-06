@@ -27,7 +27,12 @@
                     <input id="rec_microphone" type="text" name="microphone" class="form-control form-control-sm" maxlength="300" placeholder="e.g. 1,2,3">
                     <small class="form-text text-muted">Comma-separated microphone IDs from the <a href="{{ baseUrl }}/admin/microphones" class="text-info" target="_blank">Microphones table</a></small>
                 </div>
-                <button type="submit" class="btn btn-primary">Add Recorder</button>
+                <div class="form-group text-right">
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="fas fa-save"></i>
+                        Save
+                    </button>
+                </div>
             </form>
         </div>
     </div>
@@ -133,10 +138,6 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
-                    <i class="fas fa-times"></i>
-                    Close
-                </button>
                 <button id="js-delete-button" class="btn btn-outline-danger">
                     <i class="fas fa-trash-alt"></i>
                     Delete
@@ -188,6 +189,7 @@
                 "lengthMenu": [ [10, 25, 50, 100], [10, 25, 50, 100] ],
                 "pageLength": 10,
                 "ordering": true,
+                "order": [[1, 'asc']],
                 "bAutoWidth": false,
                 "columnDefs": [
                     {

@@ -18,7 +18,12 @@
                     <label for="sound_type" class="col-form-label-sm">Sound Type</label>
                     <input id="sound_type" type="text" name="sound_type" class="form-control form-control-sm" maxlength="30" placeholder="e.g. snapping shrimps">
                 </div>
-                <button type="submit" class="btn btn-primary">Add Sound</button>
+                <div class="form-group text-right">
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="fas fa-save"></i>
+                        Save
+                    </button>
+                </div>
             </form>
         </div>
     </div>
@@ -113,10 +118,6 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
-                    <i class="fas fa-times"></i>
-                    Close
-                </button>
                 <button id="js-delete-button" class="btn btn-outline-danger">
                     <i class="fas fa-trash-alt"></i>
                     Delete
@@ -166,6 +167,7 @@
                 "lengthMenu": [ [10, 25, 50, 100], [10, 25, 50, 100] ],
                 "pageLength": 10,
                 "ordering": true,
+                "order": [[1, 'asc']],
                 "bAutoWidth": false,
                 "columnDefs": [
                     {
