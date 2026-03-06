@@ -41,7 +41,7 @@
                                 </div>
                             </div>
                             <div class="form-row align-items-center biophony">
-                                <div class="form-group col-auto" style="flex-grow: 1;">
+                                <div class="form-group col-12">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <label class="col-form-label-sm mb-0" for="speciesName">Species</label>
                                         <a class="col-form-label-sm mb-0" href="#" target="_blank" id="xenoImages" style="font-size: 0.75rem;">Xeno-Canto</a>
@@ -54,10 +54,18 @@
                                            value="{{ tag.speciesName }}"
                                     >
                                 </div>
+                            </div>
+                            <div class="form-row align-items-center biophony">
                                 <div class="form-group col-auto mb-1">
-                                    <div class="form-check form-control-sm pt-4" id="uncertain_check">
+                                    <div class="form-check form-control-sm" id="uncertain_check">
                                         <input class="form-check-input" id="uncertain" name="uncertain" type="checkbox" value="1" {{ tag.uncertain ? "checked" }}>
                                         <label class="form-check-label" for="uncertain">Uncertain</label>
+                                    </div>
+                                </div>
+                                <div class="form-group col-auto mb-1">
+                                    <div class="form-check form-control-sm" id="reference">
+                                        <input class="form-check-input" id="referenceCall" name="reference_call" type="checkbox" value="1" {{ tag.referenceCall ? "checked" }}>
+                                        <label class="form-check-label" for="referenceCall">Reference</label>
                                     </div>
                                 </div>
                             </div>
@@ -104,14 +112,14 @@
                             </div>
 
                             <div class="form-row">
-                                <div class="form-group col-4 biophony" id="individuals_group">
+                                <div class="form-group col-6 biophony" id="individuals_group">
                                     <label class="col-form-label-sm" for="individuals">Individuals </label>
                                     <input id="individuals" class="form-control form-control-sm" name="individuals" min="0" max="1000" type="number" value="{{ tag.numberIndividuals }}" required>
                                     <div class="invalid-feedback">
                                         Please introduce a valid individuals.
                                     </div>
                                 </div>
-                                <div class="form-group col-4 biophony">
+                                <div class="form-group col-6 biophony">
                                     <label class="col-form-label-sm" for="type">Animal Sound Type</label>
                                     <select id="animal_sound_type" name="animal_sound_type" class="custom-select custom-select-sm">
                                         <option value="0"></option>
@@ -119,12 +127,6 @@
                                             <option value="{{ animalSoundType.soundTypeId }}" {{ tag.type == animalSoundType.soundTypeId ? "selected" }}>{{ animalSoundType.name }}</option>
                                         {% endfor %}
                                     </select>
-                                </div>
-                                <div class="form-group col-4">
-                                    <div class="form-check form-control-sm pt-4" id="reference">
-                                        <input class="form-check-input" id="referenceCall" name="reference_call" type="checkbox" value="1" {{ tag.referenceCall ? "checked" }}>
-                                        <label class="form-check-label" for="referenceCall">Reference</label>
-                                    </div>
                                 </div>
                             </div>
 
@@ -229,10 +231,8 @@
     $("#soundscape_component").on('change', function () {
         if ($("#soundscape_component").find("option:selected").text() == 'biophony') {
             $(".biophony").show()
-            $("#reference").addClass('pt-4')
         } else {
             $(".biophony").hide()
-            $("#reference").removeClass('pt-4')
         }
         {% if not tag.soundId %}
         if ($.cookie('cookieConsent') == 'accepted') {

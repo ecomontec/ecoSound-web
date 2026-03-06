@@ -36,12 +36,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (reviewForm.length) {
                     reviewForm.submit();
                 }
-                // Close modal and show success message after modal is fully hidden
-                let modal = $('#modal-div');
-                modal.one('hidden.bs.modal', function () {
+                // Check if we're in sidebar mode or modal mode
+                const inSidebarMode = $('.tag-sidebar-wrapper').length > 0;
+                
+                if (inSidebarMode) {
+                    // Close sidebar
+                    if (typeof window.closeTagSidebar === 'function') {
+                        window.closeTagSidebar();
+                    }
                     showAlert("Saved successfully.")
-                });
-                modal.modal('hide');
+                } else {
+                    // Close modal and show success message after modal is fully hidden
+                    let modal = $('#modal-div');
+                    modal.one('hidden.bs.modal', function () {
+                        showAlert("Saved successfully.")
+                    });
+                    modal.modal('hide');
+                }
                 return;
             }
 
@@ -66,19 +77,34 @@ document.addEventListener('DOMContentLoaded', function () {
                         reviewForm.submit();
                     }
                     
-                    // Close modal, reload table data, and show success message
-                    let modal = $('#modal-div');
+                    // Check if we're in sidebar mode or modal mode
+                    const inSidebarMode = $('.tag-sidebar-wrapper').length > 0;
                     
-                    // Wait for modal to fully close before reloading table
-                    modal.one('hidden.bs.modal', function () {
+                    if (inSidebarMode) {
+                        // Close sidebar and reload table
+                        if (typeof window.closeTagSidebar === 'function') {
+                            window.closeTagSidebar();
+                        }
                         // Reload the tags table to show the new/updated tag
                         if ($.fn.DataTable.isDataTable('#tagsTable')) {
                             $('#tagsTable').DataTable().ajax.reload(null, false);
                         }
                         showAlert("Saved successfully.")
-                    });
-                    
-                    modal.modal('hide');
+                    } else {
+                        // Close modal
+                        let modal = $('#modal-div');
+                        
+                        // Wait for modal to fully close before reloading table
+                        modal.one('hidden.bs.modal', function () {
+                            // Reload the tags table to show the new/updated tag
+                            if ($.fn.DataTable.isDataTable('#tagsTable')) {
+                                $('#tagsTable').DataTable().ajax.reload(null, false);
+                            }
+                            showAlert("Saved successfully.")
+                        });
+                        
+                        modal.modal('hide');
+                    }
                 });
             }
             this.classList.add('was-validated');
