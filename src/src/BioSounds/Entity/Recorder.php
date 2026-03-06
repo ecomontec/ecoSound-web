@@ -69,6 +69,14 @@ class Recorder extends BaseProvider
         return $this->database->executeUpdate([':id' => $id]);
     }
 
+    public function getBasicList()
+    {
+        $this->database->prepareQuery(
+            'SELECT ' . self::ID . ', ' . self::MODEL . ' FROM ' . self::TABLE_NAME . ' ORDER BY ' . self::MODEL
+        );
+        return $this->database->executeSelect();
+    }
+
     public function getColumns()
     {
         $sql = "SELECT COLUMN_NAME FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = '" . self::TABLE_NAME . "' ORDER BY ordinal_position";

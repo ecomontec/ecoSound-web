@@ -136,12 +136,6 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
-                    <i class="fas fa-times"></i>
-                    Close
-                </button>
-            </div>
         </div>
     </div>
 </div>
@@ -205,7 +199,8 @@
                     '<input type="text" class="form-control form-control-sm" name="version" value="" maxlength="100">',
                     '<input type="text" class="form-control form-control-sm" name="brand" value="" maxlength="100">',
                     '<input type="text" class="form-control form-control-sm" name="microphone" value="" maxlength="300" placeholder="e.g. 1,2,3">'
-                ]).draw(false).node();
+                ]);
+                newRow.draw(false);
             });
 
             /* Save on input change */
@@ -253,23 +248,20 @@
                 $('#delete_name').html(name.join(', '));
                 $('#delete_count').html(name.length);
                 $("#modal-delete").modal('show');
-            });false, false, function (response) {
-                    if (response.errorCode === 0) {
-                        showAlert(response.message);
-                        setTimeout(function() {
-                            location.reload();
-                        }, 2000);
-                    } else {
-                        showAlert(response.message);
-                    }ck(function (e) {
+            });
+
+            $('#js-delete-button').click(function (e) {
                 let id = [];
                 $('.js-checkbox:checked').each(function () {
                     id.push($(this).data('id'));
                 });
                 let data = {'id': id};
-                postRequest('{{ baseUrl }}/api/admin/recorderMgr/delete', data, true, false, function () {
-                    table.state.clear();
-                    location.reload();
+                postRequest('{{ baseUrl }}/api/admin/recorderMgr/delete', data, false, false, function (response) {
+                    if (response.errorCode === 0) {
+                        location.reload();
+                    } else {
+                        showAlert(response.message);
+                    }
                 });
             });
 

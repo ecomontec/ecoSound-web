@@ -252,7 +252,7 @@ class MicrophoneController extends BaseController
         $microphones = $microphone->getAll();
 
         header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename=microphones_export.csv');
+        header('Content-Disposition: attachment; filename=microphones.csv');
         
         $fp = fopen('php://output', 'w');
         

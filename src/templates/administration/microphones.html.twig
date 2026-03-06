@@ -133,12 +133,6 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
-                    <i class="fas fa-times"></i>
-                    Close
-                </button>
-            </div>
         </div>
     </div>
 </div>
@@ -199,7 +193,8 @@
                     '<input type="text" class="form-control form-control-sm" name="microphone_element" value="" maxlength="100">',
                     '<input type="number" class="form-control form-control-sm" name="sensitivity" value="">',
                     '<input type="number" class="form-control form-control-sm" name="signal_to_noise_ratio" value="">'
-                ]).draw(false).node();
+                ]);
+                newRow.draw(false);
             });
 
             /* Save on input change */
@@ -257,10 +252,7 @@
                 let data = {'id': id};
                 postRequest('{{ baseUrl }}/api/admin/microphoneMgr/delete', data, false, false, function (response) {
                     if (response.errorCode === 0) {
-                        showAlert(response.message);
-                        setTimeout(function() {
-                            location.reload();
-                        }, 2000);
+                        location.reload();
                     } else {
                         showAlert(response.message);
                     }

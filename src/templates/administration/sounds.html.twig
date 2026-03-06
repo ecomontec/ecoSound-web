@@ -123,12 +123,6 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
-                    <i class="fas fa-times"></i>
-                    Close
-                </button>
-            </div>
         </div>
     </div>
 </div>
@@ -187,7 +181,8 @@
                     '<input type="hidden" name="itemID" value="">New',
                     '<input type="text" class="form-control form-control-sm" name="soundscape_component" value="" maxlength="200">',
                     '<input type="text" class="form-control form-control-sm" name="sound_type" value="" maxlength="30">'
-                ]).draw(false).node();
+                ]);
+                newRow.draw(false);
             });
 
             /* Save on input change */
@@ -237,10 +232,7 @@
                 let data = {'id': id};
                 postRequest('{{ baseUrl }}/api/admin/soundMgr/delete', data, false, false, function (response) {
                     if (response.errorCode === 0) {
-                        showAlert(response.message);
-                        setTimeout(function() {
-                            location.reload();
-                        }, 2000);
+                        location.reload();
                     } else {
                         showAlert(response.message);
                     }
@@ -276,8 +268,9 @@
 
             /* Download CSV Template */
             $('#soundsCSVTemplate').click(function () {
-                const csvContent = "soundscape_component,sound_type\\n" +
-                    "Biophony,Call\\n";
+                const csvContent = "soundscape_component,sound_type\n" +
+                    "biophony,\n" +
+                    "snapping shrimps,\n";
                 const blob = new Blob([csvContent], { type: 'text/csv' });
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
