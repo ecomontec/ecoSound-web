@@ -804,33 +804,40 @@ class RecordingController extends BaseController
             $labelProvider = new LabelProvider();
             $label = $labelProvider->get($labelId);
             
-            if ($label && $label->getCreatorId() == Auth::getUserLoggedID()) {
-                // Delete all label associations first using a direct query since no provider method exists
-                $database = new \BioSounds\Utils\Database();
-                $database->prepareQuery('DELETE FROM label_association WHERE label_id = :label_id');
-                $database->executeDelete([':label_id' => $labelId]);
-                
-                // Delete the label itself
-                $database->prepareQuery('DELETE FROM label WHERE label_id = :label_id AND creator_id = :creator_id');
-                $database->executeDelete([
-                    ':label_id' => $labelId, 
-                    ':creator_id' => Auth::getUserLoggedID()
-                ]);
-                
+            if (!$label) {
                 return json_encode([
-                    'errorCode' => 0,
-                    'message' => 'Label deleted successfully.'
+                    'errorCode' => 1,
+                    'message' => 'Label not found.'
                 ]);
-            } else {
+            }
+            
+            if ($label->getCreatorId() != Auth::getUserLoggedID()) {
                 return json_encode([
                     'errorCode' => 1,
                     'message' => 'You can only delete labels you created.'
                 ]);
             }
+            
+            // Delete all label associations first using a direct query since no provider method exists
+            $database = new \BioSounds\Utils\Database();
+            $database->prepareQuery('DELETE FROM label_association WHERE label_id = :label_id');
+            $database->executeDelete([':label_id' => $labelId]);
+            
+            // Delete the label itself
+            $database->prepareQuery('DELETE FROM label WHERE label_id = :label_id AND creator_id = :creator_id');
+            $database->executeDelete([
+                ':label_id' => $labelId, 
+                ':creator_id' => Auth::getUserLoggedID()
+            ]);
+            
+            return json_encode([
+                'errorCode' => 0,
+                'message' => 'Label deleted successfully.'
+            ]);
         } catch (\Exception $e) {
             return json_encode([
                 'errorCode' => 1,
-                'message' => 'Error deleting label: ' . $e->getMessage()
+                'message' => 'Error: ' . $e->getMessage()
             ]);
         }
     }

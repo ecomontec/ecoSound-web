@@ -46,7 +46,7 @@ class SettingController extends BaseController
             'diskUsed' => $diskUsed,
             'diskFree' => $diskFree,
             'diskUsedPercent' => $diskUsedPercent,
-            'is_admin' => Auth::isAdmin(),
+            'is_admin' => Auth::isUserAdmin(),
         ]);
     }
 
