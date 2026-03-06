@@ -79,7 +79,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title text-danger">Warning</h5>
-                <button class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                <button class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -109,7 +109,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">CSV Upload Instructions</h5>
-                <button class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                <button class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -149,6 +149,10 @@
                     {
                         "orderable": false,
                         "targets": [0]
+                    },
+                    {
+                        "className": "dt-center",
+                        "targets": [0]
                     }
                 ]
             });
@@ -176,13 +180,12 @@
 
             /* Add new sound row */
             $('#soundFormButton').click(function (e) {
-                const newRow = table.row.add([
+                table.row.add([
                     '<input type="checkbox" class="js-checkbox" data-id="">',
                     '<input type="hidden" name="itemID" value="">New',
                     '<input type="text" class="form-control form-control-sm" name="soundscape_component" value="" maxlength="200">',
                     '<input type="text" class="form-control form-control-sm" name="sound_type" value="" maxlength="30">'
-                ]);
-                newRow.draw(false);
+                ]).draw(false);
             });
 
             /* Save on input change */

@@ -87,7 +87,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title text-danger">Warning</h5>
-                <button class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                <button class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -117,7 +117,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">CSV Upload Instructions</h5>
-                <button class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                <button class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -159,6 +159,10 @@
                     {
                         "orderable": false,
                         "targets": [0]
+                    },
+                    {
+                        "className": "dt-center",
+                        "targets": [0]
                     }
                 ]
             });
@@ -186,15 +190,14 @@
 
             /* Add new microphone row */
             $('#microphoneFormButton').click(function (e) {
-                const newRow = table.row.add([
+                table.row.add([
                     '<input type="checkbox" class="js-checkbox" data-id="">',
                     '<input type="hidden" name="itemID" value="">New',
                     '<input type="text" class="form-control form-control-sm" name="name" value="" maxlength="100" required>',
                     '<input type="text" class="form-control form-control-sm" name="microphone_element" value="" maxlength="100">',
                     '<input type="number" class="form-control form-control-sm" name="sensitivity" value="">',
                     '<input type="number" class="form-control form-control-sm" name="signal_to_noise_ratio" value="">'
-                ]);
-                newRow.draw(false);
+                ]).draw(false);
             });
 
             /* Save on input change */

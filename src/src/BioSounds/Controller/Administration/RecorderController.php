@@ -251,7 +251,7 @@ class RecorderController extends BaseController
         $recorders = $recorder->getAll();
 
         header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename=recorders_export.csv');
+        header('Content-Disposition: attachment; filename=recorders.csv');
         
         $fp = fopen('php://output', 'w');
         

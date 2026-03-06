@@ -187,6 +187,10 @@
                     {
                         "orderable": false,
                         "targets": [0]
+                    },
+                    {
+                        "className": "dt-center",
+                        "targets": [0]
                     }
                 ]
             });
@@ -247,7 +251,7 @@
                     id.push($(this).data('id'));
                 });
                 let data = {'id': id};
-                postRequest('{{ baseUrl }}/api/admin/speciesMgr/delete', data, true, false, function () {
+                postRequest('{{ baseUrl }}/api/admin/speciesMgr/delete', data, false, false, function () {
                     table.state.clear();
                     location.reload();
                 });
