@@ -17,10 +17,12 @@
                 <i class="fa fa-file-csv"></i>
                 Save all as CSV
             </button>
-            <button id="restartWorker" class="btn btn-outline-warning btn-sm mt-2" type="button" title="Restart the RabbitMQ worker if jobs are stuck">
-                <i class="fas fa-sync-alt"></i>
-                Restart Worker
-            </button>
+            {% if is_admin %}
+                <button id="restartWorker" class="btn btn-outline-warning btn-sm mt-2" type="button" title="Restart the RabbitMQ worker if jobs are stuck">
+                    <i class="fas fa-sync-alt"></i>
+                    Restart Worker
+                </button>
+            {% endif %}
         </div>
         <table id="queuesTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
