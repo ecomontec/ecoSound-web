@@ -175,7 +175,9 @@
                     "processing": true,
                     "serverSide": true,
                     "ajax": {
-                        "url": '{{ baseUrl }}/admin/siteManager/getListByPage/{{ projectId }}/{{ collectionId }}',
+                        "url": function() {
+                            return '{{ baseUrl }}/admin/siteManager/getListByPage/' + $('#projectId').val() + '/' + $('#collectionId').val();
+                        },
                         "type": 'POST',
                         "error": function (xhr, error, thrown) {
                             if (xhr.status == 400 || xhr.status == 404 || xhr.status == 500) {
@@ -187,12 +189,16 @@
                     "stateSave": true,
                     "iStateDuration": -1,
                     "stateSaveParams": function (settings, data) {
-                        data.projectId = {{ projectId }};
-                        data.collectionId = {{ collectionId }};
+                        data.projectId = parseInt($('#projectId').val());
+                        data.collectionId = parseInt($('#collectionId').val());
                     },
                     "stateLoadParams": function (settings, data) {
                         // Only load state if it matches current project and collection
-                        if (data.projectId !== {{ projectId }} || data.collectionId !== {{ collectionId }}) {
+                        var currentProjectId = parseInt($('#projectId').val());
+                        var currentCollectionId = parseInt($('#collectionId').val());
+                        if (!data.projectId || !data.collectionId || data.projectId !== currentProjectId || data.collectionId !== currentCollectionId) {
+                            // Clear invalid state from localStorage
+                            localStorage.removeItem('DataTables_' + settings.sInstance + '_' + location.pathname);
                             return false;
                         }
                     },

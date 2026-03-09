@@ -106,7 +106,9 @@
                 "processing": true,
                 "serverSide": true,
                 "ajax": {
-                    "url": '{{ baseUrl }}/admin/collectionMgr/getListByPage/{{ projectId }}/{{ collectionId }}',
+                    "url": function() {
+                        return '{{ baseUrl }}/admin/collectionMgr/getListByPage/' + $('#projectId').val() + '/0';
+                    },
                     "type": 'POST',
                     "error": function (xhr, error, thrown) {
                         if (xhr.status == 400 || xhr.status == 404 || xhr.status == 500) {
@@ -118,11 +120,12 @@
                 "stateSave": true,
                 "iStateDuration": -1,
                 "stateSaveParams": function (settings, data) {
-                    data.projectId = {{ projectId }};
+                    data.projectId = parseInt($('#projectId').val());
                 },
                 "stateLoadParams": function (settings, data) {
                     // Only load state if it matches current project
-                    if (!data.projectId || data.projectId !== {{ projectId }}) {
+                    var currentProjectId = parseInt($('#projectId').val());
+                    if (!data.projectId || data.projectId !== currentProjectId) {
                         // Clear invalid state from localStorage
                         localStorage.removeItem('DataTables_' + settings.sInstance + '_' + location.pathname);
                         return false;

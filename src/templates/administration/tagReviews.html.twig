@@ -156,7 +156,11 @@
                 "processing": true,
                 "serverSide": true,
                 "ajax": {
-                    "url": '{{ baseUrl }}/admin/tagReviewMgr/getListByPage/{{ colId|default(0) }}/{{ recordingId|default(0) }}',
+                    "url": function() {
+                        var colId = $('#colId').val() || '0';
+                        var recordingId = $('#recordingId').val() || '0';
+                        return '{{ baseUrl }}/admin/tagReviewMgr/getListByPage/' + colId + '/' + recordingId;
+                    },
                     "type": 'POST',
                     "error": function (xhr, error, thrown) {
                         console.error('DataTable error:', xhr.status, error, thrown);
@@ -173,12 +177,14 @@
                 "stateSave": true,
                 "iStateDuration": -1,
                 "stateSaveParams": function (settings, data) {
-                    data.colId = {{ colId|default(0) }};
-                    data.recordingId = {{ recordingId|default(0) }};
+                    data.colId = parseInt($('#colId').val()) || 0;
+                    data.recordingId = parseInt($('#recordingId').val()) || 0;
                 },
                 "stateLoadParams": function (settings, data) {
                     // Only load state if it matches current collection and recording
-                    if (!data.colId || data.colId !== {{ colId|default(0) }} || data.recordingId !== {{ recordingId|default(0) }}) {
+                    var currentColId = parseInt($('#colId').val()) || 0;
+                    var currentRecordingId = parseInt($('#recordingId').val()) || 0;
+                    if (!data.colId || data.colId !== currentColId || data.recordingId !== currentRecordingId) {
                         // Clear invalid state from localStorage
                         localStorage.removeItem('DataTables_' + settings.sInstance + '_' + location.pathname);
                         return false;
