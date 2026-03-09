@@ -31,11 +31,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
         tagForm.submit(function (e) {
             e.preventDefault();
+            
+            // Check if we should keep the form open (triggered by Enter key)
+            const keepOpen = $(this).data('keepOpen') === true;
+            // Reset the flag
+            $(this).data('keepOpen', false);
 
             if ($("#tagForm :input").prop('disabled') === true) {
                 if (reviewForm.length) {
                     reviewForm.submit();
                 }
+                
+                if (keepOpen) {
+                    // Just save, don't close
+                    showAlert("Saved successfully (tag remains open).");
+                    return;
+                }
+                
                 // Check if we're in sidebar mode or modal mode
                 const inSidebarMode = $('.tag-sidebar-wrapper').length > 0;
                 
@@ -75,6 +87,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     if (reviewForm.length) {
                         reviewForm.submit();
+                    }
+                    
+                    if (keepOpen) {
+                        // Just reload table and show message, don't close
+                        if ($.fn.DataTable.isDataTable('#tagsTable')) {
+                            $('#tagsTable').DataTable().ajax.reload(null, false);
+                        }
+                        showAlert("Saved successfully (tag remains open).");
+                        return;
                     }
                     
                     // Check if we're in sidebar mode or modal mode
@@ -310,7 +331,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // Add Enter key shortcut to save tag without closing
-console.log('Tag.js: Enter key handler registered');
 $(document).on('keydown', function (e) {
     // Check if tag form is visible - either in modal popup or sidebar
     const inModalPopup = $('#modal-div').is(':visible');
@@ -331,59 +351,8 @@ $(document).on('keydown', function (e) {
         e.preventDefault();
         e.stopPropagation();
         
-        const tagForm = $('#tagForm')[0];
-        
-        // Check if form is disabled (read-only mode)
-        if ($("#tagForm :input").prop('disabled') === true) {
-            console.log('Form is disabled, skipping save');
-            return;
-        }
-        
-        // Validate form
-        if (!tagForm.checkValidity()) {
-            tagForm.classList.add('was-validated');
-            console.log('Form validation failed');
-            return;
-        }
-        
-        console.log('Saving tag without closing...');
-        
-        let tagId = $("input[name='tag_id']").val();
-        
-        postRequest(baseUrl + '/api/tag/save', new FormData(tagForm), false, false, function (response) {
-            // These functions only exist in modal mode with spectrogram
-            if (typeof calculateCoordinates === 'function') {
-                calculateCoordinates();
-            }
-            
-            if (response.tagId && response.tagId > 1) {
-                tagId = response.tagId;
-                if (typeof createTag === 'function') {
-                    createTag(tagId);
-                }
-                // Update the hidden tag_id field with the new ID
-                $("input[name='tag_id']").val(tagId);
-            }
-            
-            if (typeof updateTag === 'function') {
-                updateTag(tagId);
-            }
-            
-            // Submit review form if present
-            let reviewForm = $('#reviewForm');
-            if (reviewForm.length) {
-                reviewForm.submit();
-            }
-            
-            // Reload the tags table to show the updated tag (but don't close the tag form)
-            if ($.fn.DataTable.isDataTable('#tagsTable')) {
-                $('#tagsTable').DataTable().ajax.reload(null, false);
-            }
-            
-            showAlert("Saved successfully (tag remains open).");
-            console.log('Tag saved successfully');
-        });
-        
-        tagForm.classList.add('was-validated');
+        // Set flag to keep form open, then trigger normal form submission
+        // This ensures all coordinate calculations and updates work properly
+        $('#tagForm').data('keepOpen', true).submit();
     }
 });
