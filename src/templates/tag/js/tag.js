@@ -110,6 +110,25 @@ document.addEventListener('DOMContentLoaded', function () {
             this.classList.add('was-validated');
         });
 
+        // Add Enter key shortcut to save tag when modal is open
+        $(document).on('keydown.tagModal', function (e) {
+            // Only handle Enter key when modal is visible and tag form exists
+            if (e.code === 'Enter' && $('#modal-div').hasClass('show') && $('#tagForm').length) {
+                // Don't trigger if user is typing in a textarea or text input (but allow for read-only fields)
+                const activeElement = document.activeElement;
+                const tagName = activeElement.tagName.toLowerCase();
+                const isTextInput = (tagName === 'textarea') || 
+                                  (tagName === 'input' && ['text', 'number', 'date', 'time'].includes(activeElement.type));
+                const isReadOnly = activeElement.readOnly || activeElement.disabled;
+                
+                // If not in a text field, or if in a read-only field, trigger save
+                if (!isTextInput || isReadOnly) {
+                    e.preventDefault();
+                    $('#saveButton').click();
+                }
+            }
+        });
+
         $('#deleteButton').click(function () {
             if (confirm('Are you sure you want to delete this tag?')) {
                 let modal = $('#modal-div');
@@ -306,5 +325,10 @@ document.addEventListener('DOMContentLoaded', function () {
             input.remove();
             showAlert(message);
         });
+    });
+
+    // Clean up Enter key handler when modal is hidden
+    $(document).on('hide.bs.modal', '#modal-div', function () {
+        $(document).off('keydown.tagModal');
     });
 });
