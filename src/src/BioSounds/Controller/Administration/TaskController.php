@@ -7,6 +7,9 @@ use BioSounds\Entity\Task;
 use BioSounds\Entity\User;
 use BioSounds\Exception\ForbiddenException;
 use BioSounds\Provider\TaskProvider;
+use BioSounds\Provider\ProjectProvider;
+use BioSounds\Provider\CollectionProvider;
+use BioSounds\Provider\RecordingProvider;
 use BioSounds\Utils\Auth;
 
 
@@ -14,12 +17,67 @@ class TaskController extends BaseController
 {
     const SECTION_TITLE = 'Tasks';
 
-    public function show()
+    public function show(int $pId = null, int $cId = null, int $rId = null)
     {
         if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
         }
-        return $this->twig->render('administration/tasks.html.twig');
+        
+        // Initialize variables
+        $projectId = null;
+        $colId = null;
+        $recordingId = null;
+        $collections = [];
+        $recordings = [];
+        
+        if (isset($_GET['projectId'])) {
+            $projectId = $_GET['projectId'];
+        }
+        if (isset($_GET['recordingId'])) {
+            $rId = $_GET['recordingId'];
+        }
+        if (isset($_GET['colId'])) {
+            $colId = $_GET['colId'];
+        }
+        if (!empty($pId)) {
+            $projectId = $pId;
+        }
+        if (!empty($cId)) {
+            $colId = $cId;
+        }
+        if (!empty($rId)) {
+            $recordingId = $rId;
+        }
+
+        $projects = (new ProjectProvider())->getWithPermission(Auth::getUserID(), 0);
+        if (empty($projects)) {
+            $projectId = null;
+            $colId = null;
+            $recordingId = null;
+        } else {
+            if (empty($projectId)) {
+                $projectId = $projects[0]->getId();
+            }
+            $collections = (new CollectionProvider())->getByProject($projectId, Auth::getUserID());
+            if (empty($colId) && !empty($collections)) {
+                $colId = $collections[0]->getId();
+            }
+            if (!empty($colId)) {
+                $recordings = (new RecordingProvider())->getRecording($colId);
+            }
+            if (empty($recordingId)) {
+                $recordingId = 0;
+            }
+        }
+        
+        return $this->twig->render('administration/tasks.html.twig', [
+            'projectId' => $projectId,
+            'projects' => $projects,
+            'colId' => $colId,
+            'collections' => $collections,
+            'recordingId' => $recordingId,
+            'recordings' => $recordings,
+        ]);
     }
 
     public function getListByPage()
