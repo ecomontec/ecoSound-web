@@ -158,7 +158,7 @@
             </div>
             <div class="modal-footer" style="flex-wrap: wrap; gap: 0.25rem;">
                 {% if edit %}
-                    <button type="button" class="btn btn-outline-primary btn-sm" {{ displaySaveButton }} id="saveButton">
+                    <button type="button" class="btn btn-outline-primary btn-sm" {{ displaySaveButton }} id="saveButton" title="Save tag (Enter)">
                         <i class="fas fa-save" aria-hidden="true"></i> Save
                     </button>
                     <button type="button" class="btn btn-outline-danger btn-sm" {{ displayDeleteButton }} id="deleteButton" data-tag-id="{{ tag.id }}">
@@ -176,7 +176,7 @@
                         </a>
                     </div>
                 {% else %}
-                    <button type="button" class="btn btn-outline-primary btn-sm" {{ displaySaveButton }} id="saveButton">
+                    <button type="button" class="btn btn-outline-primary btn-sm" {{ displaySaveButton }} id="saveButton" title="Save tag (Enter)">
                         <i class="fas fa-save" aria-hidden="true"></i> Save
                     </button>
                     <button type="button" class="btn btn-outline-danger btn-sm" {{ displayDeleteButton }} id="deleteButton" data-tag-id="{{ tag.id }}">
