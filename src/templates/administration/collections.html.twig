@@ -101,17 +101,26 @@
     {{ parent() }}
     <script>
         $(document).ready(function () {
+            // Clear invalid localStorage state before initializing DataTable
+            var storageName = 'DataTables_collTable_' + location.pathname;
+            var savedState = localStorage.getItem(storageName);
+            if (savedState) {
+                try {
+                    var state = JSON.parse(savedState);
+                    if (state.projectId && state.projectId !== {{ projectId }}) {
+                        localStorage.removeItem(storageName);
+                    }
+                } catch(e) {
+                    localStorage.removeItem(storageName);
+                }
+            }
+            
             $('#collTable').show()
             let table = $('#collTable').DataTable({
                 "processing": true,
                 "serverSide": true,
                 "ajax": {
-                    "url": function() {
-                        var projectId = $('#projectId').val() || '{{ projectId }}';
-                        // Ensure we never pass empty strings
-                        if (!projectId || projectId === '') projectId = '{{ projectId }}';
-                        return '{{ baseUrl }}/admin/collectionMgr/getListByPage/' + projectId + '/0';
-                    },
+                    "url": '{{ baseUrl }}/admin/collectionMgr/getListByPage/{{ projectId }}/0',
                     "type": 'POST',
                     "error": function (xhr, error, thrown) {
                         if (xhr.status == 400 || xhr.status == 404 || xhr.status == 500) {
@@ -123,20 +132,11 @@
                 "stateSave": true,
                 "iStateDuration": -1,
                 "stateSaveParams": function (settings, data) {
-                    var projectId = $('#projectId').val() || '{{ projectId }}';
-                    if (!projectId || projectId === '') projectId = '{{ projectId }}';
-                    data.projectId = parseInt(projectId);
+                    data.projectId = {{ projectId }};
                 },
                 "stateLoadParams": function (settings, data) {
-                    // Only load state if it matches current project
-                    var projectId = $('#projectId').val() || '{{ projectId }}';
-                    if (!projectId || projectId === '') projectId = '{{ projectId }}';
-                    var currentProjectId = parseInt(projectId);
-                    if (!data.projectId || data.projectId !== currentProjectId) {
-                        // Clear invalid state from localStorage
-                        localStorage.removeItem('DataTables_' + settings.sInstance + '_' + location.pathname);
-                        return false;
-                    }
+                    // State already validated before init
+                    return true;
                 },
                 "order": [[1, 'asc']],
                 "columnDefs": [

@@ -337,19 +337,26 @@
         {{ parent() }}
         <script>
             $(document).ready(function () {
+                // Clear invalid localStorage state before initializing DataTable
+                var storageName = 'DataTables_recTable_' + location.pathname;
+                var savedState = localStorage.getItem(storageName);
+                if (savedState) {
+                    try {
+                        var state = JSON.parse(savedState);
+                        if (state.colId && state.colId !== {{ colId }}) {
+                            localStorage.removeItem(storageName);
+                        }
+                    } catch(e) {
+                        localStorage.removeItem(storageName);
+                    }
+                }
+                
                 $('#recTable').show()
                 let table = $('#recTable').DataTable({
                     "processing": true,
                     "serverSide": true,
                     "ajax": {
-                        "url": function() {
-                            var projectId = $('#projectId').val() || '{{ projectId }}';
-                            var colId = $('#colId').val() || '{{ colId }}';
-                            // Ensure we never pass empty strings
-                            if (!projectId || projectId === '') projectId = '{{ projectId }}';
-                            if (!colId || colId === '') colId = '{{ colId }}';
-                            return '{{ baseUrl }}/admin/recordingManager/getListByPage/' + projectId + '/' + colId;
-                        },
+                        "url": '{{ baseUrl }}/admin/recordingManager/getListByPage/{{ projectId }}/{{ colId }}',
                         "type": 'POST',
                         "error": function (xhr, error, thrown) {
                             if (xhr.status == 400 || xhr.status == 404 || xhr.status == 500) {
@@ -361,20 +368,11 @@
                     "stateSave": true,
                     "iStateDuration": -1,
                     "stateSaveParams": function (settings, data) {
-                        var colId = $('#colId').val() || '{{ colId }}';
-                        if (!colId || colId === '') colId = '{{ colId }}';
-                        data.colId = parseInt(colId);
+                        data.colId = {{ colId }};
                     },
                     "stateLoadParams": function (settings, data) {
-                        // Only load state if it matches current collection
-                        var colId = $('#colId').val() || '{{ colId }}';
-                        if (!colId || colId === '') colId = '{{ colId }}';
-                        var currentColId = parseInt(colId);
-                        if (!data.colId || data.colId !== currentColId) {
-                            // Clear invalid state from localStorage
-                            localStorage.removeItem('DataTables_' + settings.sInstance + '_' + location.pathname);
-                            return false;
-                        }
+                        // State already validated before init
+                        return true;
                     },
                     "order": [[1, 'asc']],
                     "columnDefs": [
