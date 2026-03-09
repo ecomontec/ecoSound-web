@@ -158,7 +158,7 @@
             </div>
             <div class="modal-footer" style="flex-wrap: wrap; gap: 0.25rem;">
                 {% if edit %}
-                    <button type="button" class="btn btn-outline-primary btn-sm" {{ displaySaveButton }} id="saveButton" disabled>
+                    <button type="button" class="btn btn-outline-primary btn-sm" {{ displaySaveButton }} id="saveButton">
                         <i class="fas fa-save" aria-hidden="true"></i> Save
                     </button>
                     <button type="button" class="btn btn-outline-danger btn-sm" {{ displayDeleteButton }} id="deleteButton" data-tag-id="{{ tag.id }}">
@@ -209,16 +209,6 @@
         $('#sound_id').selectpicker('refresh');
         // Only affect buttons within the tag form, not all buttons on page
         $("#modal-div .btn, #tag-sidebar-content .btn").css("text-align", "left");
-        $('#tag-panel').on('input', 'input, select', function () {
-            $('#saveButton').removeAttr('disabled');
-        });
-        $('#sound_id').on('changed.bs.select', function () {
-            $('#saveButton').removeAttr('disabled');
-        });
-        $('#reviewForm').on('click', 'button', function () {
-            $('#saveButton').removeAttr('disabled');
-        });
-        // Save button is now always just "Save"
     });
     $("#modal-div").on('shown.bs.modal', function () {
         if ($("#animal_sound_type")[0].options.length == 1) {

@@ -310,7 +310,12 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // Add Enter key shortcut to save tag when modal is open (outside modal event to avoid multiple bindings)
+console.log('Tag.js: Enter key handler registered');
 $(document).on('keydown', function (e) {
+    if (e.key === 'Enter') {
+        console.log('Enter pressed, modal visible:', $('#modal-div').is(':visible'), 'form exists:', $('#tagForm').length);
+    }
+    
     // Only handle Enter key when tag modal is visible
     if (e.key === 'Enter' && $('#modal-div').is(':visible') && $('#tagForm').length) {
         // Don't trigger if user is typing in a textarea, text input, or select dropdown
@@ -320,8 +325,11 @@ $(document).on('keydown', function (e) {
                           (tagName === 'input' && ['text', 'number', 'date', 'time', 'search'].includes(activeElement.type));
         const isSelect = tagName === 'select';
         
+        console.log('Active element:', tagName, 'type:', activeElement.type, 'isTextInput:', isTextInput, 'isSelect:', isSelect);
+        
         // Only trigger if NOT in a text input or select dropdown
         if (!isTextInput && !isSelect) {
+            console.log('Submitting form...');
             e.preventDefault();
             e.stopPropagation();
             // Directly submit the form instead of clicking button (button may be disabled)
