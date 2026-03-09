@@ -45,17 +45,15 @@
                                     User</a>
                             </li>
                         {% endif %}
-                        {% if is_admin %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ baseUrl }}/admin/projects">
-                                    <i class="fas fa-desktop pr-1"></i>
-                                    Projects</a>
-                            </li>
-                        {% endif %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ baseUrl }}/admin/collections">
                                 <i class="fas fa-book pr-1"></i>
                                 Collections</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ baseUrl }}/admin/sites">
+                                <i class="fa fa-map-marker pr-1"></i>
+                                Sites</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ baseUrl }}/admin/recordings">
@@ -86,9 +84,9 @@
                             <li class="nav-item"><hr class="my-2" style="border-color: #dee2e6;"></li>
                             <li class="nav-item disabled"><small class="text-muted ml-3">Admin tables</small></li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ baseUrl }}/admin/sites">
-                                    <i class="fa fa-map-marker pr-1"></i>
-                                    Sites</a>
+                                <a class="nav-link" href="{{ baseUrl }}/admin/projects">
+                                    <i class="fas fa-desktop pr-1"></i>
+                                    Projects</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ baseUrl }}/admin/sounds">
