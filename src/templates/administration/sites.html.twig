@@ -176,7 +176,9 @@
                     "serverSide": true,
                     "ajax": {
                         "url": function() {
-                            return '{{ baseUrl }}/admin/siteManager/getListByPage/' + $('#projectId').val() + '/' + $('#collectionId').val();
+                            var projectId = $('#projectId').val() || '{{ projectId }}';
+                            var collectionId = $('#collectionId').val() || '{{ collectionId }}';
+                            return '{{ baseUrl }}/admin/siteManager/getListByPage/' + projectId + '/' + collectionId;
                         },
                         "type": 'POST',
                         "error": function (xhr, error, thrown) {
@@ -189,13 +191,13 @@
                     "stateSave": true,
                     "iStateDuration": -1,
                     "stateSaveParams": function (settings, data) {
-                        data.projectId = parseInt($('#projectId').val());
-                        data.collectionId = parseInt($('#collectionId').val());
+                        data.projectId = parseInt($('#projectId').val() || '{{ projectId }}');
+                        data.collectionId = parseInt($('#collectionId').val() || '{{ collectionId }}');
                     },
                     "stateLoadParams": function (settings, data) {
                         // Only load state if it matches current project and collection
-                        var currentProjectId = parseInt($('#projectId').val());
-                        var currentCollectionId = parseInt($('#collectionId').val());
+                        var currentProjectId = parseInt($('#projectId').val() || '{{ projectId }}');
+                        var currentCollectionId = parseInt($('#collectionId').val() || '{{ collectionId }}');
                         if (!data.projectId || !data.collectionId || data.projectId !== currentProjectId || data.collectionId !== currentCollectionId) {
                             // Clear invalid state from localStorage
                             localStorage.removeItem('DataTables_' + settings.sInstance + '_' + location.pathname);

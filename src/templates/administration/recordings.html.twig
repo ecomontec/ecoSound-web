@@ -343,7 +343,9 @@
                     "serverSide": true,
                     "ajax": {
                         "url": function() {
-                            return '{{ baseUrl }}/admin/recordingManager/getListByPage/' + $('#projectId').val() + '/' + $('#colId').val();
+                            var projectId = $('#projectId').val() || '{{ projectId }}';
+                            var colId = $('#colId').val() || '{{ colId }}';
+                            return '{{ baseUrl }}/admin/recordingManager/getListByPage/' + projectId + '/' + colId;
                         },
                         "type": 'POST',
                         "error": function (xhr, error, thrown) {
@@ -356,11 +358,11 @@
                     "stateSave": true,
                     "iStateDuration": -1,
                     "stateSaveParams": function (settings, data) {
-                        data.colId = parseInt($('#colId').val());
+                        data.colId = parseInt($('#colId').val() || '{{ colId }}');
                     },
                     "stateLoadParams": function (settings, data) {
                         // Only load state if it matches current collection
-                        var currentColId = parseInt($('#colId').val());
+                        var currentColId = parseInt($('#colId').val() || '{{ colId }}');
                         if (!data.colId || data.colId !== currentColId) {
                             // Clear invalid state from localStorage
                             localStorage.removeItem('DataTables_' + settings.sInstance + '_' + location.pathname);
