@@ -352,7 +352,16 @@
                     },
                     "dom": 'lrtip',
                     "stateSave": true,
-                    "StateDuration": -1,
+                    "iStateDuration": -1,
+                    "stateSaveParams": function (settings, data) {
+                        data.colId = {{ colId }};
+                    },
+                    "stateLoadParams": function (settings, data) {
+                        // Only load state if it matches current collection
+                        if (data.colId !== {{ colId }}) {
+                            return false;
+                        }
+                    },
                     "order": [[1, 'asc']],
                     "columnDefs": [
                         {

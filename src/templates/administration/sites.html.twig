@@ -185,7 +185,17 @@
                     },
                     "dom": 'lrtip',
                     "stateSave": true,
-                    "StateDuration": -1,
+                    "iStateDuration": -1,
+                    "stateSaveParams": function (settings, data) {
+                        data.projectId = {{ projectId }};
+                        data.collectionId = {{ collectionId }};
+                    },
+                    "stateLoadParams": function (settings, data) {
+                        // Only load state if it matches current project and collection
+                        if (data.projectId !== {{ projectId }} || data.collectionId !== {{ collectionId }}) {
+                            return false;
+                        }
+                    },
                     "order": [[1, 'asc']],
                     "columnDefs": [
                         {

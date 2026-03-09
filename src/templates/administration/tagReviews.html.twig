@@ -171,7 +171,17 @@
                 },
                 "dom": 'lrtip',
                 "stateSave": true,
-                "StateDuration": -1,
+                "iStateDuration": -1,
+                "stateSaveParams": function (settings, data) {
+                    data.colId = {{ colId|default(0) }};
+                    data.recordingId = {{ recordingId|default(0) }};
+                },
+                "stateLoadParams": function (settings, data) {
+                    // Only load state if it matches current collection and recording
+                    if (data.colId !== {{ colId|default(0) }} || data.recordingId !== {{ recordingId|default(0) }}) {
+                        return false;
+                    }
+                },
                 "order": [[1, 'asc']],
                 "columnDefs": [
                     {

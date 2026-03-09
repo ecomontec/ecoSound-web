@@ -116,7 +116,16 @@
                 },
                 "dom": 'lrtip',
                 "stateSave": true,
-                "StateDuration": -1,
+                "iStateDuration": -1,
+                "stateSaveParams": function (settings, data) {
+                    data.projectId = {{ projectId }};
+                },
+                "stateLoadParams": function (settings, data) {
+                    // Only load state if it matches current project
+                    if (data.projectId !== {{ projectId }}) {
+                        return false;
+                    }
+                },
                 "order": [[1, 'asc']],
                 "columnDefs": [
                     {
