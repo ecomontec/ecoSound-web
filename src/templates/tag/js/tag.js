@@ -313,11 +313,19 @@ document.addEventListener('DOMContentLoaded', function () {
 console.log('Tag.js: Enter key handler registered');
 $(document).on('keydown', function (e) {
     if (e.key === 'Enter') {
-        console.log('Enter pressed, modal visible:', $('#modal-div').is(':visible'), 'form exists:', $('#tagForm').length);
+        const inModalPopup = $('#modal-div').is(':visible');
+        const inSidebar = $('.tag-sidebar-wrapper').length > 0;
+        const formExists = $('#tagForm').length;
+        console.log('Enter pressed, modal popup:', inModalPopup, 'sidebar:', inSidebar, 'form exists:', formExists);
     }
     
-    // Only handle Enter key when tag modal is visible
-    if (e.key === 'Enter' && $('#modal-div').is(':visible') && $('#tagForm').length) {
+    // Check if tag form is visible - either in modal popup or sidebar
+    const inModalPopup = $('#modal-div').is(':visible');
+    const inSidebar = $('.tag-sidebar-wrapper').length > 0;
+    const formExists = $('#tagForm').length;
+    
+    // Only handle Enter key when tag form is visible (in modal or sidebar)
+    if (e.key === 'Enter' && (inModalPopup || inSidebar) && formExists) {
         // Don't trigger if user is typing in a textarea, text input, or select dropdown
         const activeElement = document.activeElement;
         const tagName = activeElement.tagName.toLowerCase();
