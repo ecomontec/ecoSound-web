@@ -326,17 +326,16 @@ $(document).on('keydown', function (e) {
     
     // Only handle Enter key when tag form is visible (in modal or sidebar)
     if (e.key === 'Enter' && (inModalPopup || inSidebar) && formExists) {
-        // Don't trigger if user is typing in a textarea, text input, or select dropdown
+        // Don't trigger if user is typing in a textarea or text input
         const activeElement = document.activeElement;
         const tagName = activeElement.tagName.toLowerCase();
         const isTextInput = (tagName === 'textarea') || 
                           (tagName === 'input' && ['text', 'number', 'date', 'time', 'search'].includes(activeElement.type));
-        const isSelect = tagName === 'select';
         
-        console.log('Active element:', tagName, 'type:', activeElement.type, 'isTextInput:', isTextInput, 'isSelect:', isSelect);
+        console.log('Active element:', tagName, 'type:', activeElement.type, 'isTextInput:', isTextInput);
         
-        // Only trigger if NOT in a text input or select dropdown
-        if (!isTextInput && !isSelect) {
+        // Only trigger if NOT typing in a text input (selects are OK since user has already made selection)
+        if (!isTextInput) {
             console.log('Submitting form...');
             e.preventDefault();
             e.stopPropagation();
