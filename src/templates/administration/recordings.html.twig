@@ -358,7 +358,9 @@
                     },
                     "stateLoadParams": function (settings, data) {
                         // Only load state if it matches current collection
-                        if (data.colId !== {{ colId }}) {
+                        if (!data.colId || data.colId !== {{ colId }}) {
+                            // Clear invalid state from localStorage
+                            localStorage.removeItem('DataTables_' + settings.sInstance + '_' + location.pathname);
                             return false;
                         }
                     },
@@ -572,6 +574,10 @@
                     $("#projectForm").submit();
                 });
                 $('#colId').change(function () {
+                    // Clear DataTable state when changing collections
+                    if (typeof table !== 'undefined') {
+                        table.state.clear();
+                    }
                     $("#projectForm").submit();
                 });
                 $('#metaDemo').on('click', function () {

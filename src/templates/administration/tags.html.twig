@@ -202,7 +202,9 @@
                 },
                 "stateLoadParams": function (settings, data) {
                     // Only load state if it matches current collection and recording
-                    if (data.colId !== {{ colId }} || data.recordingId !== '{{ recordingId }}') {
+                    if (!data.colId || data.colId !== {{ colId }} || data.recordingId !== '{{ recordingId }}') {
+                        // Clear invalid state from localStorage
+                        localStorage.removeItem('DataTables_' + settings.sInstance + '_' + location.pathname);
                         return false;
                     }
                 },
@@ -371,9 +373,17 @@
             });
             $('#colId').change(function () {
                 $('#recordingId').val("")
+                // Clear DataTable state when changing collections
+                if (typeof table !== 'undefined') {
+                    table.state.clear();
+                }
                 $("#collectionForm").submit();
             });
             $('#recordingId').change(function () {
+                // Clear DataTable state when changing recordings
+                if (typeof table !== 'undefined') {
+                    table.state.clear();
+                }
                 $("#collectionForm").submit();
             });
             $('#tagsTable tbody').on('click', 'input[name=distance_not_estimable]', function () {

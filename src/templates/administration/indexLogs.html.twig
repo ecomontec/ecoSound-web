@@ -100,7 +100,9 @@
                 },
                 "stateLoadParams": function (settings, data) {
                     // Only load state if it matches current project and collection
-                    if (data.projectId !== {{ projectId }} || data.colId !== {{ colId }}) {
+                    if (!data.projectId || !data.colId || data.projectId !== {{ projectId }} || data.colId !== {{ colId }}) {
+                        // Clear invalid state from localStorage
+                        localStorage.removeItem('DataTables_' + settings.sInstance + '_' + location.pathname);
                         return false;
                     }
                 },

@@ -587,9 +587,17 @@
                 });
                 $('#projectId').change(function () {
                     $('#collectionId').val("")
+                    // Clear DataTable state when changing projects
+                    if (typeof table !== 'undefined') {
+                        table.state.clear();
+                    }
                     $("#projectForm").submit();
                 });
                 $('#collectionId').change(function () {
+                    // Clear DataTable state when changing collections
+                    if (typeof table !== 'undefined') {
+                        table.state.clear();
+                    }
                     $("#projectForm").submit();
                 });
 

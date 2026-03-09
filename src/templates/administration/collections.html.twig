@@ -122,7 +122,9 @@
                 },
                 "stateLoadParams": function (settings, data) {
                     // Only load state if it matches current project
-                    if (data.projectId !== {{ projectId }}) {
+                    if (!data.projectId || data.projectId !== {{ projectId }}) {
+                        // Clear invalid state from localStorage
+                        localStorage.removeItem('DataTables_' + settings.sInstance + '_' + location.pathname);
                         return false;
                     }
                 },
@@ -233,6 +235,10 @@
             });
 
             $('#projectId').change(function () {
+                // Clear DataTable state when changing projects
+                if (typeof table !== 'undefined') {
+                    table.state.clear();
+                }
                 $("#projectForm").submit();
             });
 
