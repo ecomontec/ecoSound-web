@@ -108,6 +108,8 @@
                 "ajax": {
                     "url": function() {
                         var projectId = $('#projectId').val() || '{{ projectId }}';
+                        // Ensure we never pass empty strings
+                        if (!projectId || projectId === '') projectId = '{{ projectId }}';
                         return '{{ baseUrl }}/admin/collectionMgr/getListByPage/' + projectId + '/0';
                     },
                     "type": 'POST',
@@ -121,11 +123,15 @@
                 "stateSave": true,
                 "iStateDuration": -1,
                 "stateSaveParams": function (settings, data) {
-                    data.projectId = parseInt($('#projectId').val() || '{{ projectId }}');
+                    var projectId = $('#projectId').val() || '{{ projectId }}';
+                    if (!projectId || projectId === '') projectId = '{{ projectId }}';
+                    data.projectId = parseInt(projectId);
                 },
                 "stateLoadParams": function (settings, data) {
                     // Only load state if it matches current project
-                    var currentProjectId = parseInt($('#projectId').val() || '{{ projectId }}');
+                    var projectId = $('#projectId').val() || '{{ projectId }}';
+                    if (!projectId || projectId === '') projectId = '{{ projectId }}';
+                    var currentProjectId = parseInt(projectId);
                     if (!data.projectId || data.projectId !== currentProjectId) {
                         // Clear invalid state from localStorage
                         localStorage.removeItem('DataTables_' + settings.sInstance + '_' + location.pathname);

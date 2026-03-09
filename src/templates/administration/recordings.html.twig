@@ -345,6 +345,9 @@
                         "url": function() {
                             var projectId = $('#projectId').val() || '{{ projectId }}';
                             var colId = $('#colId').val() || '{{ colId }}';
+                            // Ensure we never pass empty strings
+                            if (!projectId || projectId === '') projectId = '{{ projectId }}';
+                            if (!colId || colId === '') colId = '{{ colId }}';
                             return '{{ baseUrl }}/admin/recordingManager/getListByPage/' + projectId + '/' + colId;
                         },
                         "type": 'POST',
@@ -358,11 +361,15 @@
                     "stateSave": true,
                     "iStateDuration": -1,
                     "stateSaveParams": function (settings, data) {
-                        data.colId = parseInt($('#colId').val() || '{{ colId }}');
+                        var colId = $('#colId').val() || '{{ colId }}';
+                        if (!colId || colId === '') colId = '{{ colId }}';
+                        data.colId = parseInt(colId);
                     },
                     "stateLoadParams": function (settings, data) {
                         // Only load state if it matches current collection
-                        var currentColId = parseInt($('#colId').val() || '{{ colId }}');
+                        var colId = $('#colId').val() || '{{ colId }}';
+                        if (!colId || colId === '') colId = '{{ colId }}';
+                        var currentColId = parseInt(colId);
                         if (!data.colId || data.colId !== currentColId) {
                             // Clear invalid state from localStorage
                             localStorage.removeItem('DataTables_' + settings.sInstance + '_' + location.pathname);

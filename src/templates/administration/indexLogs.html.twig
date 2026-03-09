@@ -86,6 +86,10 @@
                     "url": '{{ baseUrl }}/admin/indexLogMgr/getListByPage/{{ projectId }}/{{ colId }}',
                     "type": 'POST',
                     "error": function (xhr, error, thrown) {
+                        console.error('IndexLogs DataTable error:', xhr.status, error, thrown);
+                        if (xhr.responseText) {
+                            console.error('Response:', xhr.responseText);
+                        }
                         if (xhr.status == 400 || xhr.status == 404 ||xhr.status == 500) {
                             location.reload();
                         }

@@ -178,6 +178,9 @@
                         "url": function() {
                             var projectId = $('#projectId').val() || '{{ projectId }}';
                             var collectionId = $('#collectionId').val() || '{{ collectionId }}';
+                            // Ensure we never pass empty strings
+                            if (!projectId || projectId === '') projectId = '{{ projectId }}';
+                            if (!collectionId || collectionId === '') collectionId = '{{ collectionId }}';
                             return '{{ baseUrl }}/admin/siteManager/getListByPage/' + projectId + '/' + collectionId;
                         },
                         "type": 'POST',
@@ -191,13 +194,21 @@
                     "stateSave": true,
                     "iStateDuration": -1,
                     "stateSaveParams": function (settings, data) {
-                        data.projectId = parseInt($('#projectId').val() || '{{ projectId }}');
-                        data.collectionId = parseInt($('#collectionId').val() || '{{ collectionId }}');
+                        var projectId = $('#projectId').val() || '{{ projectId }}';
+                        var collectionId = $('#collectionId').val() || '{{ collectionId }}';
+                        if (!projectId || projectId === '') projectId = '{{ projectId }}';
+                        if (!collectionId || collectionId === '') collectionId = '{{ collectionId }}';
+                        data.projectId = parseInt(projectId);
+                        data.collectionId = parseInt(collectionId);
                     },
                     "stateLoadParams": function (settings, data) {
                         // Only load state if it matches current project and collection
-                        var currentProjectId = parseInt($('#projectId').val() || '{{ projectId }}');
-                        var currentCollectionId = parseInt($('#collectionId').val() || '{{ collectionId }}');
+                        var projectId = $('#projectId').val() || '{{ projectId }}';
+                        var collectionId = $('#collectionId').val() || '{{ collectionId }}';
+                        if (!projectId || projectId === '') projectId = '{{ projectId }}';
+                        if (!collectionId || collectionId === '') collectionId = '{{ collectionId }}';
+                        var currentProjectId = parseInt(projectId);
+                        var currentCollectionId = parseInt(collectionId);
                         if (!data.projectId || !data.collectionId || data.projectId !== currentProjectId || data.collectionId !== currentCollectionId) {
                             // Clear invalid state from localStorage
                             localStorage.removeItem('DataTables_' + settings.sInstance + '_' + location.pathname);

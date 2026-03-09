@@ -188,6 +188,9 @@
                     "url": function() {
                         var colId = $('#colId').val() || '{{ colId }}';
                         var recordingId = $('#recordingId').val() || '{{ recordingId }}';
+                        // Ensure we never pass empty strings
+                        if (!colId || colId === '') colId = '{{ colId }}';
+                        if (!recordingId || recordingId === '') recordingId = '{{ recordingId }}';
                         return '{{ baseUrl }}/admin/tagMgr/getListByPage/' + colId + '/' + recordingId;
                     },
                     "type": 'POST',
@@ -201,13 +204,21 @@
                 "stateSave": true,
                 "iStateDuration": -1,
                 "stateSaveParams": function (settings, data) {
-                    data.colId = parseInt($('#colId').val() || '{{ colId }}');
-                    data.recordingId = $('#recordingId').val() || '{{ recordingId }}';
+                    var colId = $('#colId').val() || '{{ colId }}';
+                    var recordingId = $('#recordingId').val() || '{{ recordingId }}';
+                    if (!colId || colId === '') colId = '{{ colId }}';
+                    if (!recordingId || recordingId === '') recordingId = '{{ recordingId }}';
+                    data.colId = parseInt(colId);
+                    data.recordingId = recordingId;
                 },
                 "stateLoadParams": function (settings, data) {
                     // Only load state if it matches current collection and recording
-                    var currentColId = parseInt($('#colId').val() || '{{ colId }}');
-                    var currentRecordingId = $('#recordingId').val() || '{{ recordingId }}';
+                    var colId = $('#colId').val() || '{{ colId }}';
+                    var recordingId = $('#recordingId').val() || '{{ recordingId }}';
+                    if (!colId || colId === '') colId = '{{ colId }}';
+                    if (!recordingId || recordingId === '') recordingId = '{{ recordingId }}';
+                    var currentColId = parseInt(colId);
+                    var currentRecordingId = recordingId;
                     if (!data.colId || data.colId !== currentColId || data.recordingId !== currentRecordingId) {
                         // Clear invalid state from localStorage
                         localStorage.removeItem('DataTables_' + settings.sInstance + '_' + location.pathname);

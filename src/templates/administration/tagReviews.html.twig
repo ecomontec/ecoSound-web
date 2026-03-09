@@ -157,8 +157,14 @@
                 "serverSide": true,
                 "ajax": {
                     "url": function() {
-                        var colId = $('#colId').val() || '{{ colId|default(0) }}';
-                        var recordingId = $('#recordingId').val() || '{{ recordingId|default(0) }}';
+                        var colId = $('#colId').val();
+                        var recordingId = $('#recordingId').val();
+                        // Handle empty or undefined values - use 0 as default
+                        if (!colId || colId === '' || colId === 'undefined') colId = '0';
+                        if (!recordingId || recordingId === '' || recordingId === 'undefined') recordingId = '0';
+                        // Try to use template values if we have them and dropdown is empty
+                        if (colId === '0' && '{{ colId|default(0) }}' !== '0') colId = '{{ colId|default(0) }}';
+                        if (recordingId === '0' && '{{ recordingId|default(0) }}' !== '0') recordingId = '{{ recordingId|default(0) }}';
                         return '{{ baseUrl }}/admin/tagReviewMgr/getListByPage/' + colId + '/' + recordingId;
                     },
                     "type": 'POST',
@@ -177,13 +183,25 @@
                 "stateSave": true,
                 "iStateDuration": -1,
                 "stateSaveParams": function (settings, data) {
-                    data.colId = parseInt($('#colId').val() || '{{ colId|default(0) }}');
-                    data.recordingId = parseInt($('#recordingId').val() || '{{ recordingId|default(0) }}');
+                    var colId = $('#colId').val();
+                    var recordingId = $('#recordingId').val();
+                    if (!colId || colId === '' || colId === 'undefined') colId = '0';
+                    if (!recordingId || recordingId === '' || recordingId === 'undefined') recordingId = '0';
+                    if (colId === '0' && '{{ colId|default(0) }}' !== '0') colId = '{{ colId|default(0) }}';
+                    if (recordingId === '0' && '{{ recordingId|default(0) }}' !== '0') recordingId = '{{ recordingId|default(0) }}';
+                    data.colId = parseInt(colId);
+                    data.recordingId = parseInt(recordingId);
                 },
                 "stateLoadParams": function (settings, data) {
                     // Only load state if it matches current collection and recording
-                    var currentColId = parseInt($('#colId').val() || '{{ colId|default(0) }}');
-                    var currentRecordingId = parseInt($('#recordingId').val() || '{{ recordingId|default(0) }}');
+                    var colId = $('#colId').val();
+                    var recordingId = $('#recordingId').val();
+                    if (!colId || colId === '' || colId === 'undefined') colId = '0';
+                    if (!recordingId || recordingId === '' || recordingId === 'undefined') recordingId = '0';
+                    if (colId === '0' && '{{ colId|default(0) }}' !== '0') colId = '{{ colId|default(0) }}';
+                    if (recordingId === '0' && '{{ recordingId|default(0) }}' !== '0') recordingId = '{{ recordingId|default(0) }}';
+                    var currentColId = parseInt(colId);
+                    var currentRecordingId = parseInt(recordingId);
                     if (!data.colId || data.colId !== currentColId || data.recordingId !== currentRecordingId) {
                         // Clear invalid state from localStorage
                         localStorage.removeItem('DataTables_' + settings.sInstance + '_' + location.pathname);
