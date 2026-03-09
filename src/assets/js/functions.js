@@ -446,8 +446,7 @@ function resetDataTablesPagination(table) {
     if (!table) return;
     
     try {
-        // Clear the state and reset to first page
-        table.state.clear();
+        // Reset to first page
         table.page(0).draw();
     } catch (e) {
         console.error('Error resetting DataTable pagination:', e);
