@@ -82,6 +82,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (response.tagId && response.tagId > 1) {
                         tagId = response.tagId;
                         createTag(tagId);
+                        // Update the hidden tag_id field so subsequent saves update this tag
+                        $("input[name='tag_id']").val(tagId);
                     }
                     updateTag(tagId);
 

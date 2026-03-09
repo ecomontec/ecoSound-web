@@ -676,6 +676,8 @@
                     // If this is a new tag (tagId was empty or <= 0), create the visual
                     if (!tagId || parseInt(tagId) <= 0) {
                         createTagVisual(newTagId);
+                        // Update the hidden tag_id field so subsequent saves update this tag
+                        tagForm.find("input[name='tag_id']").val(newTagId);
                     } else {
                         // Update existing tag visual
                         updateTagVisual(newTagId);
