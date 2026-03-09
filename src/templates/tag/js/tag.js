@@ -309,16 +309,9 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// Add Enter key shortcut to save tag when modal is open (outside modal event to avoid multiple bindings)
+// Add Enter key shortcut to save tag without closing
 console.log('Tag.js: Enter key handler registered');
 $(document).on('keydown', function (e) {
-    if (e.key === 'Enter') {
-        const inModalPopup = $('#modal-div').is(':visible');
-        const inSidebar = $('.tag-sidebar-wrapper').length > 0;
-        const formExists = $('#tagForm').length;
-        console.log('Enter pressed, modal popup:', inModalPopup, 'sidebar:', inSidebar, 'form exists:', formExists);
-    }
-    
     // Check if tag form is visible - either in modal popup or sidebar
     const inModalPopup = $('#modal-div').is(':visible');
     const inSidebar = $('.tag-sidebar-wrapper').length > 0;
@@ -326,21 +319,54 @@ $(document).on('keydown', function (e) {
     
     // Only handle Enter key when tag form is visible (in modal or sidebar)
     if (e.key === 'Enter' && (inModalPopup || inSidebar) && formExists) {
-        // Don't trigger if user is typing in a textarea or text input
-        const activeElement = document.activeElement;
-        const tagName = activeElement.tagName.toLowerCase();
-        const isTextInput = (tagName === 'textarea') || 
-                          (tagName === 'input' && ['text', 'number', 'date', 'time', 'search'].includes(activeElement.type));
+        e.preventDefault();
+        e.stopPropagation();
         
-        console.log('Active element:', tagName, 'type:', activeElement.type, 'isTextInput:', isTextInput);
+        const tagForm = $('#tagForm')[0];
         
-        // Only trigger if NOT typing in a text input (selects are OK since user has already made selection)
-        if (!isTextInput) {
-            console.log('Submitting form...');
-            e.preventDefault();
-            e.stopPropagation();
-            // Directly submit the form instead of clicking button (button may be disabled)
-            $('#tagForm').submit();
+        // Check if form is disabled (read-only mode)
+        if ($("#tagForm :input").prop('disabled') === true) {
+            console.log('Form is disabled, skipping save');
+            return;
         }
+        
+        // Validate form
+        if (!tagForm.checkValidity()) {
+            tagForm.classList.add('was-validated');
+            console.log('Form validation failed');
+            return;
+        }
+        
+        console.log('Saving tag without closing...');
+        
+        let tagId = $("input[name='tag_id']").val();
+        
+        postRequest(baseUrl + '/api/tag/save', new FormData(tagForm), false, false, function (response) {
+            calculateCoordinates();
+            
+            if (response.tagId && response.tagId > 1) {
+                tagId = response.tagId;
+                createTag(tagId);
+                // Update the hidden tag_id field with the new ID
+                $("input[name='tag_id']").val(tagId);
+            }
+            updateTag(tagId);
+            
+            // Submit review form if present
+            let reviewForm = $('#reviewForm');
+            if (reviewForm.length) {
+                reviewForm.submit();
+            }
+            
+            // Reload the tags table to show the updated tag (but don't close the tag form)
+            if ($.fn.DataTable.isDataTable('#tagsTable')) {
+                $('#tagsTable').DataTable().ajax.reload(null, false);
+            }
+            
+            showAlert("Saved successfully (tag remains open).");
+            console.log('Tag saved successfully');
+        });
+        
+        tagForm.classList.add('was-validated');
     }
 });
