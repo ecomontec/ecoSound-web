@@ -86,30 +86,12 @@
                     "url": '{{ baseUrl }}/admin/indexLogMgr/getListByPage/{{ projectId }}/{{ colId }}',
                     "type": 'POST',
                     "error": function (xhr, error, thrown) {
-                        console.error('IndexLogs DataTable error:', xhr.status, error, thrown);
-                        if (xhr.responseText) {
-                            console.error('Response:', xhr.responseText);
-                        }
                         if (xhr.status == 400 || xhr.status == 404 ||xhr.status == 500) {
                             location.reload();
                         }
                     }
                 },
                 "dom": 'lrtip',
-                "stateSave": true,
-                "iStateDuration": -1,
-                "stateSaveParams": function (settings, data) {
-                    data.projectId = {{ projectId }};
-                    data.colId = {{ colId }};
-                },
-                "stateLoadParams": function (settings, data) {
-                    // Only load state if it matches current project and collection
-                    if (!data.projectId || !data.colId || data.projectId !== {{ projectId }} || data.colId !== {{ colId }}) {
-                        // Clear invalid state from localStorage
-                        localStorage.removeItem('DataTables_' + settings.sInstance + '_' + location.pathname);
-                        return false;
-                    }
-                },
                 "order": [[1, 'asc']],
                 "columnDefs": [
                     {
@@ -123,9 +105,6 @@
                 "bAutoWidth": false,
                 "scrollX": true,
             });
-            if (table.state.loaded()) {
-                $('#search').val(table.state.loaded().search.search);
-            }
             $('#search').on('input', () => {
                 table.search($('#search').val()).draw();
             });

@@ -151,25 +151,6 @@
     {{ parent() }}
     <script>
         $(document).ready(function () {
-            // Clear invalid localStorage state before initializing DataTable
-            var storageName = 'DataTables_tagReviewsTable_' + location.pathname;
-            var savedState = localStorage.getItem(storageName);
-            if (savedState) {
-                try {
-                    var state = JSON.parse(savedState);
-                    var currentColId = {{ colId|default(0) }};
-                    var currentRecordingId = {{ recordingId|default(0) }};
-                    if (state.colId && state.colId !== currentColId) {
-                        localStorage.removeItem(storageName);
-                    }
-                    if (state.recordingId && state.recordingId !== currentRecordingId) {
-                        localStorage.removeItem(storageName);
-                    }
-                } catch(e) {
-                    localStorage.removeItem(storageName);
-                }
-            }
-            
             $('#tagReviewsTable').show()
             let table = $('#tagReviewsTable').DataTable({
                 "processing": true,
@@ -189,16 +170,6 @@
                     }
                 },
                 "dom": 'lrtip',
-                "stateSave": true,
-                "iStateDuration": -1,
-                "stateSaveParams": function (settings, data) {
-                    data.colId = {{ colId|default(0) }};
-                    data.recordingId = {{ recordingId|default(0) }};
-                },
-                "stateLoadParams": function (settings, data) {
-                    // State already validated before init
-                    return true;
-                },
                 "order": [[1, 'asc']],
                 "order": [[1, 'asc']],
                 "columnDefs": [
@@ -214,9 +185,6 @@
                 "bAutoWidth": false,
                 "scrollX": true,
             });
-            if (table.state.loaded()) {
-                $('#search').val(table.state.loaded().search.search);
-            }
             $('#search').on('input', () => {
                 table.search($('#search').val()).draw();
             });

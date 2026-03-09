@@ -337,20 +337,6 @@
         {{ parent() }}
         <script>
             $(document).ready(function () {
-                // Clear invalid localStorage state before initializing DataTable
-                var storageName = 'DataTables_recTable_' + location.pathname;
-                var savedState = localStorage.getItem(storageName);
-                if (savedState) {
-                    try {
-                        var state = JSON.parse(savedState);
-                        if (state.colId && state.colId !== {{ colId }}) {
-                            localStorage.removeItem(storageName);
-                        }
-                    } catch(e) {
-                        localStorage.removeItem(storageName);
-                    }
-                }
-                
                 $('#recTable').show()
                 let table = $('#recTable').DataTable({
                     "processing": true,
@@ -365,15 +351,6 @@
                         }
                     },
                     "dom": 'lrtip',
-                    "stateSave": true,
-                    "iStateDuration": -1,
-                    "stateSaveParams": function (settings, data) {
-                        data.colId = {{ colId }};
-                    },
-                    "stateLoadParams": function (settings, data) {
-                        // State already validated before init
-                        return true;
-                    },
                     "order": [[1, 'asc']],
                     "columnDefs": [
                         {
@@ -389,9 +366,6 @@
                     "scrollX": true,
                 });
                 $('#maad').selectpicker('refresh');
-                if (table.state.loaded()) {
-                    $('#search').val(table.state.loaded().search.search);
-                }
                 $('[data-toggle="tooltip"]').tooltip();
                 $('#search').on('input', () => {
                     table.search($('#search').val()).draw();

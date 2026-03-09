@@ -179,23 +179,6 @@
     {{ parent() }}
     <script>
         $(document).ready(function () {
-            // Clear invalid localStorage state before initializing DataTable
-            var storageName = 'DataTables_tagsTable_' + location.pathname;
-            var savedState = localStorage.getItem(storageName);
-            if (savedState) {
-                try {
-                    var state = JSON.parse(savedState);
-                    if (state.colId && state.colId !== {{ colId }}) {
-                        localStorage.removeItem(storageName);
-                    }
-                    if (state.recordingId && state.recordingId !== '{{ recordingId }}') {
-                        localStorage.removeItem(storageName);
-                    }
-                } catch(e) {
-                    localStorage.removeItem(storageName);
-                }
-            }
-            
             $('#tagsTable').show()
             let url
             let table = $('#tagsTable').DataTable({
@@ -211,16 +194,6 @@
                     }
                 },
                 "dom": 'lrtip',
-                "stateSave": true,
-                "iStateDuration": -1,
-                "stateSaveParams": function (settings, data) {
-                    data.colId = {{ colId }};
-                    data.recordingId = '{{ recordingId }}';
-                },
-                "stateLoadParams": function (settings, data) {
-                    // State already validated before init
-                    return true;
-                },
                 "order": [[1, 'asc']],
                 "order": [[1, 'asc']],
                 "columnDefs": [
@@ -236,9 +209,6 @@
                 "bAutoWidth": false,
                 "scrollX": true,
             });
-            if (table.state.loaded()) {
-                $('#search').val(table.state.loaded().search.search);
-            }
             $('#search').on('input', () => {
                 table.search($('#search').val()).draw();
             });

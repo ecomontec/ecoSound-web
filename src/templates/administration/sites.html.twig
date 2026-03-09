@@ -170,23 +170,6 @@
         $(function () {
             var arr ={{ iucn_gets|json_encode|raw }};
             $(document).ready(function () {
-                // Clear invalid localStorage state before initializing DataTable
-                var storageName = 'DataTables_siteTable_' + location.pathname;
-                var savedState = localStorage.getItem(storageName);
-                if (savedState) {
-                    try {
-                        var state = JSON.parse(savedState);
-                        if (state.projectId && state.projectId !== {{ projectId }}) {
-                            localStorage.removeItem(storageName);
-                        }
-                        if (state.collectionId && state.collectionId !== {{ collectionId }}) {
-                            localStorage.removeItem(storageName);
-                        }
-                    } catch(e) {
-                        localStorage.removeItem(storageName);
-                    }
-                }
-                
                 $('#siteTable').show()
                 let table = $('#siteTable').DataTable({
                     "processing": true,
@@ -201,16 +184,6 @@
                         }
                     },
                     "dom": 'lrtip',
-                    "stateSave": true,
-                    "iStateDuration": -1,
-                    "stateSaveParams": function (settings, data) {
-                        data.projectId = {{ projectId }};
-                        data.collectionId = {{ collectionId }};
-                    },
-                    "stateLoadParams": function (settings, data) {
-                        // State already validated before init
-                        return true;
-                    },
                     "order": [[1, 'asc']],
                     "columnDefs": [
                         {
@@ -224,9 +197,6 @@
                     "bAutoWidth": false,
                     "scrollX": true,
                 });
-                if (table.state.loaded()) {
-                    $('#search').val(table.state.loaded().search.search);
-                }
                 $('#search').on('input', () => {
                     table.search($('#search').val()).draw();
                 });

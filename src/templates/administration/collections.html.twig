@@ -101,20 +101,6 @@
     {{ parent() }}
     <script>
         $(document).ready(function () {
-            // Clear invalid localStorage state before initializing DataTable
-            var storageName = 'DataTables_collTable_' + location.pathname;
-            var savedState = localStorage.getItem(storageName);
-            if (savedState) {
-                try {
-                    var state = JSON.parse(savedState);
-                    if (state.projectId && state.projectId !== {{ projectId }}) {
-                        localStorage.removeItem(storageName);
-                    }
-                } catch(e) {
-                    localStorage.removeItem(storageName);
-                }
-            }
-            
             $('#collTable').show()
             let table = $('#collTable').DataTable({
                 "processing": true,
@@ -129,15 +115,6 @@
                     }
                 },
                 "dom": 'lrtip',
-                "stateSave": true,
-                "iStateDuration": -1,
-                "stateSaveParams": function (settings, data) {
-                    data.projectId = {{ projectId }};
-                },
-                "stateLoadParams": function (settings, data) {
-                    // State already validated before init
-                    return true;
-                },
                 "order": [[1, 'asc']],
                 "columnDefs": [
                     {
@@ -152,9 +129,6 @@
                 "bAutoWidth": false,
                 "scrollX": true,
             });
-            if (table.state.loaded()) {
-                $('#search').val(table.state.loaded().search.search);
-            }
             $('#search').on('input', () => {
                 table.search($('#search').val()).draw();
             });
