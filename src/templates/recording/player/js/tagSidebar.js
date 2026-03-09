@@ -782,7 +782,7 @@
                     <a class="btn ${toggleClass} btn-sm js-toggle-tags" href="#" title="Toggle tags" data-show="${isShowTags}">
                         ${toggleIcon}
                     </a>
-                    <a class="btn btn-outline-success btn-sm js-new-tag" href="${baseUrl}/api/tag/create" title="Create new tag (shortcut: Enter key after selecting region)">
+                    <a class="btn btn-outline-success btn-sm js-new-tag" href="${baseUrl}/api/tag/create" title="Create new tag at selection (Enter)">
                         <i class="fas fa-plus"></i> New Tag
                     </a>
                 </div>
