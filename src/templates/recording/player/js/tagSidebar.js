@@ -634,10 +634,22 @@
         tagForm.off('submit').on('submit', function(e) {
             e.preventDefault();
             
+            // Check if we should keep the form open (triggered by Enter key)
+            const keepOpen = tagForm.data('keepOpen') === true;
+            // Reset the flag
+            tagForm.data('keepOpen', false);
+            
             if (tagForm.find(':input').prop('disabled') === true) {
                 if (reviewForm.length) {
                     reviewForm.submit();
                 }
+                
+                if (keepOpen) {
+                    // Just save, don't close sidebar
+                    showAlert("Saved successfully (tag remains open).");
+                    return;
+                }
+                
                 // Close sidebar after save
                 if (typeof window.closeTagSidebar === 'function') {
                     window.closeTagSidebar();
@@ -680,6 +692,12 @@
                 
                 // Note: Review form is now handled separately with immediate saving
                 // so we don't submit it here
+                
+                if (keepOpen) {
+                    // Just show message, don't close sidebar
+                    showAlert("Saved successfully (tag remains open).");
+                    return;
+                }
                 
                 // Close sidebar after successful save
                 if (typeof window.closeTagSidebar === 'function') {
