@@ -319,6 +319,15 @@ $(document).on('keydown', function (e) {
     
     // Only handle Enter key when tag form is visible (in modal or sidebar)
     if (e.key === 'Enter' && (inModalPopup || inSidebar) && formExists) {
+        // Don't interfere with bootstrap-select dropdown navigation
+        const activeElement = document.activeElement;
+        const isInBootstrapSelect = $(activeElement).closest('.bootstrap-select').length > 0;
+        
+        if (isInBootstrapSelect) {
+            // Let bootstrap-select handle Enter key for dropdown navigation
+            return;
+        }
+        
         e.preventDefault();
         e.stopPropagation();
         
@@ -342,15 +351,23 @@ $(document).on('keydown', function (e) {
         let tagId = $("input[name='tag_id']").val();
         
         postRequest(baseUrl + '/api/tag/save', new FormData(tagForm), false, false, function (response) {
-            calculateCoordinates();
+            // These functions only exist in modal mode with spectrogram
+            if (typeof calculateCoordinates === 'function') {
+                calculateCoordinates();
+            }
             
             if (response.tagId && response.tagId > 1) {
                 tagId = response.tagId;
-                createTag(tagId);
+                if (typeof createTag === 'function') {
+                    createTag(tagId);
+                }
                 // Update the hidden tag_id field with the new ID
                 $("input[name='tag_id']").val(tagId);
             }
-            updateTag(tagId);
+            
+            if (typeof updateTag === 'function') {
+                updateTag(tagId);
+            }
             
             // Submit review form if present
             let reviewForm = $('#reviewForm');
