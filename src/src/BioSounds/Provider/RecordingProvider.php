@@ -464,9 +464,12 @@ class RecordingProvider extends AbstractProvider
         $this->database->prepareQuery($sql);
         $params = [
             ':collectionId' => $collectionId,
-            ':start' => (int)$start,
-            ':length' => (int)$length,
         ];
+        // Only add pagination parameters if LIMIT is used
+        if ($length != '-1') {
+            $params[':start'] = (int)$start;
+            $params[':length'] = (int)$length;
+        }
         if ($search) {
             $params[':search'] = '%' . $search . '%';
         }
