@@ -211,7 +211,7 @@
                         <option value="22050">22050</option>
                         <option value="32000">32000</option>
                         <option value="44100">44100</option>
-                        <option value="48000">48000</option>
+                        <option value="48000" selected>48000</option>
                         <option value="88200">88200</option>
                         <option value="96000">96000</option>
                         <option value="176400">176400</option>
@@ -223,7 +223,7 @@
                     <br>
                     <input id="frequencies_custom" type="number" class="form-control col-6 mt-3" hidden>
                     <br>
-                    <div class="text-danger custom-text" style="display: none">Only the resampled recording will be stored on the server. The original metadata tags are not passed through to the new files.</div>
+                    <div class="text-danger custom-text">Only the resampled recording will be stored on the server. The original metadata tags are not passed through to the new files.</div>
                 </div>
                 <div class="modal-footer">
                     <div id="upload-info"></div>
@@ -398,11 +398,6 @@
                     var isDisabled = $("#frequencies").prop("disabled");
                     $("#frequencies").prop("disabled", !isDisabled);
                     $("#frequencies_custom").prop("disabled", !isDisabled);
-                    if (isDisabled) {
-                        $(".custom-text").show();
-                    } else {
-                        $(".custom-text").hide();
-                    }
                 })
                 $('#is_merged').on('change', function () {
                     if ($(this).is(':checked')) {
@@ -433,6 +428,13 @@
                     }
                     $("#modal-upload").modal('hide');
                     document.querySelector('#file-uploader_browse').click();
+                });
+
+                // Reset modal values when it's closed
+                $('#modal-upload').on('hidden.bs.modal', function () {
+                    $('#frequencies_cb').prop('checked', false);
+                    $('#frequencies').prop('disabled', true).val('48000');
+                    $('#frequencies_custom').prop('disabled', true).attr('hidden', true).val('');
                 });
 
                 $('#file-uploader').on('change', 'input[type=file]', function (event) {
