@@ -51,8 +51,6 @@ class SpeciesController extends BaseController
         }
 
         $species = new Species();
-        // Debug: log raw $_POST and php://input
-        file_put_contents('/tmp/species_post_debug.log', "_POST:\n" . print_r($_POST, true) . "\nphp://input:\n" . file_get_contents('php://input') . "\n\n", FILE_APPEND);
 
         $data = [];
         $itemID = null;
@@ -91,7 +89,6 @@ class SpeciesController extends BaseController
                 }
             }
             $data['species_id'] = $maxId + 1;
-            file_put_contents('/tmp/species_debug.log', print_r($data, true), FILE_APPEND);
             $species->insert($data);
         }
 

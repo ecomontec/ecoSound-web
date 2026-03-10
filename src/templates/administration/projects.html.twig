@@ -173,6 +173,7 @@
                         if ($.fn.DataTable.isDataTable('#projectTable')) {
                             $('#projectTable').DataTable().ajax.reload(null, false);
                         }
+                        $('#projectFormSection').collapse('hide');
                         showAlert('Project saved successfully');
                     });
                 }

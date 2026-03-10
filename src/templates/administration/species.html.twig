@@ -219,6 +219,7 @@
                         if ($.fn.DataTable.isDataTable('#speciesTable')) {
                             $('#speciesTable').DataTable().ajax.reload(null, false);
                         }
+                        $('#speciesFormSection').collapse('hide');
                         showAlert('Species saved successfully');
                     });
                 }

@@ -570,9 +570,10 @@
                             $('#siteForm').removeClass('was-validated');
                             $('#areaValid').text('');
                             $('#siteValid').text('');
-                            if ($.fn.DataTable.isDataTable('#sitesTable')) {
-                                $('#sitesTable').DataTable().ajax.reload(null, false);
+                            if ($.fn.DataTable.isDataTable('#siteTable')) {
+                                $('#siteTable').DataTable().ajax.reload(null, false);
                             }
+                            $('#siteFormSection').collapse('hide');
                             showAlert('Site saved successfully');
                         });
                     }

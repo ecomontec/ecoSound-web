@@ -127,6 +127,7 @@
                         if ($.fn.DataTable.isDataTable('#userTable')) {
                             $('#userTable').DataTable().ajax.reload(null, false);
                         }
+                        $('#userFormSection').collapse('hide');
                         showAlert('User saved successfully');
                     });
                 }

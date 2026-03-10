@@ -182,6 +182,7 @@
                         if ($.fn.DataTable.isDataTable('#collTable')) {
                             $('#collTable').DataTable().ajax.reload(null, false);
                         }
+                        $('#collectionFormSection').collapse('hide');
                         showAlert('Collection saved successfully');
                     });
                 }

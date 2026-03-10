@@ -75,13 +75,32 @@ $('#uploadForm')
             true,
             true,
             function (response) {
-                // Reset form after successful upload
+                // Clear the plupload queue
+                var uploader = $('#file-uploader').pluploadQueue();
+                if (uploader) {
+                    uploader.splice(0, uploader.files.length);
+                }
+                
+                // Reset form completely
                 $('#uploadForm')[0].reset();
                 $('.card-body input').prop('disabled', false);
                 $('.card-body select').prop('disabled', false);
                 $('.plupload_add').show();
-                $("#save_button").prop("disabled", true); // Keep disabled until files are added
+                $("#save_button").prop("disabled", true);
+                
+                // Reset the from-file checkbox state
+                let fileFields = $('.js-file-field');
+                fileFields.prop('disabled', true);
+                fileFields.prop('required', false);
+                
+                // Collapse the form and show the table
+                $('#uploadForm').collapse('hide');
+                
+                // Generate new upload directory for next upload
+                uploadDir = Math.floor(Math.random() * (10000000 - 100000) + 100000);
+                
                 $('#upload_btn').toggle();
+                showAlert('Recordings uploaded successfully');
             })
         e.preventDefault();
     })

@@ -291,7 +291,7 @@ class AdminController extends BaseController
      */
     public function speciesMgr(string $action, int $id = null)
     {
-        return (new SpeciesController($this->twig))->$action($id);
+        return (new Administration\SpeciesController($this->twig))->$action($id);
     }
 
     /**
