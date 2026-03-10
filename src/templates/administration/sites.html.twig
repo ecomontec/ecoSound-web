@@ -565,7 +565,15 @@
                                 $('#siteValid').text(response.message)
                                 return
                             }
-                            location.reload();
+                            // Reset form and refresh table instead of reloading page
+                            $('#siteForm')[0].reset();
+                            $('#siteForm').removeClass('was-validated');
+                            $('#areaValid').text('');
+                            $('#siteValid').text('');
+                            if ($.fn.DataTable.isDataTable('#sitesTable')) {
+                                $('#sitesTable').DataTable().ajax.reload(null, false);
+                            }
+                            showAlert('Site saved successfully');
                         });
                     }
                     this.classList.add('was-validated');

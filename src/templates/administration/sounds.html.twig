@@ -207,7 +207,13 @@
                     });
                     postRequest('{{ baseUrl }}/api/admin/soundMgr/save', formData, false, false, function(response) {
                         if (response.errorCode === 0) {
-                            location.reload();
+                            // Reset form and refresh table instead of reloading page
+                            $('#soundForm')[0].reset();
+                            $('#soundForm').removeClass('was-validated');
+                            if ($.fn.DataTable.isDataTable('#soundTable')) {
+                                $('#soundTable').DataTable().ajax.reload(null, false);
+                            }
+                            showAlert('Sound type saved successfully');
                         } else {
                             showAlert(response.message);
                         }

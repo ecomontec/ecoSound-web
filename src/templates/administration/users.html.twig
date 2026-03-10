@@ -120,7 +120,14 @@
                             $('#userValid').text(response.message)
                             return
                         }
-                        location.reload();
+                        // Reset form and refresh table instead of reloading page
+                        $('#userForm')[0].reset();
+                        $('#userForm').removeClass('was-validated');
+                        $('#userValid').text('');
+                        if ($.fn.DataTable.isDataTable('#userTable')) {
+                            $('#userTable').DataTable().ajax.reload(null, false);
+                        }
+                        showAlert('User saved successfully');
                     });
                 }
                 this.classList.add('was-validated');

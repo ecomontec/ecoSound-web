@@ -225,7 +225,13 @@
                     });
                     postRequest('{{ baseUrl }}/api/admin/microphoneMgr/save', formData, false, false, function(response) {
                         if (response.errorCode === 0) {
-                            location.reload();
+                            // Reset form and refresh table instead of reloading page
+                            $('#microphoneForm')[0].reset();
+                            $('#microphoneForm').removeClass('was-validated');
+                            if ($.fn.DataTable.isDataTable('#microphoneTable')) {
+                                $('#microphoneTable').DataTable().ajax.reload(null, false);
+                            }
+                            showAlert('Microphone saved successfully');
                         } else {
                             showAlert(response.message);
                         }

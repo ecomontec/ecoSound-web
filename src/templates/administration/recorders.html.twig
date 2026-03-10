@@ -232,7 +232,13 @@
                     });
                     postRequest('{{ baseUrl }}/api/admin/recorderMgr/save', formData, false, false, function(response) {
                         if (response.errorCode === 0) {
-                            location.reload();
+                            // Reset form and refresh table instead of reloading page
+                            $('#recorderForm')[0].reset();
+                            $('#recorderForm').removeClass('was-validated');
+                            if ($.fn.DataTable.isDataTable('#recorderTable')) {
+                                $('#recorderTable').DataTable().ajax.reload(null, false);
+                            }
+                            showAlert('Recorder saved successfully');
                         } else {
                             showAlert(response.message);
                         }

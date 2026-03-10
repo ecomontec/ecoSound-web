@@ -175,7 +175,14 @@
                             $('#collectionValid').text(response.message)
                             return
                         }
-                        location.reload();
+                        // Reset form and refresh table instead of reloading page
+                        $('#collectionForm')[0].reset();
+                        $('#collectionForm').removeClass('was-validated');
+                        $('#collectionValid').text('');
+                        if ($.fn.DataTable.isDataTable('#collTable')) {
+                            $('#collTable').DataTable().ajax.reload(null, false);
+                        }
+                        showAlert('Collection saved successfully');
                     });
                 }
                 this.classList.add('was-validated');

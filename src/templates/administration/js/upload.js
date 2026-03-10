@@ -75,6 +75,12 @@ $('#uploadForm')
             true,
             true,
             function (response) {
+                // Reset form after successful upload
+                $('#uploadForm')[0].reset();
+                $('.card-body input').prop('disabled', false);
+                $('.card-body select').prop('disabled', false);
+                $('.plupload_add').show();
+                $("#save_button").prop("disabled", true); // Keep disabled until files are added
                 $('#upload_btn').toggle();
             })
         e.preventDefault();
