@@ -901,15 +901,33 @@ class RecordingController extends BaseController
             ' --i ' . ABSOLUTE_DIR . SOUNDS_DIR . '/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['filename'] .
             ' --o ' . ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv" .
             ' --rtype "csv"';
-        if ((string)$data['lat'] != '') {
-            $str = $str . ' --lat ' . $data['lat'];
+        
+        // Handle species list if provided (mutually exclusive with coordinates)
+        if (isset($data['species_list']) && !empty($data['species_list'])) {
+            // Save species list to temporary file
+            $speciesListFile = ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . '-species.txt';
+            file_put_contents($speciesListFile, $data['species_list']);
+            $str = $str . ' --slist ' . escapeshellarg($speciesListFile);
+        } else {
+            // Use coordinates (manual override or from recording metadata)
+            $lat = isset($data['manual_lat']) && $data['manual_lat'] !== '' ? $data['manual_lat'] : $data['lat'];
+            $lon = isset($data['manual_lon']) && $data['manual_lon'] !== '' ? $data['manual_lon'] : $data['lon'];
+            
+            if ((string)$lat != '') {
+                $str = $str . ' --lat ' . $lat;
+            }
+            if ((string)$lon != '') {
+                $str = $str . ' --lon ' . $lon;
+            }
         }
-        if ((string)$data['lon'] != '') {
-            $str = $str . ' --lon ' . $data['lon'];
-        }
-        if ($data['file_date'] != '' && $data['file_date'] != '1970-01-01') {
+        
+        // Handle week (manual override or from file date)
+        if (isset($data['manual_week']) && $data['manual_week'] !== '') {
+            $str = $str . ' --week ' . $data['manual_week'];
+        } elseif ($data['file_date'] != '' && $data['file_date'] != '1970-01-01') {
             $str = $str . ' --week ' . date('W', $data['file_date']);
         }
+        
         if ($data['sensitivity'] != '') {
             $str = $str . ' --sensitivity ' . $data['sensitivity'];
         }
@@ -923,6 +941,11 @@ class RecordingController extends BaseController
             $str = $str . ' --sf_thresh ' . $data['sf_thresh'];
         }
         exec($str . " 2>&1", $out, $status);
+        
+        // Clean up temporary species list file if it was created
+        if (isset($speciesListFile) && file_exists($speciesListFile)) {
+            unlink($speciesListFile);
+        }
         $result = [];
         if ($status == 0) {
             $handle = fopen(ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv", "rb");

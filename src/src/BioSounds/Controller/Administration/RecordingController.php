@@ -510,7 +510,7 @@ class RecordingController extends BaseController
         $data = [];
         if ($para->creator_type == 'BirdNET-Analyzer') {
             foreach ($recordings as $recording) {
-                $data[] = [
+                $dataItem = [
                     'creator_type' => $para->creator_type,
                     'collection_id' => $recording['col_id'],
                     'recording_id' => $recording['recording_id'],
@@ -529,6 +529,22 @@ class RecordingController extends BaseController
                     'is_merged' => $para->is_merged,
                     'keep_merged' => $para->keep_merged,
                 ];
+                
+                // Add override parameters if provided
+                if (isset($para->manual_lat)) {
+                    $dataItem['manual_lat'] = $para->manual_lat;
+                }
+                if (isset($para->manual_lon)) {
+                    $dataItem['manual_lon'] = $para->manual_lon;
+                }
+                if (isset($para->manual_week)) {
+                    $dataItem['manual_week'] = $para->manual_week;
+                }
+                if (isset($para->species_list)) {
+                    $dataItem['species_list'] = $para->species_list;
+                }
+                
+                $data[] = $dataItem;
             }
         } elseif ($para->creator_type == 'batdetect2') {
             {

@@ -305,6 +305,37 @@
                             </select>
                         </div>
                         <hr>
+                        <div id="birdnet-override-section" style="display: none;">
+                            <div class="form-inline">
+                                <input id="override_defaults" name="override_defaults" class="form-control form-control-sm" type="checkbox">
+                                <label class="ml-1 col-form-label-sm" for="override_defaults">Override default parameters</label>
+                                <i class="fa fa-info-circle ml-1" title="By default, week and location are automatically extracted from recording metadata to define species list" data-toggle="tooltip"></i>
+                            </div>
+                            <div class="override-box mt-2" style="display: none;">
+                                <div class="form-group">
+                                    <label class="col-form-label-sm" for="manual_lat">Latitude (degrees)</label>
+                                    <input id="manual_lat" name="manual_lat" class="form-control form-control-sm" type="number" step="0.000001" min="-90" max="90" placeholder="e.g., 52.520008">
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-form-label-sm" for="manual_lon">Longitude (degrees)</label>
+                                    <input id="manual_lon" name="manual_lon" class="form-control form-control-sm" type="number" step="0.000001" min="-180" max="180" placeholder="e.g., 13.404954">
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-form-label-sm" for="manual_week">Week of year (1-48)</label>
+                                    <input id="manual_week" name="manual_week" class="form-control form-control-sm" type="number" min="1" max="48" placeholder="e.g., 27">
+                                </div>
+                                <div class="form-group">
+                                    <div class="form-inline">
+                                        <input id="use_species_list" name="use_species_list" class="form-control form-control-sm" type="checkbox">
+                                        <label class="ml-1 col-form-label-sm" for="use_species_list">Use custom species list</label>
+                                        <i class="fa fa-info-circle ml-1" title="BirdNET either accepts coordinates or a species list. Enabling this will ignore coordinate inputs" data-toggle="tooltip"></i>
+                                    </div>
+                                    <textarea id="species_list" name="species_list" class="form-control form-control-sm mt-2" rows="5" placeholder="Enter species in binomial format (e.g., Passer domesticus), one per line" disabled></textarea>
+                                    <small class="form-text text-muted">Species list format: scientific names (e.g., Turdus merula), one per line</small>
+                                </div>
+                            </div>
+                            <hr>
+                        </div>
                         <div class="form-inline"><input id="is_merged" name="is_merged" class="form-control form-control-sm" type="checkbox"><label class="ml-1 col-form-label-sm" for="is_merged">Merge resulting conspecific tags</label></div>
                         <div class="merged-box mt-2" style="display: none;">
                             <div class="form-inline"><label class="ml-1 col-form-label-sm" for="max_gap">Duration between separate tags, in seconds (default: 0)</label></div>
@@ -420,6 +451,10 @@
                 $('#tf').change(function () {
                     let html = ''
                     $(this).siblings().remove();
+                    
+                    // Hide BirdNET override section by default
+                    $('#birdnet-override-section').hide();
+                    
                     {% for model in models %}
                     if ($(this).val() == '{{ model.tf_model_id }}') {
                         html = html + '<div class="col-form-label">' +
@@ -428,13 +463,28 @@
                             '<div class="col-form-label-sm">{{ model.description }}</div></div>'
                         let data = '{{ model.parameter }}'.split('$').map(item => item.split('@'));
                         $.each(data, function (index, value) {
+                            // Extract default value from description for placeholder
+                            let description = value[1];
+                            let placeholder = '';
+                            let defaultMatch = description.match(/Defaults to ([\d.]+)/);
+                            if (defaultMatch) {
+                                placeholder = defaultMatch[1];
+                                // Remove the "Defaults to X." part from description
+                                description = description.replace(/\s*Defaults to [\d.]+\.?\s*/, '');
+                            }
+                            
                             html = html + '<div class="form-inline">' +
                                 '<label class="ml-1 col-form-label-sm" for="' + value[0] + '">' + value[0] + '</label></div>' +
                                 '<div class="form-group form-inline">' +
-                                '<input id="' + value[0] + '" name="' + value[0] + '" class="form-control form-control-sm" type="text">' +
-                                '<label class="ml-2 col-form-label-sm">' + value[1] + '</label></div>'
+                                '<input id="' + value[0] + '" name="' + value[0] + '" class="form-control form-control-sm" type="text" placeholder="' + placeholder + '">' +
+                                '<label class="ml-2 col-form-label-sm">' + description + '</label></div>'
                         })
                         $(this).after(html)
+                        
+                        // Show override section only for BirdNET (model ID = 1)
+                        if ('{{ model.tf_model_id }}' == '1') {
+                            $('#birdnet-override-section').show();
+                        }
                     }
                     {% endfor %}
                 })
@@ -451,6 +501,31 @@
                         $('.merged-box').show();
                     } else {
                         $('.merged-box').hide();
+                    }
+                });
+                
+                // BirdNET override controls
+                $('#override_defaults').on('change', function () {
+                    if ($(this).is(':checked')) {
+                        $('.override-box').show();
+                    } else {
+                        $('.override-box').hide();
+                        // Clear override values when unchecked
+                        $('#manual_lat, #manual_lon, #manual_week, #species_list').val('');
+                        $('#use_species_list').prop('checked', false);
+                        $('#species_list').prop('disabled', true);
+                    }
+                });
+                
+                $('#use_species_list').on('change', function () {
+                    if ($(this).is(':checked')) {
+                        $('#species_list').prop('disabled', false);
+                        // Disable coordinate inputs
+                        $('#manual_lat, #manual_lon').prop('disabled', true).val('');
+                    } else {
+                        $('#species_list').prop('disabled', true).val('');
+                        // Re-enable coordinate inputs
+                        $('#manual_lat, #manual_lon').prop('disabled', false);
                     }
                 });
                 $('#frequencies').change(function () {
@@ -677,15 +752,38 @@
                     id = id.join(',')
                     if ($('#tf').val() == 1) {
                         arr = {
-                            'sensitivity': $("#sensitivity").val(),
-                            'min_conf': $("#min_conf").val(),
-                            'overlap': $("#overlap").val(),
-                            'sf_thresh': $("#sf_thresh").val(),
+                            'sensitivity': $("#sensitivity").val() || '1.0',
+                            'min_conf': $("#min_conf").val() || '0.1',
+                            'overlap': $("#overlap").val() || '0.0',
+                            'sf_thresh': $("#sf_thresh").val() || '0.03',
                             'creator_type': $("#tf option:selected").text(),
                             'max_gap': $("#max_gap").val() || 0,
                             'is_merged': $("#is_merged").is(":checked") ? 1 : 0,
                             'keep_merged': $("#keep_merged").is(":checked") ? 1 : 0
                         };
+                        
+                        // Add override parameters if enabled
+                        if ($('#override_defaults').is(':checked')) {
+                            if ($('#use_species_list').is(':checked')) {
+                                // Use species list
+                                let speciesList = $('#species_list').val().trim();
+                                if (speciesList) {
+                                    arr.species_list = speciesList;
+                                }
+                            } else {
+                                // Use manual coordinates
+                                if ($('#manual_lat').val()) {
+                                    arr.manual_lat = $('#manual_lat').val();
+                                }
+                                if ($('#manual_lon').val()) {
+                                    arr.manual_lon = $('#manual_lon').val();
+                                }
+                            }
+                            // Manual week (can be used with either coordinates or species list)
+                            if ($('#manual_week').val()) {
+                                arr.manual_week = $('#manual_week').val();
+                            }
+                        }
                     } else if ($('#tf').val() == 2) {
                         arr = {
                             'detection_threshold': $("#detection_threshold").val(),
