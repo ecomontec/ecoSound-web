@@ -575,7 +575,7 @@ class RecordingProvider extends AbstractProvider
                         $selected = ($userLabel && $lbl->getId() == $userLabel->getId()) ? 'selected' : '';
                         $str_label .= "<option value='{$lbl->getId()}' data-creator='{$lbl->getCreatorId()}' data-type='{$lbl->getType()}' {$selected}>{$lbl->getName()}</option>";
                     }
-                    $arr[$key][] = "<select name='label_id' data-recording-id='{$value['recording_id']}' class='form-control form-control-sm' style='width:140px;'>$str_label</select>";
+                    $arr[$key][] = "<select name='label_id' data-recording-id='{$value['recording_id']}' class='form-control form-control-sm' style='width:140px; padding-left:8px;'>$str_label</select>";
                 } else {
                     $arr[$key][] = '';
                 }

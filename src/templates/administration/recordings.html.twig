@@ -257,7 +257,7 @@
                     <div>
                         <label for="bulk_label">Select Label</label>
                         <div class="form-inline">
-                            <select id="bulk_label" name="label_id" class="form-control form-control-sm col-8">
+                            <select id="bulk_label" name="label_id" class="form-control form-control-sm col-8" style="padding-left: 8px;">
                                 <option value="" style="font-style: italic;">(no label)</option>
                                 {% for lbl in labels %}
                                     <option value="{{ lbl.id }}" data-creator="{{ lbl.creatorId }}" data-type="{{ lbl.type }}">{{ lbl.name }}</option>
@@ -471,9 +471,12 @@
                             let defaultMatch = description.match(/Defaults to ([\d.]+)/);
                             if (defaultMatch) {
                                 placeholder = 'default ' + defaultMatch[1];
-                                // Remove the "Defaults to X." part from description (including any trailing dots/spaces)
+                                // Remove the "Defaults to X." part from description
                                 description = description.replace(/Defaults to [\d.]+\.?/g, '').trim();
                             }
+                            
+                            // Remove "Values in " text and all trailing dots
+                            description = description.replace(/Values in /g, '').replace(/\.+\s*$/, '').trim();
                             
                             html = html + '<div class="form-inline">' +
                                 '<label class="ml-1 col-form-label-sm" for="' + value[0] + '">' + value[0] + '</label></div>' +
