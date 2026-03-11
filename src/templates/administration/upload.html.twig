@@ -9,24 +9,25 @@
                 <div class="col-md-5 mt-2">
                     <div class="row">
                         <div class="form-group col-md-6">
-                            <label class="col-form-label-sm" for="date">Date (local)</label>
+                            <label class="col-form-label-sm" for="date">Local date *</label>
                             <input id="date" class="form-control form-control-sm  js-file-field" name="date" type="date" required>
                             <input type="hidden" name="colId" value="{{ colId }}">
                         </div>
                         <div class="form-group col-md-6">
-                            <label class="col-form-label-sm" for="time">Time (local)</label>
+                            <label class="col-form-label-sm" for="time">Local time *</label>
                             <input id="time" class="form-control form-control-sm js-file-field" name="time" type="time" min="00:00:00" max="23:59:59" step="1" required>
                             <div class="d-flex justify-content-end">
                                 <div>
                                     <input id="from-file" class="form-check-input" name="dateFromFile" type="checkbox">
                                     <label class="label" for="from-file"><small>Date and time from filename</small></label>
+                                    <i class="fa fa-info-circle ml-1" title="Extracts date and time from file name in YYYYMMDD_HHMMSS format (e.g., 20240315_143052.wav)" data-toggle="tooltip"></i>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="form-group col-md-6">
-                            <label for="recorder" class="col-form-label-sm">Recorder</label>
+                            <label for="recorder" class="col-form-label-sm">Recorder *</label>
                             <select id="recorder" name="recorder" class="form-control form-control-sm" required>
                                 <option selected disabled></option>
                                 {% for recorder in recorders %}
@@ -35,13 +36,14 @@
                             </select>
                         </div>
                         <div class="form-group col-md-6">
-                            <label for="microphone" class="col-form-label-sm">Microphone</label>
+                            <label for="microphone" class="col-form-label-sm">Microphone *</label>
                             <select id="microphone" name="microphone" class="form-control form-control-sm" disabled required></select>
                         </div>
                     </div>
                     <div class="row">
                         <div class="form-group col-md-6">
                             <label for="site" class="col-form-label-sm">Site
+                                <i class="fa fa-info-circle" title="Sites can be managed in the dashboard table" data-toggle="tooltip"></i>
                             </label>
                             <select id="site" name="site" class="form-control form-control-sm">
                                 <option value='null'></option>
@@ -51,7 +53,7 @@
                             </select>
                         </div>
                         <div class="form-group col-md-6">
-                            <label for="doi" class="col-form-label-sm">DOI (optional)</label>
+                            <label for="doi" class="col-form-label-sm">DOI</label>
                             <input id="doi" type="text" name="doi" class="form-control form-control-sm"/>
                         </div>
                     </div>
@@ -75,15 +77,19 @@
                     </div>
                     <div class="row">
                         <div class="form-group col-md-6">
-                            <label for="type" class="col-form-label-sm">Recording Type</label>
+                            <label for="type" class="col-form-label-sm">Recording Type
+                                <i class="fa fa-info-circle" title="Passive: recording from automated sound recorder, no influence on animals, typically omnidirectional microphone. Focal: recording from active search for animals, e.g. with directional microphone during point counts. Enclosure: recording from captured animals, movement constrained" data-toggle="tooltip"></i>
+                            </label>
                             <select id="type" name="type" class="form-control form-control-sm">
-                                <option value="Passive">Passive (recording from automated sound recorder, no influence on animals, typically omnidirectional microphone)</option>
-                                <option value="Focal">Focal (recording from active search for animals, e.g. with directional microphone during point counts)</option>
-                                <option value="Enclosure">Enclosure (recording from captured animals, movement constrained)</option>
+                                <option value="Passive">Passive</option>
+                                <option value="Focal">Focal</option>
+                                <option value="Enclosure">Enclosure</option>
                             </select>
                         </div>
                         <div class="form-group col-md-6">
-                            <label for="recording_gain" class="col-form-label-sm">Recording Gain (dB)</label>
+                            <label for="recording_gain" class="col-form-label-sm">Recording Gain (dB) *
+                                <i class="fa fa-info-circle" title="Analog amplification of the recorded audio signal, applied by the recorder. Required to derive dB SPL" data-toggle="tooltip"></i>
+                            </label>
                             <input id="recording_gain" type="number" name="recording_gain" class="form-control form-control-sm" min="0" max="150" step="1" required>
                         </div>
                     </div>
