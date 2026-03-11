@@ -470,13 +470,14 @@
                             let placeholder = '';
                             let defaultMatch = description.match(/Defaults to ([\d.]+)/);
                             if (defaultMatch) {
-                                placeholder = 'default ' + defaultMatch[1];
+                                // Remove any trailing dots from the extracted default value
+                                placeholder = 'default ' + defaultMatch[1].replace(/\.+$/, '');
                                 // Remove the "Defaults to X." part from description
                                 description = description.replace(/Defaults to [\d.]+\.?/g, '').trim();
                             }
                             
-                            // Remove "Values in " text and all trailing dots
-                            description = description.replace(/Values in /g, '').replace(/\.+\s*$/, '').trim();
+                            // Remove "Values in " or "values in " text (case insensitive) and all trailing dots
+                            description = description.replace(/values in /gi, '').replace(/\.+\s*$/, '').trim();
                             
                             html = html + '<div class="form-inline">' +
                                 '<label class="ml-1 col-form-label-sm" for="' + value[0] + '">' + value[0] + '</label></div>' +
