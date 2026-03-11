@@ -340,8 +340,8 @@
                         </div>
                         <div class="form-inline"><input id="is_merged" name="is_merged" class="form-control form-control-sm" type="checkbox"><label class="ml-1 col-form-label-sm" for="is_merged">Merge resulting conspecific tags</label></div>
                         <div class="merged-box mt-2" style="display: none;">
-                            <div class="form-inline"><label class="ml-1 col-form-label-sm" for="max_gap">Duration between separate tags, in seconds (default: 0)</label></div>
-                            <div class="form-group form-inline"><input id="max_gap" name="max_gap" class="form-control form-control-sm" type="text"></div>
+                            <div class="form-inline"><label class="ml-1 col-form-label-sm" for="max_gap">Duration between separate tags, in seconds</label></div>
+                            <div class="form-group form-inline"><input id="max_gap" name="max_gap" class="form-control form-control-sm" type="text" placeholder="default 0" style="font-style: italic;"></div>
                             <div class="form-inline"><input id="keep_merged" name="keep_merged" class="form-control form-control-sm" type="checkbox"><label class="ml-1 col-form-label-sm" for="keep_merged">Keep only merged and separate tags</label></div>
                         </div>
                     </div>
@@ -468,11 +468,11 @@
                             // Extract default value from description for placeholder
                             let description = value[1];
                             let placeholder = '';
-                            let defaultMatch = description.match(/Defaults to ([\d.]+)\.?/);
+                            let defaultMatch = description.match(/Defaults to ([\d.]+)/);
                             if (defaultMatch) {
                                 placeholder = 'default ' + defaultMatch[1];
-                                // Remove the "Defaults to X." part from description
-                                description = description.replace(/\s*Defaults to [\d.]+\.?\s*/, '');
+                                // Remove the "Defaults to X." part from description (including any trailing dots/spaces)
+                                description = description.replace(/Defaults to [\d.]+\.?/g, '').trim();
                             }
                             
                             html = html + '<div class="form-inline">' +
