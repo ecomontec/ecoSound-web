@@ -255,35 +255,56 @@ class RecordingController extends BaseController
             throw new ForbiddenException();
         }
 
-        $labelId = filter_var($_POST['label_id'], FILTER_VALIDATE_INT);
-        $recordingIds = $_POST['recording_ids'] ?? [];
-
-        if (empty($labelId) || empty($recordingIds)) {
+        // Handle label_id - empty string means unassign, otherwise validate as int
+        $labelId = $_POST['label_id'] ?? '';
+        if ($labelId !== '' && $labelId !== '0') {
+            $labelId = filter_var($labelId, FILTER_VALIDATE_INT);
+            if ($labelId === false) {
+                return json_encode([
+                    'errorCode' => 1,
+                    'message' => 'Invalid label ID.',
+                ]);
+            }
+        }
+        
+        // Handle recording_ids as comma-separated string (from FormData)
+        $recordingIdsStr = $_POST['recording_ids'] ?? '';
+        if (empty($recordingIdsStr)) {
             return json_encode([
                 'errorCode' => 1,
-                'message' => 'Invalid label or recording selection.',
+                'message' => 'No recordings selected.',
             ]);
         }
+        
+        // Convert comma-separated string to array
+        $recordingIds = explode(',', $recordingIdsStr);
 
         $labelAssociationProvider = new LabelAssociationProvider();
         $userId = Auth::getUserLoggedID();
         $count = 0;
 
         foreach ($recordingIds as $recordingId) {
-            $recordingId = filter_var($recordingId, FILTER_VALIDATE_INT);
+            $recordingId = filter_var(trim($recordingId), FILTER_VALIDATE_INT);
             if ($recordingId) {
-                $labelAssociationProvider->setEntry([
-                    'recording_id' => $recordingId,
-                    'user_id' => $userId,
-                    'label_id' => $labelId
-                ]);
+                if ($labelId === '' || $labelId === '0') {
+                    // Empty label means unassign - delete the entry
+                    $labelAssociationProvider->deleteUserEntry($recordingId, $userId);
+                } else {
+                    // Assign the label
+                    $labelAssociationProvider->setEntry([
+                        'recording_id' => $recordingId,
+                        'user_id' => $userId,
+                        'label_id' => $labelId
+                    ]);
+                }
                 $count++;
             }
         }
-
+        
+        $action = ($labelId === '' || $labelId === '0') ? 'unassigned from' : 'assigned to';
         return json_encode([
             'errorCode' => 0,
-            'message' => "Label assigned to $count recording(s) successfully.",
+            'message' => "Label $action $count recording(s) successfully.",
         ]);
     }
 

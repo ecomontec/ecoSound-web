@@ -257,7 +257,8 @@
                     <div>
                         <label for="bulk_label">Select Label</label>
                         <div class="form-inline">
-                            <select id="bulk_label" name="label_id" class="form-control form-control-sm col-8" required>
+                            <select id="bulk_label" name="label_id" class="form-control form-control-sm col-8">
+                                <option value="" style="font-style: italic;">(no label)</option>
                                 {% for lbl in labels %}
                                     <option value="{{ lbl.id }}" data-creator="{{ lbl.creatorId }}" data-type="{{ lbl.type }}">{{ lbl.name }}</option>
                                 {% endfor %}
@@ -858,8 +859,8 @@
                     let labelId = $('#bulk_label').val();
                     let recordingIds = $('#modal-label').data('recording-ids');
                     
-                    if (!labelId || !recordingIds || recordingIds.length === 0) {
-                        showAlert('Please select a label and recordings');
+                    if (!recordingIds || recordingIds.length === 0) {
+                        showAlert('Please select at least one recording');
                         return;
                     }
                     
@@ -868,7 +869,8 @@
                         'recording_ids': recordingIds
                     }, false, false, function (response) {
                         $('#modal-label').modal('hide');
-                        showAlert('Label assigned to ' + recordingIds.length + ' recording(s)');
+                        let action = labelId ? 'assigned to' : 'unassigned from';
+                        showAlert('Label ' + action + ' ' + recordingIds.length + ' recording(s)');
                         // Reload table to show updated labels
                         if ($.fn.DataTable.isDataTable('#recTable')) {
                             $('#recTable').DataTable().ajax.reload(null, false);
@@ -881,15 +883,13 @@
                     let recordingId = $(this).data('recording-id');
                     let labelId = $(this).val();
                     
-                    if (labelId) {
-                        postRequest('{{ baseUrl }}/recording/update', {
-                            'recording_id': recordingId,
-                            'user_id': {{ user_id }},
-                            'label_id': labelId
-                        }, false, false, function (response) {
-                            showAlert('Label updated');
-                        });
-                    }
+                    postRequest('{{ baseUrl }}/api/admin/recordingManager/assignLabel', {
+                        'label_id': labelId,
+                        'recording_ids': recordingId
+                    }, false, false, function (response) {
+                        let action = labelId ? 'assigned' : 'unassigned';
+                        showAlert('Label ' + action);
+                    });
                 });
             });
         </script>

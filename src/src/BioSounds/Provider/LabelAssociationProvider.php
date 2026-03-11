@@ -60,6 +60,18 @@ class LabelAssociationProvider extends BaseProvider
     }
 
     /**
+     * Delete label association for a specific user and recording
+     * @param int $recordingId
+     * @param int $userId
+     * @return mixed
+     */
+    public function deleteUserEntry(int $recordingId, int $userId)
+    {
+        $this->database->prepareQuery('DELETE FROM label_association WHERE recording_id = :recording_id AND user_id = :user_id');
+        return $this->database->executeDelete([':recording_id' => $recordingId, ':user_id' => $userId]);
+    }
+
+    /**
      * @param int $id
      * @throws \Exception
      */
