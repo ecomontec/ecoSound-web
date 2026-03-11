@@ -878,8 +878,8 @@
                     });
                 });
                 
-                // Handle single recording label change in table
-                $(document).on('change', 'select[name="label_id"]', function () {
+                // Handle single recording label change in table (not bulk modal)
+                $(document).on('change', 'select[name="label_id"][data-recording-id]', function () {
                     let recordingId = $(this).data('recording-id');
                     let labelId = $(this).val();
                     
