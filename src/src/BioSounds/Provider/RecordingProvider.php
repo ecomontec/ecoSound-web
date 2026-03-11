@@ -460,7 +460,8 @@ class RecordingProvider extends AbstractProvider
             'r.note',          // 19: Note
             'r.DOI',           // 20: DOI
             'file_date',       // 21: Date
-            'file_time'        // 22: Time
+            'file_time',       // 22: Time
+            '',                // 23: My Label (not sortable)
         ];
         $sql .= " ORDER BY $a[$column] $dir";
         // Only add LIMIT if length is not -1 (DataTables "All" option sends -1)
@@ -556,6 +557,22 @@ class RecordingProvider extends AbstractProvider
                 $arr[$key][] = "<input type='text' class='form-control form-control-sm' style='width:200px;' title='DOI' name='DOI' value='$value[DOI]'>";
                 $arr[$key][] = "<input type='date' id='file_date$value[recording_id]' class='form-control form-control-sm' title='Date' name='file_date' value='$value[file_date]'>";
                 $arr[$key][] = "<input type='time' class='form-control form-control-sm' title='Time' name='file_time' min='00:00:00' max='23:59:59' step='1' value='$value[file_time]'>";
+                
+                // Add user label dropdown column (position 23, right after Time)
+                if (\BioSounds\Utils\Auth::isUserLogged()) {
+                    $labelAssociationProvider = new LabelAssociationProvider();
+                    $userLabel = $labelAssociationProvider->getUserLabel($value['recording_id'], $userId);
+                    $str_label = '<option value=""></option>'; // Empty default option
+                    foreach ($labels as $lbl) {
+                        $selected = ($userLabel && $lbl->getId() == $userLabel->getId()) ? 'selected' : '';
+                        $str_label .= "<option value='{$lbl->getId()}' data-creator='{$lbl->getCreatorId()}' data-type='{$lbl->getType()}' {$selected}>{$lbl->getName()}</option>";
+                    }
+                    $arr[$key][] = "<select name='label_id' data-recording-id='{$value['recording_id']}' class='form-control form-control-sm' style='width:140px;'>$str_label</select>";
+                } else {
+                    $arr[$key][] = '';
+                }
+                
+                // Add metadata columns (positions 24-28)
                 if ($value['data_type'] == 'audio data') {
                     if ($fileMeta['fileformat'] == 'ogg') {
 			$arr[$key][] = isset($fileMeta['tags']['vorbiscomment']['title']) ? $fileMeta['tags']['vorbiscomment']['title'][0] . ' (Vorbis) ' : '';
@@ -593,20 +610,6 @@ class RecordingProvider extends AbstractProvider
                     $arr[$key][] = '';
                     $arr[$key][] = '';
                     $arr[$key][] = '';
-                    $arr[$key][] = '';
-                }
-                
-                // Add user label dropdown column
-                if (\BioSounds\Utils\Auth::isUserLogged()) {
-                    $labelAssociationProvider = new LabelAssociationProvider();
-                    $userLabel = $labelAssociationProvider->getUserLabel($value['recording_id'], $userId);
-                    $str_label = '';
-                    foreach ($labels as $lbl) {
-                        $selected = ($userLabel && $lbl->getId() == $userLabel->getId()) ? 'selected' : '';
-                        $str_label .= "<option value='{$lbl->getId()}' data-creator='{$lbl->getCreatorId()}' data-type='{$lbl->getType()}' {$selected}>{$lbl->getName()}</option>";
-                    }
-                    $arr[$key][] = "<select name='label_id' data-recording-id='{$value['recording_id']}' class='form-control form-control-sm' style='width:140px;'>$str_label</select>";
-                } else {
                     $arr[$key][] = '';
                 }
             }

@@ -35,12 +35,11 @@ class LabelAssociationProvider extends BaseProvider
                 ->setType($item['type']);
         }
 
-        // TODO: 
+        // Return null if no label association exists (no default label)
         if (!empty($data)) {
             return $data[0];
         } else {
-            // WORKAROUND: 1, 'not analysed'
-            return (new Label())->setId(1)->setName('not analysed')->setCreatorId(-1)->setType('public');
+            return null;
         }
     }
 

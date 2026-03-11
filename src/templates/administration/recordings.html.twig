@@ -41,6 +41,10 @@
                 <i class="fas fa-tasks"></i>
                 Assignments
             </button>
+            <button id="labeling" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" data-target="#labeling" disabled>
+                <i class="fas fa-thumbtack"></i>
+                Labels
+            </button>
             <button id="maads" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" data-target="#maads" disabled>
                 <i class="svg-sum"></i>
                 Acoustic indices
@@ -56,10 +60,6 @@
             <button id="deletion" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" data-target="#deletion" disabled>
                 <i class="fas fa-trash"></i>
                 Delete
-            </button>
-            <button id="labeling" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" data-target="#labeling" disabled>
-                <i class="fas fa-tags"></i>
-                Labels
             </button>
             <span class="dropdown">
                 <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" id="metaData" data-toggle="dropdown" aria-expanded="false">
@@ -106,12 +106,12 @@
                 <th>DOI</th>
                 <th>Date</th>
                 <th>Time</th>
+                <th>My Label <i class="fa fa-info-circle" title="Personal label for this recording" data-toggle="tooltip"></i></th>
                 <th>Metadata_Title <i class="fa fa-info-circle" title="Metadata tags read from the recording file" data-toggle="tooltip"></i></th>
                 <th>Metadata_Artist <i class="fa fa-info-circle" title="Metadata tags read from the recording file" data-toggle="tooltip"></i></th>
                 <th>Metadata_Album <i class="fa fa-info-circle" title="Metadata tags read from the recording file" data-toggle="tooltip"></i></th>
                 <th>Metadata_Year <i class="fa fa-info-circle" title="Metadata tags read from the recording file" data-toggle="tooltip"></i></th>
                 <th>Metadata_Comment <i class="fa fa-info-circle" title="Metadata tags read from the recording file" data-toggle="tooltip"></i></th>
-                <th>My Label <i class="fa fa-info-circle" title="Personal label for this recording" data-toggle="tooltip"></i></th>
             </tr>
             </thead>
             <tbody class="form-control-sm js-recording-list"></tbody>
@@ -401,7 +401,7 @@
                     "columnDefs": [
                         {
                             "orderable": false,
-                            "targets": [0, 19, 20, 21, 22, 23, 28],
+                            "targets": [0, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28],
                         },
                         {
                             "className": "dt-center",
@@ -510,6 +510,10 @@
                 /* Save recordings list */
                 $(".js-recording-list").on('change', 'input, select, textarea', function () {
                     if ($(this)[0].className == 'js-checkbox') {
+                        return
+                    }
+                    // Skip label_id - it's handled by its own handler
+                    if ($(this).attr('name') == 'label_id') {
                         return
                     }
                     var id = $(this).closest('tr').find('.js-checkbox').attr('data-id')
@@ -854,6 +858,11 @@
                     let labelId = $('#bulk_label').val();
                     let recordingIds = $('#modal-label').data('recording-ids');
                     
+                    if (!labelId || !recordingIds || recordingIds.length === 0) {
+                        showAlert('Please select a label and recordings');
+                        return;
+                    }
+                    
                     postRequest('{{ baseUrl }}/api/admin/recordingManager/assignLabel', {
                         'label_id': labelId,
                         'recording_ids': recordingIds
@@ -872,13 +881,15 @@
                     let recordingId = $(this).data('recording-id');
                     let labelId = $(this).val();
                     
-                    postRequest('{{ baseUrl }}/recording/update', {
-                        'recording_id': recordingId,
-                        'user_id': {{ user_id }},
-                        'label_id': labelId
-                    }, false, false, function (response) {
-                        showAlert('Label updated');
-                    });
+                    if (labelId) {
+                        postRequest('{{ baseUrl }}/recording/update', {
+                            'recording_id': recordingId,
+                            'user_id': {{ user_id }},
+                            'label_id': labelId
+                        }, false, false, function (response) {
+                            showAlert('Label updated');
+                        });
+                    }
                 });
             });
         </script>
