@@ -13,6 +13,7 @@ use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\IndexLogProvider;
 use BioSounds\Provider\IndexTypeProvider;
 use BioSounds\Provider\LabelAssociationProvider;
+use BioSounds\Provider\LabelProvider;
 use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\SpectrogramProvider;
@@ -75,6 +76,8 @@ class RecordingController extends BaseController
             'license' => (new License())->getBasicList(),
             'models' => (new RecordingProvider())->getModel(),
             'indexs' => (new IndexTypeProvider())->getList(),
+            'labels' => Auth::isUserLogged() ? (new LabelProvider())->getBasicList(Auth::getUserLoggedID()) : [],
+            'user_id' => Auth::getUserLoggedID(),
         ]);
     }
 
@@ -239,6 +242,49 @@ class RecordingController extends BaseController
     {
         $count = count((new tagProvider())->getList($_POST['id']));
         return $count;
+    }
+
+    /**
+     * Assign label to multiple recordings
+     * @return string
+     * @throws \Exception
+     */
+    public function assignLabel()
+    {
+        if (!Auth::isUserLogged()) {
+            throw new ForbiddenException();
+        }
+
+        $labelId = filter_var($_POST['label_id'], FILTER_VALIDATE_INT);
+        $recordingIds = $_POST['recording_ids'] ?? [];
+
+        if (empty($labelId) || empty($recordingIds)) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'Invalid label or recording selection.',
+            ]);
+        }
+
+        $labelAssociationProvider = new LabelAssociationProvider();
+        $userId = Auth::getUserLoggedID();
+        $count = 0;
+
+        foreach ($recordingIds as $recordingId) {
+            $recordingId = filter_var($recordingId, FILTER_VALIDATE_INT);
+            if ($recordingId) {
+                $labelAssociationProvider->setEntry([
+                    'recording_id' => $recordingId,
+                    'user_id' => $userId,
+                    'label_id' => $labelId
+                ]);
+                $count++;
+            }
+        }
+
+        return json_encode([
+            'errorCode' => 0,
+            'message' => "Label assigned to $count recording(s) successfully.",
+        ]);
     }
 
     public function download()

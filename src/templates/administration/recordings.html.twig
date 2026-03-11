@@ -57,6 +57,10 @@
                 <i class="fas fa-trash"></i>
                 Delete
             </button>
+            <button id="labeling" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" data-target="#labeling" disabled>
+                <i class="fas fa-tags"></i>
+                Labels
+            </button>
             <span class="dropdown">
                 <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" id="metaData" data-toggle="dropdown" aria-expanded="false">
                     <span class="fas fa-plus"></span>
@@ -107,6 +111,7 @@
                 <th>Metadata_Album <i class="fa fa-info-circle" title="Metadata tags read from the recording file" data-toggle="tooltip"></i></th>
                 <th>Metadata_Year <i class="fa fa-info-circle" title="Metadata tags read from the recording file" data-toggle="tooltip"></i></th>
                 <th>Metadata_Comment <i class="fa fa-info-circle" title="Metadata tags read from the recording file" data-toggle="tooltip"></i></th>
+                <th>My Label <i class="fa fa-info-circle" title="Personal label for this recording" data-toggle="tooltip"></i></th>
             </tr>
             </thead>
             <tbody class="form-control-sm js-recording-list"></tbody>
@@ -239,6 +244,47 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="modal-label" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Assign Label to Recordings</h5>
+                    <button class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body ml-3">
+                    <div>
+                        <label for="bulk_label">Select Label</label>
+                        <div class="form-inline">
+                            <select id="bulk_label" name="label_id" class="form-control form-control-sm col-8" required>
+                                {% for lbl in labels %}
+                                    <option value="{{ lbl.id }}" data-creator="{{ lbl.creatorId }}" data-type="{{ lbl.type }}">{{ lbl.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <a href="{{ baseUrl }}/recording/addLabel" class="js-open-modal ml-2 btn btn-sm btn-outline-primary" title="Add custom label">
+                                <i class="fas fa-plus"></i>
+                            </a>
+                            <button type="button" id="deleteLabelBtnBulk" class="btn btn-sm btn-outline-danger ml-2" title="Delete selected custom label" style="display: none;">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div id="label-info"></div>
+                    <button class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
+                    <button id="assign-label-btn" class="btn btn-outline-primary">
+                        <i class="fa-solid fa-check"></i>
+                        Assign Label
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="modal fade" id="modal-tf" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -355,7 +401,7 @@
                     "columnDefs": [
                         {
                             "orderable": false,
-                            "targets": [0, 19, 20, 21, 22, 23],
+                            "targets": [0, 19, 20, 21, 22, 23, 28],
                         },
                         {
                             "className": "dt-center",
@@ -748,6 +794,90 @@
                     postRequest('{{ baseUrl }}/api/admin/recordingManager/maad', {'id': id, 'data': data}, false, false, function () {
                         $('#modal-maad').modal('hide')
                         showAlert("Job added to your queue - check status under corresponding tab")
+                    });
+                });
+                
+                // Bulk label assignment
+                $('button[name="table-btn"][data-target="#labeling"]').click(function (e) {
+                    let count = 0;
+                    let id = [];
+                    $('.js-checkbox:checked').each(function () {
+                        count++;
+                        id.push($(this).data('id'));
+                    });
+                    if (count == 0) {
+                        showAlert('Select at least one recording.');
+                        e.preventDefault();
+                        return;
+                    }
+                    $('#label-info').html('<small>Assign label to ' + count + ' recording(s)?</small>');
+                    $('#modal-label').data('recording-ids', id);
+                    $('#modal-label').modal('show');
+                });
+                
+                // Show/hide delete button based on label selection (bulk modal)
+                $('#bulk_label').change(function () {
+                    let selectedOption = $(this).find('option:selected');
+                    let creatorId = selectedOption.data('creator');
+                    let type = selectedOption.data('type');
+                    // Show delete button only for custom (private) labels created by user
+                    if (type === 'private' && creatorId == {{ user_id }}) {
+                        $('#deleteLabelBtnBulk').show();
+                    } else {
+                        $('#deleteLabelBtnBulk').hide();
+                    }
+                });
+                $('#bulk_label').trigger('change');
+                
+                // Delete label button (bulk modal)
+                $('#deleteLabelBtnBulk').click(function () {
+                    let labelId = $('#bulk_label').val();
+                    let labelName = $('#bulk_label').find('option:selected').text();
+                    
+                    if (confirm('Delete label "' + labelName + '"? This will remove it from all your recordings.')) {
+                        $.ajax({
+                            type: 'POST',
+                            url: '{{ baseUrl }}/recording/deleteLabel',
+                            data: { 'label_id': labelId },
+                            success: function () {
+                                // Remove from dropdown
+                                $('#bulk_label').find('option[value="' + labelId + '"]').remove();
+                                $('#bulk_label').trigger('change');
+                                showAlert('Label deleted successfully');
+                            }
+                        });
+                    }
+                });
+                
+                // Assign label button
+                $('#assign-label-btn').click(function (e) {
+                    let labelId = $('#bulk_label').val();
+                    let recordingIds = $('#modal-label').data('recording-ids');
+                    
+                    postRequest('{{ baseUrl }}/api/admin/recordingManager/assignLabel', {
+                        'label_id': labelId,
+                        'recording_ids': recordingIds
+                    }, false, false, function (response) {
+                        $('#modal-label').modal('hide');
+                        showAlert('Label assigned to ' + recordingIds.length + ' recording(s)');
+                        // Reload table to show updated labels
+                        if ($.fn.DataTable.isDataTable('#recTable')) {
+                            $('#recTable').DataTable().ajax.reload(null, false);
+                        }
+                    });
+                });
+                
+                // Handle single recording label change in table
+                $(document).on('change', 'select[name="label_id"]', function () {
+                    let recordingId = $(this).data('recording-id');
+                    let labelId = $(this).val();
+                    
+                    postRequest('{{ baseUrl }}/recording/update', {
+                        'recording_id': recordingId,
+                        'user_id': {{ user_id }},
+                        'label_id': labelId
+                    }, false, false, function (response) {
+                        showAlert('Label updated');
                     });
                 });
             });

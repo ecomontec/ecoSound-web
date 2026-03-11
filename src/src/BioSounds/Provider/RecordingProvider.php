@@ -423,6 +423,12 @@ class RecordingProvider extends AbstractProvider
         $getID3 = new getID3();
         $arr = [];
         $dir = ($dir === 'asc' || $dir === 'desc') ? $dir : 'asc';
+        $userId = \BioSounds\Utils\Auth::getUserLoggedID();
+        
+        // Fetch user's labels once
+        $labelProvider = new LabelProvider();
+        $labels = \BioSounds\Utils\Auth::isUserLogged() ? $labelProvider->getBasicList($userId) : [];
+        
         $sql = "SELECT r.*,u.`name` AS username,s.`name` AS site,re.model,m.`name` AS microphone,l.`name` AS license,DATE_FORMAT(r.file_date, '%Y-%m-%d') AS file_date, DATE_FORMAT(r.file_time, '%H:%i:%s') AS file_time,CONCAT(r.col_id,'/',r.directory,'/',r.filename) AS path FROM recording r LEFT JOIN user u ON u.user_id = r.user_id LEFT JOIN site s ON s.site_id = r.site_id LEFT JOIN recorder re ON r.recorder_id = re.recorder_id LEFT JOIN microphone m ON r.microphone_id = m.microphone_id LEFT JOIN license l ON r.license_id = l.license_id LEFT JOIN file_upload f ON f.recording_id = r.recording_id WHERE col_id = :collectionId";
         if ($search) {
             $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.data_type,''), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.model,''), IFNULL(r.recording_gain,''), IFNULL(m.name,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.duty_cycle_recording,''), IFNULL(r.duty_cycle_period,''), IFNULL(r.note,''),IFNULL(r.DOI,''), IFNULL(r.creation_date,'')) LIKE :search ";
@@ -587,6 +593,20 @@ class RecordingProvider extends AbstractProvider
                     $arr[$key][] = '';
                     $arr[$key][] = '';
                     $arr[$key][] = '';
+                    $arr[$key][] = '';
+                }
+                
+                // Add user label dropdown column
+                if (\BioSounds\Utils\Auth::isUserLogged()) {
+                    $labelAssociationProvider = new LabelAssociationProvider();
+                    $userLabel = $labelAssociationProvider->getUserLabel($value['recording_id'], $userId);
+                    $str_label = '';
+                    foreach ($labels as $lbl) {
+                        $selected = ($userLabel && $lbl->getId() == $userLabel->getId()) ? 'selected' : '';
+                        $str_label .= "<option value='{$lbl->getId()}' data-creator='{$lbl->getCreatorId()}' data-type='{$lbl->getType()}' {$selected}>{$lbl->getName()}</option>";
+                    }
+                    $arr[$key][] = "<select name='label_id' data-recording-id='{$value['recording_id']}' class='form-control form-control-sm' style='width:140px;'>$str_label</select>";
+                } else {
                     $arr[$key][] = '';
                 }
             }
