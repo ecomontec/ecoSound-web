@@ -313,16 +313,19 @@
                             </div>
                             <div class="override-box mt-2" style="display: none;">
                                 <div class="form-group">
-                                    <label class="col-form-label-sm" for="manual_lat">Latitude (degrees)</label>
-                                    <input id="manual_lat" name="manual_lat" class="form-control form-control-sm" type="number" step="0.000001" min="-90" max="90" placeholder="e.g., 52.520008">
+                                    <label class="col-form-label-sm">Coordinates (decimal degrees)</label>
+                                    <div class="form-row">
+                                        <div class="col">
+                                            <input id="manual_lat" name="manual_lat" class="form-control form-control-sm" type="number" step="0.000001" min="-90" max="90" placeholder="Latitude (e.g., 52.520008)">
+                                        </div>
+                                        <div class="col">
+                                            <input id="manual_lon" name="manual_lon" class="form-control form-control-sm" type="number" step="0.000001" min="-180" max="180" placeholder="Longitude (e.g., 13.404954)">
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="col-form-label-sm" for="manual_lon">Longitude (degrees)</label>
-                                    <input id="manual_lon" name="manual_lon" class="form-control form-control-sm" type="number" step="0.000001" min="-180" max="180" placeholder="e.g., 13.404954">
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-form-label-sm" for="manual_week">Week of year (1-48)</label>
-                                    <input id="manual_week" name="manual_week" class="form-control form-control-sm" type="number" min="1" max="48" placeholder="e.g., 27">
+                                    <label class="col-form-label-sm" for="manual_week">Week of year</label>
+                                    <input id="manual_week" name="manual_week" class="form-control form-control-sm" type="number" min="-1" max="48" placeholder="1-48, or -1 for year-long">
                                 </div>
                                 <div class="form-group">
                                     <div class="form-inline">
@@ -330,8 +333,7 @@
                                         <label class="ml-1 col-form-label-sm" for="use_species_list">Use custom species list</label>
                                         <i class="fa fa-info-circle ml-1" title="BirdNET either accepts coordinates or a species list. Enabling this will ignore coordinate inputs" data-toggle="tooltip"></i>
                                     </div>
-                                    <textarea id="species_list" name="species_list" class="form-control form-control-sm mt-2" rows="5" placeholder="Enter species in binomial format (e.g., Passer domesticus), one per line" disabled></textarea>
-                                    <small class="form-text text-muted">Species list format: scientific names (e.g., Turdus merula), one per line</small>
+                                    <textarea id="species_list" name="species_list" class="form-control form-control-sm mt-2" rows="5" placeholder="Enter species names in binomial format (e.g., Passer domesticus, Turdus merula), one per line" disabled></textarea>
                                 </div>
                             </div>
                             <hr>
@@ -466,9 +468,9 @@
                             // Extract default value from description for placeholder
                             let description = value[1];
                             let placeholder = '';
-                            let defaultMatch = description.match(/Defaults to ([\d.]+)/);
+                            let defaultMatch = description.match(/Defaults to ([\d.]+)\.?/);
                             if (defaultMatch) {
-                                placeholder = defaultMatch[1];
+                                placeholder = 'default ' + defaultMatch[1];
                                 // Remove the "Defaults to X." part from description
                                 description = description.replace(/\s*Defaults to [\d.]+\.?\s*/, '');
                             }
@@ -476,7 +478,7 @@
                             html = html + '<div class="form-inline">' +
                                 '<label class="ml-1 col-form-label-sm" for="' + value[0] + '">' + value[0] + '</label></div>' +
                                 '<div class="form-group form-inline">' +
-                                '<input id="' + value[0] + '" name="' + value[0] + '" class="form-control form-control-sm" type="text" placeholder="' + placeholder + '">' +
+                                '<input id="' + value[0] + '" name="' + value[0] + '" class="form-control form-control-sm" type="text" placeholder="' + placeholder + '" style="font-style: italic;">' +
                                 '<label class="ml-2 col-form-label-sm">' + description + '</label></div>'
                         })
                         $(this).after(html)

@@ -167,6 +167,10 @@ class RecordingController extends BaseController
         $data["recorder_id"] = $data["recorder_id"] == 0 ? null : $data["recorder_id"];
         $data["microphone_id"] = $data["microphone_id"] == 0 ? null : $data["microphone_id"];
         $data["license_id"] = $data["license_id"] == 0 ? null : $data["license_id"];
+        
+        // Remove label_id - it belongs to label_association table, not recording table
+        unset($data["label_id"]);
+        
         if (isset($data["itemID"])) {
             (new RecordingProvider())->update($data);
 
