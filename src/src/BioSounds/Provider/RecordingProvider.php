@@ -425,9 +425,10 @@ class RecordingProvider extends AbstractProvider
         $dir = ($dir === 'asc' || $dir === 'desc') ? $dir : 'asc';
         $userId = \BioSounds\Utils\Auth::getUserLoggedID();
         
-        // Fetch user's labels once
+        // Fetch user's labels once and create label association provider once
         $labelProvider = new LabelProvider();
         $labels = \BioSounds\Utils\Auth::isUserLogged() ? $labelProvider->getBasicList($userId) : [];
+        $labelAssociationProvider = new LabelAssociationProvider();
         
         $sql = "SELECT r.*,u.`name` AS username,s.`name` AS site,re.model,m.`name` AS microphone,l.`name` AS license,DATE_FORMAT(r.file_date, '%Y-%m-%d') AS file_date, DATE_FORMAT(r.file_time, '%H:%i:%s') AS file_time,CONCAT(r.col_id,'/',r.directory,'/',r.filename) AS path FROM recording r LEFT JOIN user u ON u.user_id = r.user_id LEFT JOIN site s ON s.site_id = r.site_id LEFT JOIN recorder re ON r.recorder_id = re.recorder_id LEFT JOIN microphone m ON r.microphone_id = m.microphone_id LEFT JOIN license l ON r.license_id = l.license_id LEFT JOIN file_upload f ON f.recording_id = r.recording_id WHERE col_id = :collectionId";
         if ($search) {
@@ -481,6 +482,14 @@ class RecordingProvider extends AbstractProvider
             $params[':search'] = '%' . $search . '%';
         }
         $result = $this->database->executeSelect($params);
+        
+        // Bulk fetch all user labels in a single query to avoid N+1 problem
+        $userLabelsMap = [];
+        if (\BioSounds\Utils\Auth::isUserLogged() && count($result)) {
+            $recordingIds = array_column($result, 'recording_id');
+            $userLabelsMap = $labelAssociationProvider->getUserLabels($recordingIds, $userId);
+        }
+        
         $users = (new User())->getUserList();
         $sites = (new SiteProvider())->getList($projectId, $collectionId);
         $recorders = (new Recorder())->getBasicList();
@@ -560,8 +569,7 @@ class RecordingProvider extends AbstractProvider
                 
                 // Add user label dropdown column (position 23, right after Time)
                 if (\BioSounds\Utils\Auth::isUserLogged()) {
-                    $labelAssociationProvider = new LabelAssociationProvider();
-                    $userLabel = $labelAssociationProvider->getUserLabel($value['recording_id'], $userId);
+                    $userLabel = $userLabelsMap[$value['recording_id']] ?? null;
                     $str_label = '<option value=""></option>'; // Empty default option
                     foreach ($labels as $lbl) {
                         $selected = ($userLabel && $lbl->getId() == $userLabel->getId()) ? 'selected' : '';
