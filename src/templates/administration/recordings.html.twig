@@ -78,6 +78,14 @@
                 Save all as CSV
             </button>
         </div>
+        {% if not collections or colId == 0 %}
+        <div class="card-body">
+            <div class="alert alert-warning" role="alert">
+                <i class="fas fa-exclamation-triangle"></i>
+                No collections available for this project. Please create a collection first in the <a href="{{ baseUrl }}/admin/collections">Collections</a> page.
+            </div>
+        </div>
+        {% endif %}
         <table id="recTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
             <tr style="font-size: .875rem;">
@@ -417,12 +425,13 @@
         {{ parent() }}
         <script>
             $(document).ready(function () {
+                {% if collections and colId > 0 %}
                 $('#recTable').show()
                 let table = $('#recTable').DataTable({
                     "processing": true,
                     "serverSide": true,
                     "ajax": {
-                        "url": '{{ baseUrl }}/admin/recordingManager/getListByPage/{{ projectId }}/{{ colId }}',
+                        "url": '{{ baseUrl }}/admin/recordingManager/getListByPage/{{ projectId }}/{{colId }}',
                         "type": 'POST',
                         "error": function (xhr, error, thrown) {
                             if (xhr.status == 400 || xhr.status == 404 || xhr.status == 500) {
@@ -445,10 +454,15 @@
                     "bAutoWidth": false,
                     "scrollX": true,
                 });
+                {% else %}
+                let table = null;
+                {% endif %}
                 $('#maad').selectpicker('refresh');
                 $('[data-toggle="tooltip"]').tooltip();
                 $('#search').on('input', () => {
-                    table.search($('#search').val()).draw();
+                    if (table) {
+                        table.search($('#search').val()).draw();
+                    }
                 });
                 $('#tf').change(function () {
                     let html = ''

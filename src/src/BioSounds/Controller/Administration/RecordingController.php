@@ -61,8 +61,12 @@ class RecordingController extends BaseController
             $projectId = $projects[0]->getId();
         }
         $collections = (new CollectionProvider())->getByProject($projectId, 0);
-        if (empty($colId) && $collections) {
+        if (empty($colId) && $collections && !empty($collections)) {
             $colId = $collections[0]->getId();
+        }
+        // If still no colId, set to 0 to prevent template errors
+        if (empty($colId)) {
+            $colId = 0;
         }
         $userSites = (new SiteProvider())->getList($projectId, $colId);
         return $this->twig->render('administration/recordings.html.twig', [
