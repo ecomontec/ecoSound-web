@@ -16,7 +16,11 @@ RUN apt-get install -y git zip unzip netcat-openbsd
 RUN docker-php-ext-install pdo_mysql bcmath sockets
 RUN composer install --no-plugins --no-scripts --optimize-autoloader --no-dev --no-progress
 RUN apt-get install -y python3.9 && apt-get install -y python3-pip
-RUN pip3 install numpy scikit-maad matplotlib tensorflow librosa batdetect2 autrainer==0.7.1 soundfile Pillow
+RUN pip3 install numpy soundfile Pillow
+RUN pip3 install scikit-maad matplotlib librosa
+RUN pip3 install tensorflow
+RUN pip3 install batdetect2
+RUN pip3 install autrainer==0.7.1
 RUN apt-get install -y libsndfile1-dev libasound2-dev imagemagick montage sox lame ffmpeg libsox-fmt-mp3
 RUN chown -R www-data:www-data /var/www/html/sounds /var/www/html/tmp /var/www/html/cache
 RUN chmod +x /var/www/html/bin/svt.py
