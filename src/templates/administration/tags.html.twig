@@ -19,15 +19,11 @@
                     </select>
                     <label for="colId" class="ml-3">Collection</label>
                     <select id="colId" name="colId" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
-                        {% if collections %}
-                            {% for collection in collections %}
-                                <option value="{{ collection.id }}" {{ collection.id == colId ? 'selected' }}>
-                                    {{ collection.name }}
-                                </option>
-                            {% endfor %}
-                        {% else %}
-                            <option value="">No collections available</option>
-                        {% endif %}
+                        {% for collection in collections %}
+                            <option value="{{ collection.id }}" {{ collection.id == colId ? 'selected' }}>
+                                {{ collection.name }}
+                            </option>
+                        {% endfor %}
                     </select>
                     <label for="recordingId" class="ml-3">Recording</label>
                     <select id="recordingId" name="recordingId" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
