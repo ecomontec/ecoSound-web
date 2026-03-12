@@ -60,7 +60,7 @@ class RecordingController extends BaseController
         if (empty($projectId)) {
             $projectId = $projects[0]->getId();
         }
-        $collections = (new CollectionProvider())->getByProject($projectId, null);
+        $collections = (new CollectionProvider())->getByProject($projectId, 0);
         if (empty($colId) && $collections) {
             $colId = $collections[0]->getId();
         }

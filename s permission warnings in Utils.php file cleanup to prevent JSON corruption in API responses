@@ -1,0 +1,13 @@
+[1mdiff --git a/src/templates/administration/upload.html.twig b/src/templates/administration/upload.html.twig[m
+[1mindex f3cbe95..600b716 100755[m
+[1m--- a/src/templates/administration/upload.html.twig[m
+[1m+++ b/src/templates/administration/upload.html.twig[m
+[36m@@ -43,7 +43,7 @@[m
+                     <div class="row">[m
+                         <div class="form-group col-md-6">[m
+                             <label for="site" class="col-form-label-sm">Site[m
+[31m-                                <i class="fa fa-info-circle" title="Sites can be managed in the dashboard table" data-toggle="tooltip"></i>[m
+[32m+[m[32m                                <i class="fa fa-info-circle" title="Sites can be managed in the corresponding dashboard table" data-toggle="tooltip"></i>[m
+                             </label>[m
+                             <select id="site" name="site" class="form-control form-control-sm">[m
+                                 <option value='null'></option>[m

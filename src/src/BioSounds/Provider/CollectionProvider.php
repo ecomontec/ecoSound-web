@@ -137,7 +137,7 @@ class CollectionProvider extends AbstractProvider
     {
         $params = [':project_id' => $project_id];
         if ($user_id == null) {
-            $this->database->prepareQuery("SELECT c.*,MAX(u.permission_id) AS permission_id FROM collection c LEFT JOIN user_permission u ON c.collection_id = u.collection_id AND u.user_id = :user_id WHERE c.project_id = :project_id " . (Auth::isUserAdmin() ? '' : " AND u.permission_id = 4 ") . " GROUP BY c.collection_id ORDER BY c.name");
+            $this->database->prepareQuery("SELECT c.* FROM collection c LEFT JOIN user_permission u ON c.collection_id = u.collection_id AND u.user_id = :user_id WHERE c.project_id = :project_id " . (Auth::isUserAdmin() ? '' : " AND u.permission_id = 4 ") . " GROUP BY c.collection_id ORDER BY c.name");
             $params[':user_id'] = Auth::getUserLoggedID();
         } else if (Auth::isUserAdmin()) {
             $this->database->prepareQuery("SELECT c.*,u.permission_id FROM collection c LEFT JOIN user_permission u ON u.collection_id = c.collection_id AND u.user_id = :user_id WHERE c.project_id = :project_id ORDER BY c.name");
