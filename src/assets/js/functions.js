@@ -153,7 +153,9 @@ function showAlert(message) {
     let alertDiv = document.getElementById('alertBox');
 
     if (alertDiv) {
-        alertDiv.getElementsByTagName('p')[0].textContent = message;
+        alertDiv.getElementsByTagName('p')[0].innerHTML = message;
+        // Re-show if it was dismissed
+        $(alertDiv).addClass('show');
         return;
     }
 
@@ -163,7 +165,7 @@ function showAlert(message) {
     alertDiv.setAttribute('role', 'alert');
 
     let paragraph = document.createElement('p');
-    paragraph.textContent = message;
+    paragraph.innerHTML = message;
 
     let button = document.createElement('button');
     button.type = 'button';
@@ -180,6 +182,22 @@ function showAlert(message) {
 
     let header = document.getElementsByTagName('header')[0];
     document.body.insertBefore(alertDiv, header);
+}
+
+// Show alert after page reload (if message was saved)
+function showAlertAfterReload() {
+    const message = sessionStorage.getItem('alertMessage');
+    if (message) {
+        sessionStorage.removeItem('alertMessage');
+        setTimeout(function() {
+            showAlert(message);
+       }, 300); // Small delay to ensure DOM is ready
+    }
+}
+
+// Save alert message before reload
+function saveAlertForReload(message) {
+    sessionStorage.setItem('alertMessage', message);
 }
 
 function toggleLoading() {

@@ -147,6 +147,9 @@
     </div>
     <script>
         $(document).ready(function () {
+            // Show any saved alert messages after page reload
+            showAlertAfterReload();
+            
             let currentPath = window.location.pathname;
             $('.nav-link').each(function () {
                 let linkHref = $(this).attr('href');

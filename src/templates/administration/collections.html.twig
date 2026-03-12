@@ -153,7 +153,9 @@
             });
             $('#js-delete-button').click(function () {
                 toggleLoading();
-                deleteRequest('{{ baseUrl }}/api/admin/collectionMgr/delete/' + $('#delete_id').val(), [], true, false, function () {
+                deleteRequest('{{ baseUrl }}/api/admin/collectionMgr/delete/' + $('#delete_id').val(), [], false, false, function (response) {
+                    // Save success message for display after reload
+                    saveAlertForReload(response.message);
                     location.reload();
                 });
             });
