@@ -229,7 +229,9 @@
                             $('#microphoneForm')[0].reset();
                             $('#microphoneForm').removeClass('was-validated');
                             if ($.fn.DataTable.isDataTable('#microphonesTable')) {
-                                $('#microphonesTable').DataTable().ajax.reload(null, false);
+                                var table = $('#microphonesTable').DataTable();
+                                table.ajax.reload(null, false);
+                                table.columns.adjust();
                             }
                             $('#microphoneFormSection').collapse('hide');
                             showAlert('Microphone saved successfully');

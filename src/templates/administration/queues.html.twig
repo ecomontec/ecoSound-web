@@ -147,6 +147,8 @@
                             $('button[name="table-btn"][data-target="#deletion"]').removeClass('btn-outline-primary').removeClass('btn-outline-danger').addClass('btn-outline-secondary');
                             $('button[name="table-btn"][data-target="#deletion"]').prop('disabled', true);
                         }
+                        // Adjust column widths after reload
+                        $('#queuesTable').DataTable().columns.adjust();
                     }, false);
                 }
             }, 5000);

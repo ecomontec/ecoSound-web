@@ -571,7 +571,9 @@
                             $('#areaValid').text('');
                             $('#siteValid').text('');
                             if ($.fn.DataTable.isDataTable('#siteTable')) {
-                                $('#siteTable').DataTable().ajax.reload(null, false);
+                                var table = $('#siteTable').DataTable();
+                                table.ajax.reload(null, false);
+                                table.columns.adjust();
                             }
                             $('#siteFormSection').collapse('hide');
                             showAlert('Site saved successfully');

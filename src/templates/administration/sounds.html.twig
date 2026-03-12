@@ -211,7 +211,9 @@
                             $('#soundForm')[0].reset();
                             $('#soundForm').removeClass('was-validated');
                             if ($.fn.DataTable.isDataTable('#soundsTable')) {
-                                $('#soundsTable').DataTable().ajax.reload(null, false);
+                                var table = $('#soundsTable').DataTable();
+                                table.ajax.reload(null, false);
+                                table.columns.adjust();
                             }
                             $('#soundFormSection').collapse('hide');
                             showAlert('Sound type saved successfully');

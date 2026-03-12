@@ -991,7 +991,9 @@
                         showAlert('Label ' + action + ' ' + recordingIds.length + ' recording(s)');
                         // Reload table to show updated labels
                         if ($.fn.DataTable.isDataTable('#recTable')) {
-                            $('#recTable').DataTable().ajax.reload(null, false);
+                            var table = $('#recTable').DataTable();
+                            table.ajax.reload(null, false);
+                            table.columns.adjust();
                         }
                     });
                 });

@@ -125,7 +125,9 @@
                         $('#userForm').removeClass('was-validated');
                         $('#userValid').text('');
                         if ($.fn.DataTable.isDataTable('#userTable')) {
-                            $('#userTable').DataTable().ajax.reload(null, false);
+                            var table = $('#userTable').DataTable();
+                            table.ajax.reload(null, false);
+                            table.columns.adjust();
                         }
                         $('#userFormSection').collapse('hide');
                         showAlert('User saved successfully');

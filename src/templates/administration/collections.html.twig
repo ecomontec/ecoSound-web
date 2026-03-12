@@ -182,7 +182,9 @@
                         $('#collectionForm').removeClass('was-validated');
                         $('#collectionValid').text('');
                         if ($.fn.DataTable.isDataTable('#collTable')) {
-                            $('#collTable').DataTable().ajax.reload(null, false);
+                            var table = $('#collTable').DataTable();
+                            table.ajax.reload(null, false);
+                            table.columns.adjust();
                         }
                         $('#collectionFormSection').collapse('hide');
                         showAlert('Collection saved successfully');

@@ -236,7 +236,9 @@
                             $('#recorderForm')[0].reset();
                             $('#recorderForm').removeClass('was-validated');
                             if ($.fn.DataTable.isDataTable('#recordersTable')) {
-                                $('#recordersTable').DataTable().ajax.reload(null, false);
+                                var table = $('#recordersTable').DataTable();
+                                table.ajax.reload(null, false);
+                                table.columns.adjust();
                             }
                             $('#recorderFormSection').collapse('hide');
                             showAlert('Recorder saved successfully');

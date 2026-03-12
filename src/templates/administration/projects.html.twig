@@ -171,7 +171,9 @@
                         $('#projectValid').text('');
                         $('#picture_preview').attr('src', '');
                         if ($.fn.DataTable.isDataTable('#projectTable')) {
-                            $('#projectTable').DataTable().ajax.reload(null, false);
+                            var table = $('#projectTable').DataTable();
+                            table.ajax.reload(null, false);
+                            table.columns.adjust();
                         }
                         $('#projectFormSection').collapse('hide');
                         showAlert('Project saved successfully');
