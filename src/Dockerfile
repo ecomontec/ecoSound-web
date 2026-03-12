@@ -25,7 +25,6 @@ RUN apt-get install -y libsndfile1-dev libasound2-dev imagemagick montage sox la
 RUN chown -R www-data:www-data /var/www/html/sounds /var/www/html/tmp /var/www/html/cache
 RUN chmod +x /var/www/html/bin/svt.py
 RUN chmod +x /var/www/html/bin/getMaad.py
-RUN chmod -R 777 /usr/local/lib/python3.9
 
 
 FROM rabbitmq:3.8.4-rc.3-alpine AS queue
