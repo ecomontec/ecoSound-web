@@ -659,7 +659,9 @@
                         id.push($(this).data('id'));
                     });
                     let data = {'id': id};
-                    postRequest('{{ baseUrl }}/api/admin/siteManager/delete', data, false, false, function () {
+                    postRequest('{{ baseUrl }}/api/admin/siteManager/delete', data, false, false, function (response) {
+                        // Save success message for display after reload
+                        saveAlertForReload(response.message);
                         location.reload();
                     });
                 });
