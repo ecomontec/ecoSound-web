@@ -262,10 +262,12 @@ class Utils
             if (is_dir($dir . $file)) {
                 self::deleteOldFiles($dir . $file . "/", $days);
                 if ($now - filemtime($dir . $file) >= 60 * 60 * 24 * $days && empty($dir . $file))
-                    rmdir($dir . $file);
+                    @rmdir($dir . $file);
             } else {
-                if ($now - filemtime($dir . $file) >= 60 * 60 * 24 * $days)
-                    unlink($dir . $file);
+                if ($now - filemtime($dir . $file) >= 60 * 60 * 24 * $days) {
+                    // Suppress warnings for permission denied errors
+                    @unlink($dir . $file);
+                }
             }
         }
     }
