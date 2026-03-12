@@ -17,11 +17,15 @@
                     </select>
                     <label for="collId" class="ml-3">Collection</label>
                     <select id="colId" name="colId" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
-                        {% for collection in collections %}
-                            <option value="{{ collection.id }}" {{ collection.id == colId ? 'selected' }}>
-                                {{ collection.name }}
-                            </option>
-                        {% endfor %}
+                        {% if collections %}
+                            {% for collection in collections %}
+                                <option value="{{ collection.id }}" {{ collection.id == colId ? 'selected' }}>
+                                    {{ collection.name }}
+                                </option>
+                            {% endfor %}
+                        {% else %}
+                            <option value="">No collections available</option>
+                        {% endif %}
                     </select>
                 </form>
                 <div class="col-4 form-inline justify-content-end">
