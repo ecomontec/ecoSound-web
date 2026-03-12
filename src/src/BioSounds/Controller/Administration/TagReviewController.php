@@ -70,7 +70,11 @@ class TagReviewController extends BaseController
             if (empty($colId) && !empty($collections)) {
                 $colId = $collections[0]->getId();
             }
-            if (!empty($colId)) {
+            // If still no colId, set to 0 to prevent template errors
+            if (empty($colId)) {
+                $colId = 0;
+            }
+            if (!empty($colId) && $colId > 0) {
                 $recordings = (new RecordingProvider())->getHasTags($colId);
             }
             if (empty($recordingId)) {
