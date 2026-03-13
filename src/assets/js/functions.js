@@ -36,6 +36,23 @@ document.addEventListener("DOMContentLoaded", function () {
         e.preventDefault();
     });
 
+    // Handle custom label creation form submit
+    $(document).on('click', '#newLabelButton', function () {
+        $('#newLabelForm').submit();
+    });
+
+    $(document).on('submit', '#newLabelForm', function (e) {
+        e.preventDefault();
+        postRequest(baseUrl + '/recording/saveLabel', new FormData($(this)[0]), false, false, function (response) {
+            $('#modal-div').modal('hide');
+            showAlert(response.message);
+            // Reload page to refresh label dropdown
+            setTimeout(function() {
+                location.reload();
+            }, 500);
+        });
+    });
+
     $("[data-hide]").on("click", function () {
         $(this).closest("." + $(this).attr("data-hide")).hide();
     });
