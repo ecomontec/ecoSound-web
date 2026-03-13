@@ -325,27 +325,27 @@
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="birdnet_method" id="method_coordinates" value="coordinates" checked>
                                         <label class="form-check-label col-form-label-sm" for="method_coordinates">
-                                            Use coordinates and week
+                                            Use coordinates (decimal degrees)
+                                            <i class="fa fa-info-circle ml-1" title="Set latitude or longitude to -1 to ignore coordinates entirely (no location-based filtering)" data-toggle="tooltip"></i>
                                         </label>
                                     </div>
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="birdnet_method" id="method_species_list" value="species_list">
                                         <label class="form-check-label col-form-label-sm" for="method_species_list">
                                             Use custom species list
+                                            <i class="fa fa-info-circle ml-1" title="Provide a custom list of species to detect. When using species list, coordinates and week are ignored." data-toggle="tooltip"></i>
                                         </label>
                                     </div>
                                 </div>
                                 
                                 <div id="coordinates-section">
                                     <div class="form-group">
-                                        <label class="col-form-label-sm">Coordinates (decimal degrees)</label>
-                                        <i class="fa fa-info-circle ml-1" title="Set latitude to -1 to ignore coordinates entirely (no location-based filtering)" data-toggle="tooltip"></i>
                                         <div class="form-row">
                                             <div class="col">
                                                 <input id="manual_lat" name="manual_lat" class="form-control form-control-sm" type="number" step="0.000001" min="-90" max="90" placeholder="Latitude (e.g., 52.520008 or -1)">
                                             </div>
                                             <div class="col">
-                                                <input id="manual_lon" name="manual_lon" class="form-control form-control-sm" type="number" step="0.000001" min="-180" max="180" placeholder="Longitude (e.g., 13.404954)">
+                                                <input id="manual_lon" name="manual_lon" class="form-control form-control-sm" type="number" step="0.000001" min="-180" max="180" placeholder="Longitude (e.g., 13.404954 or -1)">
                                             </div>
                                         </div>
                                     </div>
@@ -357,8 +357,6 @@
                                 
                                 <div id="species-list-section" style="display: none;">
                                     <div class="form-group">
-                                        <label class="col-form-label-sm" for="species_list">Custom species list</label>
-                                        <i class="fa fa-info-circle ml-1" title="Provide a custom list of species to detect. When using species list, coordinates and week are ignored." data-toggle="tooltip"></i>
                                         <textarea id="species_list" name="species_list" class="form-control form-control-sm mt-2" rows="5" placeholder="Enter species names in binomial format (e.g., Passer domesticus, Turdus merula), one per line"></textarea>
                                     </div>
                                 </div>
@@ -555,12 +553,15 @@
                             $('#coordinates-section').hide();
                             $('#species-list-section').show();
                         }
+                        // Reinitialize tooltips for newly shown elements
+                        $('[data-toggle="tooltip"]').tooltip();
                     } else {
                         $('.override-box').hide();
                         // Clear all override values when unchecked
                         $('#manual_lat, #manual_lon, #manual_week, #species_list').val('');
                         $('#method_coordinates').prop('checked', true);
                     }
+                    validateBirdnetForm();
                 });
                 
                 // Handle method selection (coordinates vs species list)
@@ -574,7 +575,40 @@
                         $('#species-list-section').show();
                         $('#manual_lat, #manual_lon, #manual_week').val(''); // Clear coordinates when switching
                     }
+                    validateBirdnetForm();
                 });
+                
+                // Validate BirdNET form inputs and enable/disable submit button
+                function validateBirdnetForm() {
+                    // Only validate if override is enabled
+                    if (!$('#override_defaults').is(':checked')) {
+                        $('#model-btn').removeClass('disabled').prop('disabled', false);
+                        return;
+                    }
+                    
+                    let isValid = false;
+                    
+                    if ($('#method_coordinates').is(':checked')) {
+                        // Coordinates method: both lat and lon must be provided
+                        let lat = $('#manual_lat').val();
+                        let lon = $('#manual_lon').val();
+                        isValid = (lat !== '' && lon !== '');
+                    } else if ($('#method_species_list').is(':checked')) {
+                        // Species list method: list must not be empty
+                        let speciesList = $('#species_list').val().trim();
+                        isValid = (speciesList !== '');
+                    }
+                    
+                    if (isValid) {
+                        $('#model-btn').removeClass('disabled').prop('disabled', false);
+                    } else {
+                        $('#model-btn').addClass('disabled').prop('disabled', true);
+                    }
+                }
+                
+                // Add validation on input changes
+                $('#manual_lat, #manual_lon, #species_list').on('input', validateBirdnetForm);
+                $('#override_defaults').on('change', validateBirdnetForm);
                 $('#frequencies').change(function () {
                     if ($(this).val() == 'custom') {
                         $("#frequencies_custom").attr("hidden", false);
@@ -768,7 +802,8 @@
                         return
                     }
                     $('#modal-tf').modal('show');
-                    $('#modal-tf').find('#tf-info').html('<small>Launch job for ' + $('.js-checkbox:checked').length + ' recordings?</small>')
+                    $('#modal-tf').find('#tf-info').html('<small>Launch job for ' + $('.js-checkbox:checked').length + ' recordings?</small>');
+                    validateBirdnetForm(); // Validate on modal open
                 })
                 $('#maads').on('click', function () {
                     let count = 0
