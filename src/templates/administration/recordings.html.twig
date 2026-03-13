@@ -333,25 +333,31 @@
                                         <input class="form-check-input" type="radio" name="birdnet_method" id="method_species_list" value="species_list">
                                         <label class="form-check-label col-form-label-sm" for="method_species_list">
                                             Use custom species list
-                                            <i class="fa fa-info-circle ml-1" title="Provide a custom list of species to detect. When using species list, coordinates and week are ignored." data-toggle="tooltip"></i>
                                         </label>
                                     </div>
                                 </div>
                                 
                                 <div id="coordinates-section">
-                                    <div class="form-group">
-                                        <div class="form-row">
-                                            <div class="col">
-                                                <input id="manual_lat" name="manual_lat" class="form-control form-control-sm" type="number" step="0.000001" min="-90" max="90" placeholder="Latitude (e.g., 52.520008 or -1)">
-                                            </div>
-                                            <div class="col">
-                                                <input id="manual_lon" name="manual_lon" class="form-control form-control-sm" type="number" step="0.000001" min="-180" max="180" placeholder="Longitude (e.g., 13.404954 or -1)">
-                                            </div>
-                                        </div>
+                                    <div class="form-inline">
+                                        <label class="ml-1 col-form-label-sm" for="manual_lat">Latitude</label>
                                     </div>
-                                    <div class="form-group">
-                                        <label class="col-form-label-sm" for="manual_week">Week of year (optional)</label>
-                                        <input id="manual_week" name="manual_week" class="form-control form-control-sm" type="number" min="-1" max="48" placeholder="1-48, or -1 for year-round">
+                                    <div class="form-group form-inline">
+                                        <input id="manual_lat" name="manual_lat" class="form-control form-control-sm" type="number" step="0.000001" min="-90" max="90" placeholder="default -1" style="font-style: italic;">
+                                        <label class="ml-2 col-form-label-sm">[-90, 90] or -1 to ignore</label>
+                                    </div>
+                                    <div class="form-inline">
+                                        <label class="ml-1 col-form-label-sm" for="manual_lon">Longitude</label>
+                                    </div>
+                                    <div class="form-group form-inline">
+                                        <input id="manual_lon" name="manual_lon" class="form-control form-control-sm" type="number" step="0.000001" min="-180" max="180" placeholder="default -1" style="font-style: italic;">
+                                        <label class="ml-2 col-form-label-sm">[-180, 180] or -1 to ignore</label>
+                                    </div>
+                                    <div class="form-inline">
+                                        <label class="ml-1 col-form-label-sm" for="manual_week">Week of year (optional)</label>
+                                    </div>
+                                    <div class="form-group form-inline">
+                                        <input id="manual_week" name="manual_week" class="form-control form-control-sm" type="number" min="-1" max="48" placeholder="default -1" style="font-style: italic;">
+                                        <label class="ml-2 col-form-label-sm">[1-48] or -1 for year-round</label>
                                     </div>
                                 </div>
                                 
