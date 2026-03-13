@@ -316,17 +316,15 @@
                         <div id="birdnet-override-section" style="display: none;">
                             <div class="form-inline">
                                 <input id="override_defaults" name="override_defaults" class="form-control form-control-sm" type="checkbox">
-                                <label class="ml-1 col-form-label-sm" for="override_defaults">Override default parameters</label>
+                                <label class="ml-1 col-form-label-sm" for="override_defaults">Override default species filtering</label>
                                 <i class="fa fa-info-circle ml-1" title="By default, location and week are automatically extracted from recording metadata to filter species list" data-toggle="tooltip"></i>
                             </div>
                             <div class="override-box mt-2" style="display: none;">
                                 <div class="form-group">
-                                    <label class="col-form-label-sm font-weight-bold">Species filtering method:</label>
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="birdnet_method" id="method_coordinates" value="coordinates" checked>
                                         <label class="form-check-label col-form-label-sm" for="method_coordinates">
                                             Use coordinates (decimal degrees)
-                                            <i class="fa fa-info-circle ml-1" title="Set latitude or longitude to -1 to ignore coordinates entirely (no location-based filtering)" data-toggle="tooltip"></i>
                                         </label>
                                     </div>
                                     <div class="form-check">
@@ -356,7 +354,7 @@
                                         <label class="ml-1 col-form-label-sm" for="manual_week">Week of year (optional)</label>
                                     </div>
                                     <div class="form-group form-inline">
-                                        <input id="manual_week" name="manual_week" class="form-control form-control-sm" type="number" min="-1" max="48" placeholder="default -1" style="font-style: italic;">
+                                        <input id="manual_week" name="manual_week" class="form-control form-control-sm" type="number" min="-1" max="48" placeholder="default -1" style="font-style: italic; width: 192px;">
                                         <label class="ml-2 col-form-label-sm">[1-48] or -1 for year-round</label>
                                     </div>
                                 </div>
