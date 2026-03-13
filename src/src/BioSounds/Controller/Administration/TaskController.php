@@ -121,12 +121,23 @@ class TaskController extends BaseController
     public function save(): string
     {
         $task = new Task();
+        $user = new User();
         $data = [];
         $jsons = json_decode($_POST['data']);
         $type = $_POST['type'];
         $assigned_ids = explode(',', $_POST['id']);
         $assigner_id = Auth::getUserLoggedID();
         $datetime = date('Y-m-d H:i:s');
+        
+        // Collect user names for the success message
+        $userNames = [];
+        foreach ($jsons as $json) {
+            $userName = $user->getFullName($json->user_id);
+            if ($userName) {
+                $userNames[] = $userName;
+            }
+        }
+        
         foreach ($jsons as $json) {
             $data = [];
             foreach ($assigned_ids as $assigned_id) {
@@ -148,9 +159,16 @@ class TaskController extends BaseController
             }
         }
         $task->insert($data);
+        
+        // Build informative success message
+        $count = count($assigned_ids);
+        $itemType = $type === 'recording' ? ($count === 1 ? 'recording' : 'recordings') : ($count === 1 ? 'tag' : 'tags');
+        $userList = implode(', ', $userNames);
+        $message = "Successfully assigned $count $itemType to $userList";
+        
         return json_encode([
             'errorCode' => 0,
-            'message' => "successfully changed $type assignment",
+            'message' => $message,
         ]);
     }
 
