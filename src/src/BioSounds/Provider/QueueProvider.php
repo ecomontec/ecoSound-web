@@ -55,7 +55,7 @@ class QueueProvider extends AbstractProvider
     {
         $sql = "SELECT * FROM queue WHERE user_id = :user_id AND (error != '-1' OR error IS NULL)";
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(queue_id,''), IFNULL(type,''), IFNULL(completed,''), IFNULL(total,''), IFNULL(status,''), IFNULL(start_time,''), IFNULL(stop_time,''), IFNULL(warning,''), IFNULL(error,'')) LIKE ':search ";
+            $sql .= " AND CONCAT(IFNULL(queue_id,''), IFNULL(type,''), IFNULL(completed,''), IFNULL(total,''), IFNULL(status,''), IFNULL(start_time,''), IFNULL(stop_time,''), IFNULL(warning,''), IFNULL(error,'')) LIKE :search ";
         }
         $this->database->prepareQuery($sql);
         $params = [
@@ -72,17 +72,15 @@ class QueueProvider extends AbstractProvider
     {
         $arr = [];
         $dir = ($dir === 'asc' || $dir === 'desc') ? $dir : 'asc';
-        $sql = "SELECT * FROM queue WHERE user_id = :user_id AND (error != '-1' OR error IS NULL)";
+        $sql = "SELECT *, TIMEDIFF(stop_time, start_time) as duration FROM queue WHERE user_id = :user_id AND (error != '-1' OR error IS NULL)";
         if ($search) {
             $sql .= " AND CONCAT(IFNULL(queue_id,''), IFNULL(type,''), IFNULL(completed,''), IFNULL(total,''), IFNULL(status,''), IFNULL(start_time,''), IFNULL(stop_time,''), IFNULL(warning,''), IFNULL(error,'')) LIKE :search ";
         }
-        $a = ['', 'queue_id', 'type', 'completed', 'total', 'status', 'start_time', 'stop_time', 'warning', 'error'];
-        $sql .= " ORDER BY $a[$column] $dir LIMIT :length OFFSET :start";
+        $a = ['', 'queue_id', 'type', 'completed', 'status', 'start_time', 'stop_time', 'duration', 'warning', 'error'];
+        $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
         $this->database->prepareQuery($sql);
         $params = [
             ':user_id' => Auth::getUserLoggedID(),
-            ':length' => $length,
-            ':start' => $start,
         ];
         if ($search) {
             $params[':search'] = '%' . $search . '%';

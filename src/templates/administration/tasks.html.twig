@@ -110,7 +110,7 @@
                 "processing": true,
                 "serverSide": true,
                 "ajax": {
-                    "url": '{{ baseUrl }}/admin/taskMgr/getListByPage',
+                    "url": '{{ baseUrl }}/admin/taskMgr/getListByPage/{{ colId|default(0) }}/{{ recordingId|default(0) }}',
                     "type": 'POST',
                     "error": function (xhr, error, thrown) {
                         if (xhr.status == 400 || xhr.status == 404 || xhr.status == 500) {
@@ -119,7 +119,6 @@
                     }
                 },
                 "dom": 'lrtip',
-                "stateSave": true,
                 "StateDuration": -1,
                 "order": [[1, 'asc']],
                 "columnDefs": [
@@ -157,9 +156,20 @@
         $(function () {
             'use strict';
             $(document).on('click', '#tasksExport', function () {
-                window.location.href = '{{ baseUrl }}/api/admin/taskMgr/export';
+                window.location.href = '{{ baseUrl }}/api/admin/taskMgr/export/{{ colId|default(0) }}/{{ recordingId|default(0) }}';
             });
-
+            $('#projectId').change(function () {
+                $('#colId').val("")
+                $('#recordingId').val("")
+                $("#collectionForm").submit();
+            });
+            $('#colId').change(function () {
+                $('#recordingId').val("")
+                $("#collectionForm").submit();
+            });
+            $('#recordingId').change(function () {
+                $("#collectionForm").submit();
+            });
             $('button[name="table-btn"][data-target="#task"]').click(function (e) {
                 $('.js-checkbox:checked').each(function () {
                     if ($(this).data('status') != 'assigned') {

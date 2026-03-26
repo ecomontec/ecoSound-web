@@ -311,7 +311,7 @@ class CollectionProvider extends AbstractProvider
     {
         $sql = "SELECT c.*,up.permission_id,u.name as username FROM collection c LEFT JOIN user_permission up ON up.collection_id = c.collection_id AND up.user_id = :user_id LEFT JOIN user u ON u.user_id = c.user_id  WHERE c.project_id = :project_id AND (up.permission_id = 4 OR (SELECT IF(role_id = 1,1,0) FROM user WHERE user_id = :user_id1))";
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(c.collection_id,''), IFNULL(c.name,''), IFNULL(u.name,''), IFNULL(c.doi,''), IFNULL(c.sphere,''), IFNULL(c.note,''), IFNULL(c.creation_date,''), IFNULL(c.view,'')) LIKE :search ";
+            $sql .= " AND CONCAT(IFNULL(c.collection_id,''), IFNULL(c.name,''), IFNULL(u.name,''), IFNULL(c.doi,''), IFNULL(c.sphere,''), IFNULL(c.external_recording_url,''), IFNULL(c.project_url,''), IFNULL(c.note,''), IFNULL(c.creation_date,''), IFNULL(c.view,'')) LIKE :search ";
         }
         $this->database->prepareQuery($sql);
         $params = [
@@ -332,14 +332,10 @@ class CollectionProvider extends AbstractProvider
         $dir = ($dir === 'asc' || $dir === 'desc') ? $dir : 'asc';
         $sql = "SELECT c.*,up.permission_id,u.name as username FROM collection c LEFT JOIN user_permission up ON up.collection_id = c.collection_id AND up.user_id = :user_id LEFT JOIN user u ON u.user_id = c.user_id  WHERE c.project_id = :project_id AND (up.permission_id = 4 OR (SELECT IF(role_id = 1,1,0) FROM user WHERE user_id = :user_id1))";
         if ($search) {
-            $sql .= " AND CONCAT(IFNULL(c.collection_id,''), IFNULL(c.name,''), IFNULL(u.name,''), IFNULL(c.doi,''), IFNULL(c.sphere,''), IFNULL(c.note,''), IFNULL(c.creation_date,''), IFNULL(c.view,'')) LIKE :search ";
+            $sql .= " AND CONCAT(IFNULL(c.collection_id,''), IFNULL(c.name,''), IFNULL(u.name,''), IFNULL(c.doi,''), IFNULL(c.sphere,''), IFNULL(c.external_recording_url,''), IFNULL(c.project_url,''), IFNULL(c.note,''), IFNULL(c.creation_date,''), IFNULL(c.view,'')) LIKE :search ";
         }
-        $a = ['', 'c.collection_id', 'c.name', 'u.name', 'c.doi', 'c.sphere', 'c.note', 'c.creation_date', 'c.view', 'c.public_access', 'c.public_tags'];
-        $sql .= " ORDER BY $a[$column] $dir";
-        // Only add LIMIT if length is not -1 (DataTables "All" option sends -1)
-        if ($length != '-1') {
-            $sql .= " LIMIT :length OFFSET :start";
-        }
+        $a = ['', 'c.collection_id', 'c.name', 'u.name', 'c.doi', 'c.sphere', 'c.external_recording_url', 'c.project_url', 'c.note', 'c.creation_date', 'c.view', 'c.public_access', 'c.public_tags'];
+        $sql .= " ORDER BY $a[$column] $dir LIMIT :length OFFSET :start";
         $this->database->prepareQuery($sql);
         $params = [
             ':project_id' => $projectId,

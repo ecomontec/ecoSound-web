@@ -6,6 +6,9 @@ use BioSounds\Controller\BaseController;
 use BioSounds\Entity\Task;
 use BioSounds\Entity\User;
 use BioSounds\Exception\ForbiddenException;
+use BioSounds\Provider\CollectionProvider;
+use BioSounds\Provider\ProjectProvider;
+use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\TaskProvider;
 use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\CollectionProvider;
@@ -80,22 +83,35 @@ class TaskController extends BaseController
         ]);
     }
 
-    public function getListByPage()
+    public function getListByPage($collectionId = null, $recordingId = null)
     {
-        $total = count((new TaskProvider())->getTask());
-        $start = $_POST['start'];
-        $length = $_POST['length'];
-        $search = $_POST['search']['value'];
-        $column = $_POST['order'][0]['column'];
-        $dir = $_POST['order'][0]['dir'];
-        $data = (new TaskProvider())->getListByPage($start, $length, $search, $column, $dir);
+        if ($collectionId == null) {
+            $collectionId = 0;
+        }
+        if ($recordingId == null) {
+            $recordingId = 0;
+        }
+
+        $taskProvider = new TaskProvider();
+
+        $start = $_POST['start'] ?? 0;
+        $length = $_POST['length'] ?? 10;
+        $search = $_POST['search']['value'] ?? '';
+        $column = $_POST['order'][0]['column'] ?? 0;
+        $dir = $_POST['order'][0]['dir'] ?? 'asc';
+
+        $totalInScope = $taskProvider->getFilterCount(null, $collectionId, $recordingId);
+
+        $data = $taskProvider->getListByPage($start, $length, $search, $column, $dir, $collectionId, $recordingId);
+
         if (count($data) == 0) {
             $data = [];
         }
+
         $result = [
-            'draw' => $_POST['draw'],
-            'recordsTotal' => $total,
-            'recordsFiltered' => (new TaskProvider())->getFilterCount($search),
+            'draw' => $_POST['draw'] ?? 0,
+            'recordsTotal' => $totalInScope,
+            'recordsFiltered' => $taskProvider->getFilterCount($search, $collectionId, $recordingId),
             'data' => $data,
         ];
         return json_encode($result);
@@ -172,18 +188,28 @@ class TaskController extends BaseController
         ]);
     }
 
-    public function export()
+    public function export($collectionId = null, $recordingId = null)
     {
         if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
         }
+
+        if ($collectionId == null) {
+            $collectionId = 0;
+        }
+        if ($recordingId == null) {
+            $recordingId = 0;
+        }
+
         $colArr = [];
         $file_name = "Tasks.csv";
         $fp = fopen('php://output', 'w');
         header('Content-Type: application/octet-stream;charset=utf-8');
         header('Accept-Ranges:bytes');
         header('Content-Disposition: attachment; filename=' . $file_name);
-        $columns = (new taskProvider())->getColumns();
+
+        $taskProvider = new TaskProvider();
+        $columns = $taskProvider->getColumns();
         foreach ($columns as $column) {
             $colArr[] = $column['COLUMN_NAME'];
         }
@@ -192,7 +218,8 @@ class TaskController extends BaseController
         array_splice($colArr, 5, 0, 'assigner');
         array_splice($colArr, 7, 0, 'assignee');
         $Als[] = $colArr;
-        $List = (new taskProvider())->getTask();
+
+        $List = $taskProvider->getExportList($collectionId, $recordingId);
 
         foreach ($List as $Item) {
             $valueToMove = $Item['recording'] == null ? '' : $Item['recording'];
