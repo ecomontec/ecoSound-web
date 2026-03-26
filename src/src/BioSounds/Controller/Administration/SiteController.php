@@ -250,4 +250,269 @@ class SiteController extends BaseController
         fclose($fp);
         exit();
     }
+
+    /**
+     * Upload sites from CSV file
+     * @return string
+     * @throws \Exception
+     */
+    public function uploadCSV()
+    {
+        header('Content-Type: application/json');
+        
+        try {
+            if (!Auth::isManage()) {
+                throw new ForbiddenException();
+            }
+
+            if (!isset($_FILES['sitesCSVFile']) || $_FILES['sitesCSVFile']['error'] != UPLOAD_ERR_OK) {
+                return json_encode([
+                    'errorCode' => 1,
+                    'message' => 'No file uploaded or upload error occurred.',
+                ]);
+            }
+
+        $projectId = $_POST['projectId'] ?? null;
+        $collectionId = $_POST['collectionId'] ?? null;
+
+        $handle = fopen($_FILES['sitesCSVFile']['tmp_name'], "rb");
+        if (!$handle) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'Unable to open uploaded file.',
+            ]);
+        }
+
+        $data = [];
+        $rowNum = 1;
+        $headers = null;
+        
+        while (!feof($handle)) {
+            $row = fgetcsv($handle);
+            
+            if (!$row || empty(array_filter($row))) {
+                $rowNum++;
+                continue;
+            }
+
+            if ($headers === null) {
+                $headers = array_map('trim', $row);
+                
+                if (!in_array('name', $headers)) {
+                    fclose($handle);
+                    return json_encode([
+                        'errorCode' => 1,
+                        'message' => "Missing required column: name",
+                    ]);
+                }
+                $rowNum++;
+                continue;
+            }
+
+            // Pad row to match header length (handles missing trailing columns)
+            $row = array_pad($row, count($headers), '');
+            // Trim to header length (handles extra trailing columns)
+            $row = array_slice($row, 0, count($headers));
+            
+            $rowData = array_combine($headers, $row);
+            
+            if (empty($rowData['name'])) {
+                fclose($handle);
+                return json_encode([
+                    'errorCode' => 1,
+                    'message' => "Row {$rowNum}: name is required.",
+                ]);
+            }
+            
+            $hasCoords = !empty($rowData['longitude_WGS84_dd_dddd']) && !empty($rowData['latitude_WGS84_dd_dddd']);
+            $hasGadm = !empty($rowData['gadm0']);
+            
+            if (!$hasCoords && !$hasGadm) {
+                fclose($handle);
+                return json_encode([
+                    'errorCode' => 1,
+                    'message' => "Row {$rowNum}: Either coordinates (longitude AND latitude) OR gadm0 must be provided.",
+                ]);
+            }
+            
+            if (!empty($rowData['longitude_WGS84_dd_dddd']) && !is_numeric($rowData['longitude_WGS84_dd_dddd'])) {
+                fclose($handle);
+                return json_encode([
+                    'errorCode' => 1,
+                    'message' => "Row {$rowNum}: longitude must be a number.",
+                ]);
+            }
+            
+            if (!empty($rowData['latitude_WGS84_dd_dddd']) && !is_numeric($rowData['latitude_WGS84_dd_dddd'])) {
+                fclose($handle);
+                return json_encode([
+                    'errorCode' => 1,
+                    'message' => "Row {$rowNum}: latitude must be a number.",
+                ]);
+            }
+            
+            // Validate topography range if provided
+            if (!empty($rowData['topography_m'])) {
+                if (!is_numeric($rowData['topography_m'])) {
+                    fclose($handle);
+                    return json_encode([
+                        'errorCode' => 1,
+                        'message' => "Row {$rowNum}: topography_m must be a number.",
+                    ]);
+                }
+                if ($rowData['topography_m'] < -15000 || $rowData['topography_m'] > 10000) {
+                    fclose($handle);
+                    return json_encode([
+                        'errorCode' => 1,
+                        'message' => "Row {$rowNum}: topography_m must be between -15000 and 10000 meters.",
+                    ]);
+                }
+            }
+            
+            // Validate freshwater depth range if provided
+            if (!empty($rowData['freshwater_depth_m'])) {
+                if (!is_numeric($rowData['freshwater_depth_m'])) {
+                    fclose($handle);
+                    return json_encode([
+                        'errorCode' => 1,
+                        'message' => "Row {$rowNum}: freshwater_depth_m must be a number.",
+                    ]);
+                }
+                if ($rowData['freshwater_depth_m'] < 0 || $rowData['freshwater_depth_m'] > 2000) {
+                    fclose($handle);
+                    return json_encode([
+                        'errorCode' => 1,
+                        'message' => "Row {$rowNum}: freshwater_depth_m must be between 0 and 2000 meters.",
+                    ]);
+                }
+            }
+            
+            $data[] = $rowData;
+            $rowNum++;
+        }
+        fclose($handle);
+
+        if (empty($data)) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'No valid data rows found in CSV file.',
+            ]);
+        }
+
+        $site = new Site();
+        $inserted = 0;
+        
+        foreach ($data as $siteData) {
+            $insertData = [
+                'name' => htmlentities(strip_tags($siteData['name']), ENT_QUOTES),
+                'user_id' => Auth::getUserID(),
+                'creation_date_time' => date('Y-m-d H:i:s'),
+            ];
+            
+            if (!empty($siteData['longitude_WGS84_dd_dddd'])) {
+                $insertData['longitude_WGS84_dd_dddd'] = (float)$siteData['longitude_WGS84_dd_dddd'];
+            }
+            if (!empty($siteData['latitude_WGS84_dd_dddd'])) {
+                $insertData['latitude_WGS84_dd_dddd'] = (float)$siteData['latitude_WGS84_dd_dddd'];
+            }
+            if (!empty($siteData['topography_m'])) {
+                $insertData['topography_m'] = (float)$siteData['topography_m'];
+            }
+            if (!empty($siteData['freshwater_depth_m'])) {
+                $insertData['freshwater_depth_m'] = (float)$siteData['freshwater_depth_m'];
+            }
+            if (!empty($siteData['gadm0'])) {
+                $insertData['gadm0'] = htmlentities(strip_tags($siteData['gadm0']), ENT_QUOTES);
+            }
+            if (!empty($siteData['gadm1'])) {
+                $insertData['gadm1'] = htmlentities(strip_tags($siteData['gadm1']), ENT_QUOTES);
+            }
+            if (!empty($siteData['gadm2'])) {
+                $insertData['gadm2'] = htmlentities(strip_tags($siteData['gadm2']), ENT_QUOTES);
+            }
+            if (!empty($siteData['iho'])) {
+                $insertData['iho'] = htmlentities(strip_tags($siteData['iho']), ENT_QUOTES);
+            }
+            if (!empty($siteData['realm_id'])) {
+                $insertData['realm_id'] = (int)$siteData['realm_id'];
+            }
+            if (!empty($siteData['biome_id'])) {
+                $insertData['biome_id'] = (int)$siteData['biome_id'];
+            }
+            if (!empty($siteData['functional_type_id'])) {
+                $insertData['functional_type_id'] = (int)$siteData['functional_type_id'];
+            }
+            
+            $siteId = $site->insert($insertData);
+            
+            if ($siteId) {
+                $siteCollection = new SiteCollection();
+                if ($collectionId) {
+                    $siteCollection->insert($siteId, $collectionId);
+                } else {
+                    $siteCollection->insertByProject($projectId, $siteId);
+                }
+            }
+            
+            $inserted++;
+        }
+
+        return json_encode([
+            'errorCode' => 0,
+            'message' => "Successfully uploaded {$inserted} sites.",
+        ]);
+        
+        } catch (ForbiddenException $e) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+        } catch (\Exception $e) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'Error: ' . $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Export IUCN realm/biome/functional type data to CSV
+     * @return void
+     * @throws \Exception
+     */
+    public function exportIucn()
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
+        }
+
+        $iucnGet = new IucnGet();
+        $allIucnData = $iucnGet->getAllIucnGets();
+        
+        // Sort by iucn_get_id
+        usort($allIucnData, function($a, $b) {
+            return $a['iucn_get_id'] - $b['iucn_get_id'];
+        });
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename=iucn_realm_biome_functional_types.csv');
+        
+        $fp = fopen('php://output', 'w');
+        
+        // Write headers
+        fputcsv($fp, ['iucn_get_id', 'name', 'parent_id', 'level_type']);
+        
+        // Write data
+        foreach ($allIucnData as $row) {
+            fputcsv($fp, [
+                $row['iucn_get_id'] ?? '',
+                $row['name'] ?? '',
+                $row['pid'] ?? '',
+                ($row['pid'] == 0 ? 'Realm' : ($row['pid'] < 100 ? 'Biome' : 'Functional Type'))
+            ]);
+        }
+        
+        fclose($fp);
+        exit();
+    }
 }

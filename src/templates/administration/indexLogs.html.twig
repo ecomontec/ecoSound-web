@@ -4,7 +4,34 @@
     <div class="card mb-3" id="indexLogsList">
         <div class="card-header border-light bg-white text-right">
             <div class="form-inline">
-                <div class="col-12 form-inline justify-content-end">
+                <form id="collectionForm" class="form-inline col-8" action="{{ baseUrl }}/admin/indexLogs">
+                    <label for="projectId">Project</label>
+                    <select id="projectId" name="projectId" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
+                        {% for project in projects %}
+                            <option value="{{ project.id }}" {{ project.id == projectId ? 'selected' }} {{ project.collection is null ?"disabled" }}>
+                                {{ project.name }}{{ project.collection_id }}{{ project.collection is null ?" (No Data)" }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <label for="colId" class="ml-3">Collection</label>
+                    <select id="colId" name="colId" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
+                        {% for collection in collections %}
+                            <option value="{{ collection.id }}" {{ collection.id == colId ? 'selected' }}>
+                                {{ collection.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <label for="recordingId" class="ml-3">Recording</label>
+                    <select id="recordingId" name="recordingId" class="form-control form-control-sm selectpicker ml-3" data-live-search="true">
+                        <option></option>
+                        {% for recording in recordings %}
+                            <option value="{{ recording.id }}" {{ recording.id == recordingId ? 'selected' }}>
+                                {{ recording.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </form>
+                <div class="col-4 form-inline justify-content-end">
                     <label class="mr-2">Search:</label>
                     <input class="form-control-sm" id="search">
                 </div>
@@ -92,7 +119,6 @@
                     }
                 },
                 "dom": 'lrtip',
-                "StateDuration": -1,
                 "order": [[1, 'asc']],
                 "columnDefs": [
                     {
@@ -106,11 +132,20 @@
                 "bAutoWidth": false,
                 "scrollX": true,
             });
-            if (table.state.loaded()) {
-                $('#search').val(table.state.loaded().search.search);
-            }
             $('#search').on('input', () => {
                 table.search($('#search').val()).draw();
+            });
+            $('#projectId').change(function () {
+                $('#colId').val("")
+                $('#recordingId').val("")
+                $("#collectionForm").submit();
+            });
+            $('#colId').change(function () {
+                $('#recordingId').val("")
+                $("#collectionForm").submit();
+            });
+            $('#recordingId').change(function () {
+                $("#collectionForm").submit();
             });
         });
         $(function () {

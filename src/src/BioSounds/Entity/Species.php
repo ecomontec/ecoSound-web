@@ -25,12 +25,70 @@ class Species extends BaseProvider
         return $result;
     }
 
+    public function getAll()
+    {
+        $query = 'SELECT * FROM ' . self::TABLE_NAME . ' ORDER BY ' . self::BINOMIAL . ' ASC';
+        $this->database->prepareQuery($query);
+        $result = $this->database->executeSelect();
+        return $result;
+    }
+
+    public function getById(int $id)
+    {
+        $query = 'SELECT * FROM ' . self::TABLE_NAME . ' WHERE ' . self::ID . ' = :id';
+        $this->database->prepareQuery($query);
+        $result = $this->database->executeSelect([':id' => $id]);
+        return !empty($result) ? $result[0] : null;
+    }
+
     public function getByName(string $name)
     {
         $query = 'SELECT * FROM species WHERE binomial= :name ';
         $this->database->prepareQuery($query);
         $result = $this->database->executeSelect([':name' => $name]);
         return $result;
+    }
+
+    public function insert(array $data)
+    {
+        $fields = [];
+        $values = [];
+        $placeholders = [];
+
+        foreach ($data as $key => $value) {
+            $fields[] = $key;
+            $placeholders[] = ':' . $key;
+            $values[':' . $key] = $value;
+        }
+
+        $query = 'INSERT INTO ' . self::TABLE_NAME . ' (' . implode(', ', $fields) . ') VALUES (' . implode(', ', $placeholders) . ')';
+        // Debug log
+        file_put_contents('/tmp/species_insert_debug.log', "DATA:\n" . print_r($data, true) . "\nQUERY:\n" . $query . "\nVALUES:\n" . print_r($values, true) . "\n\n", FILE_APPEND);
+        $this->database->prepareQuery($query);
+        return $this->database->executeInsert($values);
+    }
+
+    public function update(array $data, int $id)
+    {
+        $setParts = [];
+        $values = [];
+
+        foreach ($data as $key => $value) {
+            $setParts[] = $key . ' = :' . $key;
+            $values[':' . $key] = $value;
+        }
+
+        $values[':id'] = $id;
+        $query = 'UPDATE ' . self::TABLE_NAME . ' SET ' . implode(', ', $setParts) . ' WHERE ' . self::ID . ' = :id';
+        $this->database->prepareQuery($query);
+        return $this->database->executeUpdate($values);
+    }
+
+    public function delete(int $id)
+    {
+        $query = 'DELETE FROM ' . self::TABLE_NAME . ' WHERE ' . self::ID . ' = :id';
+        $this->database->prepareQuery($query);
+        return $this->database->executeUpdate([':id' => $id]);
     }
 
     /**

@@ -58,8 +58,12 @@ class TagController extends BaseController
                 $projectId = $projects[0]->getId();
             }
             $collections = (new CollectionProvider())->getByProject($projectId, Auth::getUserID());
-            if (empty($colId) && $collections) {
+            if (empty($colId) && $collections && !empty($collections)) {
                 $colId = $collections[0]->getId();
+            }
+            // If still no colId, set to 0 to prevent template errors
+            if (empty($colId)) {
+                $colId = 0;
             }
             $recordings = (new RecordingProvider())->getHasTags($colId);
             if (empty($recordingId)) {
@@ -166,6 +170,115 @@ class TagController extends BaseController
         foreach ($Als as $line) {
             fputcsv($fp, $line);
         }
+        fclose($fp);
+        exit();
+    }
+
+    public function downloadTemplate()
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
+        }
+        
+        $file_name = "tags_template.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        
+        fputcsv($fp, ['recording_id', 'min_time', 'max_time', 'min_freq', 'max_freq', 'sound_id', 'individuals', 'species_id', 'uncertain', 'sound_distance_m', 'distance_not_estimable', 'animal_sound_type', 'reference_call', 'comments', 'confidence']);
+        fputcsv($fp, ['123', '5.5', '7.2', '1000', '8000', '6', '1', '678', '0', '50', '0', 'call', '0', 'Example tag', '0.95']);
+        
+        fclose($fp);
+        exit();
+    }
+
+    public function exportSounds()
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
+        }
+        
+        $file_name = "sounds.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        
+        $soundProvider = new SoundProvider();
+        $sounds = $soundProvider->getAll();
+        
+        if (!empty($sounds)) {
+            fputcsv($fp, array_keys($sounds[0]));
+            
+            foreach ($sounds as $sound) {
+                fputcsv($fp, $sound);
+            }
+        }
+        
+        fclose($fp);
+        exit();
+    }
+
+    public function exportSpecies()
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
+        }
+        
+        $file_name = "species.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        
+        $speciesProvider = new \BioSounds\Entity\Species();
+        $species = $speciesProvider->get();
+        
+        if (!empty($species)) {
+            fputcsv($fp, array_keys($species[0]));
+            
+            foreach ($species as $sp) {
+                fputcsv($fp, $sp);
+            }
+        }
+        
+        fclose($fp);
+        exit();
+    }
+
+    public function exportRecordings()
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
+        }
+        
+        $file_name = "recordings.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        
+        // Query database directly to get array data
+        $db = new \BioSounds\Database\Database(DRIVER, HOST, DATABASE, USER, PASSWORD);
+        $query = 'SELECT recording_id, name, filename, col_id, directory, site_id, ';
+        $query .= 'file_size, bitdepth, channel_num, DATE_FORMAT(file_date, \'%Y-%m-%d\') ';
+        $query .= 'AS file_date, DATE_FORMAT(file_time, \'%H:%i:%s\') AS file_time, sampling_rate, ';
+        $query .= 'duration, type, medium, recorder_id, microphone_id, recording_gain, ';
+        $query .= 'duty_cycle_recording, duty_cycle_period, note, doi, license_id ';
+        $query .= 'FROM recording';
+        
+        $db->prepareQuery($query);
+        $recordings = $db->executeSelect();
+        
+        if (!empty($recordings)) {
+            fputcsv($fp, array_keys($recordings[0]));
+            
+            foreach ($recordings as $recording) {
+                fputcsv($fp, $recording);
+            }
+        }
+        
         fclose($fp);
         exit();
     }

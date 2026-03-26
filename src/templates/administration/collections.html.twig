@@ -48,7 +48,7 @@
                     <input type="checkbox" class="js-all-checkbox" name="check-all" id="check-all">
                 </th>
                 <th>#</th>
-                <th>Name</th>
+                <th style="min-width: 200px;">Name</th>
                 <th>User</th>
                 <th>DOI</th>
                 <th>Sphere</th>
@@ -106,7 +106,7 @@
                 "processing": true,
                 "serverSide": true,
                 "ajax": {
-                    "url": '{{ baseUrl }}/admin/collectionMgr/getListByPage/{{ projectId }}/{{ collectionId }}',
+                    "url": '{{ baseUrl }}/admin/collectionMgr/getListByPage/{{ projectId }}/0',
                     "type": 'POST',
                     "error": function (xhr, error, thrown) {
                         if (xhr.status == 400 || xhr.status == 404 || xhr.status == 500) {
@@ -115,7 +115,6 @@
                     }
                 },
                 "dom": 'lrtip',
-                "StateDuration": -1,
                 "order": [[1, 'asc']],
                 "columnDefs": [
                     {
@@ -130,9 +129,6 @@
                 "bAutoWidth": false,
                 "scrollX": true,
             });
-            if (table.state.loaded()) {
-                $('#search').val(table.state.loaded().search.search);
-            }
             $('#search').on('input', () => {
                 table.search($('#search').val()).draw();
             });
@@ -157,7 +153,9 @@
             });
             $('#js-delete-button').click(function () {
                 toggleLoading();
-                deleteRequest('{{ baseUrl }}/api/admin/collectionMgr/delete/' + $('#delete_id').val(), [], true, false, function () {
+                deleteRequest('{{ baseUrl }}/api/admin/collectionMgr/delete/' + $('#delete_id').val(), [], false, false, function (response) {
+                    // Save success message for display after reload
+                    saveAlertForReload(response.message);
                     location.reload();
                 });
             });
@@ -179,7 +177,17 @@
                             $('#collectionValid').text(response.message)
                             return
                         }
-                        location.reload();
+                        // Reset form and refresh table instead of reloading page
+                        $('#collectionForm')[0].reset();
+                        $('#collectionForm').removeClass('was-validated');
+                        $('#collectionValid').text('');
+                        if ($.fn.DataTable.isDataTable('#collTable')) {
+                            var table = $('#collTable').DataTable();
+                            table.ajax.reload(null, false);
+                            table.columns.adjust();
+                        }
+                        $('#collectionFormSection').collapse('hide');
+                        showAlert('Collection saved successfully');
                     });
                 }
                 this.classList.add('was-validated');
@@ -223,6 +231,10 @@
             });
 
             $('#projectId').change(function () {
+                // Clear DataTable state when changing projects
+                if (typeof table !== 'undefined') {
+                    table.state.clear();
+                }
                 $("#projectForm").submit();
             });
 

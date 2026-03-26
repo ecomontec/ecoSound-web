@@ -2,7 +2,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Tag {{ tag.id }} for recording {% if recordingName|length > 50 %} {{ recordingName|slice(0, 50) ~ '...' }} {% else %} {{ recordingName }} {% endif %} (ID {{ tag.recording }})
+                <h5 class="modal-title">Tag {{ tag.id }}
                     {% if hasTaskAssignment %}
                         <span class="badge badge-info ml-2" title="This tag is assigned to you as a task">
                             <i class="fas fa-tasks"></i> Task
@@ -41,8 +41,11 @@
                                 </div>
                             </div>
                             <div class="form-row align-items-center biophony">
-                                <div class="form-group col-auto">
-                                    <label class="col-form-label-sm" for="speciesName">Species</label>
+                                <div class="form-group col-12">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <label class="col-form-label-sm mb-0" for="speciesName">Species</label>
+                                        <a class="col-form-label-sm mb-0" href="#" target="_blank" id="xenoImages" style="font-size: 0.75rem;">Xeno-Canto</a>
+                                    </div>
                                     <input id="speciesName"
                                            data-type="edit"
                                            class="form-control form-control-sm mb-1 js-species-autocomplete"
@@ -50,65 +53,71 @@
                                            size="30"
                                            value="{{ tag.speciesName }}"
                                     >
-                                    <a class="col-form-label-sm" href="#" target="_blank" id="googleImages"> Images</a> | <a class="col-form-label-sm" href="#" target="_blank" id="xenoImages">Xeno-canto (for birds only)</a>
                                 </div>
-                                <div class="form-group col-auto">
-                                    <div class="form-check form-control-sm pt-2" id="uncertain_check">
+                            </div>
+                            <div class="biophony mb-2">
+                                <div class="d-flex" style="gap: 1.5rem;">
+                                    <div class="form-check form-control-sm">
                                         <input class="form-check-input" id="uncertain" name="uncertain" type="checkbox" value="1" {{ tag.uncertain ? "checked" }}>
-                                        <label class="form-check-label" for="uncertain">Uncertain?</label>
+                                        <label class="form-check-label" for="uncertain">Uncertain</label>
+                                    </div>
+                                    <div class="form-check form-control-sm">
+                                        <input class="form-check-input" id="referenceCall" name="reference_call" type="checkbox" value="1" {{ tag.referenceCall ? "checked" }}>
+                                        <label class="form-check-label" for="referenceCall">Reference</label>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <button class="btn btn-link btn-sm p-0" type="button" id="timeFreqToggle" aria-expanded="true" aria-controls="timeFreqCollapse">
-                                    <i class="fas fa-chevron-down"></i> Time & Frequency
-                                </button>
-                                <div id="timeFreqCollapse" style="display: block;">
-                                    <div class="form-group mt-2">
-                                        <label class="col-form-label-sm" for="min_time">Time </label>
-                                        <div class="form-inline">
-                                            <input id="min_time" class="form-control form-control-sm mr-2 ml-1" name="min_time" type="text" maxlength="100" value="{{ tag.minTime }}"> -
-                                            <input id="max_time" class="form-control form-control-sm ml-2 mr-2" name="max_time" type="text" maxlength="100" value="{{ tag.maxTime }}">
-                                            <label class="col-form-label-sm" for="max_time">sec</label>
-                                        </div>
+                            <div class="form-row align-items-center">
+                                <div class="form-group col-6 mb-1">
+                                    <label class="col-form-label-sm" for="min_time">Time (sec)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input id="min_time" class="form-control form-control-sm" name="min_time" type="text" maxlength="100" value="{{ tag.minTime }}" style="max-width: 70px;">
+                                        <div class="input-group-prepend input-group-append"><span class="input-group-text">-</span></div>
+                                        <input id="max_time" class="form-control form-control-sm" name="max_time" type="text" maxlength="100" value="{{ tag.maxTime }}" style="max-width: 70px;">
                                     </div>
-
-                                    <div class="form-group">
-                                        <label class="col-form-label-sm" for="min_freq">Frequency </label>
-                                        <div class="form-inline">
-                                            <input id="min_freq" class="form-control form-control-sm mr-2 ml-1" name="min_freq" type="text" maxlength="100" value="{{ tag.minFrequency }}"> -
-                                            <input id="max_freq" class="form-control form-control-sm ml-2 mr-2" name="max_freq" type="text" maxlength="100" value="{{ tag.maxFrequency }}">
-                                            <label class="col-form-label-sm" for="max_freq">Hz</label>
-                                        </div>
+                                </div>
+                                <div class="form-group col-6 mb-1">
+                                    <label class="col-form-label-sm" for="min_freq">Frequency (Hz)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input id="min_freq" class="form-control form-control-sm" name="min_freq" type="text" maxlength="100" value="{{ tag.minFrequency }}" style="max-width: 70px;">
+                                        <div class="input-group-prepend input-group-append"><span class="input-group-text">-</span></div>
+                                        <input id="max_freq" class="form-control form-control-sm" name="max_freq" type="text" maxlength="100" value="{{ tag.maxFrequency }}" style="max-width: 70px;">
                                     </div>
                                 </div>
                             </div>
 
                             <div class="form-row align-items-center mt-2 biophony" id="distance_group">
-                                <div class="form-group col-auto">
+                                <div class="form-group col-auto mb-1">
                                     <label class="col-form-label-sm" for="callDistance">Sound Distance </label>
-                                    <input id="callDistance" class="form-control form-control-sm" name="sound_distance_m" type="number" value="{{ tag.callDistance }}" readonly>
+                                    <div class="input-group input-group-sm">
+                                        <input id="callDistance" class="form-control form-control-sm" name="sound_distance_m" type="number" value="{{ tag.callDistance }}" readonly style="max-width: 80px;">
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-outline-primary btn-sm estimate-distance-btn" id="est_{{ tag.id }}" title="Estimate call distance">
+                                                <i class="fas fa-bullhorn"></i>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="form-group col-auto">
+                                <div class="form-group col-auto mb-1">
                                     <div class="form-check form-control-sm pt-4" id="dist_check">
                                         <input class="form-check-input" id='distanceNotEstimable' name="distance_not_estimable" type="checkbox" value="1" {{ tag.distanceNotEstimable ? "checked" }}>
                                         <label class="form-check-label" for="distanceNotEstimable">
-                                            Distance not estimable
+                                            Not estimable
                                         </label>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="form-row">
-                                <div class="form-group col-4 biophony" id="individuals_group">
+                                <div class="form-group col-6 biophony" id="individuals_group">
                                     <label class="col-form-label-sm" for="individuals">Individuals </label>
                                     <input id="individuals" class="form-control form-control-sm" name="individuals" min="0" max="1000" type="number" value="{{ tag.numberIndividuals }}" required>
                                     <div class="invalid-feedback">
                                         Please introduce a valid individuals.
                                     </div>
                                 </div>
-                                <div class="form-group col-4 biophony">
+                                <div class="form-group col-6 biophony">
                                     <label class="col-form-label-sm" for="type">Animal Sound Type</label>
                                     <select id="animal_sound_type" name="animal_sound_type" class="custom-select custom-select-sm">
                                         <option value="0"></option>
@@ -117,87 +126,71 @@
                                         {% endfor %}
                                     </select>
                                 </div>
-                                <div class="form-group col-4">
-                                    <div class="form-check form-control-sm pt-5" id="reference">
-                                        <input class="form-check-input" id="referenceCall" name="reference_call" type="checkbox" value="1" {{ tag.referenceCall ? "checked" }}>
-                                        <label class="form-check-label" for="referenceCall">Reference call</label>
-                                    </div>
-                                </div>
                             </div>
 
                             <div class="form-group">
                                 <label for="comments" class="sr-only">Comments</label>
-                                <textarea id="comments" name="comments" class="form-control form-control-sm" placeholder="Insert your comments" maxlength="200" rows="3">{{ tag.comments }}</textarea>
+                                <textarea id="comments" name="comments" class="form-control form-control-sm" placeholder="Insert your comments" maxlength="200" rows="1">{{ tag.comments }}</textarea>
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group mb-1">
                                 {% if edit %}
-                                    <div class="col-form-label-sm">Creator Type: {{ tag.creatorType }}{% if tag.confidence %}, Confidence: {{ tag.confidence }} {% endif %}</div>
+                                    <div class="text-muted" style="font-size: 0.7rem;">Creator: {{ tag.creatorType }}{% if tag.confidence %}, Confidence: {{ tag.confidence }}{% endif %}</div>
                                 {% endif %}
                                 {% if isUserLogged %}
                                     {% if reviewPanel !='' %}
-                                        <div class="col-form-label-sm inline">Created by {{ tag.userName }} on {{ tag.creationDate }} (UTC)</div>
+                                        <div class="text-muted" style="font-size: 0.7rem;">By {{ tag.userName }}, {{ tag.creationDate }} (UTC)</div>
                                     {% else %}
-                                        <label class="col-form-label-sm" for="user_full_name">Creation User: </label>
-                                        <span id="user_full_name"><small>{{ tag.userName }}</small></span>
+                                        <div class="text-muted" style="font-size: 0.7rem;">By {{ tag.userName }}</div>
                                     {% endif %}
                                 {% endif %}
-                                <a href="#" id="exportTagUrl" class="btn btn-link inline" title="Export URL to clipboard">
-                                    <i class="fa fa-share-alt"></i>
-                                </a>
+                                <input type="hidden" id="exportTagUrlData" value="{{ tag.id }}">
                             </div>
                         </form>
                     </div>
+                    {% if reviewPanel !='' %}
                     <div id="review-panel">
+                        <h6 class="mb-2 pb-2 border-bottom">Reviews</h6>
                         {{ reviewPanel | raw }}
                     </div>
+                    {% endif %}
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer" style="flex-wrap: wrap; gap: 0.25rem;">
                 {% if edit %}
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-outline-primary" {{ displaySaveButton }} id="saveButton" disabled>
-                            <i class="fas fa-save" aria-hidden="true"></i> Save & Close
-                        </button>
-                        <a class="btn btn-outline-primary dropdown-toggle type-btn" data-toggle="dropdown" {{ displaySaveButton }} aria-haspopup="true" aria-expanded="false">
-                            <i class="la la-angle-down"></i>
-                        </a>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item save-type" href="#">Save & Close</a>
-                            <a class="dropdown-item save-type" href="#">Save & Next Tag</a>
-                            <a class="dropdown-item save-type" href="#">Save & Previous Tag</a>
-                            <a class="dropdown-item save-type" href="#">Save Only</a>
-                        </div>
-                    </div>
-                    <a class='btn {{ previous==0?'btn-secondary':'btn-outline-primary' }}' id="btn-previous">
-                        <i class="fas fa-arrow-left" aria-hidden="true"></i> Previous
-                    </a>
-                    <a class='btn {{ next==0?'btn-secondary':'btn-outline-primary' }}' id="btn-next">
-                        <i class="fas fa-arrow-right" aria-hidden="true"></i> Next
-                    </a>
-                    <script>
-                        var sound_id = $.cookie('save_button');
-                        $('.save-type').click(function () {
-                            if ($.cookie('cookieConsent') == 'accepted') {
-                                $.cookie('save_button', $(this).text(), {path: '/', expires: 180, samesite: 'None'});
-                            }
-                            $('#saveButton').html('<i class="fa fa-save"></i> ' + $(this).text());
-                        })
-                    </script>
-                {% else %}
-                    <button type="button" class="btn btn-outline-primary" {{ displaySaveButton }} id="saveButton">
+                    <button type="button" class="btn btn-outline-primary btn-sm" {{ displaySaveButton }} id="saveButton" title="Save tag (Enter)">
                         <i class="fas fa-save" aria-hidden="true"></i> Save
                     </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm" {{ displayDeleteButton }} id="deleteButton" data-tag-id="{{ tag.id }}">
+                        <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                    </button>
+                    <a href="#" id="exportTagUrl" class="btn btn-outline-secondary btn-sm" title="Share tag URL">
+                        <i class="fa fa-share-alt"></i>
+                    </a>
+                    <div class="btn-group btn-group-sm ml-auto">
+                        <a class='btn btn-sm {{ previous==0?'btn-secondary':'btn-outline-primary' }}' id="btn-previous" title="Previous tag">
+                            <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                        </a>
+                        <a class='btn btn-sm {{ next==0?'btn-secondary':'btn-outline-primary' }}' id="btn-next" title="Next tag">
+                            <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                {% else %}
+                    <button type="button" class="btn btn-outline-primary btn-sm" {{ displaySaveButton }} id="saveButton" title="Save tag (Enter)">
+                        <i class="fas fa-save" aria-hidden="true"></i> Save
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm" {{ displayDeleteButton }} id="deleteButton" data-tag-id="{{ tag.id }}">
+                        <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                    </button>
                 {% endif %}
-                <button type="button" class="btn btn-outline-danger" {{ displayDeleteButton }} id="deleteButton" data-tag-id="{{ tag.id }}">
-                    <i class="fas fa-trash-alt" aria-hidden="true"></i> Delete
-                </button>
             </div>
         </div>
     </div>
 </div>
 <script>
     var soundTypes ={{ soundTypes|json_encode|raw }};
+    // Also store globally for sidebar access
+    window.sidebarSoundTypes = soundTypes;
     if ($('#modalX').val() && $('#modalX').val()) {
         $("#modal-div").offset({
             left: $('#modalX').val(),
@@ -214,26 +207,8 @@
         $("#sound_id").find("option[value=" + sound_id + "]").prop("selected", true);
         {% endif %}
         $('#sound_id').selectpicker('refresh');
-        $(".btn").css("text-align", "left");
-        $('#tag-panel').on('input', 'input, select', function () {
-            $('#saveButton').removeAttr('disabled');
-            $('.type-btn').removeAttr('disabled');
-        });
-        $('#sound_id').on('changed.bs.select', function () {
-            $('#saveButton').removeAttr('disabled');
-            $('.type-btn').removeAttr('disabled');
-        });
-        $('#reviewForm').on('click', 'button', function () {
-            $('#saveButton').removeAttr('disabled');
-            $('.type-btn').removeAttr('disabled');
-        });
-        {% if isTask %}
-        $('#saveButton').html('<i class="fa fa-save"></i> Save & Next Tag');
-        {% elseif edit %}
-        if ($.cookie('save_button')) {
-            $('#saveButton').html('<i class="fa fa-save"></i> ' + $.cookie('save_button'));
-        }
-        {% endif %}
+        // Only affect buttons within the tag form, not all buttons on page
+        $("#modal-div .btn, #tag-sidebar-content .btn").css("text-align", "left");
     });
     $("#modal-div").on('shown.bs.modal', function () {
         if ($("#animal_sound_type")[0].options.length == 1) {
@@ -244,27 +219,49 @@
     $("#soundscape_component").on('change', function () {
         if ($("#soundscape_component").find("option:selected").text() == 'biophony') {
             $(".biophony").show()
-            $("#reference").addClass('pt-5')
         } else {
             $(".biophony").hide()
-            $("#reference").removeClass('pt-5')
         }
         {% if not tag.soundId %}
         if ($.cookie('cookieConsent') == 'accepted') {
             $.cookie('soundscape_component', $("#soundscape_component").val(), {path: '/', expires: 180, samesite: 'None'});
         }
         {% endif %}
+        
+        // Use soundTypes from global scope (modal) or window.sidebarSoundTypes (sidebar)
+        var typesData = (typeof soundTypes !== 'undefined') ? soundTypes : 
+                        (typeof window.sidebarSoundTypes !== 'undefined') ? window.sidebarSoundTypes : null;
+        
+        if (!typesData) {
+            console.error('No sound types data available');
+            return;
+        }
+        
         $('#sound_id').empty()
-        for (var key in soundTypes) {
-            if (soundTypes[key]['soundscape_component'] == $("#soundscape_component").find("option:selected").text()) {
-                if (soundTypes[key]['sound_id'] == '{{ tag.soundId }}') {
-                    $('#sound_id').append("<option value='" + soundTypes[key]['sound_id'] + "' selected>" + soundTypes[key]['sound_type'] + "</option>");
+        for (var key in typesData) {
+            // Check both property name variations (snake_case and camelCase)
+            const componentValue = typesData[key]['soundscape_component'] || typesData[key]['soundscapeComponent'];
+            const soundIdValue = typesData[key]['sound_id'] || typesData[key]['soundId'];
+            const soundTypeName = typesData[key]['sound_type'] || typesData[key]['soundType'];
+            
+            // Skip entries with empty sound type names
+            if (!soundTypeName || soundTypeName.trim() === '') {
+                continue;
+            }
+            
+            if (componentValue == $("#soundscape_component").find("option:selected").text()) {
+                if (soundIdValue == '{{ tag.soundId }}') {
+                    $('#sound_id').append("<option value='" + soundIdValue + "' selected>" + soundTypeName + "</option>");
                 } else {
-                    $('#sound_id').append("<option value='" + soundTypes[key]['sound_id'] + "'>" + soundTypes[key]['sound_type'] + "</option>");
+                    $('#sound_id').append("<option value='" + soundIdValue + "'>" + soundTypeName + "</option>");
                 }
             }
         }
-        $('#sound_id').selectpicker('refresh');
+        
+        // Only call selectpicker refresh if it exists (modal mode, not sidebar)
+        if (typeof $.fn.selectpicker !== 'undefined' && $('#sound_id').hasClass('selectpicker')) {
+            $('#sound_id').selectpicker('refresh');
+        }
     })
     {% if not tag.soundId %}
     $("#sound_id").on('change', function () {
@@ -347,6 +344,7 @@
         $("#modalX").val($('#modal-div').offset().left);
         $("#modalY").val($('#modal-div').offset().top);
         // The type parameter is already in the form, just need to update the action
+        // Note: filter and continuous_play states persist automatically via form submission
         $('#recordingForm').attr('action', "{{ baseUrl }}/recording/show/{{ next.recording }}");
         $("#recordingForm").submit();
         e.preventDefault();
@@ -363,6 +361,7 @@
         $("#modalX").val($('#modal-div').offset().left);
         $("#modalY").val($('#modal-div').offset().top);
         // The type parameter is already in the form, just need to update the action
+        // Note: filter and continuous_play states persist automatically via form submission
         $('#recordingForm').attr('action', "{{ baseUrl }}/recording/show/{{ previous.recording }}");
         $("#recordingForm").submit();
         e.preventDefault();

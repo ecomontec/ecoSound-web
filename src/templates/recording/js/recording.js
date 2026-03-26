@@ -3,6 +3,14 @@ $(function () {
     let shiftRate = 0.95;
 
     $("#shift-left").click(function (e) {
+        e.preventDefault();
+        
+        // Don't execute if button is disabled
+        if ($(this).hasClass('a-disabled')) {
+            return false;
+        }
+        
+        const selectionDuration = maxTime - minTime;
         let shiftLeftMin = Math.round(minTime - (selectionDuration * shiftRate));
 
         if (shiftLeftMin < 0) {
@@ -24,6 +32,14 @@ $(function () {
     });
 
     $("#shift-right").click(function (e) {
+        e.preventDefault();
+        
+        // Don't execute if button is disabled
+        if ($(this).hasClass('a-disabled')) {
+            return false;
+        }
+        
+        const selectionDuration = maxTime - minTime;
         let shiftRightMax = Math.round(maxTime + (selectionDuration * shiftRate));
 
         if (shiftRightMax > fileDuration) {
@@ -50,8 +66,8 @@ $(function () {
         $("#y").val(1);
         $("#h").val(fileFreqMax);
         $("#type").val('');
-        $("input[name=filter]").prop("checked", false);
-        $("input[name=continuous_play]").prop("checked", false);
+        // Note: filter state is NOT reset here - it persists as per user setting
+        $("input[name=continuous_play]").val('0');
         $("input[name=estimateDistID]").val("");
         $("#recordingForm").submit();
         e.preventDefault();
@@ -63,7 +79,7 @@ $(function () {
             $.cookie('zoom_info', encodeURIComponent(JSON.stringify(arr)), {path: '/', expires: 180, samesite: 'None'});
         }
         $(this).prop("disabled", true);
-        $("input[name=continuous_play]").prop("checked", false);
+        $("input[name=continuous_play]").val('0');
 
         if (typeof window.audioBufferQueue !== 'undefined') {
             window.audioBufferQueue.length = 0;
@@ -72,7 +88,7 @@ $(function () {
         $("#recordingForm").submit();
     });
 
-    $(".zoom-btn").click(function (e) {
+    $(".zoom-option, #btn-zoom-in, #btn-zoom-out, #zoom-pix").click(function (e) {
         if ($(this).attr('id') == 'btn-zoom-in') {
             if ($("#zoom_in_input").val() == '' || $("#zoom_in_input").val() <= 0 || $("#zoom_in_input").val() >= 100) {
                 showAlert("Please enter a positive number smaller than 100 for zooming in")
@@ -96,7 +112,7 @@ $(function () {
             $("#w").val(Math.min(parseFloat(centerX + newW / 2), fileDuration));
             $("#y").val(Math.max(parseInt(centerY - newH / 2), 1));
             $("#h").val(Math.min(parseInt(centerY + newH / 2), fileFreqMax));
-            $("input[name=continuous_play]").prop("checked", false);
+            $("input[name=continuous_play]").val('0');
             $("#recordingForm").submit();
         } else if ($(this).attr('id') == 'btn-zoom-out') {
             if ($("#zoom_out_input").val() == '' || $("#zoom_out_input").val() <= 0 || $("#zoom_out_input").val() > 200) {
@@ -121,9 +137,9 @@ $(function () {
             $("#w").val(Math.min(parseFloat(centerX + newW / 2), fileDuration));
             $("#y").val(Math.max(parseInt(centerY - newH / 2), 1));
             $("#h").val(Math.min(parseInt(centerY + newH / 2), fileFreqMax));
-            $("input[name=continuous_play]").prop("checked", false);
+            $("input[name=continuous_play]").val('0');
             $("#recordingForm").submit();
-        } else {
+        } else if ($(this).attr('id') == 'zoom-pix') {
             if ($("#zoom_input").val() == '' || $("#zoom_input").val() < 0) {
                 showAlert('Please enter a positive integer')
                 e.preventDefault();
@@ -137,8 +153,8 @@ $(function () {
             $("#w").val(currentTime + minTime + ($('#player_box').width() / $("#zoom_input").val()));
             $("#y").val(1);
             $("#h").val(fileFreqMax);
-            $("input[name=filter]").prop("checked", false);
-            $("input[name=continuous_play]").prop("checked", false);
+            $("input[name=filter]").val('0');
+            $("input[name=continuous_play]").val('0');
             $("#recordingForm").submit();
         }
         e.preventDefault();
@@ -156,22 +172,132 @@ $(function () {
         e.preventDefault();
     });
 
-    $('.js-toggle-tags').click(function (e) {
+    // Use event delegation for toggle-tags so it works with dynamically added buttons in sidebar
+    $(document).on('click', '.js-toggle-tags', function (e) {
         let show = this.dataset.show;
         this.dataset.show = show ? '' : 1;
         document.getElementsByName('showTags')[0].value = !show;
 
+        // Toggle both tag boxes on spectrogram and tags table
         $('.tag-controls').toggle();
+        $('.tagsForm').toggle();
 
         if (show) {
-            $(this).find('i').removeClass('fa-eye-slash').addClass('fa-eye');
+            // Tags are now hidden, button shows "Show Tags" - use green (active state)
+            $(this).html('<i class="fas fa-eye"></i> Show Tags');
+            $(this).removeClass('btn-outline-secondary').addClass('btn-outline-success');
         } else {
-            $(this).find('i').removeClass('fa-eye').addClass('fa-eye-slash');
+            // Tags are now visible, button shows "Hide Tags" - use grey (inactive state)
+            $(this).html('<i class="fas fa-eye-slash"></i> Hide Tags');
+            $(this).removeClass('btn-outline-success').addClass('btn-outline-secondary');
         }
+        
+        // Also update any other toggle buttons on the page to keep them in sync
+        $('.js-toggle-tags').not(this).each(function() {
+            this.dataset.show = show ? '' : 1;
+            if (show) {
+                $(this).html('<i class="fas fa-eye"></i> Show Tags');
+                $(this).removeClass('btn-outline-secondary').addClass('btn-outline-success');
+            } else {
+                $(this).html('<i class="fas fa-eye-slash"></i> Hide Tags');
+                $(this).removeClass('btn-outline-success').addClass('btn-outline-secondary');
+            }
+        });
+        
         e.preventDefault();
     });
 
-    $('.js-new-tag').click(function (e) {
+    // Handle filter toggle button
+    $(document).on('click', '#filter-toggle', function(e) {
+        e.preventDefault();
+        const $hiddenInput = $('#filter-hidden');
+        const $statusText = $('#filter-status');
+        const $button = $(this);
+        const currentValue = $hiddenInput.val();
+        
+        // Toggle between '1' (ON) and '0' (OFF)
+        if (currentValue === '1') {
+            // Turning filter OFF - just toggle the state
+            $hiddenInput.val('0');
+            $statusText.text('OFF');
+            $button.removeClass('btn-success').addClass('btn-outline-success');
+        } else {
+            // Turning filter ON - toggle state and apply immediately if not showing full range
+            $hiddenInput.val('1');
+            $statusText.text('ON');
+            $button.removeClass('btn-outline-success').addClass('btn-success');
+            
+            // Get current frequency view from hidden inputs
+            const currentMinFreq = parseInt($('input[name="minFreqView"]').val());
+            const currentMaxFreq = parseInt($('input[name="maxFreqView"]').val());
+            
+            // Check if current view is already showing the full frequency range
+            const isFullFrequencyRange = (currentMinFreq <= 1 && currentMaxFreq >= fileFreqMax);
+            
+            // Only reload if we're not already showing the full frequency range
+            if (!isFullFrequencyRange) {
+                // Set time bounds to current view (preserve current time window)
+                $('#x').val($('input[name="minTimeView"]').val());
+                $('#w').val($('input[name="maxTimeView"]').val());
+                
+                // Set frequency bounds to current view for filtering
+                $('#y').val(currentMinFreq);
+                $('#h').val(currentMaxFreq);
+                
+                // Reset other form values
+                $("input[name=continuous_play]").val('0');
+                $("input[name=estimateDistID]").val("");
+                
+                // Clear audio buffer queue if it exists
+                if (typeof window.audioBufferQueue !== 'undefined') {
+                    window.audioBufferQueue.length = 0;
+                }
+                
+                // Submit the form to apply filter immediately
+                $("#recordingForm").submit();
+            }
+        }
+    });
+
+    // Initialize filter button state on page load
+    $(document).ready(function() {
+        const $hiddenInput = $('#filter-hidden');
+        const $statusText = $('#filter-status');
+        const $button = $('#filter-toggle');
+        if ($hiddenInput.val() === '1') {
+            $statusText.text('ON');
+            $button.removeClass('btn-outline-success').addClass('btn-success');
+        } else {
+            $statusText.text('OFF');
+            $button.removeClass('btn-success').addClass('btn-outline-success');
+        }
+        
+        // Disable shift buttons if at boundaries
+        updateShiftButtonStates();
+    });
+    
+    // Function to update shift button states based on current position
+    function updateShiftButtonStates() {
+        const $shiftLeft = $('#shift-left');
+        const $shiftRight = $('#shift-right');
+        
+        // Check if we're at the start (can't shift left)
+        if (minTime <= 0) {
+            $shiftLeft.addClass('a-disabled');
+        } else {
+            $shiftLeft.removeClass('a-disabled');
+        }
+        
+        // Check if we're at the end (can't shift right)
+        if (maxTime >= fileDuration) {
+            $shiftRight.addClass('a-disabled');
+        } else {
+            $shiftRight.removeClass('a-disabled');
+        }
+    }
+
+    // Use event delegation for new-tag so it works with dynamically added buttons in sidebar
+    $(document).on('click', '.js-new-tag', function (e) {
         e.preventDefault();
 
         if ($('#zoom-submit').hasClass('a-disabled')) {
@@ -185,44 +311,11 @@ $(function () {
         $('.loading-grey').toggle();
     });
 
+    // Restore zoom input values from cookie
     if ($.cookie('zoom_info')) {
         const zoom_info = JSON.parse(decodeURIComponent($.cookie('zoom_info')));
-        if (zoom_info[0] == 1) {
-            $('#zoom-btn').html('<i class="fa-solid fa-magnifying-glass-plus"></i>');
-            $('#zoom-btn').attr('title', 'Zoom in by ' + $('#zoom_in_input').val() + '%')
-            $("#zoom-btn").removeClass("a-disabled");
-        } else if (zoom_info[0] == 2) {
-            $('#zoom-btn').html('<i class="fa-solid fa-magnifying-glass-minus"></i>');
-            $('#zoom-btn').attr('title', 'Zoom out by ' + $('#zoom_out_input').val() + '%')
-            $("#zoom-btn").removeClass("a-disabled");
-        } else if (zoom_info[0] == 3) {
-            $('#zoom-btn').html('<i class="fa-solid fa-magnifying-glass"></i>');
-            $('#zoom-btn').attr('title', 'Zoom into selection')
-        } else if (zoom_info[0] == 4) {
-            $('#zoom-btn').html('<i class="fa-solid fa-magnifying-glass-arrow-right"></i>');
-            $('#zoom-btn').attr('title', 'Zoom into ' + $('#zoom_input').val() + 'px/s')
-            $("#zoom-btn").removeClass("a-disabled");
-        }
         $('#zoom_in_input').val(zoom_info[1])
         $('#zoom_out_input').val(zoom_info[2])
         $('#zoom_input').val(zoom_info[3])
     }
-
-    $('#zoom-btn').click(function (e) {
-        if ($.cookie('zoom_info')) {
-            const zoom_info = JSON.parse(decodeURIComponent($.cookie('zoom_info')));
-            if (zoom_info[0] == 1) {
-                $("#btn-zoom-in").trigger('click')
-            } else if (zoom_info[0] == 2) {
-                $("#btn-zoom-out").trigger('click')
-            } else if (zoom_info[0] == 3) {
-                $("#zoom-submit").trigger('click')
-            } else if (zoom_info[0] == 4) {
-                $("#zoom-pix").trigger('click')
-            }
-        } else {
-            $("#zoom-submit").trigger('click')
-        }
-        e.preventDefault();
-    })
 });

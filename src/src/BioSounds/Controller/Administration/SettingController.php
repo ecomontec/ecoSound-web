@@ -30,12 +30,23 @@ class SettingController extends BaseController
             $_SESSION['syncApi'] = strtotime('today');
         }
 
+        // Get disk space information
+        $diskTotal = disk_total_space('/');
+        $diskFree = disk_free_space('/');
+        $diskUsed = $diskTotal - $diskFree;
+        $diskUsedPercent = ($diskUsed / $diskTotal) * 100;
+
         return $this->twig->render('administration/settings.html.twig', [
             'user' => (new User)->getFftValue(Auth::getUserID()),
             'projectFft' => Utils::getSetting('fft'),
             'ffts' => [4096, 2048, 1024, 512, 256, 128,],
             'api_key' => base64_encode(APP_URL),
             'setting' => (new Setting())->getList(),
+            'diskTotal' => $diskTotal,
+            'diskUsed' => $diskUsed,
+            'diskFree' => $diskFree,
+            'diskUsedPercent' => $diskUsedPercent,
+            'is_admin' => Auth::isUserAdmin(),
         ]);
     }
 

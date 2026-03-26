@@ -41,6 +41,10 @@
                 <i class="fas fa-tasks"></i>
                 Assignments
             </button>
+            <button id="labeling" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" data-target="#labeling" disabled>
+                <i class="fas fa-thumbtack"></i>
+                Labels
+            </button>
             <button id="maads" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" data-target="#maads" disabled>
                 <i class="svg-sum"></i>
                 Acoustic indices
@@ -65,6 +69,7 @@
                 <div class="dropdown-menu" aria-labelledby="metaData" .>
                     <a class="dropdown-item" type="button" id="uploadButton"><i class="fas fa-file-audio"></i> Upload Recordings</a>
                     <a class="dropdown-item" type="button" id="metaDataButton"><i class="fa-solid fa-file-arrow-up"></i> Upload Meta-data</a>
+                    <div class="dropdown-divider"></div>
                     <a class="dropdown-item" type="button" id="viewInstructions"><i class="fa-solid fa-circle-info"></i> Meta-data Instructions</a>
                 </div>
             </span>
@@ -73,6 +78,14 @@
                 Save all as CSV
             </button>
         </div>
+        {% if not collections or colId == 0 %}
+        <div class="card-body">
+            <div class="alert alert-warning" role="alert">
+                <i class="fas fa-exclamation-triangle"></i>
+                No collections available for this project. Please create a collection first in the <a href="{{ baseUrl }}/admin/collections">Collections</a> page.
+            </div>
+        </div>
+        {% endif %}
         <table id="recTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
             <tr style="font-size: .875rem;">
@@ -101,6 +114,7 @@
                 <th>DOI</th>
                 <th>Date</th>
                 <th>Time</th>
+                <th>My Label <i class="fa fa-info-circle" title="Personal label for this recording" data-toggle="tooltip"></i></th>
                 <th>Metadata_Title <i class="fa fa-info-circle" title="Metadata tags read from the recording file" data-toggle="tooltip"></i></th>
                 <th>Metadata_Artist <i class="fa fa-info-circle" title="Metadata tags read from the recording file" data-toggle="tooltip"></i></th>
                 <th>Metadata_Album <i class="fa fa-info-circle" title="Metadata tags read from the recording file" data-toggle="tooltip"></i></th>
@@ -142,10 +156,10 @@
         </div>
     </div>
     <div class="modal fade" id="modal-info" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
+        <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">View Instructions</h5>
+                    <h5 class="modal-title">CSV Upload Instructions</h5>
                     <button class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -154,15 +168,28 @@
                     <div>
                         <div class="form-group">
                             <label>Recording meta-data can be uploaded with a CSV containing the following columns:<br><br>
-                                recording_start (format: YYYY-MM-DD HH:MM:SS, local time)<br>
-                                duration_s (duration of recording in seconds)<br>
-                                sampling_rate (numeric value in Hz)<br>
-                                name (optional, limited to 40 characters)<br>
-                                bitdepth (optional, integer)<br>
-                                channel_number (optional, integer)<br>
-                                duty_cycle_recording (duration of duty-cycled recordings in minutes)<br>
-                                duty_cycle_period (duration of cycle - recording + pause - in minutes)<br><br>
-                                You can download a <a class="text-info" id="metaDemo">template CSV file</a> to fill in your data.</label>
+                                <strong>Required columns:</strong><br>
+                                <strong>file_date</strong> (format: YYYY-MM-DD) - Recording date<br>
+                                <strong>file_time</strong> (format: HH:MM:SS) - Recording time<br>
+                                <strong>duration</strong> (float, seconds) - Recording duration<br>
+                                <strong>sampling_rate</strong> (integer, Hz) - Sampling rate<br><br>
+                                <strong>Optional columns:</strong><br>
+                                <strong>name</strong> (max 250 characters) - Recording name<br>
+                                <strong>site_id</strong> (integer) - Site identifier. Download <a class="text-info" id="exportSitesForRecordings" style="cursor:pointer">Sites table</a> for IDs<br>
+                                <strong>recorder_id</strong> (integer) - Recorder identifier. Download <a class="text-info" id="exportRecordersForRecordings" style="cursor:pointer">Recorders table</a> for IDs<br>
+                                <strong>microphone_id</strong> (integer) - Microphone identifier. Download <a class="text-info" id="exportMicrophonesForRecordings" style="cursor:pointer">Microphones table</a> for IDs<br>
+                                <strong>license_id</strong> (integer) - License identifier. Download <a class="text-info" id="exportLicensesForRecordings" style="cursor:pointer">Licenses table</a> for IDs<br>
+                                <strong>type</strong> (max 50 characters) - Recording type. Allowed values: <em>Passive</em>, <em>Focal</em>, <em>Enclosure</em><br>
+                                <strong>medium</strong> (max 50 characters) - Recording medium. Allowed values: <em>Air</em>, <em>Water</em><br>
+                                <strong>recording_gain</strong> (integer) - Recording gain in dB<br>
+                                <strong>duty_cycle_recording</strong> (integer, minutes) - Duration of duty-cycled recording<br>
+                                <strong>duty_cycle_period</strong> (integer, minutes) - Duration of full cycle (recording + pause)<br>
+                                <strong>note</strong> (max 250 characters) - Additional notes<br>
+                                <strong>DOI</strong> (max 255 characters) - Digital Object Identifier<br>
+                                <strong>bitdepth</strong> (integer) - Bit depth<br>
+                                <strong>channel_num</strong> (integer) - Number of channels<br><br>
+                                <em>Note: All optional ID fields must reference existing entries in their respective tables.</em><br><br>
+                                You can download a <a class="text-info" id="metaDemo" style="cursor:pointer">template CSV file</a> to fill in your data.</label>
                         </div>
                     </div>
                 </div>
@@ -197,7 +224,7 @@
                         <option value="22050">22050</option>
                         <option value="32000">32000</option>
                         <option value="44100">44100</option>
-                        <option value="48000">48000</option>
+                        <option value="48000" selected>48000</option>
                         <option value="88200">88200</option>
                         <option value="96000">96000</option>
                         <option value="176400">176400</option>
@@ -209,7 +236,7 @@
                     <br>
                     <input id="frequencies_custom" type="number" class="form-control col-6 mt-3" hidden>
                     <br>
-                    <div class="text-danger custom-text" style="display: none">Only the resampled recording will be stored on the server. The original metadata tags are not passed through to the new files.</div>
+                    <div class="text-danger custom-text">Only the resampled recording will be stored on the server. The original metadata tags are not passed through to the new files.</div>
                 </div>
                 <div class="modal-footer">
                     <div id="upload-info"></div>
@@ -221,6 +248,48 @@
                         <i class="fa-solid fa-arrow-right"></i>
                         Continue
                     </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-label" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Assign Label to Recordings</h5>
+                    <button class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body ml-3">
+                    <div>
+                        <label for="bulk_label">Select Label</label>
+                        <div class="form-inline">
+                            <select id="bulk_label" name="label_id" class="form-control form-control-sm col-8" style="padding-left: 8px;">
+                                <option value="" style="font-style: italic;">(no label)</option>
+                                {% for lbl in labels %}
+                                    <option value="{{ lbl.id }}" data-creator="{{ lbl.creatorId }}" data-type="{{ lbl.type }}">{{ lbl.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <a href="{{ baseUrl }}/recording/addLabel" class="js-open-modal ml-2 btn btn-sm btn-outline-primary" title="Add custom label">
+                                <i class="fas fa-plus"></i>
+                            </a>
+                            <button type="button" id="deleteLabelBtnBulk" class="btn btn-sm btn-outline-danger ml-2" title="Delete selected custom label" style="display: none;">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div id="label-info"></div>
+                    <button class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
+                    <button id="assign-label-btn" class="btn btn-outline-primary">
+                        <i class="fa-solid fa-check"></i>
+                        Assign Label
+                    </button>
                 </div>
             </div>
         </div>
@@ -244,10 +313,64 @@
                             </select>
                         </div>
                         <hr>
+                        <div id="birdnet-override-section" style="display: none;">
+                            <div class="form-inline">
+                                <input id="override_defaults" name="override_defaults" class="form-control form-control-sm" type="checkbox">
+                                <label class="ml-1 col-form-label-sm" for="override_defaults">Override default species filtering</label>
+                                <i class="fa fa-info-circle ml-1" title="By default, location and week are automatically extracted from recording metadata to filter species list" data-toggle="tooltip"></i>
+                            </div>
+                            <div class="override-box mt-2" style="display: none;">
+                                <div class="form-group">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="birdnet_method" id="method_coordinates" value="coordinates" checked>
+                                        <label class="form-check-label col-form-label-sm" for="method_coordinates">
+                                            Use coordinates (decimal degrees)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="birdnet_method" id="method_species_list" value="species_list">
+                                        <label class="form-check-label col-form-label-sm" for="method_species_list">
+                                            Use custom species list
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div id="coordinates-section">
+                                    <div class="form-inline">
+                                        <label class="ml-1 col-form-label-sm" for="manual_lat">Latitude</label>
+                                    </div>
+                                    <div class="form-group form-inline">
+                                        <input id="manual_lat" name="manual_lat" class="form-control form-control-sm" type="number" step="0.000001" min="-90" max="90" placeholder="default -1" style="font-style: italic; width: 192px;">
+                                        <label class="ml-2 col-form-label-sm">[-90, 90] or -1 to ignore</label>
+                                    </div>
+                                    <div class="form-inline">
+                                        <label class="ml-1 col-form-label-sm" for="manual_lon">Longitude</label>
+                                    </div>
+                                    <div class="form-group form-inline">
+                                        <input id="manual_lon" name="manual_lon" class="form-control form-control-sm" type="number" step="0.000001" min="-180" max="180" placeholder="default -1" style="font-style: italic; width: 192px;">
+                                        <label class="ml-2 col-form-label-sm">[-180, 180] or -1 to ignore</label>
+                                    </div>
+                                    <div class="form-inline">
+                                        <label class="ml-1 col-form-label-sm" for="manual_week">Week of year (optional)</label>
+                                    </div>
+                                    <div class="form-group form-inline">
+                                        <input id="manual_week" name="manual_week" class="form-control form-control-sm" type="number" min="-1" max="48" placeholder="default -1" style="font-style: italic; width: 192px;">
+                                        <label class="ml-2 col-form-label-sm">[1-48] or -1 for year-round</label>
+                                    </div>
+                                </div>
+                                
+                                <div id="species-list-section" style="display: none;">
+                                    <div class="form-group">
+                                        <textarea id="species_list" name="species_list" class="form-control form-control-sm mt-2" rows="5" placeholder="Enter species names in binomial format (e.g., Passer domesticus, Turdus merula), one per line"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+                        </div>
                         <div class="form-inline"><input id="is_merged" name="is_merged" class="form-control form-control-sm" type="checkbox"><label class="ml-1 col-form-label-sm" for="is_merged">Merge resulting conspecific tags</label></div>
                         <div class="merged-box mt-2" style="display: none;">
-                            <div class="form-inline"><label class="ml-1 col-form-label-sm" for="max_gap">Duration between separate tags, in seconds (default: 0)</label></div>
-                            <div class="form-group form-inline"><input id="max_gap" name="max_gap" class="form-control form-control-sm" type="text"></div>
+                            <div class="form-inline"><label class="ml-1 col-form-label-sm" for="max_gap">Duration between separate tags, in seconds</label></div>
+                            <div class="form-group form-inline"><input id="max_gap" name="max_gap" class="form-control form-control-sm" type="text" placeholder="default 0" style="font-style: italic;"></div>
                             <div class="form-inline"><input id="keep_merged" name="keep_merged" class="form-control form-control-sm" type="checkbox"><label class="ml-1 col-form-label-sm" for="keep_merged">Keep only merged and separate tags</label></div>
                         </div>
                     </div>
@@ -323,12 +446,13 @@
         {{ parent() }}
         <script>
             $(document).ready(function () {
+                {% if collections and colId > 0 %}
                 $('#recTable').show()
                 let table = $('#recTable').DataTable({
                     "processing": true,
                     "serverSide": true,
                     "ajax": {
-                        "url": '{{ baseUrl }}/admin/recordingManager/getListByPage/{{ projectId }}/{{ colId }}',
+                        "url": '{{ baseUrl }}/admin/recordingManager/getListByPage/{{ projectId }}/{{colId }}',
                         "type": 'POST',
                         "error": function (xhr, error, thrown) {
                             if (xhr.status == 400 || xhr.status == 404 || xhr.status == 500) {
@@ -337,7 +461,6 @@
                         }
                     },
                     "dom": 'lrtip',
-                    "StateDuration": -1,
                     "order": [[1, 'asc']],
                     "columnDefs": [
                         {
@@ -352,17 +475,23 @@
                     "bAutoWidth": false,
                     "scrollX": true,
                 });
+                {% else %}
+                let table = null;
+                {% endif %}
                 $('#maad').selectpicker('refresh');
-                if (table.state.loaded()) {
-                    $('#search').val(table.state.loaded().search.search);
-                }
                 $('[data-toggle="tooltip"]').tooltip();
                 $('#search').on('input', () => {
-                    table.search($('#search').val()).draw();
+                    if (table) {
+                        table.search($('#search').val()).draw();
+                    }
                 });
                 $('#tf').change(function () {
                     let html = ''
                     $(this).siblings().remove();
+                    
+                    // Hide BirdNET override section by default
+                    $('#birdnet-override-section').hide();
+                    
                     {% for model in models %}
                     if ($(this).val() == '{{ model.tf_model_id }}') {
                         html = html + '<div class="col-form-label">' +
@@ -371,13 +500,32 @@
                             '<div class="col-form-label-sm">{{ model.description }}</div></div>'
                         let data = '{{ model.parameter }}'.split('$').map(item => item.split('@'));
                         $.each(data, function (index, value) {
+                            // Extract default value from description for placeholder
+                            let description = value[1];
+                            let placeholder = '';
+                            let defaultMatch = description.match(/Defaults to ([\d.]+)/);
+                            if (defaultMatch) {
+                                // Remove any trailing dots from the extracted default value
+                                placeholder = 'default ' + defaultMatch[1].replace(/\.+$/, '');
+                                // Remove the "Defaults to X." part from description
+                                description = description.replace(/Defaults to [\d.]+\.?/g, '').trim();
+                            }
+                            
+                            // Remove "Values in " or "values in " text (case insensitive) and all trailing dots
+                            description = description.replace(/values in /gi, '').replace(/\.+\s*$/, '').trim();
+                            
                             html = html + '<div class="form-inline">' +
                                 '<label class="ml-1 col-form-label-sm" for="' + value[0] + '">' + value[0] + '</label></div>' +
                                 '<div class="form-group form-inline">' +
-                                '<input id="' + value[0] + '" name="' + value[0] + '" class="form-control form-control-sm" type="text">' +
-                                '<label class="ml-2 col-form-label-sm">' + value[1] + '</label></div>'
+                                '<input id="' + value[0] + '" name="' + value[0] + '" class="form-control form-control-sm" type="text" placeholder="' + placeholder + '" style="font-style: italic;">' +
+                                '<label class="ml-2 col-form-label-sm">' + description + '</label></div>'
                         })
                         $(this).after(html)
+                        
+                        // Show override section only for BirdNET (model ID = 1)
+                        if ('{{ model.tf_model_id }}' == '1') {
+                            $('#birdnet-override-section').show();
+                        }
                     }
                     {% endfor %}
                 })
@@ -388,11 +536,6 @@
                     var isDisabled = $("#frequencies").prop("disabled");
                     $("#frequencies").prop("disabled", !isDisabled);
                     $("#frequencies_custom").prop("disabled", !isDisabled);
-                    if (isDisabled) {
-                        $(".custom-text").show();
-                    } else {
-                        $(".custom-text").hide();
-                    }
                 })
                 $('#is_merged').on('change', function () {
                     if ($(this).is(':checked')) {
@@ -401,6 +544,75 @@
                         $('.merged-box').hide();
                     }
                 });
+                
+                // BirdNET override controls
+                $('#override_defaults').on('change', function () {
+                    if ($(this).is(':checked')) {
+                        $('.override-box').show();
+                        // Show appropriate section based on selected method
+                        if ($('#method_coordinates').is(':checked')) {
+                            $('#coordinates-section').show();
+                            $('#species-list-section').hide();
+                        } else {
+                            $('#coordinates-section').hide();
+                            $('#species-list-section').show();
+                        }
+                        // Reinitialize tooltips for newly shown elements
+                        $('[data-toggle="tooltip"]').tooltip();
+                    } else {
+                        $('.override-box').hide();
+                        // Clear all override values when unchecked
+                        $('#manual_lat, #manual_lon, #manual_week, #species_list').val('');
+                        $('#method_coordinates').prop('checked', true);
+                    }
+                    validateBirdnetForm();
+                });
+                
+                // Handle method selection (coordinates vs species list)
+                $('input[name="birdnet_method"]').on('change', function () {
+                    if ($('#method_coordinates').is(':checked')) {
+                        $('#coordinates-section').show();
+                        $('#species-list-section').hide();
+                        $('#species_list').val(''); // Clear species list when switching
+                    } else if ($('#method_species_list').is(':checked')) {
+                        $('#coordinates-section').hide();
+                        $('#species-list-section').show();
+                        $('#manual_lat, #manual_lon, #manual_week').val(''); // Clear coordinates when switching
+                    }
+                    validateBirdnetForm();
+                });
+                
+                // Validate BirdNET form inputs and enable/disable submit button
+                function validateBirdnetForm() {
+                    // Only validate if override is enabled
+                    if (!$('#override_defaults').is(':checked')) {
+                        $('#model-btn').removeClass('disabled').prop('disabled', false);
+                        return;
+                    }
+                    
+                    let isValid = false;
+                    
+                    if ($('#method_coordinates').is(':checked')) {
+                        // Coordinates method: both lat and lon must be provided
+                        let lat = $('#manual_lat').val();
+                        let lon = $('#manual_lon').val();
+                        isValid = (lat !== '' && lon !== '');
+                    } else if ($('#method_species_list').is(':checked')) {
+                        // Species list method: list must not be empty
+                        let speciesList = $('#species_list').val().trim();
+                        isValid = (speciesList !== '');
+                    }
+                    
+                    if (isValid) {
+                        $('#model-btn').removeClass('disabled').prop('disabled', false);
+                    } else {
+                        $('#model-btn').addClass('disabled').prop('disabled', true);
+                    }
+                }
+                
+                // Add validation on input changes
+                $('#manual_lat, #manual_lon, #species_list').on('input', validateBirdnetForm);
+                $('#override_defaults').on('change', validateBirdnetForm);
                 $('#frequencies').change(function () {
                     if ($(this).val() == 'custom') {
                         $("#frequencies_custom").attr("hidden", false);
@@ -423,6 +635,13 @@
                     }
                     $("#modal-upload").modal('hide');
                     document.querySelector('#file-uploader_browse').click();
+                });
+
+                // Reset modal values when it's closed
+                $('#modal-upload').on('hidden.bs.modal', function () {
+                    $('#frequencies_cb').prop('checked', false);
+                    $('#frequencies').prop('disabled', true).val('48000');
+                    $('#frequencies_custom').prop('disabled', true).attr('hidden', true).val('');
                 });
 
                 $('#file-uploader').on('change', 'input[type=file]', function (event) {
@@ -452,6 +671,10 @@
                 /* Save recordings list */
                 $(".js-recording-list").on('change', 'input, select, textarea', function () {
                     if ($(this)[0].className == 'js-checkbox') {
+                        return
+                    }
+                    // Skip label_id - it's handled by its own handler
+                    if ($(this).attr('name') == 'label_id') {
                         return
                     }
                     var id = $(this).closest('tr').find('.js-checkbox').attr('data-id')
@@ -548,11 +771,28 @@
                     $("#projectForm").submit();
                 });
                 $('#colId').change(function () {
+                    // Clear DataTable state when changing collections
+                    if (typeof table !== 'undefined') {
+                        table.state.clear();
+                    }
                     $("#projectForm").submit();
                 });
                 $('#metaDemo').on('click', function () {
                     window.location.href = '{{ baseUrl }}/api/admin/recordingManager/download';
                 });
+                $('#exportLicensesForRecordings').on('click', function () {
+                    window.location.href = '{{ baseUrl }}/api/admin/recordingManager/exportLicenses';
+                });
+                $('#exportRecordersForRecordings').on('click', function () {
+                    window.location.href = '{{ baseUrl }}/api/admin/recordingManager/exportRecorders';
+                });
+                $('#exportMicrophonesForRecordings').on('click', function () {
+                    window.location.href = '{{ baseUrl }}/api/admin/recordingManager/exportMicrophones';
+                });
+                $('#exportSitesForRecordings').on('click', function () {
+                    window.location.href = '{{ baseUrl }}/api/admin/recordingManager/exportSites/' + $('#projectId').val() + '/' + $('#colId').val();
+                });
+                
                 $('#models').on('click', function () {
                     let count = 0
                     $('.js-checkbox:checked').each(function () {
@@ -566,7 +806,8 @@
                         return
                     }
                     $('#modal-tf').modal('show');
-                    $('#modal-tf').find('#tf-info').html('<small>Launch job for ' + $('.js-checkbox:checked').length + ' recordings?</small>')
+                    $('#modal-tf').find('#tf-info').html('<small>Launch job for ' + $('.js-checkbox:checked').length + ' recordings?</small>');
+                    validateBirdnetForm(); // Validate on modal open
                 })
                 $('#maads').on('click', function () {
                     let count = 0
@@ -597,15 +838,38 @@
                     id = id.join(',')
                     if ($('#tf').val() == 1) {
                         arr = {
-                            'sensitivity': $("#sensitivity").val(),
-                            'min_conf': $("#min_conf").val(),
-                            'overlap': $("#overlap").val(),
-                            'sf_thresh': $("#sf_thresh").val(),
+                            'sensitivity': $("#sensitivity").val() || '1.0',
+                            'min_conf': $("#min_conf").val() || '0.1',
+                            'overlap': $("#overlap").val() || '0.0',
+                            'sf_thresh': $("#sf_thresh").val() || '0.03',
                             'creator_type': $("#tf option:selected").text(),
                             'max_gap': $("#max_gap").val() || 0,
                             'is_merged': $("#is_merged").is(":checked") ? 1 : 0,
                             'keep_merged': $("#keep_merged").is(":checked") ? 1 : 0
                         };
+                        
+                        // Add override parameters if enabled
+                        if ($('#override_defaults').is(':checked')) {
+                            if ($('#method_species_list').is(':checked')) {
+                                // Use species list - coordinates are ignored
+                                let speciesList = $('#species_list').val().trim();
+                                if (speciesList) {
+                                    arr.species_list = speciesList;
+                                }
+                            } else if ($('#method_coordinates').is(':checked')) {
+                                // Use coordinates (can be -1 to ignore location)
+                                if ($('#manual_lat').val() !== '') {
+                                    arr.manual_lat = $('#manual_lat').val();
+                                }
+                                if ($('#manual_lon').val() !== '') {
+                                    arr.manual_lon = $('#manual_lon').val();
+                                }
+                                // Optional week (only used with coordinates)
+                                if ($('#manual_week').val() !== '') {
+                                    arr.manual_week = $('#manual_week').val();
+                                }
+                            }
+                        }
                     } else if ($('#tf').val() == 2) {
                         arr = {
                             'detection_threshold': $("#detection_threshold").val(),
@@ -719,6 +983,98 @@
                     postRequest('{{ baseUrl }}/api/admin/recordingManager/maad', {'id': id, 'data': data}, false, false, function () {
                         $('#modal-maad').modal('hide')
                         showAlert("Job added to your queue - check status under corresponding tab")
+                    });
+                });
+                
+                // Bulk label assignment
+                $('button[name="table-btn"][data-target="#labeling"]').click(function (e) {
+                    let count = 0;
+                    let id = [];
+                    $('.js-checkbox:checked').each(function () {
+                        count++;
+                        id.push($(this).data('id'));
+                    });
+                    if (count == 0) {
+                        showAlert('Select at least one recording.');
+                        e.preventDefault();
+                        return;
+                    }
+                    $('#label-info').html('<small>Assign label to ' + count + ' recording(s)?</small>');
+                    $('#modal-label').data('recording-ids', id);
+                    $('#modal-label').modal('show');
+                });
+                
+                // Show/hide delete button based on label selection (bulk modal)
+                $('#bulk_label').change(function () {
+                    let selectedOption = $(this).find('option:selected');
+                    let creatorId = selectedOption.data('creator');
+                    let type = selectedOption.data('type');
+                    // Show delete button only for custom (private) labels created by user
+                    if (type === 'private' && creatorId == {{ user_id }}) {
+                        $('#deleteLabelBtnBulk').show();
+                    } else {
+                        $('#deleteLabelBtnBulk').hide();
+                    }
+                });
+                $('#bulk_label').trigger('change');
+                
+                // Delete label button (bulk modal)
+                $('#deleteLabelBtnBulk').click(function () {
+                    let labelId = $('#bulk_label').val();
+                    let labelName = $('#bulk_label').find('option:selected').text();
+                    
+                    if (confirm('Delete label "' + labelName + '"? This will remove it from all your recordings.')) {
+                        $.ajax({
+                            type: 'POST',
+                            url: '{{ baseUrl }}/recording/deleteLabel',
+                            data: { 'label_id': labelId },
+                            success: function () {
+                                // Remove from dropdown
+                                $('#bulk_label').find('option[value="' + labelId + '"]').remove();
+                                $('#bulk_label').trigger('change');
+                                showAlert('Label deleted successfully');
+                            }
+                        });
+                    }
+                });
+                
+                // Assign label button
+                $('#assign-label-btn').click(function (e) {
+                    let labelId = $('#bulk_label').val();
+                    let recordingIds = $('#modal-label').data('recording-ids');
+                    
+                    if (!recordingIds || recordingIds.length === 0) {
+                        showAlert('Please select at least one recording');
+                        return;
+                    }
+                    
+                    postRequest('{{ baseUrl }}/api/admin/recordingManager/assignLabel', {
+                        'label_id': labelId,
+                        'recording_ids': recordingIds
+                    }, false, false, function (response) {
+                        $('#modal-label').modal('hide');
+                        let action = labelId ? 'assigned to' : 'unassigned from';
+                        showAlert('Label ' + action + ' ' + recordingIds.length + ' recording(s)');
+                        // Reload table to show updated labels
+                        if ($.fn.DataTable.isDataTable('#recTable')) {
+                            var table = $('#recTable').DataTable();
+                            table.ajax.reload(null, false);
+                            table.columns.adjust();
+                        }
+                    });
+                });
+                
+                // Handle single recording label change in table (not bulk modal)
+                $(document).on('change', 'select[name="label_id"][data-recording-id]', function () {
+                    let recordingId = $(this).data('recording-id');
+                    let labelId = $(this).val();
+                    
+                    postRequest('{{ baseUrl }}/api/admin/recordingManager/assignLabel', {
+                        'label_id': labelId,
+                        'recording_ids': recordingId
+                    }, false, false, function (response) {
+                        let action = labelId ? 'assigned' : 'unassigned';
+                        showAlert('Label ' + action);
                     });
                 });
             });

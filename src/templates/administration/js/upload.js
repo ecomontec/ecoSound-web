@@ -75,7 +75,32 @@ $('#uploadForm')
             true,
             true,
             function (response) {
+                // Clear the plupload queue
+                var uploader = $('#file-uploader').pluploadQueue();
+                if (uploader) {
+                    uploader.splice(0, uploader.files.length);
+                }
+                
+                // Reset form completely
+                $('#uploadForm')[0].reset();
+                $('.card-body input').prop('disabled', false);
+                $('.card-body select').prop('disabled', false);
+                $('.plupload_add').show();
+                $("#save_button").prop("disabled", true);
+                
+                // Reset the from-file checkbox state
+                let fileFields = $('.js-file-field');
+                fileFields.prop('disabled', true);
+                fileFields.prop('required', false);
+                
+                // Collapse the form and show the table
+                $('#uploadForm').collapse('hide');
+                
+                // Generate new upload directory for next upload
+                uploadDir = Math.floor(Math.random() * (10000000 - 100000) + 100000);
+                
                 $('#upload_btn').toggle();
+                showAlert('Recordings uploaded successfully');
             })
         e.preventDefault();
     })
@@ -147,5 +172,101 @@ $(function () {
     function fileType(name) {
         var nameArr = name.split(".");
         return nameArr[nameArr.length - 1].toLowerCase();
+    }
+
+    // Tags upload
+    $("#tagsButton").on("click", function () {
+        $("#tagsFile").click();
+    })
+
+    $("#tagsFile").on("change", function () {
+        analysisTagsList(this.files);
+    })
+
+    function analysisTagsList(obj) {
+        if (obj.length < 1) {
+            return false;
+        }
+        var fileObj = obj[0];
+        var name = fileObj.name;
+        var size = fileObj.size;
+        var type = fileType(name);
+        if (("csv").indexOf(type) == -1) {
+            showAlert(name + ' file type error.');
+            return
+        }
+        if (size > 5 * 1024 * 1024 || size == 0) {
+            showAlert(name + ' file size exceeds 5M.');
+            return
+        }
+        toggleLoading();
+        $.ajax({
+            url: baseUrl + '/api/file/tags',
+            type: "POST",
+            data: new FormData($("#tagsForm")[0]),
+            processData: false,
+            contentType: false,
+            success: function (result) {
+                if (result.message == 'Upload success.') {
+                    location.reload();
+                } else {
+                    showAlert(result.message)
+                    $('#tagsFile').val('')
+                    toggleLoading();
+                }
+            },
+            error: function () {
+                showAlert("Failed to upload tags file.")
+                toggleLoading();
+            }
+        });
+    }
+
+    // Reviews upload
+    $("#reviewsButton").on("click", function () {
+        $("#reviewsFile").click();
+    })
+
+    $("#reviewsFile").on("change", function () {
+        analysisReviewsList(this.files);
+    })
+
+    function analysisReviewsList(obj) {
+        if (obj.length < 1) {
+            return false;
+        }
+        var fileObj = obj[0];
+        var name = fileObj.name;
+        var size = fileObj.size;
+        var type = fileType(name);
+        if (("csv").indexOf(type) == -1) {
+            showAlert(name + ' file type error.');
+            return
+        }
+        if (size > 5 * 1024 * 1024 || size == 0) {
+            showAlert(name + ' file size exceeds 5M.');
+            return
+        }
+        toggleLoading();
+        $.ajax({
+            url: baseUrl + '/api/file/reviews',
+            type: "POST",
+            data: new FormData($("#reviewsForm")[0]),
+            processData: false,
+            contentType: false,
+            success: function (result) {
+                if (result.message == 'Upload success.') {
+                    location.reload();
+                } else {
+                    showAlert(result.message)
+                    $('#reviewsFile').val('')
+                    toggleLoading();
+                }
+            },
+            error: function () {
+                showAlert("Failed to upload reviews file.")
+                toggleLoading();
+            }
+        });
     }
 })

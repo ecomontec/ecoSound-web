@@ -34,6 +34,10 @@ Important: this setup is intended for developing and testing purposes **ONLY**. 
 
 This is due to Docker images containing machine learning libraries (TensorFlow 2.20.0 + PyTorch 2.4.1) and audio processing tools (~22GB for biosounds-apache image alone).
 
+**Network Access**: The AI model Insect-CNN requires internet access to Hugging Face (`https://huggingface.co`) during first use to download model files. Models are cached locally after the first download. If your server has restricted outbound HTTPS access, you may need to:
+- Whitelist `huggingface.co` (port 443) in your firewall
+- Or manually transfer model cache files from another machine (see Troubleshooting section)
+
 ### Installation
 
 ```sh install.sh```
@@ -138,6 +142,32 @@ Important: please **change the password** of this administrator user or **delete
 ### Optional: clean restart (removing containers)
 
 ```docker container prune```
+
+## Troubleshooting
+
+### Insects CNN Download Issues
+
+If Insect-CNN fails to execute with errors like "Invalid hugging face repo id", your server may not have access to Hugging Face. To manually transfer models:
+
+**On a machine with internet access:**
+```bash
+# Export the model cache (stored in /var/www/.cache)
+docker-compose exec apache tar -czf /tmp/autrainer-cache.tar.gz -C /var/www/.cache .
+docker cp $(docker-compose ps -q apache):/tmp/autrainer-cache.tar.gz ./autrainer-cache.tar.gz
+```
+
+**Transfer to your server and import:**
+```bash
+# Copy the archive to your server
+scp autrainer-cache.tar.gz user@yourserver:/tmp/
+
+# On the server, import into the container
+sudo docker cp /tmp/autrainer-cache.tar.gz $(sudo docker-compose ps -q apache):/tmp/
+sudo docker-compose exec apache mkdir -p /var/www/.cache
+sudo docker-compose exec apache tar -xzf /tmp/autrainer-cache.tar.gz -C /var/www/.cache/
+sudo docker-compose exec apache chown -R www-data:www-data /var/www/.cache
+sudo docker-compose exec apache rm /tmp/autrainer-cache.tar.gz
+```
 
 ## Server installation
 

@@ -423,6 +423,13 @@ class RecordingProvider extends AbstractProvider
         $getID3 = new getID3();
         $arr = [];
         $dir = ($dir === 'asc' || $dir === 'desc') ? $dir : 'asc';
+        $userId = \BioSounds\Utils\Auth::getUserLoggedID();
+        
+        // Fetch user's labels once and create label association provider once
+        $labelProvider = new LabelProvider();
+        $labels = \BioSounds\Utils\Auth::isUserLogged() ? $labelProvider->getBasicList($userId) : [];
+        $labelAssociationProvider = new LabelAssociationProvider();
+        
         $sql = "SELECT r.*,u.`name` AS username,s.`name` AS site,re.model,m.`name` AS microphone,l.`name` AS license,DATE_FORMAT(r.file_date, '%Y-%m-%d') AS file_date, DATE_FORMAT(r.file_time, '%H:%i:%s') AS file_time,CONCAT(r.col_id,'/',r.directory,'/',r.filename) AS path FROM recording r LEFT JOIN user u ON u.user_id = r.user_id LEFT JOIN site s ON s.site_id = r.site_id LEFT JOIN recorder re ON r.recorder_id = re.recorder_id LEFT JOIN microphone m ON r.microphone_id = m.microphone_id LEFT JOIN license l ON r.license_id = l.license_id LEFT JOIN file_upload f ON f.recording_id = r.recording_id WHERE col_id = :collectionId";
         if ($search) {
             $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.data_type,''), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.model,''), IFNULL(m.name,''), IFNULL(r.sampling_rate,''), IFNULL(r.duration,''), IFNULL(r.channel_num,''), IFNULL(r.bitdepth,''), IFNULL(r.recording_gain,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.duty_cycle_recording,''), IFNULL(r.duty_cycle_period,''), IFNULL(r.note,''),IFNULL(r.DOI,''), IFNULL(r.creation_date,'')) LIKE :search ";
@@ -432,9 +439,8 @@ class RecordingProvider extends AbstractProvider
         $this->database->prepareQuery($sql);
         $params = [
             ':collectionId' => $collectionId,
-            ':start' => (int)$start,
-            ':length' => (int)$length,
         ];
+        // Only add pagination parameters if LIMIT is used
         if ($length != '-1') {
             $params[':start'] = (int)$start;
             $params[':length'] = (int)$length;
@@ -443,6 +449,14 @@ class RecordingProvider extends AbstractProvider
             $params[':search'] = '%' . $search . '%';
         }
         $result = $this->database->executeSelect($params);
+        
+        // Bulk fetch all user labels in a single query to avoid N+1 problem
+        $userLabelsMap = [];
+        if (\BioSounds\Utils\Auth::isUserLogged() && count($result)) {
+            $recordingIds = array_column($result, 'recording_id');
+            $userLabelsMap = $labelAssociationProvider->getUserLabels($recordingIds, $userId);
+        }
+        
         $users = (new User())->getUserList();
         $sites = (new SiteProvider())->getList($projectId, $collectionId);
         $recorders = (new Recorder())->getBasicList();
@@ -519,6 +533,21 @@ class RecordingProvider extends AbstractProvider
                 $arr[$key][] = "<input type='text' class='form-control form-control-sm' style='width:200px;' title='DOI' name='DOI' value='$value[DOI]'>";
                 $arr[$key][] = "<input type='date' id='file_date$value[recording_id]' class='form-control form-control-sm' title='Date' name='file_date' value='$value[file_date]'>";
                 $arr[$key][] = "<input type='time' class='form-control form-control-sm' title='Time' name='file_time' min='00:00:00' max='23:59:59' step='1' value='$value[file_time]'>";
+                
+                // Add user label dropdown column (position 23, right after Time)
+                if (\BioSounds\Utils\Auth::isUserLogged()) {
+                    $userLabel = $userLabelsMap[$value['recording_id']] ?? null;
+                    $str_label = '<option value=""></option>'; // Empty default option
+                    foreach ($labels as $lbl) {
+                        $selected = ($userLabel && $lbl->getId() == $userLabel->getId()) ? 'selected' : '';
+                        $str_label .= "<option value='{$lbl->getId()}' data-creator='{$lbl->getCreatorId()}' data-type='{$lbl->getType()}' {$selected}>{$lbl->getName()}</option>";
+                    }
+                    $arr[$key][] = "<select name='label_id' data-recording-id='{$value['recording_id']}' class='form-control form-control-sm' style='width:140px; padding-left:8px;'>$str_label</select>";
+                } else {
+                    $arr[$key][] = '';
+                }
+                
+                // Add metadata columns (positions 24-28)
                 if ($value['data_type'] == 'audio data') {
                     if ($fileMeta['fileformat'] == 'ogg') {
 			$arr[$key][] = isset($fileMeta['tags']['vorbiscomment']['title']) ? $fileMeta['tags']['vorbiscomment']['title'][0] . ' (Vorbis) ' : '';

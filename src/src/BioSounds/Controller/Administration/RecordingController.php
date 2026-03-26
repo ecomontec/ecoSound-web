@@ -13,6 +13,7 @@ use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\IndexLogProvider;
 use BioSounds\Provider\IndexTypeProvider;
 use BioSounds\Provider\LabelAssociationProvider;
+use BioSounds\Provider\LabelProvider;
 use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\SpectrogramProvider;
@@ -60,8 +61,12 @@ class RecordingController extends BaseController
             $projectId = $projects[0]->getId();
         }
         $collections = (new CollectionProvider())->getByProject($projectId, 0);
-        if (empty($colId) && $collections) {
+        if (empty($colId) && $collections && !empty($collections)) {
             $colId = $collections[0]->getId();
+        }
+        // If still no colId, set to 0 to prevent template errors
+        if (empty($colId)) {
+            $colId = 0;
         }
         $userSites = (new SiteProvider())->getList($projectId, $colId);
         return $this->twig->render('administration/recordings.html.twig', [
@@ -75,6 +80,8 @@ class RecordingController extends BaseController
             'license' => (new License())->getBasicList(),
             'models' => (new RecordingProvider())->getModel(),
             'indexs' => (new IndexTypeProvider())->getList(),
+            'labels' => Auth::isUserLogged() ? (new LabelProvider())->getBasicList(Auth::getUserLoggedID()) : [],
+            'user_id' => Auth::getUserLoggedID(),
         ]);
     }
 
@@ -164,6 +171,10 @@ class RecordingController extends BaseController
         $data["recorder_id"] = $data["recorder_id"] == 0 ? null : $data["recorder_id"];
         $data["microphone_id"] = $data["microphone_id"] == 0 ? null : $data["microphone_id"];
         $data["license_id"] = $data["license_id"] == 0 ? null : $data["license_id"];
+        
+        // Remove label_id - it belongs to label_association table, not recording table
+        unset($data["label_id"]);
+        
         if (isset($data["itemID"])) {
             (new RecordingProvider())->update($data);
 
@@ -197,6 +208,11 @@ class RecordingController extends BaseController
             $fileName = $recording[Recording::FILENAME];
             $colId = $recording[Recording::COL_ID];
             $dirID = $recording[Recording::DIRECTORY];
+
+            // Skip file deletion for meta-data recordings (no actual audio file)
+            if (empty($fileName)) {
+                continue;
+            }
 
             $soundsDir = SOUNDS_DIR . "/$colId/$dirID/";
             $imagesDir = IMAGES_DIR . "/$colId/$dirID/";
@@ -236,19 +252,205 @@ class RecordingController extends BaseController
         return $count;
     }
 
+    /**
+     * Assign label to multiple recordings
+     * @return string
+     * @throws \Exception
+     */
+    public function assignLabel()
+    {
+        if (!Auth::isUserLogged()) {
+            throw new ForbiddenException();
+        }
+
+        // Handle label_id - empty string means unassign, otherwise validate as int
+        $labelId = $_POST['label_id'] ?? '';
+        if ($labelId !== '' && $labelId !== '0') {
+            $labelId = filter_var($labelId, FILTER_VALIDATE_INT);
+            if ($labelId === false) {
+                return json_encode([
+                    'errorCode' => 1,
+                    'message' => 'Invalid label ID.',
+                ]);
+            }
+        }
+        
+        // Handle recording_ids as comma-separated string (from FormData)
+        $recordingIdsStr = $_POST['recording_ids'] ?? '';
+        if (empty($recordingIdsStr)) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'No recordings selected.',
+            ]);
+        }
+        
+        // Convert comma-separated string to array
+        $recordingIds = explode(',', $recordingIdsStr);
+
+        $labelAssociationProvider = new LabelAssociationProvider();
+        $userId = Auth::getUserLoggedID();
+        $count = 0;
+
+        foreach ($recordingIds as $recordingId) {
+            $recordingId = filter_var(trim($recordingId), FILTER_VALIDATE_INT);
+            if ($recordingId) {
+                if ($labelId === '' || $labelId === '0') {
+                    // Empty label means unassign - delete the entry
+                    $labelAssociationProvider->deleteUserEntry($recordingId, $userId);
+                } else {
+                    // Assign the label
+                    $labelAssociationProvider->setEntry([
+                        'recording_id' => $recordingId,
+                        'user_id' => $userId,
+                        'label_id' => $labelId
+                    ]);
+                }
+                $count++;
+            }
+        }
+        
+        $action = ($labelId === '' || $labelId === '0') ? 'unassigned from' : 'assigned to';
+        return json_encode([
+            'errorCode' => 0,
+            'message' => "Label $action $count recording(s) successfully.",
+        ]);
+    }
+
     public function download()
     {
-        $file_name = "meta-data demo.csv";
+        $file_name = "recording_metadata_template.csv";
         $fp = fopen('php://output', 'w');
         header('Content-Type: application/octet-stream;charset=utf-8');
         header('Accept-Ranges:bytes');
         header('Content-Disposition: attachment; filename=' . $file_name);
 
-        $tagAls[] = array('recording_start', 'duration_s', 'sampling_rate', 'name', 'bitdepth', 'channel_number', 'duty_cycle_recording', 'duty_cycle_period');
+        // Header row with all available columns
+        $headers = ['file_date', 'file_time', 'duration', 'sampling_rate', 'name', 'site_id', 'recorder_id', 
+                    'microphone_id', 'license_id', 'type', 'medium', 'recording_gain', 
+                    'duty_cycle_recording', 'duty_cycle_period', 'note', 'DOI', 'bitdepth', 'channel_num'];
+        
+        // Example data row
+        $example = ['2024-01-15', '10:30:00', '60.5', '48000', 'Example Recording', '', '', 
+                    '', '', 'Passive', 'Air', '', '', '', 'Example note', '', '16', '1'];
 
-        foreach ($tagAls as $line) {
-            fputcsv($fp, $line);
+        fputcsv($fp, $headers);
+        fputcsv($fp, $example);
+        fclose($fp);
+        exit();
+    }
+
+    public function exportLicenses()
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
         }
+        
+        $file_name = "licenses.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        
+        $licenses = (new License())->getBasicList();
+        
+        if (!empty($licenses)) {
+            // Write header
+            fputcsv($fp, array_keys($licenses[0]));
+            
+            // Write data
+            foreach ($licenses as $license) {
+                fputcsv($fp, $license);
+            }
+        }
+        
+        fclose($fp);
+        exit();
+    }
+
+    public function exportRecorders()
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
+        }
+        
+        $file_name = "recorders.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        
+        $recorders = (new Recorder())->getBasicList();
+        
+        if (!empty($recorders)) {
+            // Write header
+            fputcsv($fp, array_keys($recorders[0]));
+            
+            // Write data
+            foreach ($recorders as $recorder) {
+                fputcsv($fp, $recorder);
+            }
+        }
+        
+        fclose($fp);
+        exit();
+    }
+
+    public function exportMicrophones()
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
+        }
+        
+        $file_name = "microphones.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        
+        $microphones = (new Microphone())->getBasicList();
+        
+        if (!empty($microphones)) {
+            // Write header
+            fputcsv($fp, array_keys($microphones[0]));
+            
+            // Write data
+            foreach ($microphones as $microphone) {
+                fputcsv($fp, $microphone);
+            }
+        }
+        
+        fclose($fp);
+        exit();
+    }
+
+    public function exportSites($project_id, $collection_id)
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
+        }
+        
+        $file_name = "sites.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        
+        $columns = (new SiteProvider())->getColumns();
+        $colArr = [];
+        foreach ($columns as $column) {
+            if ($column['COLUMN_NAME'] == 'user_id') {
+                continue;
+            }
+            $colArr[] = $column['COLUMN_NAME'];
+        }
+        fputcsv($fp, $colArr);
+        
+        $sites = (new SiteProvider())->getSite($project_id, $collection_id);
+        foreach ($sites as $site) {
+            unset($site['user_id']);
+            fputcsv($fp, $site);
+        }
+        
         fclose($fp);
         exit();
     }
@@ -316,7 +518,7 @@ class RecordingController extends BaseController
         $data = [];
         if ($para->creator_type == 'BirdNET-Analyzer') {
             foreach ($recordings as $recording) {
-                $data[] = [
+                $dataItem = [
                     'creator_type' => $para->creator_type,
                     'collection_id' => $recording['col_id'],
                     'recording_id' => $recording['recording_id'],
@@ -335,6 +537,22 @@ class RecordingController extends BaseController
                     'is_merged' => $para->is_merged,
                     'keep_merged' => $para->keep_merged,
                 ];
+                
+                // Add override parameters if provided
+                if (isset($para->manual_lat)) {
+                    $dataItem['manual_lat'] = $para->manual_lat;
+                }
+                if (isset($para->manual_lon)) {
+                    $dataItem['manual_lon'] = $para->manual_lon;
+                }
+                if (isset($para->manual_week)) {
+                    $dataItem['manual_week'] = $para->manual_week;
+                }
+                if (isset($para->species_list)) {
+                    $dataItem['species_list'] = $para->species_list;
+                }
+                
+                $data[] = $dataItem;
             }
         } elseif ($para->creator_type == 'batdetect2') {
             {

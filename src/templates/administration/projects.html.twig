@@ -164,7 +164,18 @@
                             $('#projectValid').text(response.message)
                             return;
                         }
-                        location.reload();
+                        // Reset form and refresh table instead of reloading page
+                        $('#projectForm')[0].reset();
+                        $('#projectForm').removeClass('was-validated');
+                        $('#projectValid').text('');
+                        $('#picture_preview').attr('src', '');
+                        if ($.fn.DataTable.isDataTable('#projectTable')) {
+                            var table = $('#projectTable').DataTable();
+                            table.ajax.reload(null, false);
+                            table.columns.adjust();
+                        }
+                        $('#projectFormSection').collapse('hide');
+                        showAlert('Project saved successfully');
                     });
                 }
                 this.classList.add('was-validated');

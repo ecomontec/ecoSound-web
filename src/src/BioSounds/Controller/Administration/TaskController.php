@@ -10,6 +10,9 @@ use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\TaskProvider;
+use BioSounds\Provider\ProjectProvider;
+use BioSounds\Provider\CollectionProvider;
+use BioSounds\Provider\RecordingProvider;
 use BioSounds\Utils\Auth;
 
 
@@ -22,15 +25,22 @@ class TaskController extends BaseController
         if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
         }
-
+        
+        // Initialize variables
+        $projectId = null;
+        $colId = null;
+        $recordingId = null;
+        $collections = [];
+        $recordings = [];
+        
         if (isset($_GET['projectId'])) {
             $projectId = $_GET['projectId'];
         }
-        if (isset($_GET['colId'])) {
-            $colId = $_GET['colId'];
-        }
         if (isset($_GET['recordingId'])) {
             $rId = $_GET['recordingId'];
+        }
+        if (isset($_GET['colId'])) {
+            $colId = $_GET['colId'];
         }
         if (!empty($pId)) {
             $projectId = $pId;
@@ -43,9 +53,6 @@ class TaskController extends BaseController
         }
 
         $projects = (new ProjectProvider())->getWithPermission(Auth::getUserID(), 0);
-        $collections = [];
-        $recordings = [];
-
         if (empty($projects)) {
             $projectId = null;
             $colId = null;
@@ -55,20 +62,17 @@ class TaskController extends BaseController
                 $projectId = $projects[0]->getId();
             }
             $collections = (new CollectionProvider())->getByProject($projectId, Auth::getUserID());
-
-            if (empty($colId) && $collections) {
+            if (empty($colId) && !empty($collections)) {
                 $colId = $collections[0]->getId();
             }
-
-            if ($colId) {
+            if (!empty($colId)) {
                 $recordings = (new RecordingProvider())->getRecording($colId);
             }
-
             if (empty($recordingId)) {
                 $recordingId = 0;
             }
         }
-
+        
         return $this->twig->render('administration/tasks.html.twig', [
             'projectId' => $projectId,
             'projects' => $projects,
@@ -133,12 +137,23 @@ class TaskController extends BaseController
     public function save(): string
     {
         $task = new Task();
+        $user = new User();
         $data = [];
         $jsons = json_decode($_POST['data']);
         $type = $_POST['type'];
         $assigned_ids = explode(',', $_POST['id']);
         $assigner_id = Auth::getUserLoggedID();
         $datetime = date('Y-m-d H:i:s');
+        
+        // Collect user names for the success message
+        $userNames = [];
+        foreach ($jsons as $json) {
+            $userName = $user->getFullName($json->user_id);
+            if ($userName) {
+                $userNames[] = $userName;
+            }
+        }
+        
         foreach ($jsons as $json) {
             $data = [];
             foreach ($assigned_ids as $assigned_id) {
@@ -160,9 +175,16 @@ class TaskController extends BaseController
             }
         }
         $task->insert($data);
+        
+        // Build informative success message
+        $count = count($assigned_ids);
+        $itemType = $type === 'recording' ? ($count === 1 ? 'recording' : 'recordings') : ($count === 1 ? 'tag' : 'tags');
+        $userList = implode(', ', $userNames);
+        $message = "Successfully assigned $count $itemType to $userList";
+        
         return json_encode([
             'errorCode' => 0,
-            'message' => "successfully changed $type assignment",
+            'message' => $message,
         ]);
     }
 

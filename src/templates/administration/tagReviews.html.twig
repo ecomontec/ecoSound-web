@@ -1,6 +1,10 @@
 {% extends 'administration/admin.html.twig' %}
 
 {% block admin_content %}
+    <form id="reviewsForm" style="display:none">
+        <input type="file" name="reviewsFile" id="reviewsFile" accept=".csv"/>
+    </form>
+
     <div class="card mb-3" id="tagsList">
         <div class="card-header border-light bg-white text-right">
             <div class="form-inline">
@@ -44,11 +48,30 @@
                 <i class="fas fa-trash"></i>
                 Delete
             </button>
+            <span class="dropdown">
+                <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" id="addReviews" data-toggle="dropdown" aria-expanded="false">
+                    <span class="fas fa-plus"></span>
+                    Add
+                </button>
+                <div class="dropdown-menu" aria-labelledby="addReviews">
+                    <a id="reviewsButton" class="dropdown-item" href="#"><i class="fa fa-tags"></i> Upload Reviews</a>
+                    <div class="dropdown-divider"></div>
+                    <a id="viewReviewsInstructions" class="dropdown-item" href="#"><i class="fa-solid fa-circle-info"></i> Upload Instructions</a>
+                </div>
+            </span>
             <button id="tagReviewsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#tagReviewsExport" aria-expanded="false" aria-controls="tagReviewsExport">
                 <i class="fa fa-file-csv"></i>
                 Save all as CSV
             </button>
         </div>
+        {% if not collections or colId == 0 %}
+        <div class="card-body">
+            <div class="alert alert-warning" role="alert">
+                <i class="fas fa-exclamation-triangle"></i>
+                No collections available for this project. Please create a collection first in the <a href="{{ baseUrl }}/admin/collections">Collections</a> page.
+            </div>
+        </div>
+        {% endif %}
         <table id="tagReviewsTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
             <tr style="font-size: .875rem;">
@@ -97,26 +120,66 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="modal-reviews-info" tabindex="-1" role="dialog" aria-labelledby="modal-reviews-info-label" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-reviews-info-label">Reviews CSV Upload Instructions</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body ml-3">
+                    <div>
+                        <div class="form-group">
+                            <label>Tag reviews can be uploaded with a CSV containing the following columns:<br><br>
+                                <strong>Required columns:</strong><br>
+                                <strong>tag_id</strong> (integer) - Tag identifier to review<br>
+                                <strong>tag_review_status_id</strong> (integer) - Review status. Allowed values: <em>1=Accepted</em>, <em>2=Corrected</em>, <em>3=Rejected</em>, <em>4=Uncertain</em><br><br>
+                                <strong>Optional columns:</strong><br>
+                                <strong>species_id</strong> (integer) - Corrected species identifier (required if status=2). Download <a class="text-info" id="exportSpecies2" style="cursor:pointer">Species table</a> for IDs<br>
+                                <strong>note</strong> (max 200 characters) - Review comments<br><br>
+                                <em>Note: All ID fields must reference existing entries in their respective tables.</em><br><br>
+                                You can download a <a class="text-info" id="reviewsDemo2" style="cursor:pointer">template CSV file</a> to fill in your data.</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 {% block header %}
     {{ parent() }}
     <script>
         $(document).ready(function () {
+            {% if collections and colId > 0 %}
             $('#tagReviewsTable').show()
             let table = $('#tagReviewsTable').DataTable({
                 "processing": true,
                 "serverSide": true,
                 "ajax": {
-                    "url": '{{ baseUrl }}/admin/tagReviewMgr/getListByPage/{{ colId }}/{{ recordingId }}',
+                    "url": '{{ baseUrl }}/admin/tagReviewMgr/getListByPage/{{ colId|default(0) }}/{{ recordingId|default(0) }}',
                     "type": 'POST',
                     "error": function (xhr, error, thrown) {
+                        console.error('DataTable error:', xhr.status, error, thrown);
+                        if (xhr.responseText) {
+                            console.error('Response:', xhr.responseText);
+                        }
                         if (xhr.status == 400 || xhr.status == 404 || xhr.status == 500) {
-                            location.reload();
+                            // Don't reload automatically, just log the error
+                            alert('Error loading reviews. Please check console for details.');
                         }
                     }
                 },
                 "dom": 'lrtip',
-                "StateDuration": -1,
+                "order": [[1, 'asc']],
                 "order": [[1, 'asc']],
                 "columnDefs": [
                     {
@@ -131,11 +194,13 @@
                 "bAutoWidth": false,
                 "scrollX": true,
             });
-            if (table.state.loaded()) {
-                $('#search').val(table.state.loaded().search.search);
-            }
+            {% else %}
+            let table = null;
+            {% endif %}
             $('#search').on('input', () => {
-                table.search($('#search').val()).draw();
+                if (table) {
+                    table.search($('#search').val()).draw();
+                }
             });
         });
 
@@ -143,6 +208,78 @@
             'use strict';
             $(document).on('click', '#tagReviewsExport', function () {
                 window.location.href = '{{ baseUrl }}/api/admin/tagReviewMgr/export/{{ colId }}';
+            });
+
+            // Reviews CSV Upload
+            $('#reviewsButton').click(function(e) {
+                e.preventDefault();
+                $('#reviewsFile').click();
+            });
+
+            $('#reviewsFile').on('change', function() {
+                var file = this.files[0];
+                if (!file) return;
+
+                var fileName = file.name;
+                var fileSize = file.size;
+                var fileType = file.type;
+
+                if (fileType !== 'text/csv' && !fileName.endsWith('.csv')) {
+                    alert('Please select a CSV file.');
+                    $('#reviewsForm')[0].reset();
+                    return;
+                }
+
+                if (fileSize > 5242880) {
+                    alert('File size exceeds 5MB limit.');
+                    $('#reviewsForm')[0].reset();
+                    return;
+                }
+
+                var formData = new FormData();
+                formData.append('file', file);
+
+                $.ajax({
+                    url: '{{ baseUrl }}/api/file/reviews',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.errorCode === 0) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message || 'Upload completed');
+                            $('#reviewsForm')[0].reset();
+                        }
+                    },
+                    error: function(xhr) {
+                        var errorMsg = 'Upload failed.';
+                        try {
+                            var response = JSON.parse(xhr.responseText);
+                            errorMsg = response.message || errorMsg;
+                        } catch(e) {}
+                        alert(errorMsg);
+                        $('#reviewsForm')[0].reset();
+                    }
+                });
+            });
+
+            // Template and export downloads
+            $('#reviewsDemo, #reviewsDemo2').click(function(e) {
+                e.preventDefault();
+                window.location.href = '{{ baseUrl }}/admin/tagReviewMgr/downloadTemplate';
+            });
+
+            $('#exportSpecies, #exportSpecies2').click(function(e) {
+                e.preventDefault();
+                window.location.href = '{{ baseUrl }}/admin/tagReviewMgr/exportSpecies';
+            });
+
+            $('#viewReviewsInstructions').click(function(e) {
+                e.preventDefault();
+                $('#modal-reviews-info').modal('show');
             });
 
             $('#js-delete-button').click(function (e) {
@@ -180,9 +317,17 @@
             });
             $('#colId').change(function () {
                 $('#recordingId').val("")
+                // Clear DataTable state when changing collections
+                if (typeof table !== 'undefined') {
+                    table.state.clear();
+                }
                 $("#collectionForm").submit();
             });
             $('#recordingId').change(function () {
+                // Clear DataTable state when changing recordings
+                if (typeof table !== 'undefined') {
+                    table.state.clear();
+                }
                 $("#collectionForm").submit();
             });
             $('button[name="table-btn"][data-target="#viewing"]').click(function (e) {

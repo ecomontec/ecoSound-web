@@ -30,6 +30,14 @@ class TagReviewController extends BaseController
         if (!Auth::isUserLogged()) {
             throw new ForbiddenException();
         }
+        
+        // Initialize variables
+        $projectId = null;
+        $colId = null;
+        $recordingId = null;
+        $collections = [];
+        $recordings = [];
+        
         if (isset($_GET['projectId'])) {
             $projectId = $_GET['projectId'];
         }
@@ -59,10 +67,16 @@ class TagReviewController extends BaseController
                 $projectId = $projects[0]->getId();
             }
             $collections = (new CollectionProvider())->getByProject($projectId, Auth::getUserID());
-            if (empty($colId) && $collections) {
+            if (empty($colId) && !empty($collections)) {
                 $colId = $collections[0]->getId();
             }
-            $recordings = (new RecordingProvider())->getHasTags($colId);
+            // If still no colId, set to 0 to prevent template errors
+            if (empty($colId)) {
+                $colId = 0;
+            }
+            if (!empty($colId) && $colId > 0) {
+                $recordings = (new RecordingProvider())->getHasTags($colId);
+            }
             if (empty($recordingId)) {
                 $recordingId = 0;
             }
@@ -86,10 +100,30 @@ class TagReviewController extends BaseController
 
     public function getListByPage($collectionId, $recordingId)
     {
-        if ($collectionId == null) {
-            $collectionId = 0;
+        // Debug logging
+        error_log("TagReview getListByPage called with collectionId: " . var_export($collectionId, true) . ", recordingId: " . var_export($recordingId, true));
+        
+        // Ensure we have valid parameters (0 is valid for recordingId = show all)
+        // Convert to int for proper comparison
+        $collectionId = intval($collectionId);
+        $recordingId = intval($recordingId);
+        
+        if ($collectionId <= 0) {
+            // No valid collection selected - return empty result
+            error_log("TagReview: Invalid collection ID: " . $collectionId);
+            $result = [
+                'draw' => isset($_POST['draw']) ? $_POST['draw'] : 1,
+                'recordsTotal' => 0,
+                'recordsFiltered' => 0,
+                'data' => [],
+            ];
+            return json_encode($result);
         }
-        $total = count((new TagReviewProvider())->getReview($collectionId, $recordingId));
+        
+        // recordingId can be 0 (meaning show all recordings in collection)
+        $reviews = (new TagReviewProvider())->getReview($collectionId, $recordingId);
+        error_log("TagReview: Found " . count($reviews) . " total reviews for collection " . $collectionId);
+        $total = count($reviews);
         $start = $_POST['start'];
         $length = $_POST['length'];
         $search = $_POST['search']['value'];
@@ -134,7 +168,7 @@ class TagReviewController extends BaseController
         array_splice($colArr, 8, 0, 'species');
 
         $Als[] = $colArr;
-        $List = (new TagReviewProvider())->getReview($collection_id);
+        $List = (new TagReviewProvider())->getReview($collection_id, '0');
         foreach ($List as $Item) {
             $username = $Item['username'] ?? '';
             $recording_id = $Item['recording_id'] ?? '';
@@ -157,6 +191,52 @@ class TagReviewController extends BaseController
         foreach ($Als as $line) {
             fputcsv($fp, $line);
         }
+        fclose($fp);
+        exit();
+    }
+
+    public function downloadTemplate()
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
+        }
+        
+        $file_name = "reviews_template.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        
+        fputcsv($fp, ['tag_id', 'tag_review_status_id', 'species_id', 'note']);
+        fputcsv($fp, ['456', '1', '', '1']);
+        
+        fclose($fp);
+        exit();
+    }
+
+    public function exportSpecies()
+    {
+        if (!Auth::isManage()) {
+            throw new ForbiddenException();
+        }
+        
+        $file_name = "species.csv";
+        $fp = fopen('php://output', 'w');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Accept-Ranges:bytes');
+        header('Content-Disposition: attachment; filename=' . $file_name);
+        
+        $speciesProvider = new \BioSounds\Entity\Species();
+        $species = $speciesProvider->get();
+        
+        if (!empty($species)) {
+            fputcsv($fp, array_keys($species[0]));
+            
+            foreach ($species as $sp) {
+                fputcsv($fp, $sp);
+            }
+        }
+        
         fclose($fp);
         exit();
     }

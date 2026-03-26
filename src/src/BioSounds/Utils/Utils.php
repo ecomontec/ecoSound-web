@@ -137,8 +137,12 @@ class Utils
      */
     public static function convertToOgg(string $filePath): ?string
     {
+        // Keep track of whether input was relative
+        $wasRelative = (strpos($filePath, '/') !== 0);
+        $originalRelativePath = $filePath;
+        
         // Ensure absolute path for external commands
-        if (strpos($filePath, '/') !== 0) {
+        if ($wasRelative) {
             $filePath = ABSOLUTE_DIR . $filePath;
         }
         
@@ -146,7 +150,8 @@ class Utils
         $resultFilePath = $pathInfo['dirname'] . '/' . $pathInfo['filename'] . '.ogg';
 
         if ($filePath === $resultFilePath) {
-            return $resultFilePath;
+            // Return relative path if input was relative
+            return $wasRelative ? str_replace(ABSOLUTE_DIR, '', $resultFilePath) : $resultFilePath;
         }
 
         try {
@@ -157,7 +162,8 @@ class Utils
 //                $process = new Process("oggenc $filePath -q 10 -o $resultFilePath");
 //            }
             $process->mustRun();
-            return $resultFilePath;
+            // Return relative path if input was relative
+            return $wasRelative ? str_replace(ABSOLUTE_DIR, '', $resultFilePath) : $resultFilePath;
         } catch (ProcessFailedException $exception) {
             throw new WavProcessingException($filePath, $exception->getMessage());
         }
@@ -256,10 +262,12 @@ class Utils
             if (is_dir($dir . $file)) {
                 self::deleteOldFiles($dir . $file . "/", $days);
                 if ($now - filemtime($dir . $file) >= 60 * 60 * 24 * $days && empty($dir . $file))
-                    rmdir($dir . $file);
+                    @rmdir($dir . $file);
             } else {
-                if ($now - filemtime($dir . $file) >= 60 * 60 * 24 * $days)
-                    unlink($dir . $file);
+                if ($now - filemtime($dir . $file) >= 60 * 60 * 24 * $days) {
+                    // Suppress warnings for permission denied errors
+                    @unlink($dir . $file);
+                }
             }
         }
     }

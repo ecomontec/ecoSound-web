@@ -31,6 +31,11 @@
                     <input class="form-control-sm" id="search">
                 </div>
             </div>
+            <form id="sitesCSVForm" method="POST" class="collapse">
+                <input type="file" name="sitesCSVFile" id="sitesCSVFile" accept="text/csv" style="display: none">
+                <input type="hidden" name="projectId" value="{{ projectId }}">
+                <input type="hidden" name="collectionId" value="{{ collectionId }}">
+            </form>
             <button id="assignments" name="table-btn" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#assignments" disabled>
                 <i class="fas fa-tasks"></i>
                 Assignments
@@ -39,10 +44,17 @@
                 <i class="fas fa-trash"></i>
                 Delete
             </button>
-            <button id="siteFormButton" class="btn btn-outline-primary btn-sm mt-2" type="button" data-toggle="collapse" data-target="#siteFormSection" aria-expanded="false" aria-controls="siteFormSection">
-                <i class="fas fa-plus"></i>
-                Add
-            </button>
+            <span class="dropdown">
+                <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" id="addSite" data-toggle="dropdown" aria-expanded="false">
+                    <span class="fas fa-plus"></span>
+                    Add
+                </button>
+                <div class="dropdown-menu" aria-labelledby="addSite">
+                    <a class="dropdown-item" type="button" id="siteFormButton" data-toggle="collapse" data-target="#siteFormSection" aria-expanded="false" aria-controls="siteFormSection"><i class="fas fa-plus"></i> Add Site</a>
+                    <a class="dropdown-item" type="button" id="sitesCSVButton"><i class="fa-solid fa-file-arrow-up"></i> Upload Sites CSV</a>
+                    <a class="dropdown-item" type="button" id="sitesInstructions"><i class="fa-solid fa-circle-info"></i> CSV Instructions</a>
+                </div>
+            </span>
             <span>
                 <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
                     <i class="fa fa-file-csv"></i>
@@ -56,7 +68,7 @@
         </div>
         <table id="siteTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
-            <tr>
+            <tr style="font-size: .875rem;">
                 <th>
                     <input type="checkbox" class="js-all-checkbox" name="check-all" id="check-all">
                 </th>
@@ -109,6 +121,46 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="modal-sites-instructions" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">CSV Upload Instructions</h5>
+                    <button class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body ml-3">
+                    <div>
+                        <div class="form-group">
+                            <label>Sites data can be uploaded with a CSV containing the following columns:<br><br>
+                                <strong>name</strong> (required, max 100 characters) - Site name<br>
+                                <strong>longitude_WGS84_dd_dddd</strong> (optional, decimal degrees) - Longitude coordinate<br>
+                                <strong>latitude_WGS84_dd_dddd</strong> (optional, decimal degrees) - Latitude coordinate<br>
+                                <strong>topography_m</strong> (optional, meters, range: -15000 to 10000) - Elevation/depth (negative for underwater sites)<br>
+                                <strong>freshwater_depth_m</strong> (optional, meters, up to 2000) - Freshwater depth<br>
+                                <strong>gadm0</strong> (optional, max 100 characters) - Country/region level 0 according to <a href="https://gadm.org/" target="_blank" class="text-info">GADM</a><br>
+                                <strong>gadm1</strong> (optional, max 100 characters) - Administrative region level 1 according to <a href="https://gadm.org/" target="_blank" class="text-info">GADM</a><br>
+                                <strong>gadm2</strong> (optional, max 100 characters) - Administrative region level 2 according to <a href="https://gadm.org/" target="_blank" class="text-info">GADM</a><br>
+                                <strong>iho</strong> (optional, max 100 characters) - IHO sea area according to <a href="https://marineregions.org/downloads.php" target="_blank" class="text-info">Marine Regions</a><br>
+                                <strong>realm_id</strong> (optional, integer) - Realm identifier<br>
+                                <strong>biome_id</strong> (optional, integer) - Biome identifier<br>
+                                <strong>functional_type_id</strong> (optional, integer) - Functional type identifier<br><br>
+                                <em>Note: Either coordinates (longitude AND latitude) OR gadm0 must be provided for each site.</em><br><br>
+                                You can download a <a class="text-info" id="sitesCSVTemplate" style="cursor:pointer">template CSV file</a> to fill in your data.<br>
+                                Download <a class="text-info" id="iucnCSVExport" style="cursor:pointer">IUCN Realm/Biome/Functional Type IDs</a> for reference.</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block header %}
@@ -132,7 +184,6 @@
                         }
                     },
                     "dom": 'lrtip',
-                    "StateDuration": -1,
                     "order": [[1, 'asc']],
                     "columnDefs": [
                         {
@@ -146,9 +197,6 @@
                     "bAutoWidth": false,
                     "scrollX": true,
                 });
-                if (table.state.loaded()) {
-                    $('#search').val(table.state.loaded().search.search);
-                }
                 $('#search').on('input', () => {
                     table.search($('#search').val()).draw();
                 });
@@ -517,16 +565,35 @@
                                 $('#siteValid').text(response.message)
                                 return
                             }
-                            location.reload();
+                            // Reset form and refresh table instead of reloading page
+                            $('#siteForm')[0].reset();
+                            $('#siteForm').removeClass('was-validated');
+                            $('#areaValid').text('');
+                            $('#siteValid').text('');
+                            if ($.fn.DataTable.isDataTable('#siteTable')) {
+                                var table = $('#siteTable').DataTable();
+                                table.ajax.reload(null, false);
+                                table.columns.adjust();
+                            }
+                            $('#siteFormSection').collapse('hide');
+                            showAlert('Site saved successfully');
                         });
                     }
                     this.classList.add('was-validated');
                 });
                 $('#projectId').change(function () {
                     $('#collectionId').val("")
+                    // Clear DataTable state when changing projects
+                    if (typeof table !== 'undefined') {
+                        table.state.clear();
+                    }
                     $("#projectForm").submit();
                 });
                 $('#collectionId').change(function () {
+                    // Clear DataTable state when changing collections
+                    if (typeof table !== 'undefined') {
+                        table.state.clear();
+                    }
                     $("#projectForm").submit();
                 });
 
@@ -594,11 +661,54 @@
                         id.push($(this).data('id'));
                     });
                     let data = {'id': id};
-                    postRequest('{{ baseUrl }}/api/admin/siteManager/delete', data, false, false, function () {
+                    postRequest('{{ baseUrl }}/api/admin/siteManager/delete', data, false, false, function (response) {
+                        // Save success message for display after reload
+                        saveAlertForReload(response.message);
                         location.reload();
                     });
-                })
-            });
+                });
+
+                /* CSV Upload */
+                $('#sitesCSVButton').click(function () {
+                    $('#sitesCSVFile').click();
+                });
+
+                $('#sitesCSVFile').change(function () {
+                    if (this.files.length > 0) {
+                        let formData = new FormData($('#sitesCSVForm')[0]);
+                        postRequest('{{ baseUrl }}/api/admin/siteManager/uploadCSV', formData, false, false, function (response) {
+                            alert(response.message);
+                            if (response.errorCode === 0) {
+                                location.reload();
+                            }
+                        });
+                    }
+                });
+
+                /* CSV Instructions */
+                $('#sitesInstructions').click(function () {
+                    $('#modal-sites-instructions').modal('show');
+                });
+
+                /* Download CSV Template */
+                $('#sitesCSVTemplate').click(function () {
+                    const csvContent = "name,longitude_WGS84_dd_dddd,latitude_WGS84_dd_dddd,topography_m,freshwater_depth_m,gadm0,gadm1,gadm2,iho,realm_id,biome_id,functional_type_id\n" +
+                        "Forest Site,13.1592,41.9386,50.5,,Italy,Lazio,Roma,,1,12,\n" +
+                        "Mariana Trench,142.5917,11.3493,-10911,,,,North Pacific Ocean,4,25,114\n";
+                    const blob = new Blob([csvContent], { type: 'text/csv' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.setAttribute('hidden', '');
+                    a.setAttribute('href', url);
+                    a.setAttribute('download', 'sites_template.csv');
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                });
+                /* Download IUCN CSV Export */
+                $('#iucnCSVExport').click(function () {
+                    window.location.href = '{{ baseUrl }}/api/admin/siteManager/exportIucn';
+                });            });
         });
     </script>
 {% endblock %}

@@ -17,6 +17,12 @@
                 <i class="fa fa-file-csv"></i>
                 Save all as CSV
             </button>
+            {% if is_admin %}
+                <button id="restartWorker" class="btn btn-outline-warning btn-sm mt-2" type="button" title="Restart the RabbitMQ worker if jobs are stuck">
+                    <i class="fas fa-sync-alt"></i>
+                    Restart Worker
+                </button>
+            {% endif %}
         </div>
         <table id="queuesTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
@@ -140,6 +146,8 @@
                             $('button[name="table-btn"][data-target="#deletion"]').removeClass('btn-outline-primary').removeClass('btn-outline-danger').addClass('btn-outline-secondary');
                             $('button[name="table-btn"][data-target="#deletion"]').prop('disabled', true);
                         }
+                        // Adjust column widths after reload
+                        $('#queuesTable').DataTable().columns.adjust();
                     }, false);
                 }
             }, 5000);
@@ -175,6 +183,27 @@
             });
             $(document).on('click', '#queuesExport', function () {
                 window.location.href = '{{ baseUrl }}/api/admin/queueMgr/export';
+            });
+
+            /* Restart Worker */
+            $('#restartWorker').click(function () {
+                if (confirm('Are you sure you want to restart the RabbitMQ worker? This will stop and restart the worker process.')) {
+                    var $btn = $(this);
+                    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Restarting...');
+                    $.ajax({
+                        url: '{{ baseUrl }}/api/admin/queueMgr/restartWorker',
+                        type: 'POST',
+                        dataType: 'json',
+                        success: function(result) {
+                            showAlert(result.message || 'Worker restarted successfully.');
+                            $btn.prop('disabled', false).html('<i class="fas fa-sync-alt"></i> Restart Worker');
+                        },
+                        error: function() {
+                            showAlert('Failed to restart worker. Please check server logs.');
+                            $btn.prop('disabled', false).html('<i class="fas fa-sync-alt"></i> Restart Worker');
+                        }
+                    });
+                }
             });
         });
     </script>

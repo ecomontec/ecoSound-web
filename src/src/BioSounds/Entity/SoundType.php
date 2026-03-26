@@ -2,86 +2,54 @@
 
 namespace BioSounds\Entity;
 
-
 class SoundType
 {
-    /**
-     * @var int
-     */
-    private $soundTypeId;
-
-    /**
-     * @var string
-     */
+    private $sound_type_id;
     private $name;
+    private $taxon_class;
+    private $taxon_order;
 
-    /**
-     * @return int
-     */
-    public function getSoundTypeId(): int
+    public function getSoundTypeId()
     {
-        return $this->soundTypeId;
+        return $this->sound_type_id;
     }
 
-    /**
-     * @param int $soundTypeId
-     * @return SoundType
-     */
-    public function setSoundTypeId(int $soundTypeId): SoundType
+    public function setSoundTypeId($sound_type_id)
     {
-        $this->soundTypeId = $soundTypeId;
+        $this->sound_type_id = $sound_type_id;
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getName(): string
+    public function getName()
     {
         return $this->name;
     }
 
-    /**
-     * @param string $name
-     * @return SoundType
-     */
-    public function setName(string $name): SoundType
+    public function setName($name)
     {
         $this->name = $name;
         return $this;
     }
-    /**
-     * @return string
-     */
-    public function getTaxonOrder(): string
-    {
-        return $this->taxon_order;
-    }
 
-    /**
-     * @param string $taxon_order
-     * @return SoundType
-     */
-    public function setTaxonOrder(string $taxon_order): SoundType
-    {
-        $this->taxon_order = $taxon_order;
-        return $this;
-    }
-    /**
-     * @return string
-     */
-    public function getTaxonClass(): string
+    public function getTaxonClass()
     {
         return $this->taxon_class;
     }
 
-    /**
-     * @param string $taxon_class
-     * @return SoundType
-     */
-    public function setTaxonClass(string $taxon_class): SoundType
+    public function setTaxonClass($taxon_class)
     {
         $this->taxon_class = $taxon_class;
+        return $this;
+    }
+
+    public function getTaxonOrder()
+    {
+        return $this->taxon_order;
+    }
+
+    public function setTaxonOrder($taxon_order)
+    {
+        $this->taxon_order = $taxon_order;
         return $this;
     }
 }

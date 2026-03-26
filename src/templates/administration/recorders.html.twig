@@ -1,0 +1,370 @@
+{% extends 'administration/admin.html.twig' %}
+
+{% block admin_content %}
+
+<div class="collapse mb-5" id="recorderFormSection">
+    <div class="card">
+        <div class="card-body">
+            <button class="close" type="button" data-toggle="collapse" data-target="#recorderFormSection" aria-expanded="false" aria-controls="recorderFormSection">
+                <span>&times;</span>
+            </button>
+            <form id="recorderForm" class="needs-validation" novalidate>
+                <div class="form-group">
+                    <label for="rec_model" class="col-form-label-sm">Model *</label>
+                    <input id="rec_model" type="text" name="model" class="form-control form-control-sm" maxlength="100" required>
+                    <div class="invalid-feedback">Please provide a recorder model.</div>
+                </div>
+                <div class="form-group">
+                    <label for="rec_version" class="col-form-label-sm">Version</label>
+                    <input id="rec_version" type="text" name="version" class="form-control form-control-sm" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label for="rec_brand" class="col-form-label-sm">Brand</label>
+                    <input id="rec_brand" type="text" name="brand" class="form-control form-control-sm" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label for="rec_microphone" class="col-form-label-sm">Microphone IDs</label>
+                    <input id="rec_microphone" type="text" name="microphone" class="form-control form-control-sm" maxlength="300" placeholder="e.g. 1,2,3">
+                    <small class="form-text text-muted">Comma-separated microphone IDs from the <a href="{{ baseUrl }}/admin/microphones" class="text-info" target="_blank">Microphones table</a></small>
+                </div>
+                <div class="form-group text-right">
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="fas fa-save"></i>
+                        Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-3" id="recordersList">
+    <div class="card-header border-light bg-white text-right">
+        <div class="form-inline">
+            <div class="col-8"></div>
+            <div class="col-4 form-inline justify-content-end">
+                <label class="mr-2">Search:</label>
+                <input class="form-control-sm" id="search">
+            </div>
+        </div>
+        <form id="recordersCSVForm" method="POST" class="collapse">
+            <input type="file" name="recordersCSVFile" id="recordersCSVFile" accept="text/csv" style="display: none">
+        </form>
+        <button
+            id="deletion"
+            name="table-btn"
+            class="btn btn-outline-secondary btn-sm mt-2"
+            type="button"
+            data-target="#deletion"
+            disabled
+        >
+            <i class="fas fa-trash"></i>
+            Delete
+        </button>
+        <span class="dropdown">
+            <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" id="addRecorder" data-toggle="dropdown" aria-expanded="false">
+                <span class="fas fa-plus"></span>
+                Add
+            </button>
+            <div class="dropdown-menu" aria-labelledby="addRecorder">
+                <a class="dropdown-item" type="button" id="recorderFormButton" data-toggle="collapse" data-target="#recorderFormSection" aria-expanded="false" aria-controls="recorderFormSection"><i class="fas fa-plus"></i> Add Recorder</a>
+                <a class="dropdown-item" type="button" id="recordersCSVButton"><i class="fa-solid fa-file-arrow-up"></i> Upload Recorders CSV</a>
+                <a class="dropdown-item" type="button" id="recordersInstructions"><i class="fa-solid fa-circle-info"></i> CSV Instructions</a>
+            </div>
+        </span>
+        <button id="recordersExport" class="btn btn-outline-primary btn-sm mt-2">
+            <i class="fa fa-file-csv"></i>
+            Save all as CSV
+        </button>
+    </div>
+    <table id="recordersTable" style="display:none;white-space: nowrap;">
+            <thead class="table-borderless">
+                <tr style="font-size: .875rem;">
+                    <th>
+                        <input type="checkbox" class="js-all-checkbox" name="check-all" id="check-all">
+                    </th>
+                    <th scope="col">#</th>
+                    <th scope="col">Model</th>
+                    <th scope="col">Version</th>
+                    <th scope="col">Brand</th>
+                    <th scope="col">
+                        Microphone 
+                        <i class="fa fa-info-circle" title="Comma-separated microphone IDs from the Microphones table" data-toggle="tooltip"></i>
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="form-control-sm js-recorders-list">
+                {% for recorder in recorders %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="js-checkbox" data-id="{{ recorder.recorder_id }}">
+                        </td>
+                        <th scope='row'>
+                            <input type="hidden" name="itemID" value="{{ recorder.recorder_id }}">
+                            {{ recorder.recorder_id }}
+                        </th>
+                        <td data-order="{{ recorder.model }}" data-search="{{ recorder.model }}">
+                            <input type='text' class="form-control form-control-sm" name="model" value="{{ recorder.model }}" maxlength="100" required>
+                        </td>
+                        <td data-order="{{ recorder.version }}" data-search="{{ recorder.version }}">
+                            <input type='text' class="form-control form-control-sm" name="version" value="{{ recorder.version }}" maxlength="100">
+                        </td>
+                        <td data-order="{{ recorder.brand }}" data-search="{{ recorder.brand }}">
+                            <input type='text' class="form-control form-control-sm" name="brand" value="{{ recorder.brand }}" maxlength="100">
+                        </td>
+                        <td data-order="{{ recorder.microphone }}" data-search="{{ recorder.microphone }}">
+                            <input type='text' class="form-control form-control-sm" name="microphone" value="{{ recorder.microphone }}" maxlength="300" placeholder="e.g. 1,2,3">
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+</div>
+
+<div class="modal fade" id="modal-delete" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Warning</h5>
+                <button class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body ml-3">
+                <div>
+                    <div class="form-group">
+                        <label>Are you sure you want to delete <b class="text-danger"><span id="delete_count"></span> recorder(s)</b>: <b class="text-danger" id="delete_name"></b>? This action cannot be undone.</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="js-delete-button" class="btn btn-outline-danger">
+                    <i class="fas fa-trash-alt"></i>
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-recorders-instructions" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">CSV Upload Instructions</h5>
+                <button class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body ml-3">
+                <div>
+                    <div class="form-group">
+                        <label>Recorder data can be uploaded with a CSV containing the following columns:<br><br>
+                            <strong>model</strong> (required, max 100 characters) - Recorder model name<br>
+                            <strong>version</strong> (optional, max 100 characters) - Version or model number<br>
+                            <strong>brand</strong> (optional, max 100 characters) - Manufacturer/brand name<br>
+                            <strong>microphone</strong> (optional, max 300 characters) - Comma-separated microphone IDs from the <a href="{{ baseUrl }}/admin/microphones" class="text-info" target="_blank">Microphones table</a> (e.g. "1,2,3")<br><br>
+                            You can download a <a class="text-info" id="recordersCSVTemplate" style="cursor:pointer">template CSV file</a> to fill in your data.</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ parent() }}
+
+    <script>
+        $(function(){
+            'use strict';
+
+            // Show and initialize DataTable
+            $('#recordersTable').show();
+            var table = $('#recordersTable').DataTable({
+                "dom": 'lrtip',
+                "scrollX": true,
+                "lengthMenu": [[10, 25, 50, 100, 1000, -1], [10, 25, 50, 100, 1000, "All"]],
+                "pageLength": 10,
+                "ordering": true,
+                "order": [[1, 'asc']],
+                "bAutoWidth": false,
+                "columnDefs": [
+                    {
+                        "orderable": false,
+                        "className": "dt-center",
+                        "targets": [0]
+                    }
+                ]
+            });
+            
+            // Custom search handler
+            if (table.state.loaded()) {
+                $('#search').val(table.state.loaded().search.search);
+            }
+            $('#search').on('input', () => {
+                table.search($('#search').val()).draw();
+            });
+
+            // Initialize tooltips
+            $('[data-toggle="tooltip"]').tooltip();
+
+            // Collapsible form handlers
+            $("#recorderFormSection").on('shown.bs.collapse', function () {
+                $("#recordersList").hide();
+            }).on('hidden.bs.collapse', function () {
+                $("#recordersList").show();
+            });
+
+            $('#recorderForm').submit(function(e) {
+                e.preventDefault();
+                if (this.checkValidity() === false) {
+                    e.stopPropagation();
+                    this.classList.add('was-validated');
+                } else {
+                    const formData = {};
+                    $(this).find('input[name], select[name]').each(function() {
+                        if ($(this).val()) {
+                            formData[$(this).attr('name')] = $(this).val();
+                        }
+                    });
+                    postRequest('{{ baseUrl }}/api/admin/recorderMgr/save', formData, false, false, function(response) {
+                        if (response.errorCode === 0) {
+                            // Reset form and refresh table instead of reloading page
+                            $('#recorderForm')[0].reset();
+                            $('#recorderForm').removeClass('was-validated');
+                            if ($.fn.DataTable.isDataTable('#recordersTable')) {
+                                var table = $('#recordersTable').DataTable();
+                                table.ajax.reload(null, false);
+                                table.columns.adjust();
+                            }
+                            $('#recorderFormSection').collapse('hide');
+                            showAlert('Recorder saved successfully');
+                        } else {
+                            showAlert(response.message);
+                        }
+                    });
+                }
+            });
+
+            // Checkbox handlers
+            $('.js-all-checkbox').change(function () {
+                $('.js-checkbox').prop('checked', this.checked);
+                $('button[name="table-btn"]').prop('disabled', !this.checked);
+            });
+
+            $(document).on('change', '.js-checkbox', function () {
+                if (!$(this).is(':checked')) {
+                    $('.js-all-checkbox').prop('checked', false);
+                }
+                $('button[name="table-btn"]').prop('disabled', ($('.js-checkbox:checked').length === 0));
+            });
+
+            /* Save on input change */
+            $('.js-recorders-list').on('change', 'input[type="text"], input[type="number"]', function () {
+                if ($(this).hasClass('js-checkbox')) {
+                    return;
+                }
+                
+                // Validate required fields
+                const row = $(this).closest('tr');
+                const model = row.find('input[name="model"]').val();
+                
+                if (!model || model.trim() === '') {
+                    showAlert('Model is required');
+                    return;
+                }
+                
+                const formData = {};
+                row.find('input[name]').each(function() {
+                    formData[$(this).attr('name')] = $(this).val();
+                });
+                
+                postRequest('{{ baseUrl }}/api/admin/recorderMgr/save', formData, false, false, function (response) {
+                    if (response.errorCode !== 0) {
+                        showAlert(response.message);
+                    } else {
+                        // Reload to get the new ID for new rows
+                        if (!formData.itemID) {
+                            location.reload();
+                        }
+                    }
+                });
+            });
+
+            /* Delete recorders */
+            $('#deletion').click(function (e) {
+                let name = [];
+                $('.js-checkbox:checked').each(function () {
+                    const model = $(this).parent().parent().find('input[name="model"]').val();
+                    name.push(model || 'Unknown');
+                });
+                if (name.length === 0) {
+                    return;
+                }
+                $('#delete_name').html(name.join(', '));
+                $('#delete_count').html(name.length);
+                $("#modal-delete").modal('show');
+            });
+
+            $('#js-delete-button').click(function (e) {
+                let id = [];
+                $('.js-checkbox:checked').each(function () {
+                    id.push($(this).data('id'));
+                });
+                let data = {'id': id};
+                postRequest('{{ baseUrl }}/api/admin/recorderMgr/delete', data, false, false, function (response) {
+                    if (response.errorCode === 0) {
+                        location.reload();
+                    } else {
+                        showAlert(response.message);
+                    }
+                });
+            });
+
+            /* Export recorders */
+            $('#recordersExport').click(function () {
+                window.location.href = '{{ baseUrl }}/api/admin/recorderMgr/export';
+            });
+
+            /* CSV Upload */
+            $('#recordersCSVButton').click(function () {
+                $('#recordersCSVFile').click();
+            });
+
+            $('#recordersCSVFile').change(function () {
+                if (this.files.length > 0) {
+                    let formData = new FormData($('#recordersCSVForm')[0]);
+                    postRequest('{{ baseUrl }}/api/admin/recorderMgr/uploadCSV', formData, false, false, function (response) {
+                        alert(response.message);
+                        if (response.errorCode === 0) {
+                            location.reload();
+                        }
+                    });
+                }
+            });
+
+            /* CSV Instructions */
+            $('#recordersInstructions').click(function () {
+                $('#modal-recorders-instructions').modal('show');
+            });
+
+            /* Download CSV Template */
+            $('#recordersCSVTemplate').click(function () {
+                const csvContent = "model,version,brand,microphone\n" +
+                    "Song Meter SM4,4.0,Wildlife Acoustics,1\n";
+                const blob = new Blob([csvContent], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.setAttribute('hidden', '');
+                a.setAttribute('href', url);
+                a.setAttribute('download', 'recorders_template.csv');
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            });
+        });
+    </script>
+{% endblock %}

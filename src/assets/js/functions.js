@@ -36,6 +36,23 @@ document.addEventListener("DOMContentLoaded", function () {
         e.preventDefault();
     });
 
+    // Handle custom label creation form submit
+    $(document).on('click', '#newLabelButton', function () {
+        $('#newLabelForm').submit();
+    });
+
+    $(document).on('submit', '#newLabelForm', function (e) {
+        e.preventDefault();
+        postRequest(baseUrl + '/recording/saveLabel', new FormData($(this)[0]), false, false, function (response) {
+            $('#modal-div').modal('hide');
+            showAlert(response.message);
+            // Reload page to refresh label dropdown
+            setTimeout(function() {
+                location.reload();
+            }, 500);
+        });
+    });
+
     $("[data-hide]").on("click", function () {
         $(this).closest("." + $(this).attr("data-hide")).hide();
     });
@@ -153,7 +170,9 @@ function showAlert(message) {
     let alertDiv = document.getElementById('alertBox');
 
     if (alertDiv) {
-        alertDiv.getElementsByTagName('p')[0].textContent = message;
+        alertDiv.getElementsByTagName('p')[0].innerHTML = message;
+        // Re-show if it was dismissed
+        $(alertDiv).addClass('show');
         return;
     }
 
@@ -163,7 +182,7 @@ function showAlert(message) {
     alertDiv.setAttribute('role', 'alert');
 
     let paragraph = document.createElement('p');
-    paragraph.textContent = message;
+    paragraph.innerHTML = message;
 
     let button = document.createElement('button');
     button.type = 'button';
@@ -180,6 +199,22 @@ function showAlert(message) {
 
     let header = document.getElementsByTagName('header')[0];
     document.body.insertBefore(alertDiv, header);
+}
+
+// Show alert after page reload (if message was saved)
+function showAlertAfterReload() {
+    const message = sessionStorage.getItem('alertMessage');
+    if (message) {
+        sessionStorage.removeItem('alertMessage');
+        setTimeout(function() {
+            showAlert(message);
+       }, 300); // Small delay to ensure DOM is ready
+    }
+}
+
+// Save alert message before reload
+function saveAlertForReload(message) {
+    sessionStorage.setItem('alertMessage', message);
 }
 
 function toggleLoading() {
@@ -446,8 +481,7 @@ function resetDataTablesPagination(table) {
     if (!table) return;
     
     try {
-        // Clear the state and reset to first page
-        table.state.clear();
+        // Reset to first page
         table.page(0).draw();
     } catch (e) {
         console.error('Error resetting DataTable pagination:', e);

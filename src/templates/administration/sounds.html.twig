@@ -1,0 +1,337 @@
+{% extends 'administration/admin.html.twig' %}
+
+{% block admin_content %}
+
+<div class="collapse mb-5" id="soundFormSection">
+    <div class="card">
+        <div class="card-body">
+            <button class="close" type="button" data-toggle="collapse" data-target="#soundFormSection" aria-expanded="false" aria-controls="soundFormSection">
+                <span>&times;</span>
+            </button>
+            <form id="soundForm" class="needs-validation" novalidate>
+                <div class="form-group">
+                    <label for="sound_component" class="col-form-label-sm">Soundscape Component *</label>
+                    <input id="sound_component" type="text" name="soundscape_component" class="form-control form-control-sm" maxlength="200" placeholder="e.g. biophony, anthropophony, geophony" required>
+                    <div class="invalid-feedback">Please provide a soundscape component.</div>
+                </div>
+                <div class="form-group">
+                    <label for="sound_type" class="col-form-label-sm">Sound Type</label>
+                    <input id="sound_type" type="text" name="sound_type" class="form-control form-control-sm" maxlength="30" placeholder="e.g. snapping shrimps">
+                </div>
+                <div class="form-group text-right">
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="fas fa-save"></i>
+                        Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-3" id="soundsList">
+    <div class="card-header border-light bg-white text-right">
+        <div class="form-inline">
+            <div class="col-8"></div>
+            <div class="col-4 form-inline justify-content-end">
+                <label class="mr-2">Search:</label>
+                <input class="form-control-sm" id="search">
+            </div>
+        </div>
+        <form id="soundsCSVForm" method="POST" class="collapse">
+            <input type="file" name="soundsCSVFile" id="soundsCSVFile" accept="text/csv" style="display: none">
+        </form>
+        <button
+            id="deletion"
+            name="table-btn"
+            class="btn btn-outline-secondary btn-sm mt-2"
+            type="button"
+            data-target="#deletion"
+            disabled
+        >
+            <i class="fas fa-trash"></i>
+            Delete
+        </button>
+        <span class="dropdown">
+            <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" id="addSound" data-toggle="dropdown" aria-expanded="false">
+                <span class="fas fa-plus"></span>
+                Add
+            </button>
+            <div class="dropdown-menu" aria-labelledby="addSound">
+                <a class="dropdown-item" type="button" id="soundFormButton" data-toggle="collapse" data-target="#soundFormSection" aria-expanded="false" aria-controls="soundFormSection"><i class="fas fa-plus"></i> Add Sound</a>
+                <a class="dropdown-item" type="button" id="soundsCSVButton"><i class="fa-solid fa-file-arrow-up"></i> Upload Sounds CSV</a>
+                <a class="dropdown-item" type="button" id="soundsInstructions"><i class="fa-solid fa-circle-info"></i> CSV Instructions</a>
+            </div>
+        </span>
+        <button id="soundsExport" class="btn btn-outline-primary btn-sm mt-2">
+            <i class="fa fa-file-csv"></i>
+            Save all as CSV
+        </button>
+    </div>
+    <table id="soundsTable" style="display:none;white-space: nowrap;">
+            <thead class="table-borderless">
+                <tr style="font-size: .875rem;">
+                    <th>
+                        <input type="checkbox" class="js-all-checkbox" name="check-all" id="check-all">
+                    </th>
+                    <th scope="col">#</th>
+                    <th scope="col">Soundscape Component</th>
+                    <th scope="col">Sound Type</th>
+                </tr>
+            </thead>
+            <tbody class="form-control-sm js-sounds-list">
+                {% for sound in sounds %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="js-checkbox" data-id="{{ sound.sound_id }}">
+                        </td>
+                        <th scope='row'>
+                            <input type="hidden" name="itemID" value="{{ sound.sound_id }}">
+                            {{ sound.sound_id }}
+                        </th>
+                        <td data-order="{{ sound.soundscape_component }}" data-search="{{ sound.soundscape_component }}">
+                            <input type='text' class="form-control form-control-sm" name="soundscape_component" value="{{ sound.soundscape_component }}" maxlength="200">
+                        </td>
+                        <td data-order="{{ sound.sound_type }}" data-search="{{ sound.sound_type }}">
+                            <input type='text' class="form-control form-control-sm" name="sound_type" value="{{ sound.sound_type }}" maxlength="30">
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+</div>
+
+<div class="modal fade" id="modal-delete" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Warning</h5>
+                <button class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body ml-3">
+                <div>
+                    <div class="form-group">
+                        <label>Are you sure you want to delete <b class="text-danger"><span id="delete_count"></span> sound(s)</b>: <b class="text-danger" id="delete_name"></b>? This action cannot be undone.</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="js-delete-button" class="btn btn-outline-danger">
+                    <i class="fas fa-trash-alt"></i>
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-sounds-instructions" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">CSV Upload Instructions</h5>
+                <button class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body ml-3">
+                <div>
+                    <div class="form-group">
+                        <label>Sound data can be uploaded with a CSV containing the following columns:<br><br>
+                            <strong>soundscape_component</strong> (required, max 200 characters) - Main soundscape category: biophony, anthropophony, or geophony<br>
+                            <strong>sound_type</strong> (optional, max 30 characters) - Specific sound type or description<br><br>
+                            You can download a <a class="text-info" id="soundsCSVTemplate" style="cursor:pointer">template CSV file</a> to fill in your data.</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ parent() }}
+
+    <script>
+        $(function(){
+            'use strict';
+
+            // Show and initialize DataTable
+            $('#soundsTable').show();
+            var table = $('#soundsTable').DataTable({
+                "dom": 'lrtip',
+                "scrollX": true,
+                "lengthMenu": [[10, 25, 50, 100, 1000, -1], [10, 25, 50, 100, 1000, "All"]],
+                "pageLength": 10,
+                "ordering": true,
+                "order": [[1, 'asc']],
+                "bAutoWidth": false,
+                "columnDefs": [
+                    {
+                        "orderable": false,
+                        "className": "dt-center",
+                        "targets": [0]
+                    }
+                ]
+            });
+            
+            // Custom search handler
+            if (table.state.loaded()) {
+                $('#search').val(table.state.loaded().search.search);
+            }
+            $('#search').on('input', () => {
+                table.search($('#search').val()).draw();
+            });
+
+            // Collapsible form handlers
+            $("#soundFormSection").on('shown.bs.collapse', function () {
+                $("#soundsList").hide();
+            }).on('hidden.bs.collapse', function () {
+                $("#soundsList").show();
+            });
+
+            $('#soundForm').submit(function(e) {
+                e.preventDefault();
+                if (this.checkValidity() === false) {
+                    e.stopPropagation();
+                    this.classList.add('was-validated');
+                } else {
+                    const formData = {};
+                    $(this).find('input[name], select[name]').each(function() {
+                        if ($(this).val()) {
+                            formData[$(this).attr('name')] = $(this).val();
+                        }
+                    });
+                    postRequest('{{ baseUrl }}/api/admin/soundMgr/save', formData, false, false, function(response) {
+                        if (response.errorCode === 0) {
+                            // Reset form and refresh table instead of reloading page
+                            $('#soundForm')[0].reset();
+                            $('#soundForm').removeClass('was-validated');
+                            if ($.fn.DataTable.isDataTable('#soundsTable')) {
+                                var table = $('#soundsTable').DataTable();
+                                table.ajax.reload(null, false);
+                                table.columns.adjust();
+                            }
+                            $('#soundFormSection').collapse('hide');
+                            showAlert('Sound type saved successfully');
+                        } else {
+                            showAlert(response.message);
+                        }
+                    });
+                }
+            });
+
+            // Checkbox handlers
+            $('.js-all-checkbox').change(function () {
+                $('.js-checkbox').prop('checked', this.checked);
+                $('button[name="table-btn"]').prop('disabled', !this.checked);
+            });
+
+            $(document).on('change', '.js-checkbox', function () {
+                if (!$(this).is(':checked')) {
+                    $('.js-all-checkbox').prop('checked', false);
+                }
+                $('button[name="table-btn"]').prop('disabled', ($('.js-checkbox:checked').length === 0));
+            });
+
+            /* Save on input change */
+            $('#soundsTable').on('change', 'input[type="text"], input[type="number"]', function () {
+                if ($(this).hasClass('js-checkbox')) {
+                    return;
+                }
+                
+                const row = $(this).closest('tr');
+                const formData = {};
+                row.find('input[name]').each(function() {
+                    formData[$(this).attr('name')] = $(this).val();
+                });
+                
+                postRequest('{{ baseUrl }}/api/admin/soundMgr/save', formData, false, false, function (response) {
+                    if (response.errorCode !== 0) {
+                        showAlert(response.message);
+                    } else {
+                        // Reload to get the new ID for new rows
+                        if (!formData.itemID) {
+                            location.reload();
+                        }
+                    }
+                });
+            });
+
+            /* Delete sounds */
+            $('#deletion').click(function (e) {
+                let name = [];
+                $('.js-checkbox:checked').each(function () {
+                    const component = $(this).parent().parent().find('input[name="soundscape_component"]').val();
+                    name.push(component || 'Unknown');
+                });
+                if (name.length === 0) {
+                    return;
+                }
+                $('#delete_name').html(name.join(', '));
+                $('#delete_count').html(name.length);
+                $("#modal-delete").modal('show');
+            });
+
+            $('#js-delete-button').click(function (e) {
+                let id = [];
+                $('.js-checkbox:checked').each(function () {
+                    id.push($(this).data('id'));
+                });
+                let data = {'id': id};
+                postRequest('{{ baseUrl }}/api/admin/soundMgr/delete', data, false, false, function (response) {
+                    if (response.errorCode === 0) {
+                        location.reload();
+                    } else {
+                        showAlert(response.message);
+                    }
+                });
+            });
+
+            /* Export sounds */
+            $('#soundsExport').click(function () {
+                window.location.href = '{{ baseUrl }}/api/admin/soundMgr/export';
+            });
+
+            /* CSV Upload */
+            $('#soundsCSVButton').click(function () {
+                $('#soundsCSVFile').click();
+            });
+
+            $('#soundsCSVFile').change(function () {
+                if (this.files.length > 0) {
+                    let formData = new FormData($('#soundsCSVForm')[0]);
+                    postRequest('{{ baseUrl }}/api/admin/soundMgr/uploadCSV', formData, false, false, function (response) {
+                        alert(response.message);
+                        if (response.errorCode === 0) {
+                            location.reload();
+                        }
+                    });
+                }
+            });
+
+            /* CSV Instructions */
+            $('#soundsInstructions').click(function () {
+                $('#modal-sounds-instructions').modal('show');
+            });
+
+            /* Download CSV Template */
+            $('#soundsCSVTemplate').click(function () {
+                const csvContent = "soundscape_component,sound_type\n" +
+                    "biophony,snapping shrimps\n";
+                const blob = new Blob([csvContent], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.setAttribute('hidden', '');
+                a.setAttribute('href', url);
+                a.setAttribute('download', 'sounds_template.csv');
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            });
+        });
+    </script>
+{% endblock %}

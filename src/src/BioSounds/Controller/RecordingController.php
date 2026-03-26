@@ -109,6 +109,11 @@ class RecordingController extends BaseController
                     filter_var($_POST['continuous_play'], FILTER_VALIDATE_BOOLEAN)
                 );
             }
+            if (isset($_POST['filter'])) {
+                $this->recordingPresenter->setFilter(
+                    filter_var($_POST['filter'], FILTER_VALIDATE_BOOLEAN)
+                );
+            }
             if (isset($_POST['estimateDistID'])) {
                 $this->recordingPresenter->setEstimateDistID(filter_var($_POST['estimateDistID'], FILTER_VALIDATE_INT));
             }
@@ -269,7 +274,8 @@ class RecordingController extends BaseController
             $recording_fft = $recording->getUserRecordingFft(Auth::getUserID(), $recordingData[Recording::ID]);
         }
         $selectedFileName = $fileName . '_' . $minFrequency . '-' . $maxFrequency . '_' . $minTime . '-'
-            . $maxTime . '_' . $this->fftSize . '_' . $this->recordingPresenter->getChannel();
+            . $maxTime . '_' . $this->fftSize . '_' . $this->recordingPresenter->getChannel() 
+            . ($filter ? '_filtered' : '');
 
         if (!file_exists($originalWavFilePath)) {
             Utils::generateWavFile($originalSoundFilePath);
@@ -315,14 +321,24 @@ class RecordingController extends BaseController
                     );
                 }
             } else {
-                //  				if (is_file($originalMp3FilePath)) {
-                //					copy($originalMp3FilePath, $soundFileView);
-                //				}
-                if ($this->recordingPresenter->getChannel() == 1 && is_file($imageFilePath)) {
-                    copy($imageFilePath, $spectrogramImagePath);
+                // No time selection, but may still need frequency filtering
+                if ($filter) {
+                    Utils::filterFrequenciesSound(
+                        $originalSoundFilePath,
+                        $zoomedFilePath,
+                        $minFrequency,
+                        ($maxFrequency == $samplingRate / 2) ? $maxFrequency - 1 : $maxFrequency
+                    );
+                } else {
+                    //  				if (is_file($originalMp3FilePath)) {
+                    //					copy($originalMp3FilePath, $soundFileView);
+                    //				}
+                    if ($this->recordingPresenter->getChannel() == 1 && is_file($imageFilePath)) {
+                        copy($imageFilePath, $spectrogramImagePath);
+                    }
+                    // copy($originalWavFilePath, $wavFilePath);
+                    copy($originalSoundFilePath, $zoomedFilePath);
                 }
-                // copy($originalWavFilePath, $wavFilePath);
-                copy($originalSoundFilePath, $zoomedFilePath);
             }
 
             /* Generation MP3 File */
@@ -768,6 +784,62 @@ class RecordingController extends BaseController
         ]);
     }
 
+    public function deleteLabel()
+    {
+        if (!Auth::isUserLogged()) {
+            throw new NotAuthenticatedException();
+        }
+
+        $labelId = filter_var($_POST['label_id'] ?? '', FILTER_SANITIZE_NUMBER_INT);
+        
+        if (empty($labelId)) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'Invalid label ID.'
+            ]);
+        }
+
+        try {
+            // Check if user owns this label (only creator can delete private labels)
+            $labelProvider = new LabelProvider();
+            $label = $labelProvider->get($labelId);
+            
+            if ($label->getCreatorId() != Auth::getUserLoggedID()) {
+                return json_encode([
+                    'errorCode' => 1,
+                    'message' => 'You can only delete labels you created.'
+                ]);
+            }
+            
+            // Delete all label associations first using a direct query since no provider method exists
+            $database = new \BioSounds\Database\Database(DRIVER, HOST, DATABASE, USER, PASSWORD);
+            $database->prepareQuery('DELETE FROM label_association WHERE label_id = :label_id');
+            $database->executeDelete([':label_id' => $labelId]);
+            
+            // Delete the label itself
+            $database->prepareQuery('DELETE FROM label WHERE label_id = :label_id AND creator_id = :creator_id');
+            $database->executeDelete([
+                ':label_id' => $labelId, 
+                ':creator_id' => Auth::getUserLoggedID()
+            ]);
+            
+            return json_encode([
+                'errorCode' => 0,
+                'message' => 'Label deleted successfully.'
+            ]);
+        } catch (\BioSounds\Exception\Database\NotFoundException $e) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'Label not found.'
+            ]);
+        } catch (\Exception $e) {
+            return json_encode([
+                'errorCode' => 1,
+                'message' => 'Error: ' . $e->getMessage()
+            ]);
+        }
+    }
+
     public function saveMaadResult()
     {
         if (!Auth::isUserLogged()) {
@@ -829,15 +901,33 @@ class RecordingController extends BaseController
             ' --i ' . ABSOLUTE_DIR . SOUNDS_DIR . '/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['filename'] .
             ' --o ' . ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv" .
             ' --rtype "csv"';
-        if ((string)$data['lat'] != '') {
-            $str = $str . ' --lat ' . $data['lat'];
+        
+        // Handle species list if provided (mutually exclusive with coordinates)
+        if (isset($data['species_list']) && !empty($data['species_list'])) {
+            // Save species list to temporary file
+            $speciesListFile = ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . '-species.txt';
+            file_put_contents($speciesListFile, $data['species_list']);
+            $str = $str . ' --slist ' . escapeshellarg($speciesListFile);
+        } else {
+            // Use coordinates (manual override or from recording metadata)
+            $lat = isset($data['manual_lat']) && $data['manual_lat'] !== '' ? $data['manual_lat'] : $data['lat'];
+            $lon = isset($data['manual_lon']) && $data['manual_lon'] !== '' ? $data['manual_lon'] : $data['lon'];
+            
+            if ((string)$lat != '') {
+                $str = $str . ' --lat ' . $lat;
+            }
+            if ((string)$lon != '') {
+                $str = $str . ' --lon ' . $lon;
+            }
         }
-        if ((string)$data['lon'] != '') {
-            $str = $str . ' --lon ' . $data['lon'];
-        }
-        if ($data['file_date'] != '' && $data['file_date'] != '1970-01-01') {
+        
+        // Handle week (manual override or from file date)
+        if (isset($data['manual_week']) && $data['manual_week'] !== '') {
+            $str = $str . ' --week ' . $data['manual_week'];
+        } elseif ($data['file_date'] != '' && $data['file_date'] != '1970-01-01') {
             $str = $str . ' --week ' . date('W', $data['file_date']);
         }
+        
         if ($data['sensitivity'] != '') {
             $str = $str . ' --sensitivity ' . $data['sensitivity'];
         }
@@ -851,6 +941,11 @@ class RecordingController extends BaseController
             $str = $str . ' --sf_thresh ' . $data['sf_thresh'];
         }
         exec($str . " 2>&1", $out, $status);
+        
+        // Clean up temporary species list file if it was created
+        if (isset($speciesListFile) && file_exists($speciesListFile)) {
+            unlink($speciesListFile);
+        }
         $result = [];
         if ($status == 0) {
             $handle = fopen(ABSOLUTE_DIR . 'tmp/' . $data['recording_id'] . '-' . $data['user_id'] . ".csv", "rb");
@@ -1067,12 +1162,23 @@ class RecordingController extends BaseController
         }
         copy(ABSOLUTE_DIR . 'sounds/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav', $soundPath . '/' . substr($data['filename'], 0, strripos($data['filename'], '.')) . '.wav');
         $resultPath = ABSOLUTE_DIR . 'tmp/sounds/' . $data['collection_id'] . "/" . $data['recording_directory'] . "/" . $data['user_id'] . '/' . $timestamp;
-        $str = "autrainer inference " . escapeshellarg("hf:AlexanderGbd/insects-base-cnn10-96k-t") . " -sr 96000";
+        
+        // Try to use cached model first, fallback to HuggingFace if cache doesn't exist
+        $cachedModelPath = "/var/www/.cache/torch/hub/autrainer/AlexanderGbd--insects-base-cnn10-96k-t--main";
+        $modelSpec = file_exists($cachedModelPath) ? escapeshellarg($cachedModelPath) : escapeshellarg("hf:AlexanderGbd/insects-base-cnn10-96k-t");
+        
+        $str = "HF_HUB_OFFLINE=1 autrainer inference " . $modelSpec . " -sr 96000";
         $windowSize = (!empty($data['window_size']) && $data['window_size'] != 'undefined') ? escapeshellarg($data['window_size']) : escapeshellarg("4.0");
         $strideSize = (!empty($data['stride_length']) && $data['stride_length'] != 'undefined') ? escapeshellarg($data['stride_length']) : escapeshellarg("4.0");
 
         $str .= ' -w ' . $windowSize . ' -s ' . $strideSize . ' ' . escapeshellarg($soundPath) . ' ' . escapeshellarg($resultPath);
         exec($str . " 2>&1", $out, $status);
+        
+        // Log command and output for debugging
+        error_log("insects-base-cnn10-96k-t command: " . $str);
+        error_log("insects-base-cnn10-96k-t exit status: " . $status);
+        error_log("insects-base-cnn10-96k-t output: " . implode("\n", $out));
+        
         if ($status == 0) {
             if (file_exists($resultPath . "/results.csv")) {
                 $json = [];
@@ -1167,9 +1273,20 @@ class RecordingController extends BaseController
                 ]);
             }
         }
+        Utils::deleteDirContents($resultPath);
+        
+        // Provide helpful error message if it's a Hugging Face connection issue
+        $errorOutput = count($out) > 0 ? implode(" | ", $out) : "No output";
+        $helpMessage = "";
+        if (strpos($errorOutput, 'Invalid hugging face repo id') !== false || 
+            strpos($errorOutput, 'Connection') !== false || 
+            strpos($errorOutput, 'huggingface') !== false) {
+            $helpMessage = " This may be due to network restrictions preventing access to huggingface.co. See README Troubleshooting section for manual model installation.";
+        }
+        
         return json_encode([
             'errorCode' => 1,
-            'message' => "insects-base-cnn10-96k-t execution error.",
+            'message' => "insects-base-cnn10-96k-t execution error. Exit code: " . $status . ". Output: " . $errorOutput . $helpMessage,
         ]);
     }
 

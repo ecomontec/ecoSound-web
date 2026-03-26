@@ -17,8 +17,8 @@
                     <small id="siteValid" class="text-danger"></small>
                 </div>
                 <div>
-                    <label style="width:50%" class="col-form-label-sm" for="longitude">Longitude [-180,180]</label>
-                    <label style="width:49.5%" class="col-form-label-sm" for="latitude">Latitude [-90,90]</label>
+                    <label style="width:50%" class="col-form-label-sm" for="longitude">Longitude (decimal degrees [-180,180])</label>
+                    <label style="width:49.5%" class="col-form-label-sm" for="latitude">Latitude (decimal degrees [-90,90])</label>
                 </div>
                 <div class="form-group input-group-sm form-inline">
                     <input class="form-control mr-auto" id="longitude" type="number" min="-180" max="180" step="0.0000000000001" pattern="##.##############" name="longitude_number" style="width:49%" maxlength="100">
@@ -31,8 +31,8 @@
                     </span>
                 </div>
                 <div>
-                    <label style="width:50%" class="col-form-label-sm" for="topography_m">Topography [-15000,10000]</label>
-                    <label style="width:49.5%" class="col-form-label-sm" for="freshwater_depth_m">Freshwater Depth [-2000,0]</label>
+                    <label style="width:50%" class="col-form-label-sm" for="topography_m">Topography (meters [-15000,10000])</label>
+                    <label style="width:49.5%" class="col-form-label-sm" for="freshwater_depth_m">Freshwater depth (meters [-2000,0])</label>
                 </div>
                 <div class="form-group input-group-sm form-inline">
                     <input class="form-control mr-auto" id="topography_m" type="number" min="-15000" max="10000" step="0.1" pattern="##.##" name="topography_m_number" style="width:50%" maxlength="100">
@@ -46,7 +46,7 @@
                 </div>
                 <div class="row">
                     <div class="form-group col-md-12">
-                        <label for="iho" class="col-form-label-sm">IHO</label>
+                        <label for="iho" class="col-form-label-sm">IHO sea area <a href="https://www.arcgis.com/home/item.html?id=44e04407fbaf4d93afcb63018fbca9e2" target="_blank" title="IHO sea areas reference"><i class="fa fa-external-link-alt fa-xs"></i></a></label>
                         <select id="iho" name="iho_text" class="form-control form-control-sm">
                             <option></option>
                             {% for i in iho %}
@@ -56,8 +56,13 @@
                     </div>
                 </div>
                 <div class="row">
+                    <div class="col-md-12 mb-2">
+                        <strong class="col-form-label-sm">Global Administrative Areas <a href="https://gadm.org/index.html" target="_blank" title="GADM reference"><i class="fa fa-external-link-alt fa-xs"></i></a></strong>
+                    </div>
+                </div>
+                <div class="row">
                     <div class="form-group col-md-4">
-                        <label for="gadm0" class="col-form-label-sm">Global Administrative Areas level 0</label>
+                        <label for="gadm0" class="col-form-label-sm">Level 0</label>
                         <select id="gadm0" name="gadm0_text" class="form-control form-control-sm">
                             <option></option>
                             {% for g in gadm0 %}
@@ -67,16 +72,21 @@
                         <small id="areaValid" class="text-danger"></small>
                     </div>
                     <div class="form-group col-md-4">
-                        <label for="gadm1" class="col-form-label-sm">Global Administrative Areas level 1</label>
+                        <label for="gadm1" class="col-form-label-sm">Level 1</label>
                         <select id="gadm1" name="gadm1_text" class="form-control form-control-sm" disabled>
                             <option></option>
                         </select>
                     </div>
                     <div class="form-group col-md-4">
-                        <label for="gadm2" class="col-form-label-sm">Global Administrative Areas level 2</label>
+                        <label for="gadm2" class="col-form-label-sm">Level 2</label>
                         <select id="gadm2" name="gadm2_text" class="form-control form-control-sm" disabled>
                             <option></option>
                         </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 mb-2">
+                        <strong class="col-form-label-sm">Global Ecosystem Typology <a href="https://global-ecosystems.org/" target="_blank" title="Global Ecosystem Typology reference"><i class="fa fa-external-link-alt fa-xs"></i></a></strong>
                     </div>
                 </div>
                 <div class="row">

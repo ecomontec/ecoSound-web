@@ -52,6 +52,12 @@ class Queue extends BaseProvider
 
         $queue_id = $data["queue_id"];
         unset($data["queue_id"]);
+        
+        // If there are no fields to update after removing queue_id, return early
+        if (empty($data)) {
+            return false;
+        }
+        
         $fields = '';
         $values = [];
 

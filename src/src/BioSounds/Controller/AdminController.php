@@ -7,6 +7,10 @@ use BioSounds\Controller\Administration\QueueController;
 use BioSounds\Controller\Administration\SiteCollectionController;
 use BioSounds\Controller\Administration\TaskController;
 use BioSounds\Controller\Administration\UserController;
+use BioSounds\Controller\Administration\SpeciesController;
+use BioSounds\Controller\Administration\RecorderController;
+use BioSounds\Controller\Administration\MicrophoneController;
+use BioSounds\Controller\Administration\SoundController;
 use BioSounds\Utils\Auth;
 use BioSounds\Controller\Administration\CollectionController as CollectionController;
 use BioSounds\Controller\Administration\SettingController as SettingController;
@@ -268,5 +272,82 @@ class AdminController extends BaseController
     public function taskMgr(string $action, int $id = null, string $str = '0')
     {
         return (new TaskController($this->twig))->$action($id, $str);
+    }
+
+    /**
+     * @param int $page
+     * @return false|string
+     * @throws \Exception
+     */
+    public function species(int $page = 1)
+    {
+        return (new SpeciesController($this->twig))->show($page);
+    }
+
+    /**
+     * @param string $action
+     * @param int|null $id
+     * @return mixed
+     */
+    public function speciesMgr(string $action, int $id = null)
+    {
+        return (new Administration\SpeciesController($this->twig))->$action($id);
+    }
+
+    /**
+     * @return false|string
+     * @throws \Exception
+     */
+    public function recorders()
+    {
+        return (new RecorderController($this->twig))->show();
+    }
+
+    /**
+     * @param string $action
+     * @param int|null $id
+     * @return mixed
+     */
+    public function recorderMgr(string $action, int $id = null)
+    {
+        return (new RecorderController($this->twig))->$action($id);
+    }
+
+    /**
+     * @return false|string
+     * @throws \Exception
+     */
+    public function microphones()
+    {
+        return (new MicrophoneController($this->twig))->show();
+    }
+
+    /**
+     * @param string $action
+     * @param int|null $id
+     * @return mixed
+     */
+    public function microphoneMgr(string $action, int $id = null)
+    {
+        return (new MicrophoneController($this->twig))->$action($id);
+    }
+
+    /**
+     * @return false|string
+     * @throws \Exception
+     */
+    public function sounds()
+    {
+        return (new SoundController($this->twig))->show();
+    }
+
+    /**
+     * @param string $action
+     * @param int|null $id
+     * @return mixed
+     */
+    public function soundMgr(string $action, int $id = null)
+    {
+        return (new SoundController($this->twig))->$action($id);
     }
 }

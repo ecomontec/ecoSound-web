@@ -7,6 +7,15 @@
                 {% if is_admin %}
                     <h4 class="mb-3">Server Information</h4>
                     <div class="form-group input-group-sm">
+                        <label for="disk_space">Server Disk Space</label>
+                        <div class="form-control bg-light" style="border: none;">
+                            {{ (diskUsed / 1073741824)|number_format(1) }} GB / {{ (diskTotal / 1073741824)|number_format(1) }} GB - 
+                            <span class="font-weight-bold {% if diskUsedPercent < 70 %}text-success{% elseif diskUsedPercent < 85 %}text-warning{% else %}text-danger{% endif %}">
+                                {{ diskUsedPercent|number_format(1) }}% full
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group input-group-sm">
                         <label for="api_key">API Key</label>
                         <input type="text" class="form-control" value="{{ api_key }}" disabled>
                     </div>

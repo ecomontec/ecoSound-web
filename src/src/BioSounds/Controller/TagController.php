@@ -87,6 +87,8 @@ class TagController extends BaseController
 
         $isUserTagOwner = $tag->getUser() == Auth::getUserLoggedID();
         $isReviewGranted = Auth::isUserLogged();
+        $isViewGranted = false;
+        $isManageGranted = false;
         $displaySaveButton = Auth::isManage() || $isUserTagOwner ? '' : 'hidden';
 
         if (!Auth::isManage() && !$isUserTagOwner) {
@@ -102,6 +104,11 @@ class TagController extends BaseController
         $hasTaskAssignment = $this->isTagAssignedToUser($tagId);
         
         $tagProvider = new TagProvider();
+        
+        // Initialize navigation variables
+        $previous = 0;
+        $next = 0;
+        
         if ($_POST['type'] ?? $_GET['type'] ?? '' == 'task') {
             $isTask = true;
             $tags = $tagProvider->getListByTask();
@@ -110,12 +117,19 @@ class TagController extends BaseController
         } else {
             $tags = $tagProvider->getList($tag->getRecording(), Auth::getUserLoggedID());
         }
+        
+        // Find current tag in list and determine previous/next
+        error_log("Tag ID being searched: " . $tag->getId());
+        error_log("Number of tags in list: " . count($tags));
+        error_log("Is task mode: " . ($isTask ? 'yes' : 'no'));
+        
         foreach ($tags as $k => $t) {
             $max = count($tags) - 1;
             if ($t->getId() == $tag->getId()) {
+                error_log("Found tag at index: " . $k . " (max: " . $max . ")");
                 if ($k == 0) {
                     $previous = 0;
-                    $next = $tags[$k + 1];
+                    $next = ($k + 1 <= $max) ? $tags[$k + 1] : 0;
                 } elseif ($k == $max) {
                     $previous = $tags[$k - 1];
                     $next = 0;
@@ -123,8 +137,35 @@ class TagController extends BaseController
                     $previous = $tags[$k - 1];
                     $next = $tags[$k + 1];
                 }
+                error_log("Previous: " . ($previous === 0 ? '0' : $previous->getId()));
+                error_log("Next: " . ($next === 0 ? '0' : $next->getId()));
+                break; // Found the tag, no need to continue
             }
         }
+        // Prepare navigation metadata for JavaScript (sidebar needs this)
+        $navigationData = [
+            'isTask' => $isTask,
+            'hasTaskAssignment' => $hasTaskAssignment,
+            'previous' => ($previous !== 0 && $previous !== null) ? [
+                'id' => $previous->getId(),
+                'minTime' => $previous->getMinTime(),
+                'maxTime' => $previous->getMaxTime(),
+                'minFrequency' => $previous->getMinFrequency(),
+                'maxFrequency' => $previous->getMaxFrequency(),
+                'recording' => $previous->getRecording()
+            ] : null,
+            'next' => ($next !== 0 && $next !== null) ? [
+                'id' => $next->getId(),
+                'minTime' => $next->getMinTime(),
+                'maxTime' => $next->getMaxTime(),
+                'minFrequency' => $next->getMinFrequency(),
+                'maxFrequency' => $next->getMaxFrequency(),
+                'recording' => $next->getRecording()
+            ] : null
+        ];
+        
+        error_log("Navigation data prepared: " . json_encode($navigationData));
+        
         return json_encode([
             'errorCode' => 0,
             'data' => $this->twig->render('tag/tag.html.twig', [
@@ -143,6 +184,7 @@ class TagController extends BaseController
                 'isTask' => $isTask,
                 'hasTaskAssignment' => $hasTaskAssignment,
             ]),
+            'navigation' => $navigationData
         ]);
     }
 

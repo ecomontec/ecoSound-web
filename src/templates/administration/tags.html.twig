@@ -1,6 +1,10 @@
 {% extends 'administration/admin.html.twig' %}
 
 {% block admin_content %}
+    <form id="tagsForm" style="display:none">
+        <input type="file" name="tagsFile" id="tagsFile" accept=".csv"/>
+    </form>
+
     <div class="card mb-3" id="tagsList">
         <div class="card-header border-light bg-white text-right">
             <div class="form-inline">
@@ -48,11 +52,30 @@
                 <i class="fas fa-trash"></i>
                 Delete
             </button>
+            <span class="dropdown">
+                <button class="btn btn-outline-primary btn-sm mt-2 dropdown-toggle" id="addTags" data-toggle="dropdown" aria-expanded="false">
+                    <span class="fas fa-plus"></span>
+                    Add
+                </button>
+                <div class="dropdown-menu" aria-labelledby="addTags">
+                    <a id="tagsButton" class="dropdown-item" href="#"><i class="fa-solid fa-tags"></i> Upload Tags</a>
+                    <div class="dropdown-divider"></div>
+                    <a id="viewTagsInstructions" class="dropdown-item" href="#"><i class="fa-solid fa-circle-info"></i> Upload Instructions</a>
+                </div>
+            </span>
             <button id="tagsExport" class="btn btn-outline-primary btn-sm mt-2" type="button" data-target="#tagsExport" aria-expanded="false" aria-controls="tagsExport">
                 <i class="fa fa-file-csv"></i>
                 Save all as CSV
             </button>
         </div>
+        {% if not collections or colId == 0 %}
+        <div class="card-body">
+            <div class="alert alert-warning" role="alert">
+                <i class="fas fa-exclamation-triangle"></i>
+                No collections available for this project. Please create a collection first in the <a href="{{ baseUrl }}/admin/collections">Collections</a> page.
+            </div>
+        </div>
+        {% endif %}
         <table id="tagsTable" style="display:none;white-space: nowrap;">
             <thead class="table-borderless">
             <tr style="font-size: .875rem;">
@@ -116,11 +139,57 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="modal-tags-info" tabindex="-1" role="dialog" aria-labelledby="modal-tags-info-label" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-tags-info-label">Tags CSV Upload Instructions</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body ml-3">
+                    <div>
+                        <div class="form-group">
+                            <label>Tags can be uploaded with a CSV containing the following columns:<br><br>
+                                <strong>Required columns:</strong><br>
+                                <strong>recording_id</strong> (integer) - Recording identifier. Download <a class="text-info" id="exportRecordings2" style="cursor:pointer">Recordings table</a> for IDs<br>
+                                <strong>min_time</strong> (float, seconds) - Start time<br>
+                                <strong>max_time</strong> (float, seconds) - End time (must be > min_time)<br>
+                                <strong>min_freq</strong> (float, Hz) - Minimum frequency<br>
+                                <strong>max_freq</strong> (float, Hz) - Maximum frequency (must be > min_freq)<br>
+                                <strong>sound_id</strong> (integer) - Sound identifier. Download <a class="text-info" id="exportSounds2" style="cursor:pointer">Sounds table</a> for IDs<br>
+                                <strong>individuals</strong> (integer) - Number of individuals<br><br>
+                                <strong>Optional columns:</strong><br>
+                                <strong>species_id</strong> (integer) - Species identifier. Download <a class="text-info" id="exportSpecies2" style="cursor:pointer">Species table</a> for IDs<br>
+                                <strong>uncertain</strong> (0 or 1) - Uncertainty flag<br>
+                                <strong>sound_distance_m</strong> (integer) - Distance in meters<br>
+                                <strong>distance_not_estimable</strong> (0 or 1) - Distance not estimable flag<br>
+                                <strong>animal_sound_type</strong> (max 128 characters) - Sound type description<br>
+                                <strong>reference_call</strong> (0 or 1) - Reference call flag<br>
+                                <strong>comments</strong> (max 2000 characters) - Comments<br>
+                                <strong>confidence</strong> (float 0-1) - AI confidence score<br><br>
+                                <em>Note: All ID fields must reference existing entries in their respective tables.</em><br><br>
+                                You can download a <a class="text-info" id="tagsDemo2" style="cursor:pointer">template CSV file</a> to fill in your data.</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 {% block header %}
     {{ parent() }}
     <script>
         $(document).ready(function () {
+            {% if collections and colId > 0 %}
             $('#tagsTable').show()
             let url
             let table = $('#tagsTable').DataTable({
@@ -136,7 +205,7 @@
                     }
                 },
                 "dom": 'lrtip',
-                "StateDuration": -1,
+                "order": [[1, 'asc']],
                 "order": [[1, 'asc']],
                 "columnDefs": [
                     {
@@ -151,11 +220,13 @@
                 "bAutoWidth": false,
                 "scrollX": true,
             });
-            if (table.state.loaded()) {
-                $('#search').val(table.state.loaded().search.search);
-            }
+            {% else %}
+            let table = null;
+            {% endif %}
             $('#search').on('input', () => {
-                table.search($('#search').val()).draw();
+                if (table) {
+                    table.search($('#search').val()).draw();
+                }
             });
         });
 
@@ -165,6 +236,88 @@
             'use strict';
             $(document).on('click', '#tagsExport', function () {
                 window.location.href = '{{ baseUrl }}/api/admin/tagMgr/export/{{ colId }}/{{ recordingId }}';
+            });
+
+            // Tags CSV Upload
+            $('#tagsButton').click(function(e) {
+                e.preventDefault();
+                $('#tagsFile').click();
+            });
+
+            $('#tagsFile').on('change', function() {
+                var file = this.files[0];
+                if (!file) return;
+
+                var fileName = file.name;
+                var fileSize = file.size;
+                var fileType = file.type;
+
+                if (fileType !== 'text/csv' && !fileName.endsWith('.csv')) {
+                    alert('Please select a CSV file.');
+                    $('#tagsForm')[0].reset();
+                    return;
+                }
+
+                if (fileSize > 5242880) {
+                    alert('File size exceeds 5MB limit.');
+                    $('#tagsForm')[0].reset();
+                    return;
+                }
+
+                var formData = new FormData();
+                formData.append('file', file);
+
+                $.ajax({
+                    url: '{{ baseUrl }}/api/file/tags',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.errorCode === 0) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message || 'Upload completed');
+                            $('#tagsForm')[0].reset();
+                        }
+                    },
+                    error: function(xhr) {
+                        var errorMsg = 'Upload failed.';
+                        try {
+                            var response = JSON.parse(xhr.responseText);
+                            errorMsg = response.message || errorMsg;
+                        } catch(e) {}
+                        alert(errorMsg);
+                        $('#tagsForm')[0].reset();
+                    }
+                });
+            });
+
+            // Template and export downloads
+            $('#tagsDemo, #tagsDemo2').click(function(e) {
+                e.preventDefault();
+                window.location.href = '{{ baseUrl }}/admin/tagMgr/downloadTemplate';
+            });
+
+            $('#exportSounds, #exportSounds2').click(function(e) {
+                e.preventDefault();
+                window.location.href = '{{ baseUrl }}/admin/tagMgr/exportSounds';
+            });
+
+            $('#exportSpecies, #exportSpecies2').click(function(e) {
+                e.preventDefault();
+                window.location.href = '{{ baseUrl }}/admin/tagMgr/exportSpecies';
+            });
+
+            $('#exportRecordings, #exportRecordings2').click(function(e) {
+                e.preventDefault();
+                window.location.href = '{{ baseUrl }}/admin/tagMgr/exportRecordings';
+            });
+
+            $('#viewTagsInstructions').click(function(e) {
+                e.preventDefault();
+                $('#modal-tags-info').modal('show');
             });
 
             $('#js-delete-button').click(function (e) {
@@ -219,9 +372,17 @@
             });
             $('#colId').change(function () {
                 $('#recordingId').val("")
+                // Clear DataTable state when changing collections
+                if (typeof table !== 'undefined') {
+                    table.state.clear();
+                }
                 $("#collectionForm").submit();
             });
             $('#recordingId').change(function () {
+                // Clear DataTable state when changing recordings
+                if (typeof table !== 'undefined') {
+                    table.state.clear();
+                }
                 $("#collectionForm").submit();
             });
             $('#tagsTable tbody').on('click', 'input[name=distance_not_estimable]', function () {

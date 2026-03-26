@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # svt.py -- sound visualization tool
 # http://github.com/ljvillanueva/Sound-Viewer-Tool
@@ -23,10 +23,10 @@
 # From http://freesound.iua.upf.edu/blog/?p=10
 #
 
-svt_version = "1.0"
+svt_version = "1.1"
 
 import optparse, math, sys
-import scikits.audiolab as audiolab
+import soundfile as sf
 from PIL import ImageFilter, ImageChops, Image, ImageDraw, ImageColor
 import numpy
 
@@ -35,9 +35,9 @@ class AudioProcessor(object):
     def __init__(self, audio_file, fft_size, channel, window):
         self.fft_size = fft_size
         self.audio_file = audio_file
-        self.frames = audio_file.get_nframes()
-        self.samplerate = audio_file.get_samplerate()
-        self.channels = audio_file.get_channels()
+        self.frames = len(audio_file)
+        self.samplerate = audio_file.samplerate
+        self.channels = audio_file.channels
         self.spectrum_range = None
         self.lower = 10
         self.higher = 22050
@@ -87,7 +87,7 @@ class AudioProcessor(object):
                 add_to_end = size - to_read
 
         try:
-            samples = self.audio_file.read_frames(to_read)
+            samples = self.audio_file.read(to_read)
         except IOError:
             # this can happen for wave files with broken headers...
             return numpy.zeros(size) if resize_if_less else numpy.zeros(2)
@@ -112,11 +112,11 @@ class AudioProcessor(object):
     def spectral_centroid(self, seek_point, spec_range=120.0):
         """ starting at seek_point read fft_size samples, and calculate the spectral centroid """
 
-        samples = self.read(seek_point - self.fft_size / 2, self.fft_size, True)
+        samples = self.read(seek_point - self.fft_size // 2, self.fft_size, True)
 
         samples *= self.window
         fft = numpy.fft.fft(samples)
-        spectrum = numpy.abs(fft[:fft.shape[0] / 2 + 1]) / float(self.fft_size)  # normalized abs(FFT) between 0 and 1
+        spectrum = numpy.abs(fft[:fft.shape[0] // 2 + 1]) / float(self.fft_size)  # normalized abs(FFT) between 0 and 1
         length = numpy.float64(spectrum.shape[0])
 
         # scale the db spectrum from [- spec_range db ... 0 db] > [0..1]
@@ -296,7 +296,7 @@ class WaveformImage(object):
         # draw a zero "zero" line
         a = 25
         for x in range(self.image_width):
-            self.pix[x, self.image_height / 2] = tuple([p + a for p in self.pix[x, self.image_height / 2]])
+            self.pix[x, self.image_height // 2] = tuple([p + a for p in self.pix[x, self.image_height // 2]])
 
         self.image.save(filename)
 
@@ -339,10 +339,10 @@ class SpectrogramImage(object):
             #            arithmetic scale
             freq = f_min + y / (image_height - 1.0) * (f_max - f_min)
             #            uses the nyquist frequency to allow files of different sampling rate
-            bin = freq / nyquist_freq * (self.fft_size / 2 + 1)
+            bin = freq / nyquist_freq * (self.fft_size // 2 + 1)
             #            bin = freq / 22050.0 * (self.fft_size/2 + 1)
 
-            if bin < self.fft_size / 2:
+            if bin < self.fft_size // 2:
                 alpha = bin - int(bin)
 
                 self.y_to_bin.append((int(bin), alpha * 255))
@@ -365,10 +365,10 @@ class SpectrogramImage(object):
 
 
 def create_png(input_filename, output_filename_w, output_filename_s, image_width, image_height, fft_size, f_max, f_min, wavefile, channel, window):
-    audio_file = audiolab.sndfile(input_filename, 'read')
+    audio_file = sf.SoundFile(input_filename, 'r')
 
-    samples_per_pixel = audio_file.get_nframes() / float(image_width)
-    nyquist_freq = (audio_file.get_samplerate() / 2) + 0.0
+    samples_per_pixel = len(audio_file) / float(image_width)
+    nyquist_freq = (audio_file.samplerate / 2) + 0.0
     numpy_window = window
     #    processor = AudioProcessor(audio_file, fft_size, channel, numpy.hanning)
     processor = AudioProcessor(audio_file, fft_size, channel, numpy_window)
@@ -379,7 +379,7 @@ def create_png(input_filename, output_filename_w, output_filename_s, image_width
     arr = []
     for x in range(image_width):
 
-        if x % (image_width / 10) == 0:
+        if x % (image_width // 10) == 0:
             sys.stdout.write('.')
             sys.stdout.flush()
 

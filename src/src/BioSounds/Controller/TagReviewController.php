@@ -35,7 +35,9 @@ class TagReviewController extends BaseController
             'disableReviewForm' => !Auth::isUserAdmin() && $tagReview->hasUserReviewed(Auth::getUserLoggedID(), $tagId),
             'reviews' => $reviews,
             'tagId' => $tagId,
-            'isReviewGranted' => $isReviewGranted
+            'isReviewGranted' => $isReviewGranted,
+            'userLoggedId' => Auth::getUserLoggedID(),
+            'isAdmin' => Auth::isUserAdmin()
         ]);
     }
 
@@ -72,6 +74,8 @@ class TagReviewController extends BaseController
             return json_encode([
                 'errorCode' => 0,
                 'message' => 'Tag review saved successfully.',
+                'tagId' => $data['tag_id'],
+                'userId' => Auth::getUserLoggedID()
             ]);
         }
     }
