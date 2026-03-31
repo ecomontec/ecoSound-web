@@ -97,7 +97,7 @@
             {# Column 1: Navigation + Player + Table #}
             <div class="col" style="flex: 1 1 auto; min-width: 0;">
                 {# Inner Row 1: Navigation buttons + Spectrogram player #}
-                <div class="row">
+                <div class="row flex-nowrap">
                     <div class="col-auto text-center recording-navigation" style="min-width: 150px; max-width: 180px;">
                         {# Navigation buttons: arrows grouped at top #}
                         <div class="d-grid mb-2" style="display: grid !important; grid-template-columns: 1fr; gap: 4px;">
@@ -157,7 +157,7 @@
                         <hr>
                         <a href="#" class="viewport" title="Overall view"><img style="max-width: 100%; width: 140px;" id="thumbnail" src="{{ baseUrl }}/{{ player.viewPortFilePath }}"></a>
                     </div>
-                    <div class="col">
+                    <div class="col" style="min-width: 0; overflow-x: auto;">
                         {% include 'recording/player/player.html.twig' %}
                     </div>
                 </div>
@@ -194,6 +194,7 @@
                                         <input type="checkbox" class="js-all-checkbox" name="check-all" id="check-all">
                                     </th>
                                     <th>#</th>
+                                    <th>Task</th>
                                     <th>Soundscape Component</th>
                                     <th>Sound Type</th>
                                     <th>User</th>

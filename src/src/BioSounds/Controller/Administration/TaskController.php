@@ -10,9 +10,6 @@ use BioSounds\Provider\CollectionProvider;
 use BioSounds\Provider\ProjectProvider;
 use BioSounds\Provider\RecordingProvider;
 use BioSounds\Provider\TaskProvider;
-use BioSounds\Provider\ProjectProvider;
-use BioSounds\Provider\CollectionProvider;
-use BioSounds\Provider\RecordingProvider;
 use BioSounds\Utils\Auth;
 
 
