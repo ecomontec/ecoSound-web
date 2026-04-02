@@ -50,6 +50,28 @@ This starts all services and launches the queue worker with automatic restart ca
 
 **Note:** Do not run `run.sh` multiple times - this would create duplicate workers processing jobs in parallel.
 
+### Upgrading to latest version (standard upgrade)
+
+**For installations where data is already in dedicated folders** (mysql/, sounds/, sound_images/, project_images/):
+
+```bash
+# 1. Backup your data
+bash backup-before-upgrade.sh
+
+# 2. Stop services
+docker-compose down
+
+# 3. Update code
+git pull origin master  # or your branch name
+
+# 4. Restart services
+bash run.sh
+```
+
+**Note:** The install.sh script is safe to re-run - it skips database initialization if tables already exist.
+
+If you encounter issues, restore from backup and review the Troubleshooting section.
+
 ### Upgrading from older versions
 
 If you're upgrading to this version and have existing data, you need to migrate your database from the old Docker named volume to a bind mount before running install.sh.
@@ -145,29 +167,77 @@ Important: please **change the password** of this administrator user or **delete
 
 ## Troubleshooting
 
-### Insects CNN Download Issues
+### Insects CNN Model Download Issues
 
-If Insect-CNN fails to execute with errors like "Invalid hugging face repo id", your server may not have access to Hugging Face. To manually transfer models:
+The Insect CNN model (`insects-base-cnn10-96k-t`) is downloaded automatically from HuggingFace on first use. However, some servers may have network restrictions that prevent access to `huggingface.co`.
 
-**On a machine with internet access:**
+**Symptoms:**
+- Error message: `Invalid hugging face repo id: 'AlexanderGbd/insects-base-cnn10-96k-t'`
+- Error message: `This may be due to network restrictions preventing access to huggingface.co`
+- Insect model analysis jobs fail with exit code 1
+
+**Solution 1: Check Network Access** (Recommended First Step)
+
+Test if your server can access HuggingFace:
 ```bash
-# Export the model cache (stored in /var/www/.cache)
+# From inside the container
+docker-compose exec apache curl -I https://huggingface.co
+```
+
+If this fails, your server has network restrictions. You'll need to manually transfer the model (see Solution 2).
+
+**Solution 2: Manual Model Transfer** (For Restricted Networks)
+
+If your server cannot access HuggingFace, transfer the model from a machine with internet access:
+
+**Step 1: On a machine with internet access (that has ecoSound-web installed):**
+
+```bash
+# Let the model download by running an insect analysis (it will cache automatically)
+# OR manually trigger download:
+docker-compose exec apache python3 -c "from autrainer.datasets import load_dataset; load_dataset('hf:AlexanderGbd/insects-base-cnn10-96k-t')"
+
+# Export the cached model
 docker-compose exec apache tar -czf /tmp/autrainer-cache.tar.gz -C /var/www/.cache .
 docker cp $(docker-compose ps -q apache):/tmp/autrainer-cache.tar.gz ./autrainer-cache.tar.gz
 ```
 
-**Transfer to your server and import:**
+**Step 2: Transfer to your restricted server:**
+
 ```bash
 # Copy the archive to your server
 scp autrainer-cache.tar.gz user@yourserver:/tmp/
 
-# On the server, import into the container
-sudo docker cp /tmp/autrainer-cache.tar.gz $(sudo docker-compose ps -q apache):/tmp/
-sudo docker-compose exec apache mkdir -p /var/www/.cache
-sudo docker-compose exec apache tar -xzf /tmp/autrainer-cache.tar.gz -C /var/www/.cache/
-sudo docker-compose exec apache chown -R www-data:www-data /var/www/.cache
-sudo docker-compose exec apache rm /tmp/autrainer-cache.tar.gz
+# On the restricted server, import the model
+docker cp /tmp/autrainer-cache.tar.gz $(docker-compose ps -q apache):/tmp/
+docker-compose exec apache mkdir -p /var/www/.cache
+docker-compose exec apache tar -xzf /tmp/autrainer-cache.tar.gz -C /var/www/.cache/
+docker-compose exec apache chown -R www-data:www-data /var/www/.cache
+docker-compose exec apache rm /tmp/autrainer-cache.tar.gz
 ```
+
+**Step 3: Verify installation:**
+
+```bash
+# Check if model directory exists
+docker-compose exec apache ls -la /var/www/.cache/torch/hub/autrainer/
+
+# You should see: AlexanderGbd--insects-base-cnn10-96k-t--main
+```
+
+**Solution 3: Use HTTP Proxy** (If Available)
+
+If your server has HTTP proxy access to the internet, configure it:
+
+```bash
+# In docker-compose.yml, add to the apache service:
+environment:
+  HTTP_PROXY: http://your-proxy:port
+  HTTPS_PROXY: http://your-proxy:port
+  NO_PROXY: localhost,127.0.0.1,database,queue
+```
+
+Then restart: `docker-compose down && docker-compose up -d`
 
 ## Server installation
 

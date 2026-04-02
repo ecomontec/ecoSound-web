@@ -68,6 +68,20 @@ fi
 echo "✓ BirdNET-Analyzer installed"
 echo ""
 
+echo "Step 7: Verifying Insect Model Connectivity"
+echo "Testing access to HuggingFace for Insect CNN model download..."
+if docker-compose exec -T apache timeout 30 python3 -c "import requests; r = requests.get('https://huggingface.co/AlexanderGbd/insects-base-cnn10-96k-t', timeout=10); exit(0 if r.status_code == 200 else 1)" 2>/dev/null; then
+    echo "✓ HuggingFace is accessible - Insect model will download automatically on first use"
+else
+    echo ""
+    echo "⚠ WARNING: Cannot access HuggingFace.co"
+    echo "⚠ The Insect CNN model may not work without manual installation."
+    echo "⚠ See README.md 'Troubleshooting > Insects CNN Download Issues' for manual installation steps."
+    echo "⚠ If your server has network restrictions, you'll need to transfer the model from a machine with internet access."
+    echo ""
+fi
+echo ""
+
 echo "=========================================="
 echo "Installation Complete!"
 echo "=========================================="

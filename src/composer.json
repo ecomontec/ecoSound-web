@@ -1,5 +1,5 @@
 {
-  "name": "BioSounds",
+  "name": "nperezg/biosounds",
   "require": {
     "php": "^7.2",
     "twig/twig": "^2.0",
