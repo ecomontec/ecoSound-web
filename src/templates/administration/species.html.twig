@@ -217,11 +217,8 @@
                         $('#speciesForm')[0].reset();
                         $('#speciesForm').removeClass('was-validated');
                         if ($.fn.DataTable.isDataTable('#speciesTable')) {
-                            var table = $('#speciesTable').DataTable();
-                            table.ajax.reload(null, false);
-                            table.columns.adjust();
+                            $('#speciesTable').DataTable().ajax.reload(null, false);
                         }
-                        $('#speciesFormSection').collapse('hide');
                         showAlert('Species saved successfully');
                     });
                 }

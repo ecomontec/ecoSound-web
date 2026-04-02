@@ -228,12 +228,9 @@
                             // Reset form and refresh table instead of reloading page
                             $('#microphoneForm')[0].reset();
                             $('#microphoneForm').removeClass('was-validated');
-                            if ($.fn.DataTable.isDataTable('#microphonesTable')) {
-                                var table = $('#microphonesTable').DataTable();
-                                table.ajax.reload(null, false);
-                                table.columns.adjust();
+                            if ($.fn.DataTable.isDataTable('#microphoneTable')) {
+                                $('#microphoneTable').DataTable().ajax.reload(null, false);
                             }
-                            $('#microphoneFormSection').collapse('hide');
                             showAlert('Microphone saved successfully');
                         } else {
                             showAlert(response.message);

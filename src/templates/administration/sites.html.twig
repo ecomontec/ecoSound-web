@@ -570,12 +570,9 @@
                             $('#siteForm').removeClass('was-validated');
                             $('#areaValid').text('');
                             $('#siteValid').text('');
-                            if ($.fn.DataTable.isDataTable('#siteTable')) {
-                                var table = $('#siteTable').DataTable();
-                                table.ajax.reload(null, false);
-                                table.columns.adjust();
+                            if ($.fn.DataTable.isDataTable('#sitesTable')) {
+                                $('#sitesTable').DataTable().ajax.reload(null, false);
                             }
-                            $('#siteFormSection').collapse('hide');
                             showAlert('Site saved successfully');
                         });
                     }
@@ -661,9 +658,7 @@
                         id.push($(this).data('id'));
                     });
                     let data = {'id': id};
-                    postRequest('{{ baseUrl }}/api/admin/siteManager/delete', data, false, false, function (response) {
-                        // Save success message for display after reload
-                        saveAlertForReload(response.message);
+                    postRequest('{{ baseUrl }}/api/admin/siteManager/delete', data, false, false, function () {
                         location.reload();
                     });
                 });

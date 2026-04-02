@@ -7,9 +7,12 @@ RUN a2enmod rewrite
 # Copy application source
 COPY . /var/www/html/
 
-ADD https://getcomposer.org/download/1.7.3/composer.phar /usr/local/bin/composer
+
+# Install Composer 2
+RUN curl -sS https://getcomposer.org/installer | php -- --2 && \
+	mv composer.phar /usr/local/bin/composer && \
+	chmod a+rx /usr/local/bin/composer
 RUN chmod -R 777 /var/www
-RUN chmod a+rx /usr/local/bin/composer
 
 RUN apt-get update
 RUN apt-get install -y git zip unzip netcat-openbsd

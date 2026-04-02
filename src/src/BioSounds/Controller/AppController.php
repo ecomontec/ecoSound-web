@@ -42,7 +42,7 @@ class AppController extends BaseClass
         $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $slugs = array_filter(explode('/', substr($uri, 1)));
 
-        if (count($slugs) === 1) {
+        if (count($slugs) === 0 || count($slugs) === 1) {
             return $this->twig->render('index.html.twig', [
                 'title' => $this->title,
                 'projects' => (new ProjectProvider())->getList(),
@@ -50,11 +50,6 @@ class AppController extends BaseClass
                 'users' => count((new User())->getAll()),
                 'tags' => (new TagProvider())->getAll(),
                 'apis' => (new API())->getApis(),
-                'setting' => (new Setting())->getList(),
-            ]);
-        }
-
-        foreach ($slugs as $key => $slug) {
             $slugs[$key] = htmlspecialchars(strip_tags($slug));
         }
 

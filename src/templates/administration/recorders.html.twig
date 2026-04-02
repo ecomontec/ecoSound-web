@@ -235,12 +235,9 @@
                             // Reset form and refresh table instead of reloading page
                             $('#recorderForm')[0].reset();
                             $('#recorderForm').removeClass('was-validated');
-                            if ($.fn.DataTable.isDataTable('#recordersTable')) {
-                                var table = $('#recordersTable').DataTable();
-                                table.ajax.reload(null, false);
-                                table.columns.adjust();
+                            if ($.fn.DataTable.isDataTable('#recorderTable')) {
+                                $('#recorderTable').DataTable().ajax.reload(null, false);
                             }
-                            $('#recorderFormSection').collapse('hide');
                             showAlert('Recorder saved successfully');
                         } else {
                             showAlert(response.message);

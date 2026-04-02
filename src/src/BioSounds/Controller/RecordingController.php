@@ -1167,7 +1167,9 @@ class RecordingController extends BaseController
         $cachedModelPath = "/var/www/.cache/torch/hub/autrainer/AlexanderGbd--insects-base-cnn10-96k-t--main";
         $modelSpec = file_exists($cachedModelPath) ? escapeshellarg($cachedModelPath) : escapeshellarg("hf:AlexanderGbd/insects-base-cnn10-96k-t");
         
-        $str = "HF_HUB_OFFLINE=1 autrainer inference " . $modelSpec . " -sr 96000";
+        // Only use offline mode if model is already cached, otherwise allow download
+        $offlineMode = file_exists($cachedModelPath) ? "HF_HUB_OFFLINE=1 " : "";
+        $str = $offlineMode . "autrainer inference " . $modelSpec . " -sr 96000";
         $windowSize = (!empty($data['window_size']) && $data['window_size'] != 'undefined') ? escapeshellarg($data['window_size']) : escapeshellarg("4.0");
         $strideSize = (!empty($data['stride_length']) && $data['stride_length'] != 'undefined') ? escapeshellarg($data['stride_length']) : escapeshellarg("4.0");
 
