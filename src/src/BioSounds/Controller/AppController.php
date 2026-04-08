@@ -50,6 +50,11 @@ class AppController extends BaseClass
                 'users' => count((new User())->getAll()),
                 'tags' => (new TagProvider())->getAll(),
                 'apis' => (new API())->getApis(),
+                'setting' => (new Setting())->getList(),
+            ]);
+        }
+
+        foreach ($slugs as $key => $slug) {
             $slugs[$key] = htmlspecialchars(strip_tags($slug));
         }
 
