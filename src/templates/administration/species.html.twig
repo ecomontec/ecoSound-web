@@ -213,13 +213,9 @@
                     e.stopPropagation();
                 } else {
                     postRequest('{{ baseUrl }}/api/admin/speciesMgr/save', new FormData(this), false, false, function() {
-                        // Reset form and refresh table instead of reloading page
-                        $('#speciesForm')[0].reset();
-                        $('#speciesForm').removeClass('was-validated');
-                        if ($.fn.DataTable.isDataTable('#speciesTable')) {
-                            $('#speciesTable').DataTable().ajax.reload(null, false);
-                        }
+                        // Reload page to show updated species list
                         showAlert('Species saved successfully');
+                        window.location.reload();
                     });
                 }
                 this.classList.add('was-validated');
