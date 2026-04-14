@@ -2,6 +2,18 @@ $(function () {
 
     let shiftRate = 0.95;
 
+    // Update zoom-pix tooltip with current player width
+    function updateZoomPixTooltip() {
+        const playerWidth = $('#player_box').width();
+        const baseTooltip = 'Zooms at the cursor with the chosen visualisation density';
+        const tooltipWithWidth = baseTooltip + '\nYour current player width is ' + Math.round(playerWidth) + ' pixels';
+        $('#zoom-pix').attr('title', tooltipWithWidth);
+    }
+    
+    // Update tooltip on load and window resize
+    updateZoomPixTooltip();
+    $(window).on('resize', updateZoomPixTooltip);
+
     $("#shift-left").click(function (e) {
         e.preventDefault();
         
