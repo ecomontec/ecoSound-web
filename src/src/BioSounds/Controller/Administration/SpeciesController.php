@@ -10,7 +10,6 @@ use BioSounds\Utils\Auth;
 class SpeciesController extends BaseController
 {
     const SECTION_TITLE = 'Species';
-    const ITEMS_PAGE = 50;
 
     /**
      * @param int $page
@@ -25,18 +24,9 @@ class SpeciesController extends BaseController
 
         $species = new Species();
         $allSpecies = $species->getAll();
-        
-        $totalItems = count($allSpecies);
-        $pages = ceil($totalItems / self::ITEMS_PAGE);
-        
-        $offset = ($page - 1) * self::ITEMS_PAGE;
-        $speciesList = array_slice($allSpecies, $offset, self::ITEMS_PAGE);
 
         return $this->twig->render('administration/species.html.twig', [
-            'species' => $speciesList,
-            'currentPage' => $page,
-            'pages' => $pages,
-            'totalItems' => $totalItems,
+            'species' => $allSpecies,
         ]);
     }
 
