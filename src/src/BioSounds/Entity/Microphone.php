@@ -83,4 +83,42 @@ class Microphone extends BaseProvider
         $this->database->prepareQuery($sql);
         return $this->database->executeSelect();
     }
+
+    /**
+     * Get paginated list of microphones for DataTables server-side processing
+     */
+    public function getListByPage(string $start = '0', string $length = '10', string $search = null, string $column = '1', string $dir = 'asc'): array
+    {
+        $arr = [];
+        
+        $sql = "SELECT * FROM " . self::TABLE_NAME . " WHERE 1=1";
+        $params = [];
+        
+        if ($search) {
+            $sql .= " AND (CONCAT(IFNULL(name,''), ' ', IFNULL(microphone_element,''), ' ', IFNULL(sensitivity,''), ' ', IFNULL(signal_to_noise_ratio,'')) LIKE :search)";
+            $params[':search'] = "%$search%";
+        }
+        
+        // Column mapping for sorting
+        $columns = ['', 'microphone_id', 'name', 'microphone_element', 'sensitivity', 'signal_to_noise_ratio'];
+        $orderColumn = isset($columns[$column]) && $columns[$column] ? $columns[$column] : 'name';
+        
+        $sql .= " ORDER BY $orderColumn $dir LIMIT $length OFFSET $start";
+        
+        $this->database->prepareQuery($sql);
+        $result = $this->database->executeSelect($params);
+        
+        if (count($result)) {
+            foreach ($result as $key => $value) {
+                $arr[$key][] = "<input type='checkbox' class='js-checkbox' data-id='$value[microphone_id]' name='cb[]'>";
+                $arr[$key][] = "$value[microphone_id]<input type='hidden' name='itemID' value='$value[microphone_id]'>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='name' value='" . htmlspecialchars($value['name']) . "' maxlength='100' required>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='microphone_element' value='" . htmlspecialchars($value['microphone_element']) . "' maxlength='100'>";
+                $arr[$key][] = "<input type='number' class='form-control form-control-sm' name='sensitivity' value='" . htmlspecialchars($value['sensitivity']) . "'>";
+                $arr[$key][] = "<input type='number' class='form-control form-control-sm' name='signal_to_noise_ratio' value='" . htmlspecialchars($value['signal_to_noise_ratio']) . "'>";
+            }
+        }
+        
+        return $arr;
+    }
 }

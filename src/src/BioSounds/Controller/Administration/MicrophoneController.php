@@ -21,12 +21,43 @@ class MicrophoneController extends BaseController
             throw new ForbiddenException();
         }
 
-        $microphone = new Microphone();
-        $microphones = $microphone->getAll();
+        return $this->twig->render('administration/microphones.html.twig');
+    }
 
-        return $this->twig->render('administration/microphones.html.twig', [
-            'microphones' => $microphones,
-        ]);
+    /**
+     * Get paginated microphones list for DataTables AJAX
+     * @return string
+     * @throws \Exception
+     */
+    public function getListByPage()
+    {
+        if (!Auth::isUserAdmin()) {
+            throw new ForbiddenException();
+        }
+
+        $microphone = new Microphone();
+        $total = count($microphone->getAll());
+        
+        $start = isset($_POST['start']) ? (string)$_POST['start'] : '0';
+        $length = isset($_POST['length']) ? (string)$_POST['length'] : '10';
+        $search = isset($_POST['search']['value']) ? (string)$_POST['search']['value'] : '';
+        $column = isset($_POST['order'][0]['column']) ? (string)$_POST['order'][0]['column'] : '1';
+        $dir = isset($_POST['order'][0]['dir']) ? (string)$_POST['order'][0]['dir'] : 'asc';
+        
+        $data = $microphone->getListByPage($start, $length, $search, $column, $dir);
+        
+        if (count($data) == 0) {
+            $data = [];
+        }
+        
+        $result = [
+            'draw' => isset($_POST['draw']) ? intval($_POST['draw']) : 0,
+            'recordsTotal' => intval($total),
+            'recordsFiltered' => intval($total),
+            'data' => $data,
+        ];
+        
+        return json_encode($result);
     }
 
     /**
