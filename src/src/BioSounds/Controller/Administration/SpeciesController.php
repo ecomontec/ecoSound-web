@@ -12,22 +12,52 @@ class SpeciesController extends BaseController
     const SECTION_TITLE = 'Species';
 
     /**
-     * @param int $page
      * @return false|string
      * @throws \Exception
      */
-    public function show(int $page = 1)
+    public function show()
+    {
+        if (!Auth::isUserAdmin()) {
+            throw new ForbiddenException();
+        }
+
+        return $this->twig->render('administration/species.html.twig');
+    }
+
+    /**
+     * Get paginated species list for DataTables AJAX
+     * @return string
+     * @throws \Exception
+     */
+    public function getListByPage()
     {
         if (!Auth::isUserAdmin()) {
             throw new ForbiddenException();
         }
 
         $species = new Species();
-        $allSpecies = $species->getAll();
-
-        return $this->twig->render('administration/species.html.twig', [
-            'species' => $allSpecies,
-        ]);
+        $total = count($species->getAll());
+        
+        $start = isset($_POST['start']) ? (string)$_POST['start'] : '0';
+        $length = isset($_POST['length']) ? (string)$_POST['length'] : '10';
+        $search = isset($_POST['search']['value']) ? (string)$_POST['search']['value'] : '';
+        $column = isset($_POST['order'][0]['column']) ? (string)$_POST['order'][0]['column'] : '1';
+        $dir = isset($_POST['order'][0]['dir']) ? (string)$_POST['order'][0]['dir'] : 'asc';
+        
+        $data = $species->getListByPage($start, $length, $search, $column, $dir);
+        
+        if (count($data) == 0) {
+            $data = [];
+        }
+        
+        $result = [
+            'draw' => isset($_POST['draw']) ? intval($_POST['draw']) : 0,
+            'recordsTotal' => intval($total),
+            'recordsFiltered' => intval($total),
+            'data' => $data,
+        ];
+        
+        return json_encode($result);
     }
 
     /**
