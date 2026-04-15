@@ -221,6 +221,22 @@ class TagProvider extends AbstractProvider
         return $this->database->executeUpdate($values);
     }
 
+    public function isTagAssignedToUser(int $tagId): bool
+    {
+        if (!Auth::isUserLogged()) {
+            return false;
+        }
+
+        $sql = "SELECT COUNT(*) as count FROM task WHERE tag_id = :tag_id AND assignee_id = :user_id AND type = 'tag'";
+        $this->database->prepareQuery($sql);
+        $result = $this->database->executeSelect([
+            ':tag_id' => $tagId,
+            ':user_id' => Auth::getUserLoggedID(),
+        ]);
+
+        return !empty($result) && $result[0]['count'] > 0;
+    }
+
     /**
      * @param int $tagId
      * @return array|int

@@ -99,16 +99,16 @@ class TagController extends BaseController
             $displaySaveButton = $isReviewGranted || $isManageGranted ? '' : 'hidden';
         }
         /**********************/
-        
+
         // Check if this tag is assigned as a task to the current user
-        $hasTaskAssignment = $this->isTagAssignedToUser($tagId);
-        
+        $hasTaskAssignment = (new TagProvider())->isTagAssignedToUser($tagId);
+
         $tagProvider = new TagProvider();
-        
+
         // Initialize navigation variables
         $previous = 0;
         $next = 0;
-        
+
         if ($_POST['type'] ?? $_GET['type'] ?? '' == 'task') {
             $isTask = true;
             $tags = $tagProvider->getListByTask();
@@ -117,12 +117,12 @@ class TagController extends BaseController
         } else {
             $tags = $tagProvider->getList($tag->getRecording(), Auth::getUserLoggedID());
         }
-        
+
         // Find current tag in list and determine previous/next
         error_log("Tag ID being searched: " . $tag->getId());
         error_log("Number of tags in list: " . count($tags));
         error_log("Is task mode: " . ($isTask ? 'yes' : 'no'));
-        
+
         foreach ($tags as $k => $t) {
             $max = count($tags) - 1;
             if ($t->getId() == $tag->getId()) {
@@ -163,9 +163,9 @@ class TagController extends BaseController
                 'recording' => $next->getRecording()
             ] : null
         ];
-        
+
         error_log("Navigation data prepared: " . json_encode($navigationData));
-        
+
         return json_encode([
             'errorCode' => 0,
             'data' => $this->twig->render('tag/tag.html.twig', [
@@ -186,28 +186,6 @@ class TagController extends BaseController
             ]),
             'navigation' => $navigationData
         ]);
-    }
-
-    /**
-     * Check if a tag is assigned as a task to the current logged-in user
-     * @param int $tagId
-     * @return bool
-     */
-    private function isTagAssignedToUser(int $tagId): bool
-    {
-        if (!Auth::isUserLogged()) {
-            return false;
-        }
-        
-        $sql = "SELECT COUNT(*) as count FROM task WHERE tag_id = :tag_id AND assignee_id = :user_id AND type = 'tag'";
-        $database = new \BioSounds\Database\Database('mysql', $_ENV['DATABASE_HOST'] ?? 'database', $_ENV['DATABASE_NAME'] ?? 'biosounds', $_ENV['DATABASE_USER'] ?? 'biosounds', $_ENV['DATABASE_PASSWORD'] ?? 'biosounds');
-        $database->prepareQuery($sql);
-        $result = $database->executeSelect([
-            ':tag_id' => $tagId,
-            ':user_id' => Auth::getUserLoggedID(),
-        ]);
-        
-        return !empty($result) && $result[0]['count'] > 0;
     }
 
     /**
