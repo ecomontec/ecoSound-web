@@ -144,7 +144,7 @@ class Species extends BaseProvider
         }
         
         // Column mapping for sorting
-        $columns = ['', 'species_id', 'binomial', 'common_name', 'genus', 'family', 'taxon_order', 'class', 'region'];
+        $columns = ['', 'species_id', 'binomial', 'common_name', 'genus', 'family', 'taxon_order', 'class', 'level', 'source'];
         $orderColumn = isset($columns[$column]) && $columns[$column] ? $columns[$column] : 'binomial';
         
         $sql .= " ORDER BY $orderColumn $dir LIMIT $length OFFSET $start";
@@ -162,7 +162,8 @@ class Species extends BaseProvider
                 $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='family' value='" . htmlspecialchars($value['family']) . "'>";
                 $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='taxon_order' value='" . htmlspecialchars($value['taxon_order']) . "'>";
                 $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='class' value='" . htmlspecialchars($value['class']) . "'>";
-                $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='region' value='" . htmlspecialchars($value['region']) . "'>";
+                $arr[$key][] = "<input type='number' class='form-control form-control-sm' name='level' value='" . htmlspecialchars($value['level']) . "' min='0' max='100'>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='source' value='" . htmlspecialchars($value['source']) . "' maxlength='50'>";
             }
         }
         
