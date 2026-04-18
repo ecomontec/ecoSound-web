@@ -83,4 +83,42 @@ class Recorder extends BaseProvider
         $this->database->prepareQuery($sql);
         return $this->database->executeSelect();
     }
+
+    /**
+     * Get paginated list of recorders for DataTables server-side processing
+     */
+    public function getListByPage(string $start = '0', string $length = '10', string $search = null, string $column = '1', string $dir = 'asc'): array
+    {
+        $arr = [];
+        
+        $sql = "SELECT * FROM " . self::TABLE_NAME . " WHERE 1=1";
+        $params = [];
+        
+        if ($search) {
+            $sql .= " AND (CONCAT(IFNULL(model,''), ' ', IFNULL(version,''), ' ', IFNULL(brand,''), ' ', IFNULL(microphone,'')) LIKE :search)";
+            $params[':search'] = "%$search%";
+        }
+        
+        // Column mapping for sorting
+        $columns = ['', 'recorder_id', 'model', 'version', 'brand', 'microphone'];
+        $orderColumn = isset($columns[$column]) && $columns[$column] ? $columns[$column] : 'model';
+        
+        $sql .= " ORDER BY $orderColumn $dir LIMIT $length OFFSET $start";
+        
+        $this->database->prepareQuery($sql);
+        $result = $this->database->executeSelect($params);
+        
+        if (count($result)) {
+            foreach ($result as $key => $value) {
+                $arr[$key][] = "<input type='checkbox' class='js-checkbox' data-id='$value[recorder_id]' name='cb[]'>";
+                $arr[$key][] = "$value[recorder_id]<input type='hidden' name='itemID' value='$value[recorder_id]'>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='model' value='" . htmlspecialchars($value['model']) . "' maxlength='100' required>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='version' value='" . htmlspecialchars($value['version']) . "' maxlength='100'>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='brand' value='" . htmlspecialchars($value['brand']) . "' maxlength='100'>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='microphone' value='" . htmlspecialchars($value['microphone']) . "' maxlength='300' placeholder='e.g. 1,2,3'>";
+            }
+        }
+        
+        return $arr;
+    }
 }

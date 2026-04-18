@@ -7,3 +7,20 @@ src/tmp/
 src/logs/
 src/vendor/
 src/cache/
+
+# VM-specific configuration files (NEVER commit these!)
+*.key
+*.crt
+*.pem
+*Cert*.pem
+*.p12
+*.pfx
+
+# Backup files
+*.backup
+*.bak
+*-backup.*
+
+# Environment-specific secrets (add these if/when you use them)
+.env.local
+.env.production

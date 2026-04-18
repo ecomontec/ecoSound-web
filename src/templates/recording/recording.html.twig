@@ -116,21 +116,21 @@
                                 <i class="fa-solid fa-magnifying-glass"></i> Zoom
                             </button>
                             <div class="dropdown-menu" style="min-width: 200px;">
-                                <a class="dropdown-item" href="#" id="btn-zoom-in">
+                                <a class="dropdown-item" href="#" id="btn-zoom-in" title="Central zoom in by percentage of the current spectrogram size">
                                     <i class="fa-solid fa-magnifying-glass-plus mr-2"></i>
                                     In by <input class="form-control form-control-sm d-inline-block" id="zoom_in_input" type="number" style="width: 50px;" value="50" onclick="event.stopPropagation();"> %
                                 </a>
-                                <a class="dropdown-item" href="#" id="btn-zoom-out">
+                                <a class="dropdown-item" href="#" id="btn-zoom-out" title="Central zoom out by percentage of the current spectrogram size">
                                     <i class="fa-solid fa-magnifying-glass-minus mr-2"></i>
                                     Out by <input class="form-control form-control-sm d-inline-block" id="zoom_out_input" type="number" style="width: 50px;" value="50" onclick="event.stopPropagation();"> %
                                 </a>
-                                <a class="dropdown-item a-disabled" href="#" id="zoom-submit">
+                                <a class="dropdown-item a-disabled" href="#" id="zoom-submit" title="Zooms into the currently selected area">
                                     <i class="fa-solid fa-magnifying-glass mr-2"></i>
                                     Into selection
                                 </a>
-                                <a class="dropdown-item" href="#" id="zoom-pix">
+                                <a class="dropdown-item" href="#" id="zoom-pix" title="Zooms at the cursor with the chosen visualisation density">
                                     <i class="fa-solid fa-magnifying-glass-arrow-right mr-2"></i>
-                                    Into <input class="form-control form-control-sm d-inline-block" id="zoom_input" type="number" style="width: 50px;" value="15" onclick="event.stopPropagation();"> px/s
+                                    Into <input class="form-control form-control-sm d-inline-block" id="zoom_input" type="number" style="width: 50px;" value="100" onclick="event.stopPropagation();"> px/s
                                 </a>
                             </div>
                         </div>

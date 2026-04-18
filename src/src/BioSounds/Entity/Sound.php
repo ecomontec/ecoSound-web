@@ -110,4 +110,40 @@ class Sound extends BaseProvider
         $this->database->prepareQuery($sql);
         return $this->database->executeSelect();
     }
+
+    /**
+     * Get paginated list of sounds for DataTables server-side processing
+     */
+    public function getListByPage(string $start = '0', string $length = '10', string $search = null, string $column = '1', string $dir = 'asc'): array
+    {
+        $arr = [];
+        
+        $sql = "SELECT * FROM " . self::TABLE_NAME . " WHERE 1=1";
+        $params = [];
+        
+        if ($search) {
+            $sql .= " AND (CONCAT(IFNULL(soundscape_component,''), ' ', IFNULL(sound_type,'')) LIKE :search)";
+            $params[':search'] = "%$search%";
+        }
+        
+        // Column mapping for sorting
+        $columns = ['', 'sound_id', 'soundscape_component', 'sound_type'];
+        $orderColumn = isset($columns[$column]) && $columns[$column] ? $columns[$column] : 'soundscape_component';
+        
+        $sql .= " ORDER BY $orderColumn $dir LIMIT $length OFFSET $start";
+        
+        $this->database->prepareQuery($sql);
+        $result = $this->database->executeSelect($params);
+        
+        if (count($result)) {
+            foreach ($result as $key => $value) {
+                $arr[$key][] = "<input type='checkbox' class='js-checkbox' data-id='$value[sound_id]' name='cb[]'>";
+                $arr[$key][] = "$value[sound_id]<input type='hidden' name='itemID' value='$value[sound_id]'>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='soundscape_component' value='" . htmlspecialchars($value['soundscape_component']) . "' maxlength='200'>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='sound_type' value='" . htmlspecialchars($value['sound_type']) . "' maxlength='30'>";
+            }
+        }
+        
+        return $arr;
+    }
 }

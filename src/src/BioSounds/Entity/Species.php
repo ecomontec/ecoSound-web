@@ -127,4 +127,46 @@ class Species extends BaseProvider
 
         return $result;
     }
+
+    /**
+     * Get paginated list of species for DataTables server-side processing
+     */
+    public function getListByPage(string $start = '0', string $length = '10', string $search = null, string $column = '1', string $dir = 'asc'): array
+    {
+        $arr = [];
+        
+        $sql = "SELECT * FROM " . self::TABLE_NAME . " WHERE 1=1";
+        $params = [];
+        
+        if ($search) {
+            $sql .= " AND (CONCAT(IFNULL(binomial,''), ' ', IFNULL(common_name,''), ' ', IFNULL(genus,''), ' ', IFNULL(family,''), ' ', IFNULL(taxon_order,''), ' ', IFNULL(class,'')) LIKE :search)";
+            $params[':search'] = "%$search%";
+        }
+        
+        // Column mapping for sorting
+        $columns = ['', 'species_id', 'binomial', 'common_name', 'genus', 'family', 'taxon_order', 'class', 'level', 'source'];
+        $orderColumn = isset($columns[$column]) && $columns[$column] ? $columns[$column] : 'binomial';
+        
+        $sql .= " ORDER BY $orderColumn $dir LIMIT $length OFFSET $start";
+        
+        $this->database->prepareQuery($sql);
+        $result = $this->database->executeSelect($params);
+        
+        if (count($result)) {
+            foreach ($result as $key => $value) {
+                $arr[$key][] = "<input type='checkbox' class='js-checkbox' data-id='$value[species_id]' name='cb[]'>";
+                $arr[$key][] = "$value[species_id]<input type='hidden' name='itemID' value='$value[species_id]'>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='binomial' value='" . htmlspecialchars($value['binomial']) . "'>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='common_name' value='" . htmlspecialchars($value['common_name']) . "'>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='genus' value='" . htmlspecialchars($value['genus']) . "'>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='family' value='" . htmlspecialchars($value['family']) . "'>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='taxon_order' value='" . htmlspecialchars($value['taxon_order']) . "'>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='class' value='" . htmlspecialchars($value['class']) . "'>";
+                $arr[$key][] = "<input type='number' class='form-control form-control-sm' name='level' value='" . htmlspecialchars($value['level']) . "' min='0' max='100'>";
+                $arr[$key][] = "<input type='text' class='form-control form-control-sm' name='source' value='" . htmlspecialchars($value['source']) . "' maxlength='50'>";
+            }
+        }
+        
+        return $arr;
+    }
 }
