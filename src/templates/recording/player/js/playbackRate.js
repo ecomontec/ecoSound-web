@@ -116,6 +116,8 @@ playbackControl.oninput = function () {
         seek = 0;
     }
     playbackValue.innerHTML = this.value;
+    // Update all instances of playback rate value display
+    $('.playback-rate-value').text(parseFloat(this.value).toFixed(1));
 };
 
 $('#playerCursor').draggable({
