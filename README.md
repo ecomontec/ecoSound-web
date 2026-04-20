@@ -18,7 +18,7 @@ A working instance of ecoSound-web can be accessed [here](https://ecosound-web.d
 
 You may learn about the basic functionality in the user guide (see Wiki).
 
-[Contact us](mailto:kevin.darras@inrae.fr) for a collaboration.
+[Contact us](mailto:kevin.darras@inrae.fr) for collaboration.
 
 ## Quick start for developers
 
@@ -52,23 +52,61 @@ This starts all services and launches the queue worker with automatic restart ca
 
 ### Upgrading to latest version (standard upgrade)
 
-**For installations where data is already in dedicated folders** (mysql/, sounds/, sound_images/, project_images/):
+**For installations where data are already in dedicated folders** (mysql/, sounds/, sound_images/, project_images/):
 
 ```bash
-# 1. Backup your data
-bash backup-before-upgrade.sh
+# 1. Create backup directory
+BACKUP_DIR="backup_$(date +%Y%m%d_%H%M%S)"
+mkdir -p "$BACKUP_DIR"
 
-# 2. Stop services
+# 2. Backup database (using root user which has necessary privileges)
+docker-compose exec -T database mysqldump -uroot -proot \
+  --single-transaction --quick biosounds > "$BACKUP_DIR/biosounds_db.sql"
+
+# 3. Save git modifications (if any)
+git diff > "$BACKUP_DIR/git-modifications.diff"
+
+# 4. Stop services
 docker-compose down
 
-# 3. Update code
+# 5. Move data directories to backup (saves disk space vs copying)
+# Note: mysql/ is owned by root, media dirs by www-data - need sudo
+sudo mv mysql "$BACKUP_DIR/"
+sudo mv sounds "$BACKUP_DIR/" 2>/dev/null || true
+sudo mv sound_images "$BACKUP_DIR/" 2>/dev/null || true
+sudo mv project_images "$BACKUP_DIR/" 2>/dev/null || true
+
+# Verify backup contents
+ls -la "$BACKUP_DIR/"
+
+# 6. Clean git working directory
+git clean -fd -e "backup_*/"
+git reset --hard HEAD
+
+# 7. Update code
 git pull origin master  # or your branch name
 
-# 4. Restart services
+# 8. Restore data directories
+sudo mv "$BACKUP_DIR/mysql" ./
+sudo mv "$BACKUP_DIR/sounds" ./ 2>/dev/null || true
+sudo mv "$BACKUP_DIR/sound_images" ./ 2>/dev/null || true
+sudo mv "$BACKUP_DIR/project_images" ./ 2>/dev/null || true
+
+# 9. Run installation (safe to re-run - skips DB init if tables exist)
+bash install.sh
+
+# 10. Start services
 bash run.sh
+
+# 11. Verify everything works
+docker-compose ps
+docker-compose exec database mysql -ubiosounds -pbiosounds biosounds -e "SHOW TABLES;"
 ```
 
-**Note:** The install.sh script is safe to re-run - it skips database initialization if tables already exist.
+**Notes:** 
+- The install.sh script is safe to re-run - it detects existing tables and skips database initialization
+- Data directories are moved (not copied) to save disk space
+- Keep the backup directory until you've verified the upgrade succeeded
 
 If you encounter issues, restore from backup and review the Troubleshooting section.
 
@@ -82,8 +120,8 @@ If you're upgrading to this version and have existing data, you need to migrate 
 # 1. Pull the latest changes
 git pull origin merged-terraform-audio
 
-# 2. Back up database
-docker-compose exec database mysqldump -ubiosounds -pbiosounds --single-transaction --quick biosounds > backup.sql
+# 2. Back up database (using root user which has necessary privileges)
+docker-compose exec -T database mysqldump -uroot -proot --single-transaction --quick biosounds > backup.sql
 
 # 3. Back up media files
 tar -czf sounds_backup.tar.gz src/sounds/
@@ -130,15 +168,10 @@ docker-compose exec apache bash -c 'while ! (nc -z database 3306); do echo "Data
 # Start the worker process
 docker-compose exec -T -u www-data apache nohup php worker.php > files_update.log 2>&1 &
 
-# 14. Clear browser cache and localStorage (important!)
-# In your browser console (F12 → Console):
-# localStorage.clear()
-# Then refresh the page (Ctrl+R or Cmd+R)
-
-# 15. Test file uploads
+# 14. Test file uploads
 # Try uploading a new recording to verify the worker is processing uploads correctly
 
-# 16. Clean up old files (optional)
+# 15. Clean up old files (optional)
 rm -rf src/sounds
 docker volume rm biosounds-mysql 2>/dev/null || true
 ```
@@ -172,85 +205,68 @@ Important: please **change the password** of this administrator user or **delete
 The Insect CNN model (`insects-base-cnn10-96k-t`) is downloaded automatically from HuggingFace on first use. However, some servers may have network restrictions that prevent access to `huggingface.co`.
 
 **Symptoms:**
-- Error message: `Invalid hugging face repo id: 'AlexanderGbd/insects-base-cnn10-96k-t'`
-- Error message: `This may be due to network restrictions preventing access to huggingface.co`
-- Insect model analysis jobs fail with exit code 1
+- Warning during install.sh: `⚠ WARNING: Cannot access HuggingFace.co`
+- Network test shows: `curl: (35) OpenSSL SSL_connect: Connection reset by peer`
+- Insect model analysis jobs fail with "Invalid hugging face repo id" error
 
-**Solution 1: Check Network Access** (Recommended First Step)
+**Solution : Manual Model Transfer** (For Restricted Networks)
 
-Test if your server can access HuggingFace:
+Confirm that your server cannot access HuggingFace due to network restrictions:
 ```bash
 # From inside the container
 docker-compose exec apache curl -I https://huggingface.co
 ```
 
-If this fails, your server has network restrictions. You'll need to manually transfer the model (see Solution 2).
-
-**Solution 2: Manual Model Transfer** (For Restricted Networks)
-
-If your server cannot access HuggingFace, transfer the model from a machine with internet access:
+You'll then need to manually transfer the model from a machine with internet access:
 
 **Step 1: On a machine with internet access (that has ecoSound-web installed):**
 
 ```bash
-# Let the model download by running an insect analysis (it will cache automatically)
-# OR manually trigger download:
-docker-compose exec apache python3 -c "from autrainer.datasets import load_dataset; load_dataset('hf:AlexanderGbd/insects-base-cnn10-96k-t')"
+# Trigger model download by running autrainer inference (it will cache automatically)
+# This creates a small test audio file and runs inference to trigger the download
+docker-compose exec apache bash -c "echo 'Downloading insect model...' && \
+  mkdir -p /tmp/test_input /tmp/test_output && \
+  python3 -c 'import numpy as np; import soundfile as sf; sf.write(\"/tmp/test_input/test.wav\", np.zeros(96000), 96000)' && \
+  autrainer inference hf:AlexanderGbd/insects-base-cnn10-96k-t /tmp/test_input /tmp/test_output -sr 96000 && \
+  rm -rf /tmp/test_input /tmp/test_output"
 
-# Export the cached model
-docker-compose exec apache tar -czf /tmp/autrainer-cache.tar.gz -C /var/www/.cache .
-docker cp $(docker-compose ps -q apache):/tmp/autrainer-cache.tar.gz ./autrainer-cache.tar.gz
+# Export the cached model (model is cached in /root/.cache by autrainer)
+docker-compose exec apache tar -czf /tmp/torch-cache.tar.gz -C /root/.cache torch
+docker cp $(docker-compose ps -q apache):/tmp/torch-cache.tar.gz ./torch-cache.tar.gz
 ```
 
 **Step 2: Transfer to your restricted server:**
 
 ```bash
 # Copy the archive to your server
-scp autrainer-cache.tar.gz user@yourserver:/tmp/
+scp torch-cache.tar.gz user@yourserver:/tmp/
 
 # On the restricted server, import the model
-docker cp /tmp/autrainer-cache.tar.gz $(docker-compose ps -q apache):/tmp/
-docker-compose exec apache mkdir -p /var/www/.cache
-docker-compose exec apache tar -xzf /tmp/autrainer-cache.tar.gz -C /var/www/.cache/
+docker cp /tmp/torch-cache.tar.gz $(docker-compose ps -q apache):/tmp/
+docker-compose exec apache mkdir -p /root/.cache
+docker-compose exec apache tar -xzf /tmp/torch-cache.tar.gz -C /root/.cache/
+docker-compose exec apache rm /tmp/torch-cache.tar.gz
+
+# Copy to the location where the application expects it (/var/www/.cache)
+docker-compose exec apache mkdir -p /var/www/.cache/torch/hub/autrainer
+docker-compose exec apache cp -r /root/.cache/torch/hub/autrainer/AlexanderGbd--insects-base-cnn10-96k-t--main /var/www/.cache/torch/hub/autrainer/
 docker-compose exec apache chown -R www-data:www-data /var/www/.cache
-docker-compose exec apache rm /tmp/autrainer-cache.tar.gz
+
+# Clean up local temp file
+rm /tmp/torch-cache.tar.gz
 ```
 
 **Step 3: Verify installation:**
 
 ```bash
-# Check if model directory exists
+# Check if model directory exists in the expected location
 docker-compose exec apache ls -la /var/www/.cache/torch/hub/autrainer/
 
 # You should see: AlexanderGbd--insects-base-cnn10-96k-t--main
 ```
 
-**Solution 3: Use HTTP Proxy** (If Available)
-
-If your server has HTTP proxy access to the internet, configure it:
-
-```bash
-# In docker-compose.yml, add to the apache service:
-environment:
-  HTTP_PROXY: http://your-proxy:port
-  HTTPS_PROXY: http://your-proxy:port
-  NO_PROXY: localhost,127.0.0.1,database,queue
-```
-
-Then restart: `docker-compose down && docker-compose up -d`
-
 ## Server installation
 
-### With Docker
+For production deployment using Docker, the current [docker-compose.yml](docker-compose.yml) and [Dockerfile](src/Dockerfile) can be adapted for your server environment. Consult with a DevOps engineer or system administrator familiar with Docker deployments to properly configure security, networking, reverse proxies, SSL certificates, and backups according to your hosting requirements.
 
-If you want to use Docker for your own server installation, please consult with a devOps engineer or someone with the necessary knowledge to manage it properly, depending on your hosting setup. 
-
-The current Docker configuration [Dockerfile](src/Dockerfile) can be used for your preferred setup.
-
-### Without Docker
-
-Like any other web app, ecoSound-web can be installed without Docker (see Wiki).
-
-### Configuration file
-
-For both cases (with and without Docker), you'll need to set the configuration values in the [config.ini](src/config/config.ini) file, according to your server setup. 
+**Configuration:** Regardless of your deployment method, configure the [config.ini](src/config/config.ini) file according to your server setup.
