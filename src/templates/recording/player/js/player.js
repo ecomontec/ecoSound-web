@@ -27,8 +27,17 @@ continuousPlaySelector.change(function () {
 });
 
 $('#continue-playback').click(function () {
-    $(this).toggleClass('active');
-    $('#btn-playback').click()
+    let isActive = $(this).hasClass('active');
+    let newValue = isActive ? '0' : '1';
+    
+    setContinuousPlay(!isActive);
+    
+    // If enabling continuous play, ensure we have next segment buffered
+    if (!isActive && maxTime < fileDuration.toFixed(1)) {
+        let nextStart = maxTime;
+        let nextEnd = Math.min(nextStart + selectionDuration, fileDuration.toFixed(1));
+        preloadNextSegment(nextStart, nextEnd);
+    }
 })
 
 $('#stop').click(function () {
@@ -239,16 +248,6 @@ let setContinuousPlay = function (value) {
 
 window.continuousPlay = continuousPlay;
 window.setContinuousPlay = setContinuousPlay;
-
-$('#play-dropdown').click(function (event) {
-    event.stopPropagation();
-    $('#dropdown-menu-play').slideToggle();
-    $(this).find('i').toggleClass('fa-caret-down fa-caret-up');
-});
-
-$('#dropdown-menu-play').click(function (event) {
-    event.stopPropagation();
-});
 
 $(document).on('audioPlaybackStarted', function () {
     if (isContinuous && window.audioBufferQueue.length === 0 && maxTime < fileDuration.toFixed(1)) {

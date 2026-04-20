@@ -11,19 +11,17 @@
                 <button id="play" class="btn btn-link btn-sm" data-playing="false" role="switch" aria-checked="false" title="Space for play/pause">
                     <i class="fas fa-play"></i>
                 </button>
-                <div class="dropdown" id="play-dropdown">
-                    <button id="dropdown" class="btn btn-link text-dark" style="padding: 0" data-playing="false" role="switch" aria-checked="false" data-toggle="dropdown">
-                        <i class="fa-solid fa-caret-down" style="font-size: 12px"></i>
+                <button id="continue-playback" class="btn btn-link btn-sm {{ player.isContinuousPlay ? 'active':'' }}" title="Continue playback beyond current frame">
+                    <i class="continue-playback"></i>
+                </button>
+                <div class="dropdown" id="speed-dropdown" style="display: inline-block;">
+                    <button id="speed-toggle" class="btn btn-link btn-sm text-dark" title="Playback speed" data-toggle="dropdown">
+                        <span class="playback-rate-value">1.0</span>x
                     </button>
-                    <div class="dropdown-menu" id="dropdown-menu-play" style="min-width: 180px">
-                        <button id="continue-playback" class="btn btn-link {{ player.isContinuousPlay ? 'active':'' }}" title="Continue playback beyond current frame">
-                            <i class="continue-playback"></i> Continuous
-                        </button>
-                        <div class="dropdown-divider"></div>
+                    <div class="dropdown-menu" id="dropdown-menu-speed" style="min-width: 180px; padding: 10px;">
                         <div class="playback-slider-container">
-                            <label for="playback-rate" style="font-size: 0.8rem; margin-bottom: 4px;">Playback Speed</label>
+                            <label for="playback-rate" style="font-size: 0.8rem; margin-bottom: 4px; display: block;">Playback Speed</label>
                             <input id="playback-rate" class="custom-range js-playback-rate-control" type="range" min="0.05" max="1" step="0.01" value="1" style="width: 100%;">
-                            <label for="playback-rate" style="text-align: center;"><span class="playback-rate-value">1.0</span>x</label>
                         </div>
                     </div>
                 </div>
