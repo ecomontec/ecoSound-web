@@ -6,6 +6,7 @@ from maad.features import shape_features
 import numpy
 from pathlib import Path
 import configparser
+import sys
 
 
 def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency, maxFrequency):
@@ -355,8 +356,28 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
         parameter['peak_distance'] = None
         if param != '' and param is not None:
             for p in param.split('@'):
-                parameter[p.split('?')[0]] = p.split('?')[1]
-        s_wav, fs_wav = maad.sound.load(str(Path(__file__).resolve().parent.parent) + '/' + sounds_dir + '/' + parameter['collection_id'] + '/' + parameter['recording_directory'] + '/' + parameter['filename'].rsplit('.', 1)[0] + '.wav', channel=channel)
+                if '?' in p:
+                    parameter[p.split('?')[0]] = p.split('?')[1]
+        
+        # Debug: Print what parameters we received
+        print(f"DEBUG: Received parameters: {parameter}", file=sys.stderr)
+        print(f"DEBUG: filename arg: {filename}", file=sys.stderr)
+        print(f"DEBUG: sounds_dir: {sounds_dir}", file=sys.stderr)
+        
+        # Construct path to the original audio file
+        try:
+            audio_file_path = str(Path(__file__).resolve().parent.parent) + '/' + sounds_dir + '/' + parameter['collection_id'] + '/' + parameter['recording_directory'] + '/' + parameter['filename'].rsplit('.', 1)[0] + '.wav'
+            print(f"DEBUG: Constructed path: {audio_file_path}", file=sys.stderr)
+            print(f"DEBUG: Path exists: {Path(audio_file_path).exists()}", file=sys.stderr)
+            
+            s_wav, fs_wav = maad.sound.load(audio_file_path, channel=channel)
+        except KeyError as e:
+            print(f"ERROR: Missing required parameter: {e}", file=sys.stderr)
+            raise
+        except FileNotFoundError as e:
+            print(f"ERROR: Audio file not found: {e}", file=sys.stderr)
+            raise
+        
         peak_th = float(parameter['peak_th'])
         peak_distance = parameter['peak_distance'] if parameter['peak_distance'] == None else float(parameter['peak_distance'])
         # zoom
