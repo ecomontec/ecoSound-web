@@ -610,15 +610,7 @@ class RecordingController extends BaseController
             $str = $str . ' --pa ' . substr($data['param'], 0, -1);
         }
         
-        // DEBUG: Log the command being executed
-        error_log("DEBUG MAAD: Executing command: " . $str);
-        
         exec($str . " 2>&1", $out, $status);
-        
-        // DEBUG: Log what we received
-        error_log("DEBUG MAAD: Status code: " . $status);
-        error_log("DEBUG MAAD: Output array count: " . count($out));
-        error_log("DEBUG MAAD: Full output: " . print_r($out, true));
         
         if ($status == 0 && $out[count($out) - 1] != "0") {
             if ($data['index'] == 'template_matching') {
@@ -626,9 +618,6 @@ class RecordingController extends BaseController
                 $filtered_out = array_values(array_filter($out, function($line) {
                     return !preg_match('/^DEBUG:/', $line);
                 }));
-                
-                error_log("DEBUG MAAD: Filtered output count: " . count($filtered_out));
-                error_log("DEBUG MAAD: Filtered output: " . print_r($filtered_out, true));
                 
                 if (empty($filtered_out) || $filtered_out[0] == 'Empty DataFrame' || count($filtered_out) <= 2) {
                     return json_encode([
@@ -647,7 +636,6 @@ class RecordingController extends BaseController
                         
                         $values = preg_split('/\s+/', trim($line));
                         if (count($values) < 7) {
-                            error_log("DEBUG MAAD: Skipping line with insufficient values: " . $line);
                             continue;
                         }
                         

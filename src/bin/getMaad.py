@@ -419,7 +419,6 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
             peak_distance=peak_distance,
             display=True
         )
-        print(f"DEBUG: template_matching completed. Found {len(rois)} ROIs", file=sys.stderr)
         # print
         print(rois)
     else:
