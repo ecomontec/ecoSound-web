@@ -622,16 +622,35 @@ class RecordingController extends BaseController
         
         if ($status == 0 && $out[count($out) - 1] != "0") {
             if ($data['index'] == 'template_matching') {
-                if ($out[0] == 'Empty DataFrame' || count($out) == 2) {
+                // Filter out DEBUG lines from Python output
+                $filtered_out = array_values(array_filter($out, function($line) {
+                    return !preg_match('/^DEBUG:/', $line);
+                }));
+                
+                error_log("DEBUG MAAD: Filtered output count: " . count($filtered_out));
+                error_log("DEBUG MAAD: Filtered output: " . print_r($filtered_out, true));
+                
+                if (empty($filtered_out) || $filtered_out[0] == 'Empty DataFrame' || count($filtered_out) <= 2) {
                     return json_encode([
                         'errorCode' => 0,
-                        'message' => "No valid data matched.",
+                        'message' => "Template matching completed. No matches found.",
                     ]);
                 } else {
                     $i = 0;
-                    array_shift($out);
-                    foreach ($out as $line) {
+                    $list = [];
+                    array_shift($filtered_out); // Remove header line
+                    foreach ($filtered_out as $line) {
+                        // Skip empty lines and column/index lines
+                        if (empty(trim($line)) || strpos($line, 'Columns:') !== false || strpos($line, 'Index:') !== false) {
+                            continue;
+                        }
+                        
                         $values = preg_split('/\s+/', trim($line));
+                        if (count($values) < 7) {
+                            error_log("DEBUG MAAD: Skipping line with insufficient values: " . $line);
+                            continue;
+                        }
+                        
                         $arr['sound_id'] = '22';
                         $arr['recording_id'] = $data['recording_id'];
                         $arr['user_id'] = Auth::getUserID();
@@ -646,7 +665,11 @@ class RecordingController extends BaseController
                         $list[] = $arr;
                         $i = $i + 1;
                     }
-                    (new TagProvider())->insertArr($list);
+                    
+                    if ($i > 0) {
+                        (new TagProvider())->insertArr($list);
+                    }
+                    
                     return json_encode([
                         'errorCode' => 0,
                         'message' => "Scikit-maad template_matching found and inserted $i detections as tags.",
