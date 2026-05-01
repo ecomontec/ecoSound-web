@@ -406,6 +406,8 @@ if __name__ == '__main__':
     config = configparser.ConfigParser()
     config.read(str(Path(__file__).resolve().parent.parent) + '/config/config.ini')
     sounds_dir = config.get('Directories', 'SOUNDS_DIR', fallback='sounds/sounds')
+    # Strip quotes if present in the config value
+    sounds_dir = sounds_dir.strip("'\"")
     
     parser = optparse.OptionParser()
     parser.add_option('-f', '--filename', type="string", dest='filename')
