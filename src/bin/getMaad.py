@@ -364,27 +364,30 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
         print(f"DEBUG: filename arg: {filename}", file=sys.stderr)
         print(f"DEBUG: sounds_dir: {sounds_dir}", file=sys.stderr)
         
-        # Load the zoomed/cropped audio file that was passed via -f parameter
-        # This is the template region selected by the user
-        try:
-            template_file_path = filename + '.wav'
-            print(f"DEBUG: Template file path: {template_file_path}", file=sys.stderr)
-            print(f"DEBUG: Template file exists: {Path(template_file_path).exists()}", file=sys.stderr)
-            
-            s_template, fs_template = maad.sound.load(template_file_path, channel=channel)
-            print(f"DEBUG: Template loaded, duration: {len(s_template)/fs_template:.2f}s", file=sys.stderr)
-        except FileNotFoundError as e:
-            print(f"ERROR: Template audio file not found: {e}", file=sys.stderr)
-            raise
+        # Validate that we have selection coordinates
+        required_params = ['selection_min_time', 'selection_max_time', 'selection_min_freq', 'selection_max_freq']
+        for param_name in required_params:
+            if param_name not in parameter:
+                print(f"ERROR: Missing required parameter: {param_name}", file=sys.stderr)
+                raise ValueError(f"Missing required parameter: {param_name}. Please select a region on the spectrogram before running template matching.")
         
-        # Construct path to the original full audio file for searching
+        # Get selection coordinates (template region)
+        sel_min_time = float(parameter['selection_min_time'])
+        sel_max_time = float(parameter['selection_max_time'])  
+        sel_min_freq = float(parameter['selection_min_freq'])
+        sel_max_freq = float(parameter['selection_max_freq'])
+        
+        print(f"DEBUG: Selection (template): time={sel_min_time:.2f}-{sel_max_time:.2f}s, freq={sel_min_freq}-{sel_max_freq}Hz", file=sys.stderr)
+        print(f"DEBUG: Search area (view): time={minTime}-{maxTime}s, freq={minFrequency}-{maxFrequency}Hz", file=sys.stderr)
+        
+        # Construct path to the original audio file
         try:
             audio_file_path = str(Path(__file__).resolve().parent.parent) + '/' + sounds_dir + '/' + parameter['collection_id'] + '/' + parameter['recording_directory'] + '/' + parameter['filename'].rsplit('.', 1)[0] + '.wav'
             print(f"DEBUG: Full audio path: {audio_file_path}", file=sys.stderr)
             print(f"DEBUG: Full audio exists: {Path(audio_file_path).exists()}", file=sys.stderr)
             
             s_wav, fs_wav = maad.sound.load(audio_file_path, channel=channel)
-            print(f"DEBUG: Full audio loaded, duration: {len(s_wav)/fs_wav:.2f}s", file=sys.stderr)
+            print(f"DEBUG: Full audio loaded, duration: {len(s_wav)/fs_wav:.2f}s, sample rate: {fs_wav}Hz", file=sys.stderr)
         except KeyError as e:
             print(f"ERROR: Missing required parameter: {e}", file=sys.stderr)
             raise
@@ -395,15 +398,15 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
         peak_th = float(parameter['peak_th'])
         peak_distance = parameter['peak_distance'] if parameter['peak_distance'] == None else float(parameter['peak_distance'])
         
-        print(f"DEBUG: Creating template spectrogram...", file=sys.stderr)
-        # Create template spectrogram from the cropped audio (already at the right time/freq range)
-        Sxx_template, _, _, _ = sound.spectrogram(s_template, fs_template)
+        print(f"DEBUG: Creating template spectrogram from selection...", file=sys.stderr)
+        # Create template spectrogram from the selected region
+        Sxx_template, _, _, _ = sound.spectrogram(s_wav, fs_wav, flims=(sel_min_freq, sel_max_freq), tlims=(sel_min_time, sel_max_time))
         print(f"DEBUG: Template spectrogram shape: {Sxx_template.shape}", file=sys.stderr)
         
-        print(f"DEBUG: Creating full audio spectrogram...", file=sys.stderr)
-        # Create spectrogram of full audio at the same frequency range as template
-        Sxx_audio, tn, fn, ext = sound.spectrogram(s_wav, fs_wav, flims=(float(minFrequency), float(maxFrequency)))
-        print(f"DEBUG: Full audio spectrogram shape: {Sxx_audio.shape}", file=sys.stderr)
+        print(f"DEBUG: Creating search area spectrogram from current view...", file=sys.stderr)
+        # Create spectrogram of the current view (search area)
+        Sxx_audio, tn, fn, ext = sound.spectrogram(s_wav, fs_wav, flims=(float(minFrequency), float(maxFrequency)), tlims=(float(minTime), float(maxTime)))
+        print(f"DEBUG: Search area spectrogram shape: {Sxx_audio.shape}", file=sys.stderr)
         
         print(f"DEBUG: Running template_matching...", file=sys.stderr)
         # index
