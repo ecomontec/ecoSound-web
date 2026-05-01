@@ -364,13 +364,27 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
         print(f"DEBUG: filename arg: {filename}", file=sys.stderr)
         print(f"DEBUG: sounds_dir: {sounds_dir}", file=sys.stderr)
         
-        # Construct path to the original audio file
+        # Load the zoomed/cropped audio file that was passed via -f parameter
+        # This is the template region selected by the user
+        try:
+            template_file_path = filename + '.wav'
+            print(f"DEBUG: Template file path: {template_file_path}", file=sys.stderr)
+            print(f"DEBUG: Template file exists: {Path(template_file_path).exists()}", file=sys.stderr)
+            
+            s_template, fs_template = maad.sound.load(template_file_path, channel=channel)
+            print(f"DEBUG: Template loaded, duration: {len(s_template)/fs_template:.2f}s", file=sys.stderr)
+        except FileNotFoundError as e:
+            print(f"ERROR: Template audio file not found: {e}", file=sys.stderr)
+            raise
+        
+        # Construct path to the original full audio file for searching
         try:
             audio_file_path = str(Path(__file__).resolve().parent.parent) + '/' + sounds_dir + '/' + parameter['collection_id'] + '/' + parameter['recording_directory'] + '/' + parameter['filename'].rsplit('.', 1)[0] + '.wav'
-            print(f"DEBUG: Constructed path: {audio_file_path}", file=sys.stderr)
-            print(f"DEBUG: Path exists: {Path(audio_file_path).exists()}", file=sys.stderr)
+            print(f"DEBUG: Full audio path: {audio_file_path}", file=sys.stderr)
+            print(f"DEBUG: Full audio exists: {Path(audio_file_path).exists()}", file=sys.stderr)
             
             s_wav, fs_wav = maad.sound.load(audio_file_path, channel=channel)
+            print(f"DEBUG: Full audio loaded, duration: {len(s_wav)/fs_wav:.2f}s", file=sys.stderr)
         except KeyError as e:
             print(f"ERROR: Missing required parameter: {e}", file=sys.stderr)
             raise
@@ -380,9 +394,18 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
         
         peak_th = float(parameter['peak_th'])
         peak_distance = parameter['peak_distance'] if parameter['peak_distance'] == None else float(parameter['peak_distance'])
-        # zoom
-        Sxx_template, _, _, _ = sound.spectrogram(s_wav, fs_wav, flims=(float(minFrequency), float(maxFrequency)), tlims=(float(minTime), float(maxTime)))
+        
+        print(f"DEBUG: Creating template spectrogram...", file=sys.stderr)
+        # Create template spectrogram from the cropped audio (already at the right time/freq range)
+        Sxx_template, _, _, _ = sound.spectrogram(s_template, fs_template)
+        print(f"DEBUG: Template spectrogram shape: {Sxx_template.shape}", file=sys.stderr)
+        
+        print(f"DEBUG: Creating full audio spectrogram...", file=sys.stderr)
+        # Create spectrogram of full audio at the same frequency range as template
         Sxx_audio, tn, fn, ext = sound.spectrogram(s_wav, fs_wav, flims=(float(minFrequency), float(maxFrequency)))
+        print(f"DEBUG: Full audio spectrogram shape: {Sxx_audio.shape}", file=sys.stderr)
+        
+        print(f"DEBUG: Running template_matching...", file=sys.stderr)
         # index
         xcorrcoef, rois = maad.rois.template_matching(
             Sxx=Sxx_audio,
@@ -393,6 +416,7 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
             peak_distance=peak_distance,
             display=True
         )
+        print(f"DEBUG: template_matching completed. Found {len(rois)} ROIs", file=sys.stderr)
         # print
         print(rois)
     else:
