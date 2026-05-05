@@ -624,9 +624,9 @@ class RecordingController extends BaseController
         
         if ($status == 0 && $out[count($out) - 1] != "0") {
             if ($data['index'] == 'template_matching') {
-                // Filter out DEBUG lines from Python output
+                // Filter out informational lines from Python output (DEBUG, PROGRESS, Template, etc.)
                 $filtered_out = array_values(array_filter($out, function($line) {
-                    return !preg_match('/^DEBUG:/', $line);
+                    return !preg_match('/^(DEBUG:|PROGRESS:|Template:|Using chunked processing|Processing directly)/', $line);
                 }));
                 
                 if (empty($filtered_out) || $filtered_out[0] == 'Empty DataFrame' || count($filtered_out) <= 2) {
