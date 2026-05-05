@@ -7,6 +7,7 @@ import numpy
 from pathlib import Path
 import configparser
 import sys
+import soundfile as sf
 
 
 def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency, maxFrequency):
@@ -387,12 +388,39 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
             print(f"DEBUG: Full audio exists: {Path(audio_file_path).exists()}", file=sys.stderr)
             
             # Load only the time range we need (current view) to prevent OOM on large files
-            # Adding a small buffer to ensure we capture the full selection
+            # Use soundfile for efficient seeking - it doesn't load the entire file
             view_min_time = float(minTime)
             view_max_time = float(maxTime)
             
-            print(f"DEBUG: Loading audio segment from {view_min_time}s to {view_max_time}s (duration: {view_max_time - view_min_time:.2f}s)", file=sys.stderr)
-            s_wav, fs_wav = maad.sound.load(audio_file_path, channel=channel, offset=view_min_time, duration=view_max_time - view_min_time)
+            # First get file info without loading data
+            with sf.SoundFile(audio_file_path) as f:
+                fs_wav = f.samplerate
+                channels = f.channels
+                
+                # Convert time to frames
+                start_frame = int(view_min_time * fs_wav)
+                stop_frame = int(view_max_time * fs_wav)
+                
+                print(f"DEBUG: Loading audio segment from {view_min_time}s to {view_max_time}s (duration: {view_max_time - view_min_time:.2f}s)", file=sys.stderr)
+                print(f"DEBUG: File info - sample_rate: {fs_wav}Hz, channels: {channels}, reading frames {start_frame}-{stop_frame}", file=sys.stderr)
+                
+                # Seek to start position and read only the needed segment
+                f.seek(start_frame)
+                audio_data = f.read(stop_frame - start_frame)
+                
+                # Handle channel selection
+                if channels > 1:
+                    # Multi-channel file - select the requested channel
+                    if channel == 'left':
+                        s_wav = audio_data[:, 0]
+                    elif channel == 'right':
+                        s_wav = audio_data[:, 1]
+                    else:
+                        # Default to left channel
+                        s_wav = audio_data[:, 0]
+                else:
+                    # Mono file
+                    s_wav = audio_data if audio_data.ndim == 1 else audio_data.flatten()
             
             print(f"DEBUG: Audio segment loaded - duration: {len(s_wav)/fs_wav:.2f}s, sample_rate: {fs_wav}Hz, samples: {len(s_wav)}", file=sys.stderr)
             
