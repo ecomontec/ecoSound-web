@@ -513,7 +513,7 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                     
                     print(f"DEBUG: Chunk {chunk_num} found {len(chunk_rois)} matches", file=sys.stderr)
                     if len(chunk_rois) > 0:
-                        print(f"DEBUG: Chunk {chunk_num} ROI columns: {list(chunk_rois.columns)}", file=sys.stderr)
+                        print(f"DEBUG: Chunk {chunk_num} ROI columns before: {list(chunk_rois.columns)}", file=sys.stderr)
                     
                     # Adjust ROI times to absolute file times and add frequency bounds
                     if len(chunk_rois) > 0:
@@ -525,6 +525,7 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                         chunk_rois['min_f'] = sel_min_freq
                         chunk_rois['max_f'] = sel_max_freq
                         
+                        print(f"DEBUG: Chunk {chunk_num} ROI columns after: {list(chunk_rois.columns)}", file=sys.stderr)
                         all_rois.append(chunk_rois)
                     
                     # Move to next chunk (with overlap)
