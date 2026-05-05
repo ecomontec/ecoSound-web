@@ -503,9 +503,11 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                     
                     # Adjust ROI times to absolute file times and add frequency bounds
                     if len(chunk_rois) > 0:
-                        chunk_rois['min_t'] = chunk_rois['min_t'] + chunk_start
-                        chunk_rois['max_t'] = chunk_rois['max_t'] + chunk_start
                         chunk_rois['peak_time'] = chunk_rois['peak_time'] + chunk_start
+                        
+                        # Set min_t and max_t to match exact template duration (centered on peak_time)
+                        chunk_rois['min_t'] = chunk_rois['peak_time'] - (template_duration / 2)
+                        chunk_rois['max_t'] = chunk_rois['peak_time'] + (template_duration / 2)
                         
                         # Add frequency bounds from template (matches have same freq range as template)
                         chunk_rois['min_f'] = sel_min_freq
@@ -592,9 +594,11 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                 
                 # Adjust ROI times back to absolute times and add frequency bounds
                 if len(rois) > 0:
-                    rois['min_t'] = rois['min_t'] + view_min_time
-                    rois['max_t'] = rois['max_t'] + view_min_time  
                     rois['peak_time'] = rois['peak_time'] + view_min_time
+                    
+                    # Set min_t and max_t to match exact template duration (centered on peak_time)
+                    rois['min_t'] = rois['peak_time'] - (template_duration / 2)
+                    rois['max_t'] = rois['peak_time'] + (template_duration / 2)
                     
                     # Add frequency bounds from template (matches have same freq range as template)
                     rois['min_f'] = sel_min_freq
