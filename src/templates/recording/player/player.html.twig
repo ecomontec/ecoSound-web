@@ -189,7 +189,7 @@
                                         <strong>Description:</strong>
                                         <a class="col-form-label" href="https://scikit-maad.github.io/generated/maad.rois.template_matching.html" target="_blank" title="Documentation"> <i class="fa fa-book"></i></a>
                                         <div class="col-form-label-sm">Use normalized spectrogram cross-correlation to detect the occurrence of a template sound in a target audio.</div>
-                                        <div class="col-form-label-sm mt-2"><em>The template sound is your selection on the spectrogram and the target audio is the currently visible spectrogram.</em></div>
+                                        <div class="col-form-label-sm mt-2"><em>By default, the template sound is your selection on the spectrogram. The target audio is the currently visible spectrogram.</em></div>
                                         <div class="col-form-label-sm mt-2"><strong>⚠ Warning:</strong> Template matching may take a long time to complete on high sample rate recordings. Do not close this tab during processing.</div>
                                     </div>
                                     <div class="form-inline">
@@ -212,10 +212,10 @@
                                             <input type="checkbox" class="custom-control-input" id="use_coordinate_override">
                                             <label class="custom-control-label col-form-label-sm" for="use_coordinate_override">
                                                 <strong>Override template coordinates</strong>
+                                                <i class="fas fa-info-circle ml-1" title="Use this to specify precise coordinates for small signals. Paste tab-separated values from clipboard button (tmin, tmax, fmin, fmax)." data-toggle="tooltip"></i>
                                             </label>
                                         </div>
-                                        <div class="col-form-label-sm mt-1 ml-4"><em>Use this to specify precise coordinates for small signals. Paste tab-separated values from clipboard button (tmin, tmax, fmin, fmax).</em></div>
-                                        <input id="coordinate_override" name="coordinate_override" class="form-control form-control-sm mt-2" type="text" placeholder="e.g., 80.5&#9;91.2&#9;1000&#9;25000" disabled>
+                                        <input id="coordinate_override" name="coordinate_override" class="form-control form-control-sm mt-2" type="text" placeholder="e.g., 80.5&#9;91.2&#9;1000&#9;25000" style="display: none;">
                                     </div>
                                 </div>
                             </div>
@@ -274,11 +274,14 @@
                 // Toggle coordinate override input field
                 $('#use_coordinate_override').on('change', function () {
                     if ($(this).is(':checked')) {
-                        $('#coordinate_override').prop('disabled', false);
+                        $('#coordinate_override').show();
                     } else {
-                        $('#coordinate_override').prop('disabled', true);
+                        $('#coordinate_override').hide();
                     }
                 });
+                
+                // Initialize tooltips
+                $('[data-toggle="tooltip"]').tooltip();
             });
             $('#is_merged').prop('checked', false);
             $('#is_merged').on('change', function () {
