@@ -466,6 +466,13 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                     chunk_end = min(chunk_start + chunk_duration, view_max_time)
                     actual_chunk_duration = chunk_end - chunk_start
                     
+                    # Skip chunks that are smaller than the template (can't contain a match)
+                    if actual_chunk_duration < template_duration:
+                        print(f"DEBUG: Skipping chunk {chunk_num}: {chunk_start:.2f}s to {chunk_end:.2f}s (duration: {actual_chunk_duration:.2f}s < template duration {template_duration:.2f}s)", file=sys.stderr)
+                        chunk_start += (chunk_duration - chunk_overlap)
+                        chunk_num += 1
+                        continue
+                    
                     print(f"DEBUG: Processing chunk {chunk_num}: {chunk_start:.2f}s to {chunk_end:.2f}s (duration: {actual_chunk_duration:.2f}s)", file=sys.stderr)
                     
                     # Load chunk audio
