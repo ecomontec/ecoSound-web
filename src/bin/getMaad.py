@@ -387,15 +387,23 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
         # Construct path to the original audio file
         try:
             audio_file_path = str(Path(__file__).resolve().parent.parent) + '/' + sounds_dir + '/' + parameter['collection_id'] + '/' + parameter['recording_directory'] + '/' + parameter['filename'].rsplit('.', 1)[0] + '.wav'
+            print(f"DEBUG: Audio file path: {audio_file_path}", file=sys.stderr)
+            sys.stderr.flush()
             
             view_min_time = float(minTime)
             view_max_time = float(maxTime)
             view_duration = view_max_time - view_min_time
             
+            print(f"DEBUG: Getting file info...", file=sys.stderr)
+            sys.stderr.flush()
+            
             # Get file info without loading data
             with sf.SoundFile(audio_file_path) as f:
                 fs_wav = f.samplerate
                 channels = f.channels
+            
+            print(f"DEBUG: File info - SR: {fs_wav}Hz, Channels: {channels}, Duration: {view_duration:.1f}s", file=sys.stderr)
+            sys.stderr.flush()
             
             # Estimate memory requirements
             # Audio: samples * 4 bytes (float32), Spectrogram: ~samples/nperseg * freq_bins * 8 bytes (float64)
@@ -406,8 +414,14 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
             spec_mb = (spec_time_bins * spec_freq_bins * 8) / (1024 * 1024)
             total_estimated_mb = audio_mb + spec_mb + 300  # +300 MB overhead for template, cross-correlation, etc.
             
+            print(f"DEBUG: Memory estimate - Audio: {audio_mb:.0f}MB, Spec: {spec_mb:.0f}MB, Total: {total_estimated_mb:.0f}MB", file=sys.stderr)
+            sys.stderr.flush()
+            
             # Memory threshold: use chunking if estimated usage > 2GB (conservative for 8GB system)
             USE_CHUNKING = total_estimated_mb > 2000 or view_duration > 60
+            
+            print(f"DEBUG: USE_CHUNKING = {USE_CHUNKING}", file=sys.stderr)
+            sys.stderr.flush()
             
             if USE_CHUNKING:
                 # Default chunk duration is 30 seconds, can be overridden
@@ -425,11 +439,15 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                     raise ValueError(f"Template duration ({template_duration:.2f}s) is too large for chunk_duration ({chunk_duration}s). Increase chunk_duration.")
                 
                 print(f"Using chunked processing ({chunk_duration}s chunks, {chunk_overlap:.1f}s overlap) - est. memory: {total_estimated_mb:.0f}MB", file=sys.stderr)
+                sys.stderr.flush()
                 
                 # First, load the template from the selection
                 # We need to load the template region from the file
                 template_start_frame = int(sel_min_time * fs_wav)
                 template_stop_frame = int(sel_max_time * fs_wav)
+                
+                print(f"DEBUG: Loading template audio ({template_stop_frame - template_start_frame} frames)...", file=sys.stderr)
+                sys.stderr.flush()
                 
                 with sf.SoundFile(audio_file_path) as f:
                     f.seek(template_start_frame)
@@ -446,7 +464,11 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                         s_template = template_audio_data if template_audio_data.ndim == 1 else template_audio_data.flatten()
                 
                 # Create template spectrogram (relative to template audio, so tlims start at 0)
+                print(f"DEBUG: Creating template spectrogram (freq range: {sel_min_freq:.0f}-{sel_max_freq:.0f}Hz)...", file=sys.stderr)
+                sys.stderr.flush()
                 Sxx_template, _, _, _ = sound.spectrogram(s_template, fs_wav, flims=(sel_min_freq, sel_max_freq))
+                print(f"DEBUG: Template spectrogram shape: {Sxx_template.shape}, size: {Sxx_template.nbytes / (1024*1024):.1f}MB", file=sys.stderr)
+                sys.stderr.flush()
                 
                 # Calculate total chunks for progress reporting
                 total_chunks = int((view_max_time - view_min_time - template_duration) / (chunk_duration - chunk_overlap)) + 1
