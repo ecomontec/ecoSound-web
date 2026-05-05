@@ -610,7 +610,17 @@ class RecordingController extends BaseController
             $str = $str . ' --pa ' . substr($data['param'], 0, -1);
         }
         
+        // Temporary debug logging for high sample rate diagnosis
+        error_log("MAAD DEBUG: Command: " . $str);
+        
         exec($str . " 2>&1", $out, $status);
+        
+        // Temporary debug logging for high sample rate diagnosis
+        error_log("MAAD DEBUG: Status: " . $status);
+        error_log("MAAD DEBUG: Output count: " . count($out));
+        if ($status != 0 || count($out) > 0) {
+            error_log("MAAD DEBUG: Full output: " . print_r($out, true));
+        }
         
         if ($status == 0 && $out[count($out) - 1] != "0") {
             if ($data['index'] == 'template_matching') {

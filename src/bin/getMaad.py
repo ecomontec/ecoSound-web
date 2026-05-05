@@ -400,25 +400,44 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
         
         print(f"DEBUG: Creating template spectrogram from selection...", file=sys.stderr)
         # Create template spectrogram from the selected region
-        Sxx_template, _, _, _ = sound.spectrogram(s_wav, fs_wav, flims=(sel_min_freq, sel_max_freq), tlims=(sel_min_time, sel_max_time))
-        print(f"DEBUG: Template spectrogram shape: {Sxx_template.shape}", file=sys.stderr)
+        try:
+            Sxx_template, _, _, _ = sound.spectrogram(s_wav, fs_wav, flims=(sel_min_freq, sel_max_freq), tlims=(sel_min_time, sel_max_time))
+            print(f"DEBUG: Template spectrogram shape: {Sxx_template.shape}", file=sys.stderr)
+        except Exception as e:
+            print(f"ERROR: Failed to create template spectrogram: {type(e).__name__}: {e}", file=sys.stderr)
+            import traceback
+            traceback.print_exc(file=sys.stderr)
+            raise
         
         print(f"DEBUG: Creating search area spectrogram from current view...", file=sys.stderr)
         # Create spectrogram of the current view (search area)
-        Sxx_audio, tn, fn, ext = sound.spectrogram(s_wav, fs_wav, flims=(float(minFrequency), float(maxFrequency)), tlims=(float(minTime), float(maxTime)))
-        print(f"DEBUG: Search area spectrogram shape: {Sxx_audio.shape}", file=sys.stderr)
+        try:
+            Sxx_audio, tn, fn, ext = sound.spectrogram(s_wav, fs_wav, flims=(float(minFrequency), float(maxFrequency)), tlims=(float(minTime), float(maxTime)))
+            print(f"DEBUG: Search area spectrogram shape: {Sxx_audio.shape}", file=sys.stderr)
+        except Exception as e:
+            print(f"ERROR: Failed to create search area spectrogram: {type(e).__name__}: {e}", file=sys.stderr)
+            import traceback
+            traceback.print_exc(file=sys.stderr)
+            raise
         
         print(f"DEBUG: Running template_matching...", file=sys.stderr)
         # index
-        xcorrcoef, rois = maad.rois.template_matching(
-            Sxx=Sxx_audio,
-            Sxx_template=Sxx_template,
-            tn=tn,
-            ext=ext,
-            peak_th=peak_th,
-            peak_distance=peak_distance,
-            display=True
-        )
+        try:
+            xcorrcoef, rois = maad.rois.template_matching(
+                Sxx=Sxx_audio,
+                Sxx_template=Sxx_template,
+                tn=tn,
+                ext=ext,
+                peak_th=peak_th,
+                peak_distance=peak_distance,
+                display=True
+            )
+            print(f"DEBUG: template_matching completed. Found {len(rois)} matches", file=sys.stderr)
+        except Exception as e:
+            print(f"ERROR: template_matching failed: {type(e).__name__}: {e}", file=sys.stderr)
+            import traceback
+            traceback.print_exc(file=sys.stderr)
+            raise
         # print
         print(rois)
     else:
