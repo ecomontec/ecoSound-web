@@ -467,8 +467,9 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                 # Create template spectrogram (relative to template audio, so tlims start at 0)
                 print(f"DEBUG: Creating template spectrogram (freq range: {sel_min_freq:.0f}-{sel_max_freq:.0f}Hz)...", file=sys.stderr)
                 sys.stderr.flush()
-                Sxx_template, _, _, _ = sound.spectrogram(s_template, fs_wav, flims=(sel_min_freq, sel_max_freq))
-                print(f"DEBUG: Template spectrogram shape: {Sxx_template.shape}, size: {Sxx_template.nbytes / (1024*1024):.1f}MB", file=sys.stderr)
+                Sxx_template, tn_template, fn_template, ext_template = sound.spectrogram(s_template, fs_wav, flims=(sel_min_freq, sel_max_freq))
+                print(f"DEBUG: Template spectrogram - shape={Sxx_template.shape}, size={Sxx_template.nbytes / (1024*1024):.1f}MB", file=sys.stderr)
+                print(f"DEBUG: Template freq array - min={fn_template.min():.0f}Hz, max={fn_template.max():.0f}Hz, bins={len(fn_template)}", file=sys.stderr)
                 sys.stderr.flush()
                 
                 # Calculate total chunks for progress reporting
@@ -515,6 +516,12 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                     
                     # Create chunk spectrogram using SAME frequency range as template
                     Sxx_chunk, tn, fn, ext = sound.spectrogram(s_chunk, fs_wav, flims=(sel_min_freq, sel_max_freq))
+                    
+                    # Debug: verify frequency range on first chunk
+                    if chunk_num == 0:
+                        print(f"DEBUG: Search spectrogram - flims=({sel_min_freq:.0f}, {sel_max_freq:.0f}Hz), shape={Sxx_chunk.shape}", file=sys.stderr)
+                        print(f"DEBUG: Frequency array fn - min={fn.min():.0f}Hz, max={fn.max():.0f}Hz, bins={len(fn)}", file=sys.stderr)
+                        sys.stderr.flush()
                     
                     # Run template matching on this chunk
                     peak_th = float(parameter.get('peak_th', 0.5))
@@ -607,6 +614,10 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                 # Create template and search area spectrograms using SAME frequency range
                 Sxx_template, _, _, _ = sound.spectrogram(s_wav, fs_wav, flims=(sel_min_freq, sel_max_freq), tlims=(seg_sel_min_time, seg_sel_max_time))
                 Sxx_audio, tn, fn, ext = sound.spectrogram(s_wav, fs_wav, flims=(sel_min_freq, sel_max_freq))
+                
+                print(f"DEBUG: Non-chunked search - flims=({sel_min_freq:.0f}, {sel_max_freq:.0f}Hz), shape={Sxx_audio.shape}", file=sys.stderr)
+                print(f"DEBUG: Frequency array fn - min={fn.min():.0f}Hz, max={fn.max():.0f}Hz, bins={len(fn)}", file=sys.stderr)
+                sys.stderr.flush()
                 
                 peak_th = float(parameter.get('peak_th', 0.5))
                 peak_distance = None if 'peak_distance' not in parameter or parameter['peak_distance'] == '' else float(parameter['peak_distance'])
