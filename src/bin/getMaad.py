@@ -632,8 +632,8 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
             traceback.print_exc(file=sys.stderr)
             raise
         
-        # print
-        print(rois)
+        # print - use to_string(index=False) to match format expected by PHP parser
+        print(rois.to_string(index=False))
     else:
         Sxx_power, tn, fn, ext = maad.sound.spectrogram(s, fs)
         result = numpy.where(Sxx_power == numpy.max(Sxx_power))
