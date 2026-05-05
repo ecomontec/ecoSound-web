@@ -13,7 +13,11 @@ import soundfile as sf
 
 def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency, maxFrequency):
     parameter = {}
-    s, fs = maad.sound.load(filename + '.wav', channel=channel)
+    
+    # Skip initial audio load for template_matching - it handles loading internally with chunking
+    if index_type != "template_matching":
+        s, fs = maad.sound.load(filename + '.wav', channel=channel)
+    
     if index_type == "acoustic_complexity_index":
         # zoom
         Sxx, tn, fn, ext = maad.sound.spectrogram(s, fs, mode='amplitude')
@@ -353,10 +357,7 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
         # print
         print("RAOQ?" + str(RAOQ))
     elif index_type == "template_matching":
-        # param
-        parameter['peak_th'] = "0.5"
-        parameter['peak_distance'] = None
-        parameter['chunk_duration'] = "30.0"  # Default chunk size in seconds
+        # Parse parameters
         if param != '' and param is not None:
             for p in param.split('@'):
                 if '?' in p:
