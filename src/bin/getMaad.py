@@ -362,11 +362,6 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                 if '?' in p:
                     parameter[p.split('?')[0]] = p.split('?')[1]
         
-        # Debug: Print what parameters we received
-        print(f"DEBUG: Received parameters: {parameter}", file=sys.stderr)
-        print(f"DEBUG: filename arg: {filename}", file=sys.stderr)
-        print(f"DEBUG: sounds_dir: {sounds_dir}", file=sys.stderr)
-        
         # Validate that we have selection coordinates
         required_params = ['selection_min_time', 'selection_max_time', 'selection_min_freq', 'selection_max_freq']
         for param_name in required_params:
@@ -382,14 +377,11 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
         
         template_duration = sel_max_time - sel_min_time
         
-        print(f"DEBUG: Selection (template): time={sel_min_time:.2f}-{sel_max_time:.2f}s, freq={sel_min_freq}-{sel_max_freq}Hz, duration={template_duration:.2f}s", file=sys.stderr)
-        print(f"DEBUG: Search area (view): time={minTime}-{maxTime}s, freq={minFrequency}-{maxFrequency}Hz", file=sys.stderr)
+        print(f"Template: {template_duration:.1f}s ({sel_min_freq:.0f}-{sel_max_freq:.0f}Hz), Search: {minTime}-{maxTime}s ({float(maxTime)-float(minTime):.1f}s)", file=sys.stderr)
         
         # Construct path to the original audio file
         try:
             audio_file_path = str(Path(__file__).resolve().parent.parent) + '/' + sounds_dir + '/' + parameter['collection_id'] + '/' + parameter['recording_directory'] + '/' + parameter['filename'].rsplit('.', 1)[0] + '.wav'
-            print(f"DEBUG: Full audio path: {audio_file_path}", file=sys.stderr)
-            print(f"DEBUG: Full audio exists: {Path(audio_file_path).exists()}", file=sys.stderr)
             
             view_min_time = float(minTime)
             view_max_time = float(maxTime)
@@ -400,8 +392,6 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                 fs_wav = f.samplerate
                 channels = f.channels
             
-            print(f"DEBUG: File info - sample_rate: {fs_wav}Hz, channels: {channels}", file=sys.stderr)
-            
             # Estimate memory requirements
             # Audio: samples * 4 bytes (float32), Spectrogram: ~samples/nperseg * freq_bins * 8 bytes (float64)
             nperseg_estimate = 1024  # Default nperseg used by maad
@@ -410,8 +400,6 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
             spec_freq_bins = nperseg_estimate // 2 + 1
             spec_mb = (spec_time_bins * spec_freq_bins * 8) / (1024 * 1024)
             total_estimated_mb = audio_mb + spec_mb + 300  # +300 MB overhead for template, cross-correlation, etc.
-            
-            print(f"DEBUG: Estimated memory for full view: {total_estimated_mb:.1f}MB (audio: {audio_mb:.1f}MB, spec: {spec_mb:.1f}MB)", file=sys.stderr)
             
             # Memory threshold: use chunking if estimated usage > 2GB (conservative for 8GB system)
             USE_CHUNKING = total_estimated_mb > 2000 or view_duration > 60
@@ -430,7 +418,7 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                 if chunk_overlap >= chunk_duration:
                     raise ValueError(f"Template duration ({template_duration:.2f}s) is too large for chunk_duration ({chunk_duration}s). Increase chunk_duration.")
                 
-                print(f"DEBUG: Using CHUNKED processing - chunk_duration: {chunk_duration}s, overlap: {chunk_overlap:.2f}s", file=sys.stderr)
+                print(f"Using chunked processing ({chunk_duration}s chunks, {chunk_overlap:.1f}s overlap) - est. memory: {total_estimated_mb:.0f}MB", file=sys.stderr)
                 
                 # First, load the template from the selection
                 # We need to load the template region from the file
@@ -451,11 +439,12 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                     else:
                         s_template = template_audio_data if template_audio_data.ndim == 1 else template_audio_data.flatten()
                 
-                print(f"DEBUG: Template audio loaded - duration: {len(s_template)/fs_wav:.2f}s, samples: {len(s_template)}", file=sys.stderr)
-                
                 # Create template spectrogram (relative to template audio, so tlims start at 0)
                 Sxx_template, _, _, _ = sound.spectrogram(s_template, fs_wav, flims=(sel_min_freq, sel_max_freq))
-                print(f"DEBUG: Template spectrogram shape: {Sxx_template.shape}", file=sys.stderr)
+                
+                # Calculate total chunks for progress reporting
+                total_chunks = int((view_max_time - view_min_time - template_duration) / (chunk_duration - chunk_overlap)) + 1
+                print(f"PROGRESS: Starting - {total_chunks} chunks to process", file=sys.stderr)
                 
                 # Process in chunks
                 all_rois = []
@@ -468,12 +457,14 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                     
                     # Skip chunks that are smaller than the template (can't contain a match)
                     if actual_chunk_duration < template_duration:
-                        print(f"DEBUG: Skipping chunk {chunk_num}: {chunk_start:.2f}s to {chunk_end:.2f}s (duration: {actual_chunk_duration:.2f}s < template duration {template_duration:.2f}s)", file=sys.stderr)
                         chunk_start += (chunk_duration - chunk_overlap)
                         chunk_num += 1
                         continue
                     
-                    print(f"DEBUG: Processing chunk {chunk_num}: {chunk_start:.2f}s to {chunk_end:.2f}s (duration: {actual_chunk_duration:.2f}s)", file=sys.stderr)
+                    # Progress update every 5 chunks or first/last chunk
+                    if chunk_num % 5 == 0 or chunk_num == 0 or chunk_start + chunk_duration >= view_max_time:
+                        progress_pct = int((chunk_num / total_chunks) * 100)
+                        print(f"PROGRESS: {progress_pct}% ({chunk_num}/{total_chunks} chunks)", file=sys.stderr)
                     
                     # Load chunk audio
                     chunk_start_frame = int(chunk_start * fs_wav)
@@ -493,9 +484,8 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                         else:
                             s_chunk = chunk_audio_data if chunk_audio_data.ndim == 1 else chunk_audio_data.flatten()
                     
-                    # Create chunk spectrogram
+                    # Create chunk spectrogram and run template matching
                     Sxx_chunk, tn, fn, ext = sound.spectrogram(s_chunk, fs_wav, flims=(float(minFrequency), float(maxFrequency)))
-                    print(f"DEBUG: Chunk {chunk_num} spectrogram shape: {Sxx_chunk.shape}", file=sys.stderr)
                     
                     # Run template matching on this chunk
                     peak_th = float(parameter['peak_th'])
@@ -511,10 +501,6 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                         display=False
                     )
                     
-                    print(f"DEBUG: Chunk {chunk_num} found {len(chunk_rois)} matches", file=sys.stderr)
-                    if len(chunk_rois) > 0:
-                        print(f"DEBUG: Chunk {chunk_num} ROI columns before: {list(chunk_rois.columns)}", file=sys.stderr)
-                    
                     # Adjust ROI times to absolute file times and add frequency bounds
                     if len(chunk_rois) > 0:
                         chunk_rois['min_t'] = chunk_rois['min_t'] + chunk_start
@@ -525,23 +511,24 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                         chunk_rois['min_f'] = sel_min_freq
                         chunk_rois['max_f'] = sel_max_freq
                         
-                        print(f"DEBUG: Chunk {chunk_num} ROI columns after: {list(chunk_rois.columns)}", file=sys.stderr)
                         all_rois.append(chunk_rois)
                     
                     # Move to next chunk (with overlap)
                     chunk_start += (chunk_duration - chunk_overlap)
                     chunk_num += 1
                 
+                print(f"PROGRESS: 100% - Processing complete", file=sys.stderr)
+                
                 # Merge all ROIs
                 if len(all_rois) > 0:
                     rois = pd.concat(all_rois, ignore_index=True)
-                    print(f"DEBUG: Total matches before deduplication: {len(rois)}", file=sys.stderr)
+                    initial_count = len(rois)
                     
                     # Deduplicate matches in overlap regions
                     # If two matches have peak_time within overlap_duration, keep the one with higher xcorrcoef
+                    to_remove = []
                     if len(rois) > 1:
                         rois = rois.sort_values('peak_time').reset_index(drop=True)
-                        to_remove = []
                         for i in range(len(rois) - 1):
                             time_diff = rois.loc[i + 1, 'peak_time'] - rois.loc[i, 'peak_time']
                             if time_diff < chunk_overlap:
@@ -553,24 +540,20 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                         
                         if to_remove:
                             rois = rois.drop(to_remove).reset_index(drop=True)
-                            print(f"DEBUG: Removed {len(to_remove)} duplicate matches in overlaps", file=sys.stderr)
                     
-                    print(f"DEBUG: Final total: {len(rois)} matches after deduplication", file=sys.stderr)
-                    print(f"DEBUG: Final ROI columns: {list(rois.columns)}", file=sys.stderr)
+                    print(f"PROGRESS: Found {len(rois)} matches (removed {len(to_remove)} duplicates from overlaps)", file=sys.stderr)
                 else:
                     # Create empty DataFrame with correct columns
                     rois = pd.DataFrame(columns=['peak_time', 'xcorrcoef', 'min_t', 'max_t', 'min_f', 'max_f'])
-                    print(f"DEBUG: No matches found in any chunk", file=sys.stderr)
+                    print(f"PROGRESS: No matches found", file=sys.stderr)
             
             else:
                 # NON-CHUNKED processing for small views
-                print(f"DEBUG: Using NON-CHUNKED processing (view is small enough)", file=sys.stderr)
+                print(f"Processing directly (view duration: {view_duration:.1f}s)", file=sys.stderr)
                 
                 # Load the view segment
                 start_frame = int(view_min_time * fs_wav)
                 stop_frame = int(view_max_time * fs_wav)
-                
-                print(f"DEBUG: Loading audio segment from {view_min_time}s to {view_max_time}s (duration: {view_duration:.2f}s)", file=sys.stderr)
                 
                 with sf.SoundFile(audio_file_path) as f:
                     f.seek(start_frame)
@@ -586,26 +569,14 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                     else:
                         s_wav = audio_data if audio_data.ndim == 1 else audio_data.flatten()
                 
-                print(f"DEBUG: Audio segment loaded - duration: {len(s_wav)/fs_wav:.2f}s, sample_rate: {fs_wav}Hz, samples: {len(s_wav)}", file=sys.stderr)
-                
                 # Adjust selection times to be relative to the loaded segment
                 seg_sel_min_time = sel_min_time - view_min_time
                 seg_sel_max_time = sel_max_time - view_min_time
                 
-                print(f"DEBUG: Adjusted selection for segment: {seg_sel_min_time:.2f}s to {seg_sel_max_time:.2f}s", file=sys.stderr)
-                
-                # Create template spectrogram
-                print(f"DEBUG: Creating template spectrogram...", file=sys.stderr)
+                # Create template and search area spectrograms, then run matching
                 Sxx_template, _, _, _ = sound.spectrogram(s_wav, fs_wav, flims=(sel_min_freq, sel_max_freq), tlims=(seg_sel_min_time, seg_sel_max_time))
-                print(f"DEBUG: Template spectrogram shape: {Sxx_template.shape}", file=sys.stderr)
-                
-                # Create search area spectrogram
-                print(f"DEBUG: Creating search area spectrogram...", file=sys.stderr)
                 Sxx_audio, tn, fn, ext = sound.spectrogram(s_wav, fs_wav, flims=(float(minFrequency), float(maxFrequency)))
-                print(f"DEBUG: Search area spectrogram shape: {Sxx_audio.shape}", file=sys.stderr)
                 
-                # Run template matching
-                print(f"DEBUG: Running template_matching...", file=sys.stderr)
                 peak_th = float(parameter['peak_th'])
                 peak_distance = parameter['peak_distance'] if parameter['peak_distance'] == None else float(parameter['peak_distance'])
                 
@@ -618,7 +589,6 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                     peak_distance=peak_distance,
                     display=True
                 )
-                print(f"DEBUG: template_matching completed. Found {len(rois)} matches", file=sys.stderr)
                 
                 # Adjust ROI times back to absolute times and add frequency bounds
                 if len(rois) > 0:
@@ -629,8 +599,9 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                     # Add frequency bounds from template (matches have same freq range as template)
                     rois['min_f'] = sel_min_freq
                     rois['max_f'] = sel_max_freq
-                    
-                    print(f"DEBUG: Adjusted ROI times by offset {view_min_time}s", file=sys.stderr)
+                    print(f"PROGRESS: Found {len(rois)} matches", file=sys.stderr)
+                else:
+                    print(f"PROGRESS: No matches found", file=sys.stderr)
         
         except KeyError as e:
             print(f"ERROR: Missing required parameter: {e}", file=sys.stderr)
