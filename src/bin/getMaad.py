@@ -446,13 +446,15 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                 peak_distance=peak_distance,
                 display=True
             )
-            print(f"DEBUG: template_matching completed. Found {len(rois)} matches", file=sys.stderr)            
+            print(f"DEBUG: template_matching completed. Found {len(rois)} matches", file=sys.stderr)
+            
             # Adjust ROI times back to absolute times (add back the segment offset)
             if len(rois) > 0:
                 rois['min_t'] = rois['min_t'] + view_min_time
                 rois['max_t'] = rois['max_t'] + view_min_time  
                 rois['peak_time'] = rois['peak_time'] + view_min_time
-                print(f"DEBUG: Adjusted ROI times by offset {view_min_time}s", file=sys.stderr)        except Exception as e:
+                print(f"DEBUG: Adjusted ROI times by offset {view_min_time}s", file=sys.stderr)
+        except Exception as e:
             print(f"ERROR: template_matching failed: {type(e).__name__}: {e}", file=sys.stderr)
             import traceback
             traceback.print_exc(file=sys.stderr)
