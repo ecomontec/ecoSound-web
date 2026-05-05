@@ -512,6 +512,8 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                     )
                     
                     print(f"DEBUG: Chunk {chunk_num} found {len(chunk_rois)} matches", file=sys.stderr)
+                    if len(chunk_rois) > 0:
+                        print(f"DEBUG: Chunk {chunk_num} ROI columns: {list(chunk_rois.columns)}", file=sys.stderr)
                     
                     # Adjust ROI times to absolute file times
                     if len(chunk_rois) > 0:
@@ -548,6 +550,7 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                             print(f"DEBUG: Removed {len(to_remove)} duplicate matches in overlaps", file=sys.stderr)
                     
                     print(f"DEBUG: Final total: {len(rois)} matches after deduplication", file=sys.stderr)
+                    print(f"DEBUG: Final ROI columns: {list(rois.columns)}", file=sys.stderr)
                 else:
                     # Create empty DataFrame with correct columns
                     rois = pd.DataFrame(columns=['peak_time', 'xcorrcoef', 'min_t', 'max_t', 'min_f', 'max_f'])
