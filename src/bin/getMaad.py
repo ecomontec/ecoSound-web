@@ -386,8 +386,21 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
             print(f"DEBUG: Full audio path: {audio_file_path}", file=sys.stderr)
             print(f"DEBUG: Full audio exists: {Path(audio_file_path).exists()}", file=sys.stderr)
             
-            s_wav, fs_wav = maad.sound.load(audio_file_path, channel=channel)
-            print(f"DEBUG: Full audio loaded, duration: {len(s_wav)/fs_wav:.2f}s, sample rate: {fs_wav}Hz", file=sys.stderr)
+            # Load only the time range we need (current view) to prevent OOM on large files
+            # Adding a small buffer to ensure we capture the full selection
+            view_min_time = float(minTime)
+            view_max_time = float(maxTime)
+            
+            print(f"DEBUG: Loading audio segment from {view_min_time}s to {view_max_time}s (duration: {view_max_time - view_min_time:.2f}s)", file=sys.stderr)
+            s_wav, fs_wav = maad.sound.load(audio_file_path, channel=channel, offset=view_min_time, duration=view_max_time - view_min_time)
+            
+            print(f"DEBUG: Audio segment loaded - duration: {len(s_wav)/fs_wav:.2f}s, sample_rate: {fs_wav}Hz, samples: {len(s_wav)}", file=sys.stderr)
+            
+            # Adjust selection times to be relative to the loaded segment (starting at 0)
+            seg_sel_min_time = sel_min_time - view_min_time
+            seg_sel_max_time = sel_max_time - view_min_time
+            
+            print(f"DEBUG: Adjusted selection for segment: {seg_sel_min_time:.2f}s to {seg_sel_max_time:.2f}s", file=sys.stderr)
         except KeyError as e:
             print(f"ERROR: Missing required parameter: {e}", file=sys.stderr)
             raise
@@ -398,10 +411,10 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
         peak_th = float(parameter['peak_th'])
         peak_distance = parameter['peak_distance'] if parameter['peak_distance'] == None else float(parameter['peak_distance'])
         
-        print(f"DEBUG: Creating template spectrogram from selection...", file=sys.stderr)
-        # Create template spectrogram from the selected region
+        print(f"DEBUG: Creating template spectrogram...", file=sys.stderr)
+        # Create template spectrogram from the selected region (using adjusted times)
         try:
-            Sxx_template, _, _, _ = sound.spectrogram(s_wav, fs_wav, flims=(sel_min_freq, sel_max_freq), tlims=(sel_min_time, sel_max_time))
+            Sxx_template, _, _, _ = sound.spectrogram(s_wav, fs_wav, flims=(sel_min_freq, sel_max_freq), tlims=(seg_sel_min_time, seg_sel_max_time))
             print(f"DEBUG: Template spectrogram shape: {Sxx_template.shape}", file=sys.stderr)
         except Exception as e:
             print(f"ERROR: Failed to create template spectrogram: {type(e).__name__}: {e}", file=sys.stderr)
@@ -409,10 +422,11 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
             traceback.print_exc(file=sys.stderr)
             raise
         
-        print(f"DEBUG: Creating search area spectrogram from current view...", file=sys.stderr)
-        # Create spectrogram of the current view (search area)
+        print(f"DEBUG: Creating search area spectrogram...", file=sys.stderr)
+        # Create spectrogram of the current view (entire loaded segment)
         try:
-            Sxx_audio, tn, fn, ext = sound.spectrogram(s_wav, fs_wav, flims=(float(minFrequency), float(maxFrequency)), tlims=(float(minTime), float(maxTime)))
+            # Use the full loaded segment (no tlims needed since we only loaded what we need)
+            Sxx_audio, tn, fn, ext = sound.spectrogram(s_wav, fs_wav, flims=(float(minFrequency), float(maxFrequency)))
             print(f"DEBUG: Search area spectrogram shape: {Sxx_audio.shape}", file=sys.stderr)
         except Exception as e:
             print(f"ERROR: Failed to create search area spectrogram: {type(e).__name__}: {e}", file=sys.stderr)
@@ -432,8 +446,13 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                 peak_distance=peak_distance,
                 display=True
             )
-            print(f"DEBUG: template_matching completed. Found {len(rois)} matches", file=sys.stderr)
-        except Exception as e:
+            print(f"DEBUG: template_matching completed. Found {len(rois)} matches", file=sys.stderr)            
+            # Adjust ROI times back to absolute times (add back the segment offset)
+            if len(rois) > 0:
+                rois['min_t'] = rois['min_t'] + view_min_time
+                rois['max_t'] = rois['max_t'] + view_min_time  
+                rois['peak_time'] = rois['peak_time'] + view_min_time
+                print(f"DEBUG: Adjusted ROI times by offset {view_min_time}s", file=sys.stderr)        except Exception as e:
             print(f"ERROR: template_matching failed: {type(e).__name__}: {e}", file=sys.stderr)
             import traceback
             traceback.print_exc(file=sys.stderr)
