@@ -11,8 +11,7 @@
             <label class="ml-1 col-form-label-sm" for="{{ p|split('|')[0] }}">{{ p|split('|')[0] }}</label>
         </div>
         <div class="form-group form-inline">
-            <input id="{{ p|split('|')[0] }}" name="{{ p|split('|')[0] }}" class="form-control form-control-sm param" type="text">
-            <label class="ml-2 col-form-label-sm">default: {{ p|split('|')[1] }}</label>
+            <input id="{{ p|split('|')[0] }}" name="{{ p|split('|')[0] }}" class="form-control form-control-sm param" type="text" placeholder="default {{ p|split('|')[1] }}" style="font-style: italic;">
         </div>
     {% endfor %}
 {% endif %}
