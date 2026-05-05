@@ -206,6 +206,17 @@
                                         <input id="peak_distance" name="peak_distance" class="form-control form-control-sm param-tm" type="text">
                                         <label class="ml-2 col-form-label-sm">default: None</label>
                                     </div>
+                                    <hr class="mt-3 mb-2">
+                                    <div class="form-group">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="use_coordinate_override">
+                                            <label class="custom-control-label col-form-label-sm" for="use_coordinate_override">
+                                                <strong>Override template coordinates</strong>
+                                            </label>
+                                        </div>
+                                        <div class="col-form-label-sm mt-1 ml-4"><em>Use this to specify precise coordinates for small signals. Paste tab-separated values from clipboard button (tmin, tmax, fmin, fmax).</em></div>
+                                        <input id="coordinate_override" name="coordinate_override" class="form-control form-control-sm mt-2" type="text" placeholder="e.g., 80.5&#9;91.2&#9;1000&#9;25000" disabled>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -259,6 +270,15 @@
                     }
                 })
                 $("#acoustic_analysis").change();
+                
+                // Toggle coordinate override input field
+                $('#use_coordinate_override').on('change', function () {
+                    if ($(this).is(':checked')) {
+                        $('#coordinate_override').prop('disabled', false);
+                    } else {
+                        $('#coordinate_override').prop('disabled', true);
+                    }
+                });
             });
             $('#is_merged').prop('checked', false);
             $('#is_merged').on('change', function () {
@@ -410,20 +430,55 @@
                 $('.loading-grey').toggle();
                 $('#modal-aa').modal('hide');
                 if ($('#acoustic_analysis').val() == 1) {
-                    // Check if user has made a selection for template
-                    const coords = window.jcropApi.tellSelect() || {};
-                    if (!coords.w || !coords.h || coords.w <= 0 || coords.h <= 0) {
-                        showAlert('Please select a region on the spectrogram to use as the template before running template matching.');
-                        e.preventDefault();
-                        $('.loading-grey').toggle();
-                        return;
-                    }
+                    let selMinTime, selMaxTime, selMinFreq, selMaxFreq;
                     
-                    // Get selection coordinates (template)
-                    let selMinTime = $('#x').val();
-                    let selMaxTime = $('#w').val();
-                    let selMinFreq = $('#y').val();
-                    let selMaxFreq = $('#h').val();
+                    // Check if coordinate override is enabled
+                    if ($('#use_coordinate_override').is(':checked')) {
+                        // Parse coordinates from text field
+                        const coordText = $('#coordinate_override').val().trim();
+                        if (!coordText) {
+                            showAlert('Please enter coordinates in the override field or uncheck the override option.');
+                            e.preventDefault();
+                            $('.loading-grey').toggle();
+                            return;
+                        }
+                        
+                        const coords = coordText.split(/\t/);
+                        if (coords.length !== 4) {
+                            showAlert('Invalid coordinate format. Please paste tab-separated values: tmin, tmax, fmin, fmax');
+                            e.preventDefault();
+                            $('.loading-grey').toggle();
+                            return;
+                        }
+                        
+                        selMinTime = coords[0].trim();
+                        selMaxTime = coords[1].trim();
+                        selMinFreq = coords[2].trim();
+                        selMaxFreq = coords[3].trim();
+                        
+                        // Validate that all values are numeric
+                        if (isNaN(selMinTime) || isNaN(selMaxTime) || isNaN(selMinFreq) || isNaN(selMaxFreq)) {
+                            showAlert('All coordinate values must be numeric.');
+                            e.preventDefault();
+                            $('.loading-grey').toggle();
+                            return;
+                        }
+                    } else {
+                        // Use visual selection coordinates
+                        const coords = window.jcropApi.tellSelect() || {};
+                        if (!coords.w || !coords.h || coords.w <= 0 || coords.h <= 0) {
+                            showAlert('Please select a region on the spectrogram to use as the template before running template matching.');
+                            e.preventDefault();
+                            $('.loading-grey').toggle();
+                            return;
+                        }
+                        
+                        // Get selection coordinates (template)
+                        selMinTime = $('#x').val();
+                        selMaxTime = $('#w').val();
+                        selMinFreq = $('#y').val();
+                        selMaxFreq = $('#h').val();
+                    }
                     
                     // Add selection coordinates to parameters
                     param = 'selection_min_time?' + selMinTime + '@' +
