@@ -367,7 +367,11 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
         for param_name in required_params:
             if param_name not in parameter:
                 print(f"ERROR: Missing required parameter: {param_name}", file=sys.stderr)
+                sys.stderr.flush()
                 raise ValueError(f"Missing required parameter: {param_name}. Please select a region on the spectrogram before running template matching.")
+        
+        print(f"DEBUG: Starting template_matching with {len(parameter)} parameters", file=sys.stderr)
+        sys.stderr.flush()
         
         # Get selection coordinates (template region)
         sel_min_time = float(parameter['selection_min_time'])
@@ -378,6 +382,7 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
         template_duration = sel_max_time - sel_min_time
         
         print(f"Template: {template_duration:.1f}s ({sel_min_freq:.0f}-{sel_max_freq:.0f}Hz), Search: {minTime}-{maxTime}s ({float(maxTime)-float(minTime):.1f}s)", file=sys.stderr)
+        sys.stderr.flush()
         
         # Construct path to the original audio file
         try:
@@ -405,7 +410,8 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
             USE_CHUNKING = total_estimated_mb > 2000 or view_duration > 60
             
             if USE_CHUNKING:
-                chunk_duration = float(parameter['chunk_duration'])
+                # Default chunk duration is 30 seconds, can be overridden
+                chunk_duration = float(parameter.get('chunk_duration', 30.0))
                 
                 # Validation: chunk must be >= template duration
                 if chunk_duration < template_duration:
@@ -488,8 +494,8 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                     Sxx_chunk, tn, fn, ext = sound.spectrogram(s_chunk, fs_wav, flims=(float(minFrequency), float(maxFrequency)))
                     
                     # Run template matching on this chunk
-                    peak_th = float(parameter['peak_th'])
-                    peak_distance = parameter['peak_distance'] if parameter['peak_distance'] == None else float(parameter['peak_distance'])
+                    peak_th = float(parameter.get('peak_th', 0.5))
+                    peak_distance = None if 'peak_distance' not in parameter or parameter['peak_distance'] == '' else float(parameter['peak_distance'])
                     
                     xcorrcoef, chunk_rois = maad.rois.template_matching(
                         Sxx=Sxx_chunk,
@@ -579,8 +585,8 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                 Sxx_template, _, _, _ = sound.spectrogram(s_wav, fs_wav, flims=(sel_min_freq, sel_max_freq), tlims=(seg_sel_min_time, seg_sel_max_time))
                 Sxx_audio, tn, fn, ext = sound.spectrogram(s_wav, fs_wav, flims=(float(minFrequency), float(maxFrequency)))
                 
-                peak_th = float(parameter['peak_th'])
-                peak_distance = parameter['peak_distance'] if parameter['peak_distance'] == None else float(parameter['peak_distance'])
+                peak_th = float(parameter.get('peak_th', 0.5))
+                peak_distance = None if 'peak_distance' not in parameter or parameter['peak_distance'] == '' else float(parameter['peak_distance'])
                 
                 xcorrcoef, rois = maad.rois.template_matching(
                     Sxx=Sxx_audio,
