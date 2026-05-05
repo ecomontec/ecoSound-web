@@ -513,8 +513,8 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                         else:
                             s_chunk = chunk_audio_data if chunk_audio_data.ndim == 1 else chunk_audio_data.flatten()
                     
-                    # Create chunk spectrogram and run template matching
-                    Sxx_chunk, tn, fn, ext = sound.spectrogram(s_chunk, fs_wav, flims=(float(minFrequency), float(maxFrequency)))
+                    # Create chunk spectrogram using SAME frequency range as template
+                    Sxx_chunk, tn, fn, ext = sound.spectrogram(s_chunk, fs_wav, flims=(sel_min_freq, sel_max_freq))
                     
                     # Run template matching on this chunk
                     peak_th = float(parameter.get('peak_th', 0.5))
@@ -604,9 +604,9 @@ def getMaad(filename, index_type, param, channel, minTime, maxTime, minFrequency
                 seg_sel_min_time = sel_min_time - view_min_time
                 seg_sel_max_time = sel_max_time - view_min_time
                 
-                # Create template and search area spectrograms, then run matching
+                # Create template and search area spectrograms using SAME frequency range
                 Sxx_template, _, _, _ = sound.spectrogram(s_wav, fs_wav, flims=(sel_min_freq, sel_max_freq), tlims=(seg_sel_min_time, seg_sel_max_time))
-                Sxx_audio, tn, fn, ext = sound.spectrogram(s_wav, fs_wav, flims=(float(minFrequency), float(maxFrequency)))
+                Sxx_audio, tn, fn, ext = sound.spectrogram(s_wav, fs_wav, flims=(sel_min_freq, sel_max_freq))
                 
                 peak_th = float(parameter.get('peak_th', 0.5))
                 peak_distance = None if 'peak_distance' not in parameter or parameter['peak_distance'] == '' else float(parameter['peak_distance'])
