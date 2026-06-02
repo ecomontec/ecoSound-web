@@ -9,6 +9,12 @@ use PDOStatement;
 class Database
 {
     const CONNECTION_STRING = '%s:host=%s;dbname=%s;port=3306';
+
+    /**
+     * @var PDO|null
+     */
+    private static $sharedConnection = null;
+
     /**
      * @var PDO
      */
@@ -29,16 +35,19 @@ class Database
      */
     public function __construct(string $driver, string $host, string $database, string $user, string $password)
     {
-        $this->connection = new PDO(
-            sprintf(self::CONNECTION_STRING, $driver, $host, $database),
-            $user,
-            $password,
-            [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES => false,
-            ]
-        );
+        if (self::$sharedConnection === null) {
+            self::$sharedConnection = new PDO(
+                sprintf(self::CONNECTION_STRING, $driver, $host, $database),
+                $user,
+                $password,
+                [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                ]
+            );
+        }
+        $this->connection = self::$sharedConnection;
     }
 
     /**
