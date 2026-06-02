@@ -20,8 +20,6 @@ class SettingController extends BaseController
      */
     public function show()
     {
-        echo Utils::getSetting('license');
-
         if (!$this->isLocalAddress(APP_URL) && HOST_URL != APP_URL && (!isset($_SESSION['syncApi']) || $_SESSION['syncApi'] < strtotime('today'))) {
             $url = HOST_URL . "/api/admin/settings/api";
             $contents = file_get_contents($url);

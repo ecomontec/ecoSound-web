@@ -84,7 +84,7 @@ class Api extends BaseProvider
 
     public function truncate()
     {
-        $this->database->prepareQuery('TRUNCATE TABLE api;');
+        $this->database->prepareQuery('TRUNCATE TABLE api');
         return $this->database->executeSelect();
     }
 }
