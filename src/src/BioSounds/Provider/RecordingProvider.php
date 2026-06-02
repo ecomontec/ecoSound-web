@@ -435,12 +435,14 @@ class RecordingProvider extends AbstractProvider
             $sql .= " AND CONCAT(IFNULL(r.recording_id,''), IFNULL(r.data_type,''), IFNULL(r.filename,''), IFNULL(r.name,''), IFNULL(u.name,''), IFNULL(s.name,''), IFNULL(re.model,''), IFNULL(m.name,''), IFNULL(r.sampling_rate,''), IFNULL(r.duration,''), IFNULL(r.channel_num,''), IFNULL(r.bitdepth,''), IFNULL(r.recording_gain,''), IFNULL(l.name,''), IFNULL(r.type,''), IFNULL(r.medium,''), IFNULL(r.duty_cycle_recording,''), IFNULL(r.duty_cycle_period,''), IFNULL(r.note,''),IFNULL(r.DOI,''), IFNULL(r.creation_date,'')) LIKE :search ";
         }
         $a = ['', 'r.recording_id', 'r.data_type', 'r.filename', 'r.name', 'u.name', 's.name', 're.model', 'm.name', 'r.sampling_rate', 'r.duration', 'r.channel_num', 'r.bitdepth', 'r.recording_gain', 'l.name', 'r.type', 'r.medium', 'r.duty_cycle_recording', 'r.duty_cycle_period', 'r.note', 'r.DOI', 'file_date', 'file_time'];
-        $sql .= " ORDER BY $a[$column] $dir LIMIT :length OFFSET :start";
+        $sql .= " ORDER BY $a[$column] $dir";
+        if ($length != '-1') {
+            $sql .= " LIMIT :length OFFSET :start";
+        }
         $this->database->prepareQuery($sql);
         $params = [
             ':collectionId' => $collectionId,
         ];
-        // Only add pagination parameters if LIMIT is used
         if ($length != '-1') {
             $params[':start'] = (int)$start;
             $params[':length'] = (int)$length;

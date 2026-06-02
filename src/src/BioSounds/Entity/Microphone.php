@@ -103,8 +103,11 @@ class Microphone extends BaseProvider
         $columns = ['', 'microphone_id', 'name', 'microphone_element', 'sensitivity', 'signal_to_noise_ratio'];
         $orderColumn = isset($columns[$column]) && $columns[$column] ? $columns[$column] : 'name';
         
-        $sql .= " ORDER BY $orderColumn $dir LIMIT $length OFFSET $start";
-        
+        $sql .= " ORDER BY $orderColumn $dir";
+        if ($length != '-1') {
+            $sql .= " LIMIT $length OFFSET $start";
+        }
+
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect($params);
         

@@ -79,7 +79,10 @@ class TagReviewProvider extends AbstractProvider
             $sql .= " AND CONCAT(IFNULL(tr.tag_id,''), IFNULL(r.`name`,''), IFNULL(u.`name`,''), IFNULL(trs.`name`,''), IFNULL(s.binomial,''), IFNULL(tr.note,''), IFNULL(tr.creation_date,'')) LIKE '%$search%' ";
         }
         $a = ['', 't.tag_id', 'r.`name`', 'u.`name`', 'trs.`name`', 's.binomial', 'tr.note', 'tr.creation_date'];
-        $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
+        $sql .= " ORDER BY $a[$column] $dir";
+        if ($length != '-1') {
+            $sql .= " LIMIT $length OFFSET $start";
+        }
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
         $status = $this->getStatus();

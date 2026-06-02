@@ -103,8 +103,11 @@ class Recorder extends BaseProvider
         $columns = ['', 'recorder_id', 'model', 'version', 'brand', 'microphone'];
         $orderColumn = isset($columns[$column]) && $columns[$column] ? $columns[$column] : 'model';
         
-        $sql .= " ORDER BY $orderColumn $dir LIMIT $length OFFSET $start";
-        
+        $sql .= " ORDER BY $orderColumn $dir";
+        if ($length != '-1') {
+            $sql .= " LIMIT $length OFFSET $start";
+        }
+
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect($params);
         

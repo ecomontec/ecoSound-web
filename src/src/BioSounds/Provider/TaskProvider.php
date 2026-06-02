@@ -120,10 +120,7 @@ class TaskProvider extends AbstractProvider
                 LEFT JOIN collection c ON c.collection_id = COALESCE(r_rec.col_id, r_tag.col_id)
                 WHERE (t.assigner_id = " . Auth::getUserLoggedID() . " OR t.assignee_id = " . Auth::getUserLoggedID() . ')';
 
-        $params = [
-            ':length' => $length,
-            ':start' => $start,
-        ];
+        $params = [];
 
         if ($collectionId) {
             $sql .= " AND c.collection_id = :collectionId ";
@@ -143,10 +140,14 @@ class TaskProvider extends AbstractProvider
 
         $sortColumn = $a[$column] ?? 't.datetime';
 
-        $sql .= " ORDER BY $sortColumn $dir LIMIT :length OFFSET :start ";
+        $sql .= " ORDER BY $sortColumn $dir";
+        if ($length != '-1') {
+            $sql .= " LIMIT :length OFFSET :start ";
+        }
         $this->database->prepareQuery($sql);
-        if ($search) {
-            $params[':search'] = '%' . $search . '%';
+        if ($length != '-1') {
+            $params[':length'] = $length;
+            $params[':start'] = $start;
         }
         $result = $this->database->executeSelect($params);
         if (count($result)) {

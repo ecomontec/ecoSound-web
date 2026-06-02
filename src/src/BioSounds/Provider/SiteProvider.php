@@ -110,7 +110,10 @@ class SiteProvider extends AbstractProvider
         }
         $sql .= " GROUP BY s.site_id ";
         $a = ['', 's.site_id', 's.name', 's.longitude_WGS84_dd_dddd', 's.latitude_WGS84_dd_dddd', 's.topography_m', 's.freshwater_depth_m', 's.gadm0', 's.gadm1', 's.gadm2', 's.iho', 'e1.name', 'e2.name', 'e3.name'];
-        $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
+        $sql .= " ORDER BY $a[$column] $dir";
+        if ($length != '-1') {
+            $sql .= " LIMIT $length OFFSET $start";
+        }
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect();
         $iho = (new SiteProvider())->getIHO();

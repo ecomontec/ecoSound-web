@@ -77,7 +77,10 @@ class QueueProvider extends AbstractProvider
             $sql .= " AND CONCAT(IFNULL(queue_id,''), IFNULL(type,''), IFNULL(completed,''), IFNULL(total,''), IFNULL(status,''), IFNULL(start_time,''), IFNULL(stop_time,''), IFNULL(warning,''), IFNULL(error,'')) LIKE :search ";
         }
         $a = ['', 'queue_id', 'type', 'completed', 'status', 'start_time', 'stop_time', 'duration', 'warning', 'error'];
-        $sql .= " ORDER BY $a[$column] $dir LIMIT $length OFFSET $start";
+        $sql .= " ORDER BY $a[$column] $dir";
+        if ($length != '-1') {
+            $sql .= " LIMIT $length OFFSET $start";
+        }
         $this->database->prepareQuery($sql);
         $params = [
             ':user_id' => Auth::getUserLoggedID(),

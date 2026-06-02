@@ -281,13 +281,18 @@ class ProjectProvider extends AbstractProvider
         }
         $sql .= " GROUP BY p.project_id ";
         $a = ['', 'p.project_id', 'p.name', 'u.name', 'p.url', '', 'p.creation_date', 'p.active'];
-        $sql .= " ORDER BY $a[$column] $dir LIMIT :length OFFSET :start";
+        $sql .= " ORDER BY $a[$column] $dir";
+        if ($length != '-1') {
+            $sql .= " LIMIT :length OFFSET :start";
+        }
         $this->database->prepareQuery($sql);
         $params = [
-            ':length' => $length,
-            ':start' => $start,
             ':userId' => Auth::getUserID(),
         ];
+        if ($length != '-1') {
+            $params[':length'] = $length;
+            $params[':start'] = $start;
+        }
         if ($search) {
             $params[':search'] = '%' . $search . '%';
         }

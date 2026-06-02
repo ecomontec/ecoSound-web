@@ -130,8 +130,11 @@ class Sound extends BaseProvider
         $columns = ['', 'sound_id', 'soundscape_component', 'sound_type'];
         $orderColumn = isset($columns[$column]) && $columns[$column] ? $columns[$column] : 'soundscape_component';
         
-        $sql .= " ORDER BY $orderColumn $dir LIMIT $length OFFSET $start";
-        
+        $sql .= " ORDER BY $orderColumn $dir";
+        if ($length != '-1') {
+            $sql .= " LIMIT $length OFFSET $start";
+        }
+
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect($params);
         

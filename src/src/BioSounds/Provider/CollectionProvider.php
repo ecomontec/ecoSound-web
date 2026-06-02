@@ -335,14 +335,16 @@ class CollectionProvider extends AbstractProvider
             $sql .= " AND CONCAT(IFNULL(c.collection_id,''), IFNULL(c.name,''), IFNULL(u.name,''), IFNULL(c.doi,''), IFNULL(c.sphere,''), IFNULL(c.external_recording_url,''), IFNULL(c.project_url,''), IFNULL(c.note,''), IFNULL(c.creation_date,''), IFNULL(c.view,'')) LIKE :search ";
         }
         $a = ['', 'c.collection_id', 'c.name', 'u.name', 'c.doi', 'c.sphere', 'c.external_recording_url', 'c.project_url', 'c.note', 'c.creation_date', 'c.view', 'c.public_access', 'c.public_tags'];
-        $sql .= " ORDER BY $a[$column] $dir LIMIT :length OFFSET :start";
+        $sql .= " ORDER BY $a[$column] $dir";
+        if ($length != '-1') {
+            $sql .= " LIMIT :length OFFSET :start";
+        }
         $this->database->prepareQuery($sql);
         $params = [
             ':project_id' => $projectId,
             ':user_id' => Auth::getUserID(),
             ':user_id1' => Auth::getUserID(),
         ];
-        // Only add pagination params if not showing all
         if ($length != '-1') {
             $params[':length'] = $length;
             $params[':start'] = $start;

@@ -514,12 +514,16 @@ class User extends AbstractProvider
         if (!Auth::isUserAdmin()) {
             $sql .= " GROUP BY u.user_id ";
         }
-        $sql .= " ORDER BY $a[$column] $dir LIMIT :length OFFSET :start";
+        $sql .= " ORDER BY $a[$column] $dir";
+        if ($length != '-1') {
+            $sql .= " LIMIT :length OFFSET :start";
+        }
         $this->database->prepareQuery($sql);
-        $params = [
-            ':length' => $length,
-            ':start' => $start
-        ];
+        $params = [];
+        if ($length != '-1') {
+            $params[':length'] = $length;
+            $params[':start'] = $start;
+        }
         if (!Auth::isUserAdmin()) {
             $params[':user_id'] = Auth::getUserID();
         }

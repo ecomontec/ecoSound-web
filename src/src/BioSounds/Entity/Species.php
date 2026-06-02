@@ -147,8 +147,11 @@ class Species extends BaseProvider
         $columns = ['', 'species_id', 'binomial', 'common_name', 'genus', 'family', 'taxon_order', 'class', 'level', 'source'];
         $orderColumn = isset($columns[$column]) && $columns[$column] ? $columns[$column] : 'binomial';
         
-        $sql .= " ORDER BY $orderColumn $dir LIMIT $length OFFSET $start";
-        
+        $sql .= " ORDER BY $orderColumn $dir";
+        if ($length != '-1') {
+            $sql .= " LIMIT $length OFFSET $start";
+        }
+
         $this->database->prepareQuery($sql);
         $result = $this->database->executeSelect($params);
         
