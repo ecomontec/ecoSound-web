@@ -340,21 +340,21 @@
                                         <label class="ml-1 col-form-label-sm" for="manual_lat">Latitude</label>
                                     </div>
                                     <div class="form-group form-inline">
-                                        <input id="manual_lat" name="manual_lat" class="form-control form-control-sm" type="number" step="0.000001" min="-90" max="90" placeholder="default -1" style="font-style: italic; width: 192px;">
-                                        <label class="ml-2 col-form-label-sm">[-90, 90] or -1 to ignore</label>
+                                        <input id="manual_lat" name="manual_lat" class="form-control form-control-sm" type="number" step="0.000001" min="-90" max="90" placeholder="default 0" style="font-style: italic; width: 192px;">
+                                        <label class="ml-2 col-form-label-sm">[-90, 90]</label>
                                     </div>
                                     <div class="form-inline">
                                         <label class="ml-1 col-form-label-sm" for="manual_lon">Longitude</label>
                                     </div>
                                     <div class="form-group form-inline">
-                                        <input id="manual_lon" name="manual_lon" class="form-control form-control-sm" type="number" step="0.000001" min="-180" max="180" placeholder="default -1" style="font-style: italic; width: 192px;">
-                                        <label class="ml-2 col-form-label-sm">[-180, 180] or -1 to ignore</label>
+                                        <input id="manual_lon" name="manual_lon" class="form-control form-control-sm" type="number" step="0.000001" min="-180" max="180" placeholder="default 0" style="font-style: italic; width: 192px;">
+                                        <label class="ml-2 col-form-label-sm">[-180, 180]</label>
                                     </div>
                                     <div class="form-inline">
                                         <label class="ml-1 col-form-label-sm" for="manual_week">Week of year (optional)</label>
                                     </div>
                                     <div class="form-group form-inline">
-                                        <input id="manual_week" name="manual_week" class="form-control form-control-sm" type="number" min="-1" max="48" placeholder="default -1" style="font-style: italic; width: 192px;">
+                                        <input id="manual_week" name="manual_week" class="form-control form-control-sm" type="number" min="-1" max="48" placeholder="default -1" style="font-style: italic; width: 192px;" disabled>
                                         <label class="ml-2 col-form-label-sm">[1-48] or -1 for year-round</label>
                                     </div>
                                 </div>
@@ -564,6 +564,7 @@
                         // Clear all override values when unchecked
                         $('#manual_lat, #manual_lon, #manual_week, #species_list').val('');
                         $('#method_coordinates').prop('checked', true);
+                        $('#manual_week').prop('disabled', true);
                     }
                     validateBirdnetForm();
                 });
@@ -578,10 +579,22 @@
                         $('#coordinates-section').hide();
                         $('#species-list-section').show();
                         $('#manual_lat, #manual_lon, #manual_week').val(''); // Clear coordinates when switching
+                        $('#manual_week').prop('disabled', true);
                     }
                     validateBirdnetForm();
                 });
                 
+                // Enable/disable week field based on whether lat and lon both have values
+                function updateWeekField() {
+                    let lat = $('#manual_lat').val();
+                    let lon = $('#manual_lon').val();
+                    let latLonValid = (lat !== '' && lon !== '');
+                    $('#manual_week').prop('disabled', !latLonValid);
+                    if (!latLonValid) {
+                        $('#manual_week').val('');
+                    }
+                }
+
                 // Validate BirdNET form inputs and enable/disable submit button
                 function validateBirdnetForm() {
                     // Only validate if override is enabled
@@ -589,7 +602,11 @@
                         $('#model-btn').removeClass('disabled').prop('disabled', false);
                         return;
                     }
-                    
+
+                    if ($('#method_coordinates').is(':checked')) {
+                        updateWeekField();
+                    }
+
                     let isValid = false;
                     
                     if ($('#method_coordinates').is(':checked')) {
