@@ -472,7 +472,7 @@
                 var $selectedOption = $('#reclabel option:selected');
                 var creatorId = $selectedOption.data('creator');
                 var labelType = $selectedOption.data('type');
-                var currentUserId = {{ user_id }};
+                var currentUserId = {{ user_id|default(0) }};
                 
                 // Show delete button only for private labels created by current user
                 if (labelType === 'private' && creatorId == currentUserId) {

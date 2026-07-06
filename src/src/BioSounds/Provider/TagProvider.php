@@ -412,6 +412,7 @@ class TagProvider extends AbstractProvider
         if (!$currentUserId && isset($_SESSION['user_id'])) {
             $currentUserId = $_SESSION['user_id'];
         }
+        $currentUserId = $currentUserId ?? 0;
 
         $userPerm = new \BioSounds\Entity\UserPermission();
         $perm = $userPerm->getUserColPermission($currentUserId, $collectionId);
@@ -461,8 +462,9 @@ class TagProvider extends AbstractProvider
     public function getListByPage(string $collectionId, string $recordingId, string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
     {
         $arr = [];
+        $currentUserId = \BioSounds\Utils\Auth::getUserID() ?? 0;
         $userPerm = new \BioSounds\Entity\UserPermission();
-        $perm = $userPerm->getUserColPermission(\BioSounds\Utils\Auth::getUserID(), $collectionId);
+        $perm = $userPerm->getUserColPermission($currentUserId, $collectionId);
         $permObj = new \BioSounds\Entity\Permission();
 
         $hasBroadAccess =
@@ -486,7 +488,7 @@ class TagProvider extends AbstractProvider
             WHERE c.collection_id = :collectionId ";
 
         if (!$hasBroadAccess) {
-            $sql .= " AND (t.user_id = " . \BioSounds\Utils\Auth::getUserID() . " OR c.public_tags = 1) ";
+            $sql .= " AND (t.user_id = " . $currentUserId . " OR c.public_tags = 1) ";
         }
         $params = [
             ':collectionId' => $collectionId,
@@ -513,8 +515,8 @@ class TagProvider extends AbstractProvider
         $sound_types = (new SoundProvider())->getAll();
         if (count($result)) {
             foreach ($result as $key => $value) {
-                $isManager = (new User())->isManage($_SESSION['user_id'], $collectionId);
-                $isOwner = ($value['user_id'] == $_SESSION['user_id']);
+                $isManager = $currentUserId > 0 ? (new User())->isManage($currentUserId, $collectionId) : false;
+                $isOwner = ($value['user_id'] == $currentUserId);
 
                 if (!$isManager && !$isOwner) {
                     $arr[$key][] = "<input type='checkbox' class='js-checkbox' data-readonly='true' data-id='$value[tag_id]' data-recording-id='$value[recording_id]' data-tmin='$value[min_time]' data-tmax='$value[max_time]' data-fmin='$value[min_freq]' data-fmax='$value[max_freq]' name='cb[$value[collection_id]]' id='cb[$value[collection_id]]'>";
@@ -601,6 +603,7 @@ class TagProvider extends AbstractProvider
         if (!$currentUserId && isset($_SESSION['user_id'])) {
             $currentUserId = $_SESSION['user_id'];
         }
+        $currentUserId = $currentUserId ?? 0;
         $userPerm = new \BioSounds\Entity\UserPermission();
         $perm = $userPerm->getUserColPermission($currentUserId, $collectionId);
         $permObj = new \BioSounds\Entity\Permission();
@@ -657,6 +660,7 @@ class TagProvider extends AbstractProvider
         if (!$currentUserId && isset($_SESSION['user_id'])) {
             $currentUserId = $_SESSION['user_id'];
         }
+        $currentUserId = $currentUserId ?? 0;
         $userPerm = new \BioSounds\Entity\UserPermission();
         $perm = $userPerm->getUserColPermission($currentUserId, $collectionId);
         $permObj = new \BioSounds\Entity\Permission();
@@ -826,9 +830,10 @@ class TagProvider extends AbstractProvider
     public function getRecrdingViewListByPage(string $collectionId, string $recordingId, string $minTime, string $maxTime, string $minFrequency, string $maxFrequency, string $start = '0', string $length = '8', string $search = null, string $column = '0', string $dir = 'asc'): array
     {
         $arr = [];
+        $currentUserId = \BioSounds\Utils\Auth::getUserID() ?? 0;
 
         $userPerm = new \BioSounds\Entity\UserPermission();
-        $perm = $userPerm->getUserColPermission(\BioSounds\Utils\Auth::getUserID(), $collectionId);
+        $perm = $userPerm->getUserColPermission($currentUserId, $collectionId);
         $permObj = new \BioSounds\Entity\Permission();
 
         $hasBroadAccess =
@@ -849,7 +854,7 @@ class TagProvider extends AbstractProvider
             LEFT JOIN user u ON u.user_id = t.user_id
             LEFT JOIN sound ON sound.sound_id = t.sound_id
             LEFT JOIN sound_type st ON st.sound_type_id = t.animal_sound_type 
-            LEFT JOIN task ON task.tag_id = t.tag_id AND task.assignee_id = " . \BioSounds\Utils\Auth::getUserID() . " AND task.type = 'tag'
+            LEFT JOIN task ON task.tag_id = t.tag_id AND task.assignee_id = " . $currentUserId . " AND task.type = 'tag'
             WHERE c.collection_id = :collectionId 
             AND min_time < :maxTime 
             AND max_time > :minTime 
@@ -857,7 +862,7 @@ class TagProvider extends AbstractProvider
             AND max_freq > :minFrequency ";
 
         if (!$hasBroadAccess) {
-            $sql .= " AND (t.user_id = " . \BioSounds\Utils\Auth::getUserID() . " OR c.public_tags = 1 OR t.tag_id IN (SELECT tag_id FROM task WHERE assignee_id = " . \BioSounds\Utils\Auth::getUserID() . " AND type = 'tag')) ";
+            $sql .= " AND (t.user_id = " . $currentUserId . " OR c.public_tags = 1 OR t.tag_id IN (SELECT tag_id FROM task WHERE assignee_id = " . $currentUserId . " AND type = 'tag')) ";
         }
 
         if ($recordingId) {
@@ -895,8 +900,8 @@ class TagProvider extends AbstractProvider
                     $taskIcon = "<i class='fas fa-circle text-success' title='Reviewed'></i>";
                 }
 
-                $isManager = (new User())->isManage($_SESSION['user_id'], $collectionId);
-                $isOwner = ($value['user_id'] == $_SESSION['user_id']);
+                $isManager = $currentUserId > 0 ? (new User())->isManage($currentUserId, $collectionId) : false;
+                $isOwner = ($value['user_id'] == $currentUserId);
 
                 if (!$isManager && !$isOwner) {
                     $arr[$key][] = "<input type='checkbox' class='js-checkbox' data-readonly='true' data-id='$value[tag_id]' data-recording-id='$value[recording_id]' data-tmin='$value[min_time]' data-tmax='$value[max_time]' data-fmin='$value[min_freq]' data-fmax='$value[max_freq]' name='cb[$value[collection_id]]' id='cb[$value[collection_id]]'>";
